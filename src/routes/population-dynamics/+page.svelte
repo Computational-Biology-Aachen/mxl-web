@@ -12,6 +12,7 @@
 	let a_c = $state(0.1);
 	let delta_e = $state(0.1);
 	let theta = $state(0.001);
+        $: a_c = 1 - a_e;
 
 	// Initial conditions
 	let e0 = $state(5.0);
@@ -103,9 +104,10 @@
 		<input type="number" bind:value={mu_c} min="0.0" max="1.0" step="0.05" />
 	</label>
 	<label>
-		<span>affinity</span>
-		<input type="number" bind:value={a_c} min="0.0" max="1.0" step="0.05" />
+		<span>affinity (1 − E. coli affinity)</span>
+		<input type="number" value={a_c} readonly />
 	</label>
+
 	<label>
 		<span>density loss</span>
 		<input type="number" bind:value={theta} min="0.0" max="1.0" step="0.05" />
