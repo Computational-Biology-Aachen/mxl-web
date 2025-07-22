@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { faGithub } from '@fortawesome/free-brands-svg-icons';
 	import { faBars } from '@fortawesome/free-solid-svg-icons';
 	import Fa from 'svelte-fa';
 	import { MediaQuery } from 'svelte/reactivity';
@@ -12,6 +13,9 @@
 	<ul>
 		{#if small.current}
 			<ThemeSwitcher />
+			<li>
+				<a href="https://github.com/Computational-Biology-Aachen/mxl-web"><Fa icon={faGithub} /></a>
+			</li>
 			<details class="dropdown">
 				<summary> <Fa icon={faBars} /> </summary>
 				<ul dir="rtl">
@@ -20,6 +24,7 @@
 			</details>
 		{:else}
 			{@render children()}
+			<a href="https://github.com/Computational-Biology-Aachen/mxl-web"><Fa icon={faGithub} /></a>
 			<ThemeSwitcher />
 		{/if}
 	</ul>
