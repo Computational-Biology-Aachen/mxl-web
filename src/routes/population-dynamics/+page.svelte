@@ -30,7 +30,7 @@
 		const v1 = e * delta_e;
 
 		const dEdt = v0 - v1;
-		const dCdt = c * a_c * mu_c - c * theta;
+		const dCdt = c * a_c * mu_c - c * theta * c;
 		return [dEdt, dCdt];
 	}
 
