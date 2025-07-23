@@ -1,7 +1,9 @@
-type ODEFunction = (t: number, y: number[]) => number[];
+import type { Integration, rHS } from "..";
+
 
 interface KvaernoOptions {
     tFinal: number;
+    pars: number[];
     rtol?: number;
     atol?: number;
     hInit?: number;
@@ -11,15 +13,7 @@ interface KvaernoOptions {
     maxSteps?: number;
 }
 
-interface IntegrationResult {
-    t: number[];
-    y: number[][];
-}
-
 /** Utility functions */
-function addVec(a: number[], b: number[]): number[] {
-    return a.map((val, i) => val + b[i]);
-}
 function subVec(a: number[], b: number[]): number[] {
     return a.map((val, i) => val - b[i]);
 }
@@ -28,27 +22,6 @@ function scaleVec(v: number[], s: number): number[] {
 }
 function maxNorm(v: number[]): number {
     return Math.max(...v.map(Math.abs));
-}
-
-/** Jacobian approximation */
-function approxJacobian(f: ODEFunction, t: number, y: number[], eps = 1e-8): number[][] {
-    const n = y.length;
-    const J: number[][] = Array.from({ length: n }, () => Array(n).fill(0));
-    const f0 = f(t, y);
-
-    for (let j = 0; j < n; j++) {
-        const yj = y[j];
-        const h = eps * Math.max(1, Math.abs(yj));
-        y[j] += h;
-        const f1 = f(t, y);
-        y[j] = yj;
-
-        for (let i = 0; i < n; i++) {
-            J[i][j] = (f1[i] - f0[i]) / h;
-        }
-    }
-
-    return J;
 }
 
 /** Solve Ax = b using naive Gauss elimination */
@@ -78,11 +51,34 @@ function solveLinear(A: number[][], b: number[]): number[] {
     return M.map(row => row[n]);
 }
 
+/** Jacobian approximation */
+function approxJacobian(model: rHS, t: number, y: number[], pars: number[], eps = 1e-8): number[][] {
+    const n = y.length;
+    const J: number[][] = Array.from({ length: n }, () => Array(n).fill(0));
+    const f0 = model(t, y, pars);
+
+    for (let j = 0; j < n; j++) {
+        const yj = y[j];
+        const h = eps * Math.max(1, Math.abs(yj));
+        y[j] += h;
+        const f1 = model(t, y, pars);
+        y[j] = yj;
+
+        for (let i = 0; i < n; i++) {
+            J[i][j] = (f1[i] - f0[i]) / h;
+        }
+    }
+
+    return J;
+}
+
+
 /** Newton-Raphson solver for IRK stages */
 function solveStages(
-    f: ODEFunction,
+    model: rHS,
     y: number[],
     t: number,
+    pars: number[],
     h: number,
     A: number[][],
     c: number[],
@@ -104,11 +100,11 @@ function solveStages(
                 }
             }
 
-            const fEval = f(t + c[i] * h, Ytemp);
+            const fEval = model(t + c[i] * h, Ytemp, pars);
             const res = subVec(K[i], fEval);
             maxErr = Math.max(maxErr, maxNorm(res));
 
-            const J = approxJacobian(f, t + c[i] * h, Ytemp);
+            const J = approxJacobian(model, t + c[i] * h, Ytemp, pars);
             const Aij = A[i][i];
             for (let r = 0; r < n; r++) {
                 for (let c2 = 0; c2 < n; c2++) {
@@ -132,15 +128,16 @@ function solveStages(
 
 /** Kvaerno 4/5 IRK integrator with adaptive time stepping */
 export function kvaerno45(
-    f: ODEFunction,
+    model: rHS,
     y0: number[],
     t0: number,
     opts: KvaernoOptions
-): IntegrationResult {
+): Integration {
     const rtol = opts.rtol ?? 1e-6;
     const atol = opts.atol ?? 1e-8;
     const hMin = opts.hMin ?? 1e-6;
     const hMax = opts.hMax ?? 1.0;
+    const pars = opts.pars ?? [];
     let h = opts.hInit ?? 0.1;
     const maxSteps = opts.maxSteps ?? 10000;
     const maxIter = opts.maxIter ?? 10;
@@ -162,13 +159,13 @@ export function kvaerno45(
     let t = t0;
     let y = y0.slice();
 
-    const tOut = [t];
-    const yOut = [y.slice()];
+    let tOut = [t];
+    let yOut = [y.slice()];
 
     for (let step = 0; step < maxSteps && t < opts.tFinal; step++) {
         if (t + h > opts.tFinal) h = opts.tFinal - t;
 
-        const K = solveStages(f, y, t, h, A, c, s, rtol, maxIter);
+        const K = solveStages(model, y, t, pars, h, A, c, s, rtol, maxIter);
 
         const y5 = y.slice();
         const y4 = y.slice();
@@ -200,5 +197,5 @@ export function kvaerno45(
         h = Math.max(hMin, Math.min(h, hMax));
     }
 
-    return { t: tOut, y: yOut };
+    return { time: tOut, values: yOut };
 }

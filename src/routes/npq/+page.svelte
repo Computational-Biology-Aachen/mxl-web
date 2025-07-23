@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { rk45 } from '$lib/integrators/explicit/rk45';
+	import { kvaerno45 } from '$lib/integrators/implicit/kvaerno45';
 	import LineChart from '$lib/plots/lineChart.svelte';
 	import { model } from './model';
 
@@ -11,14 +11,24 @@
 	let yLim = $state(8);
 
 	let result = $derived.by(() => {
-		return rk45(model, {
-			initialValues: [
+		return kvaerno45(
+			model,
+			[
 				1.6999999999999997, 4.706348349506148, 3.9414515288091567, 3.7761613271207324,
 				7.737821100836988, 0.5105293511676007, 0.5000000001374878, 0.09090909090907397
 			],
-			tEnd: 50,
-			pars: [ppfd]
-		});
+			0,
+			{ tFinal: 50, pars: [ppfd], rtol: 1e-4, atol: 1e-4 }
+		);
+		// return rk45(model, {
+		// 	initialValues: [
+		// 		1.6999999999999997, 4.706348349506148, 3.9414515288091567, 3.7761613271207324,
+		// 		7.737821100836988, 0.5105293511676007, 0.5000000001374878, 0.09090909090907397
+		// 	],
+		// 	tEnd: 50,
+		// 	pars: [ppfd]
+		// });
+
 		// return euler(model, {
 		// 	initialValues: [
 		// 		1.6999999999999997, 4.706348349506148, 3.9414515288091567, 3.7761613271207324,
