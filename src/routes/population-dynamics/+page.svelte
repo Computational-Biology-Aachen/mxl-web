@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { integrate } from '$lib/integrators';
+	import { euler } from '$lib/integrators/explicit/euler';
 	import LineChart from '$lib/plots/lineChart.svelte';
 
 	function arrayColumn<T>(arr: Array<Array<T>>, n: number): Array<T> {
@@ -35,10 +35,15 @@
 	}
 
 	let result = $derived.by(() => {
-		return integrate(model, {
+		// return rk45(model, {
+		// 	initialValues: [e0, c0],
+		// 	tEnd: tEnd,
+		// 	pars: [mu_e, mu_c, a_e, a_c, delta_e, theta]
+		// });
+		return euler(model, {
 			initialValues: [e0, c0],
 			tEnd: tEnd,
-			stepSize: 0.1,
+			stepSize: 0.01,
 			pars: [mu_e, mu_c, a_e, a_c, delta_e, theta]
 		});
 	});

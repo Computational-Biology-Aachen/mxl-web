@@ -10,3 +10,5 @@
 // | **Tsitouras 5(4)**        | High-efficiency RK method                  | Julia `Tsit5` (DifferentialEquations.jl) |
 // | **Cash–Karp 5(4)**        | Another RK adaptive pair                   | Boost ODEInt, embedded systems           |
 // | **Runge–Kutta–Nyström**   | Specialized for second-order ODEs          | Astrodynamics, mechanical systems        |
+
+

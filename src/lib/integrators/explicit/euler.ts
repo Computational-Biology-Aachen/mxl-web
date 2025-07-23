@@ -1,16 +1,18 @@
 // Euler's method, first order
 
-import type { rHS } from "..";
+import type { Integration, rHS } from "..";
 
-export function integrate(
+interface IntegratorKws {
+    initialValues: Array<number>,
+    tStart?: number,
+    tEnd: number,
+    stepSize: number,
+    pars: number[]
+}
+
+export function euler(
     rhs: rHS,
-    { initialValues, tStart = 0, tEnd, stepSize, pars = [] }: {
-        initialValues: Array<number>,
-        tStart?: number,
-        tEnd: number,
-        stepSize: number,
-        pars: number[]
-    }) {
+    { initialValues, tStart = 0, tEnd, stepSize, pars = [] }: IntegratorKws): Integration {
     const n = Math.ceil((tEnd - tStart) / stepSize) + 1
     let values: Array<Array<number>> = Array(n)
     let time: Array<number> = Array.from(Array(n), (_, k) => k * stepSize + tStart)

@@ -1,42 +1,42 @@
+/**
+ * Runge-Kutta 4(5) Dormand-Prince solver
+ */
+
+import type { Integration, rHS } from "..";
 
 
-type ODEFunction = (t: number, y: number[]) => number[];
-
-interface RK45Options {
+interface IntegratorKws {
+    initialValues: Array<number>,
+    tStart?: number,
+    tEnd: number,
     rtol?: number;
     atol?: number;
     hInit?: number;
     hMin?: number;
     hMax?: number;
-    tFinal: number;
     maxSteps?: number;
+    pars: number[]
 }
 
-interface RK45Result {
-    t: number[];
-    y: number[][];
-}
-
-/**
- * Runge-Kutta 4(5) Dormand-Prince solver
- */
 export function rk45(
-    f: ODEFunction,
-    y0: number[],
-    t0: number,
-    opts: RK45Options
-): RK45Result {
-    const rtol = opts.rtol ?? 1e-6;
-    const atol = opts.atol ?? 1e-8;
-    const hMin = opts.hMin ?? 1e-6;
-    const hMax = opts.hMax ?? 1.0;
-    let h = opts.hInit ?? 0.01;
-    const tFinal = opts.tFinal;
-    const maxSteps = opts.maxSteps ?? 10000;
+    rhs: rHS,
+    { initialValues,
+        tEnd,
+        pars = [],
+        tStart = 0,
+        rtol = 1e-6,
+        atol = 1e-6,
+        // hMin = 1e-6,
+        // hMax = 1.0,
+        hInit = 0.01,
+        maxSteps = 10000 }: IntegratorKws
+): Integration {
+    console.log(`t_end = ${tEnd}`)
+    let h = hInit;
 
-    const n = y0.length;
-    let t = t0;
-    let y = y0.slice();
+    const nVars = initialValues.length;
+    let t = tStart;
+    let y = initialValues.slice();
 
     const tValues = [t];
     const yValues = [y.slice()];
@@ -63,8 +63,9 @@ export function rk45(
         1 / 40
     ];
 
-    for (let step = 0; step < maxSteps && t < tFinal; step++) {
-        if (t + h > tFinal) h = tFinal - t;
+    let step = 0;
+    for (; step < maxSteps && t < tEnd; step++) {
+        if (t + h > tEnd) h = tEnd - t;
 
         // Compute Runge-Kutta stages
         const k: number[][] = Array(7);
@@ -72,17 +73,17 @@ export function rk45(
             const yi = y.slice();
             for (let j = 0; j < i; j++) {
                 const aj = a[i][j] ?? 0;
-                for (let l = 0; l < n; l++) {
+                for (let l = 0; l < nVars; l++) {
                     yi[l] += h * aj * k[j][l];
                 }
             }
-            k[i] = f(t + c[i] * h, yi);
+            k[i] = rhs(t + c[i] * h, yi, pars);
         }
 
         // y5: 5th order estimate, y4: 4th order estimate
         const y5 = y.slice();
         const y4 = y.slice();
-        for (let l = 0; l < n; l++) {
+        for (let l = 0; l < nVars; l++) {
             for (let i = 0; i < 7; i++) {
                 y5[l] += h * b[i] * k[i][l];
                 y4[l] += h * bHat[i] * k[i][l];
@@ -91,31 +92,46 @@ export function rk45(
 
         // Estimate error
         let errNorm = 0;
-        for (let l = 0; l < n; l++) {
+        for (let l = 0; l < nVars; l++) {
             const sc = atol + rtol * Math.max(Math.abs(y[l]), Math.abs(y5[l]));
             const e = y5[l] - y4[l];
             errNorm += (e / sc) ** 2;
         }
-        errNorm = Math.sqrt(errNorm / n);
+        errNorm = Math.sqrt(errNorm / nVars);
 
         // Accept step if error is small enough
         if (errNorm <= 1) {
             t += h;
             y = y5;
-            tValues.push(t);
-            yValues.push(y.slice());
+            if (step % 10 === 0) {
+                tValues.push(t);
+                yValues.push(y.slice());
+            };
         }
 
         // Adapt step size
-        const safety = 0.9;
-        const minFactor = 0.1;
-        const maxFactor = 5.0;
-        const factor = Math.min(
-            maxFactor,
-            Math.max(minFactor, safety * Math.pow(1 / (errNorm || 1e-10), 0.2))
-        );
-        h = Math.min(hMax, Math.max(hMin, h * factor));
-    }
+        h = h * Math.pow(1 / errNorm, (1 / (5 + 1)))
 
-    return { t: tValues, y: yValues };
+        // Estimate error
+        // let errNorm = 0;
+        // for (let l = 0; l < nVars; l++) {
+        //     const sc = atol + rtol * Math.max(Math.abs(y[l]), Math.abs(y5[l]));
+        //     const e = y5[l] - y4[l];
+        //     errNorm += (e / sc) ** 2;
+        // }
+        // errNorm = Math.sqrt(errNorm / nVars);
+
+        // Adapt step size
+        // const safety = 0.9;
+        // const minFactor = 0.1;
+        // const maxFactor = 5.0;
+        // const factor = Math.min(
+        //     maxFactor,
+        //     Math.max(minFactor, safety * Math.pow(1 / (errNorm || 1e-10), 0.2))
+        // );
+        // h = Math.min(hMax, Math.max(hMin, h * factor));
+    }
+    console.log(`Took ${step} steps`)
+
+    return { time: tValues, values: yValues };
 }

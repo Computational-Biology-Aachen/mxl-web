@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { integrate } from '$lib/integrators';
+	import { euler } from '$lib/integrators/explicit/euler';
 	import LineChart from '$lib/plots/lineChart.svelte';
 
 	function arrayColumn<T>(arr: Array<Array<T>>, n: number): Array<T> {
@@ -22,10 +22,15 @@
 	}
 
 	let result = $derived.by(() => {
-		return integrate(lotka_volterra, {
+		// return rk45(lotka_volterra, {
+		// 	initialValues: [10.0, 10.0],
+		// 	tEnd: 100,
+		// 	pars: [alpha, beta, gamma, delta]
+		// });
+		return euler(lotka_volterra, {
 			initialValues: [10.0, 10.0],
 			tEnd: 100,
-			stepSize: 0.1,
+			stepSize: 0.01,
 			pars: [alpha, beta, gamma, delta]
 		});
 	});
