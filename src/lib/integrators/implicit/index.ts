@@ -10,4 +10,4 @@
 // | Kvaerno 4/5 IRK                         | Stiff IRK with adaptive control           | Advanced stiff solvers, less common |
 // | SDIRK (Singly Diagonally Implicit RK)   | Implicit RK with efficient Jacobian reuse | DAE solvers, embedded systems       |
 
-
+export { kvaerno45 } from "./kvaerno45";

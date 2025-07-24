@@ -11,4 +11,6 @@
 // | **Cash–Karp 5(4)**        | Another RK adaptive pair                   | Boost ODEInt, embedded systems           |
 // | **Runge–Kutta–Nyström**   | Specialized for second-order ODEs          | Astrodynamics, mechanical systems        |
 
-
+export { euler } from "./euler";
+export { rk2 } from "./rk2";
+export { rk45 } from "./rk45";
