@@ -1,6 +1,6 @@
 <script lang="ts">
+  import LineChart from "$lib/chartjs/lineChart.svelte";
   import { euler } from "$lib/integrators/explicit/euler";
-  import LineChart from "$lib/plots/lineChart.svelte";
 
   function arrayColumn<T>(arr: Array<Array<T>>, n: number): Array<T> {
     return arr.map((x) => x[n]);

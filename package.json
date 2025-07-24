@@ -21,6 +21,8 @@
 		"@sveltejs/adapter-auto": "^6.0.0",
 		"@sveltejs/kit": "^2.22.0",
 		"@sveltejs/vite-plugin-svelte": "^6.0.0",
+		"@types/plotly.js": "^3.0.2",
+		"@types/plotly.js-dist-min": "^2.3.4",
 		"@vitest/browser": "^3.2.3",
 		"eslint": "^9.18.0",
 		"eslint-config-prettier": "^10.0.1",
@@ -40,11 +42,13 @@
 		"vitest-browser-svelte": "^0.1.0"
 	},
 	"dependencies": {
-		"chart.js": "^4.5.0",
 		"@fortawesome/free-brands-svg-icons": "^6.7.2",
 		"@fortawesome/free-solid-svg-icons": "^6.7.2",
 		"@picocss/pico": "^2.1.1",
 		"@sveltejs/adapter-static": "^3.0.8",
+		"chart.js": "^4.5.0",
+		"plotly.js": "^3.0.3",
+		"plotly.js-dist-min": "^3.0.3",
 		"shiki": "^3.8.0",
 		"svelte-fa": "^4.0.4",
 		"svelte-media-queries": "^1.6.2"

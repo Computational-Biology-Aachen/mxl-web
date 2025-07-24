@@ -1,6 +1,6 @@
 <script lang="ts">
+  import LineChart from "$lib/chartjs/lineChart.svelte";
   import { kvaerno45 } from "$lib/integrators/implicit/kvaerno45";
-  import LineChart from "$lib/plots/lineChart.svelte";
   import { model } from "./model";
 
   function arrayColumn<T>(arr: Array<Array<T>>, n: number): Array<T> {
