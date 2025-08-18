@@ -1,7 +1,7 @@
 <script lang="ts">
   import LineChart from "$lib/chartjs/lineChart.svelte";
   import { euler } from "$lib/integrators/explicit";
-  import { test } from "../pkg/wa_integrate";
+  import { wa_lotka_volterra } from "$lib/pkg/wa_integrate";
 
   function arrayColumn<T>(arr: Array<Array<T>>, n: number): Array<T> {
     return arr.map((x) => x[n]);
@@ -35,7 +35,7 @@
   });
   let result2 = $derived.by(() => {
     let tStart = Date.now();
-    let res = test([10.0, 10.0], [alpha, beta, gamma, delta]);
+    let res = wa_lotka_volterra([10.0, 10.0], [alpha, beta, gamma, delta]);
     console.log(`WebAssembly Integration took ${Date.now() - tStart} ms`);
     return res;
   });
