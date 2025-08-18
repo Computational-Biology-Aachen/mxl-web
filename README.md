@@ -4,13 +4,6 @@ MxlWeb is an experimental toolbox to run ODE models in the browser.
 
 All code execution is client-side which means no giant servers required ❤️.
 
-## Setup
-
-```
-npm install
-npm run dev -- --open
-```
-
 
 ## Tool family 🏠
 
@@ -18,3 +11,19 @@ npm run dev -- --open
 
 - [MxlPy](https://github.com/Computational-Biology-Aachen/MxlPy) is a Python package for mechanistic learning (Mxl)
 - [MxlBricks](https://github.com/Computational-Biology-Aachen/mxl-bricks) is built on top of `MxlPy` to build mechanistic models composed of pre-defined reactions (bricks)
+
+
+## Setup
+
+```
+npm install
+npm run dev -- --open
+```
+
+## wasm build
+
+```
+wasm-pack build --out-dir src/pkg && npm run dev -- --open
+```
+
+
