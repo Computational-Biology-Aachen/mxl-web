@@ -23,7 +23,7 @@ npm run dev -- --open
 ## wasm build
 
 ```
-wasm-pack build --out-dir src/pkg && npm run dev -- --open
+wasm-pack build --out-dir src/lib/pkg && npm run dev -- --open
 ```
 
 
