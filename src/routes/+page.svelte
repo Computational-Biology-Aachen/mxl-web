@@ -1,6 +1,7 @@
 <script lang="ts">
   import LineChart from "$lib/chartjs/lineChart.svelte";
-  import { euler } from "$lib/integrators/explicit/euler";
+  import { euler } from "$lib/integrators/explicit";
+  import { test } from "../pkg/wa_integrate";
 
   function arrayColumn<T>(arr: Array<Array<T>>, n: number): Array<T> {
     return arr.map((x) => x[n]);
@@ -22,17 +23,21 @@
   }
 
   let result = $derived.by(() => {
-    // return rk45(lotka_volterra, {
-    // 	initialValues: [10.0, 10.0],
-    // 	tEnd: 100,
-    // 	pars: [alpha, beta, gamma, delta]
-    // });
-    return euler(lotka_volterra, {
+    let tStart = Date.now();
+    let res = euler(lotka_volterra, {
       initialValues: [10.0, 10.0],
       tEnd: 100,
       stepSize: 0.01,
       pars: [alpha, beta, gamma, delta],
     });
+    console.log(`Javascript Integration took ${Date.now() - tStart} ms`);
+    return res;
+  });
+  let result2 = $derived.by(() => {
+    let tStart = Date.now();
+    let res = test([10.0, 10.0], [alpha, beta, gamma, delta]);
+    console.log(`WebAssembly Integration took ${Date.now() - tStart} ms`);
+    return res;
   });
 
   let lineData = $derived.by(() => {
@@ -50,12 +55,28 @@
       ],
     };
   });
+  let lineData2 = $derived.by(() => {
+    return {
+      labels: result2.time,
+      datasets: [
+        {
+          label: "Prey",
+          data: arrayColumn(result2.values, 0),
+        },
+        {
+          label: "Predator",
+          data: arrayColumn(result2.values, 1),
+        },
+      ],
+    };
+  });
 </script>
 
 <h1>MxL web</h1>
 <p>Quick and dirty demo to get ODE integration running on the client-side.</p>
 
 <LineChart data={lineData} {yLim} />
+<LineChart data={lineData2} {yLim} />
 <div>
   <label>
     <span>Alpha</span>
