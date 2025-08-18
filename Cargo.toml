@@ -5,7 +5,7 @@ edition = "2024"
 include = ["/src/lib-rs"]
 
 [lib]
-path = "/src/lib-rs"
+path = "src/lib-rs/lib.rs"
 crate-type = ["cdylib"]
 
 [dependencies]
