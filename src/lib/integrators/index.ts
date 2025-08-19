@@ -4,11 +4,13 @@ export type Model = (
   pars: Array<number>,
 ) => Array<number>;
 
+
 export interface Integration {
   time: number[];
   values: number[][];
   err?: string;
 }
+
 
 export interface BaseIntegratorKws {
   initialValues: Array<number>;
@@ -17,3 +19,5 @@ export interface BaseIntegratorKws {
   // Optional ones
   tStart?: number;
 }
+
+export type Integrator = (model: Model, options: BaseIntegratorKws) => Integration
