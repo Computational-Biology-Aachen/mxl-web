@@ -1,3 +1,4 @@
+use super::utils::{scale_vec, solve_stages, sub_vec};
 use crate::{Integration, Model};
 
 pub struct Kvaerno45Options {
@@ -22,47 +23,6 @@ impl Default for Kvaerno45Options {
             max_iter: 10,
         }
     }
-}
-
-fn scale_vec(v: &Vec<f64>, h: f64) -> Vec<f64> {
-    v.iter().map(|&x| x * h).collect()
-}
-
-fn sub_vec(a: &Vec<f64>, b: &Vec<f64>) -> Vec<f64> {
-    a.iter().zip(b.iter()).map(|(&x, &y)| x - y).collect()
-}
-
-// Solve stages for IRK (Newton iteration, simplified)
-fn solve_stages(
-    model: &Model,
-    y: &Vec<f64>,
-    t: f64,
-    pars: &Vec<f64>,
-    h: f64,
-    a: &Vec<Vec<f64>>,
-    c: &Vec<f64>,
-    s: usize,
-    _rtol: f64, // FIXME
-    max_iter: i64,
-) -> Vec<Vec<f64>> {
-    let n = y.len();
-    let mut k = vec![vec![0.0; n]; s];
-    for i in 0..s {
-        let ti = t + c[i] * h;
-        let mut yi = y.clone();
-        for j in 0..s {
-            let scaled = scale_vec(&k[j], a[i][j] * h);
-            for l in 0..n {
-                yi[l] += scaled[l];
-            }
-        }
-        // Simple fixed-point iteration (for illustration)
-        for _ in 0..max_iter {
-            let f = model(ti, &yi, pars);
-            k[i] = f;
-        }
-    }
-    k
 }
 
 pub fn kvaerno45(

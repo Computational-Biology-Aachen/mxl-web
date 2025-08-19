@@ -35,7 +35,7 @@
           data: arrayColumn(result.values, 2),
         },
         {
-          label: "Ferredoxine",
+          label: "Ferredoxin",
           data: arrayColumn(result.values, 3),
         },
         {
