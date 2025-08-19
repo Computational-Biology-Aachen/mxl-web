@@ -22,24 +22,6 @@
       rtol: 1e-4,
       atol: 1e-4,
     });
-    // return rk45(model, {
-    // 	initialValues: [
-    // 		1.6999999999999997, 4.706348349506148, 3.9414515288091567, 3.7761613271207324,
-    // 		7.737821100836988, 0.5105293511676007, 0.5000000001374878, 0.09090909090907397
-    // 	],
-    // 	tEnd: 50,
-    // 	pars: [ppfd]
-    // });
-
-    // return euler(model, {
-    // 	initialValues: [
-    // 		1.6999999999999997, 4.706348349506148, 3.9414515288091567, 3.7761613271207324,
-    // 		7.737821100836988, 0.5105293511676007, 0.5000000001374878, 0.09090909090907397
-    // 	],
-    // 	tEnd: 50,
-    // 	stepSize: 0.01,
-    // 	pars: [ppfd]
-    // });
   });
 
   let lineData = $derived.by(() => {
@@ -90,8 +72,8 @@
 <LineChart data={lineData} {yLim} />
 <div>
   <label>
-    <span>PPFD</span>
-    <input type="range" bind:value={ppfd} min="10.0" max="100.0" step="10" />
+    <span>PPFD: {ppfd}</span>
+    <input type="range" bind:value={ppfd} min="50.0" max="100.0" step="10" />
   </label>
 </div>
 
