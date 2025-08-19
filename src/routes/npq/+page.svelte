@@ -4,6 +4,11 @@
   import { wa_npq } from "$lib/pkg/wa_integrate";
   import { model } from "./model";
 
+  type Data = {
+    labels: number[];
+    datasets: { label: string; data: number[] }[];
+  };
+
   function arrayColumn<T>(arr: Array<Array<T>>, n: number): Array<T> {
     return arr.map((x) => x[n]);
   }
@@ -30,18 +35,18 @@
   let result2 = $derived.by(() => {
     let tStart = Date.now();
     let res = wa_npq(
-      [
+      new Float64Array([
         1.6999999999999997, 4.706348349506148, 3.9414515288091567,
         3.7761613271207324, 7.737821100836988, 0.5105293511676007,
         0.5000000001374878, 0.09090909090907397,
-      ],
-      [ppfd],
+      ]),
+      new Float64Array([ppfd]),
     );
     console.log(`WebAssembly Integration took ${Date.now() - tStart} ms`);
     return res;
   });
 
-  let lineData = $derived.by(() => {
+  let lineData: Data = $derived.by(() => {
     return {
       labels: result.time,
       datasets: [
@@ -58,7 +63,7 @@
           data: arrayColumn(result.values, 2),
         },
         {
-          label: "Ferredoxine",
+          label: "Ferredoxin",
           data: arrayColumn(result.values, 3),
         },
         {
@@ -81,7 +86,7 @@
     };
   });
 
-  let lineData2 = $derived.by(() => {
+  let lineData2: Data = $derived.by(() => {
     return {
       labels: result2.time,
       datasets: [
@@ -98,7 +103,7 @@
           data: arrayColumn(result2.values, 2),
         },
         {
-          label: "Ferredoxine",
+          label: "Ferredoxin",
           data: arrayColumn(result2.values, 3),
         },
         {
@@ -129,8 +134,8 @@
 <LineChart data={lineData2} {yLim} />
 <div>
   <label>
-    <span>PPFD</span>
-    <input type="range" bind:value={ppfd} min="10.0" max="100.0" step="10" />
+    <span>PPFD: {ppfd}</span>
+    <input type="range" bind:value={ppfd} min="50.0" max="100.0" step="10" />
   </label>
 </div>
 
