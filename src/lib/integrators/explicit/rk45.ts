@@ -1,5 +1,8 @@
 /**
  * Runge-Kutta 4(5) Dormand-Prince solver
+ * Other names
+ * dopri5
+ * Dormand--Prince 5(4)
  */
 
 import type { BaseIntegratorKws, Integration, Model } from "..";
