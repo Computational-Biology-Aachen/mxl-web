@@ -12,7 +12,7 @@
   let mu_c = $state(0.3);
   let a_e = $state(0.1);
   let a_c = $derived(1 - a_e);
-  let delta_e = $state(0.1);
+  let delta_e = $state(0.01);
   let theta = $state(0.001);
 
   // Initial conditions
@@ -78,12 +78,12 @@
 
 <h3>Initial conditions & settings</h3>
 <div class="row">
-  <Slider name="E. coli" bind:val={e0} min="0.0" max="100.0" step="0.1" />
-  <Slider name="C. glutamicum" bind:val={c0} min="0.0" max="100.0" step="0.1" />
+  <Slider name="E. coli" bind:val={e0} min="0.0" max="1000.0" step="1" />
+  <Slider name="C. glutamicum" bind:val={c0} min="0.0" max="1000.0" step="1" />
   <Slider
     name="Simulate until"
     bind:val={tEnd}
-    min="10.0"
+    min="1.0"
     max="10000.0"
     step="10"
   />
@@ -116,6 +116,13 @@
     min="0.0"
     max="1.0"
     step="0.05"
+  />  
+  <Slider
+    name="C. glut affinity"
+    bind:val={a_c}
+    min="0.0"
+    max="1.0"
+    step="0.05" 
   />
   <Slider
     name="C. glut density loss"
