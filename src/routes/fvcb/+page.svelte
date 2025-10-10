@@ -1,12 +1,25 @@
 <script lang="ts">
   import LineChart from "$lib/chartjs/lineChart.svelte";
-
   import Slider from "$lib/Slider.svelte";
   import { onMount } from "svelte";
 
-  let o: number = $state(210);
-  let j: number = $state(124);
-  let tp: number = $state(15);
+  function c(value: number, opacity: number = 1.0) {
+    const CHART_COLORS = [
+      `rgba(255, 99, 132, ${opacity})`,
+      `rgba(255, 159, 64, ${opacity})`,
+      `rgba(255, 205, 86, ${opacity})`,
+      `rgba(75, 192, 192, ${opacity})`,
+      `rgba(54, 162, 235, ${opacity})`,
+      `rgba(153, 102, 255, ${opacity})`,
+      `rgba(201, 203, 207, ${opacity})`,
+    ];
+
+    return CHART_COLORS[value];
+  }
+
+  let o: number = $state(210); // mbar
+  let j: number = $state(124); // µmol m⁻² s⁻¹
+  let tp: number = $state(15); // µmol m⁻² s⁻¹
   let yMax = 60;
 
   const start = 0;
@@ -14,59 +27,103 @@
   const n = 100;
   const step = (stop - start) / n;
   const ciVals = Array.from({ length: n }, (_, i) => 0 + step * i);
-  let result = $state([{ a: 0.0, ac: 0.0, aj: 0.0, ap: 0.0 }]);
+  let result = $state([{ an: 0.0, wc: 0.0, wj: 0.0, wp: 0.0 }]);
 
-  function fvcb(
-    ci: number,
+  function fvcbMinW(
+    c: number,
     o: number,
     j: number,
     tp: number,
-  ): { a: number; ac: number; aj: number; ap: number } {
+  ): { an: number; wc: number; wj: number; wp: number } {
     const vcmax = 80; // µmol m⁻² s⁻¹
     const kc = 259; // µbar
     const ko = 179; // mbar
-    const gammaStar = 38.6; // µbar
-    const rd = 1; // µmol m⁻² s⁻¹
+    const ccp = 38.6; // CO2 compensation point µbar
+    const rl = 1; // µmol m⁻² s⁻¹
+
+    //  fraction of remaining glycolate carbon not returned to the chloroplast
+    const alphaOld = 0; // dimensionless
 
     // Since we assume rm == 0
     // RuBP saturated rate of CO2 assimilation
-    const ac = ((ci - gammaStar) * vcmax) / (ci + kc * (1 + o / ko)) - rd;
+    const wc = (c * vcmax) / (c + kc * (1 + o / ko));
 
     // Electron transport limited rate of CO2 assimilation
-    const aj = ((ci - gammaStar) * j) / (4 * ci + 8 * gammaStar) - rd;
+    const wj = (c * j) / (4 * c + 8 * ccp);
 
     //  Phosphate limited rate of CO2 assimilation
-    const ap = 3 * tp - rd;
-    const a = Math.min(ac, aj, ap);
+    // const wp = 3 * tp * c;
+    const wp =
+      c <= ccp * (1 + 3 * alphaOld)
+        ? 100 // technically infinity here
+        : (3 * c * tp) / (c - ccp * (1 + 3 * alphaOld));
 
-    return { a: a, ac: ac, aj: aj, ap: ap };
+    const vc = Math.min(wc, wj, wp);
+    const an = vc * (1 - ccp / c) - rl;
+
+    return { an: an, wc: wc, wj: wj, wp: wp };
   }
+
+  // function fvcbMinA(
+  //   ci: number,
+  //   o: number,
+  //   j: number,
+  //   tp: number,
+  // ): { a: number; ac: number; aj: number; ap: number } {
+  //   const vcmax = 80; // µmol m⁻² s⁻¹
+  //   const kc = 259; // µbar
+  //   const ko = 179; // mbar
+  //   const gammaStar = 38.6; // µbar
+  //   const rd = 1; // µmol m⁻² s⁻¹
+
+  //   // Since we assume rm == 0
+  //   // RuBP saturated rate of CO2 assimilation
+  //   const ac = ((ci - gammaStar) * vcmax) / (ci + kc * (1 + o / ko)) - rd;
+
+  //   // Electron transport limited rate of CO2 assimilation
+  //   const aj = ((ci - gammaStar) * j) / (4 * ci + 8 * gammaStar) - rd;
+
+  //   //  Phosphate limited rate of CO2 assimilation
+  //   const ap = 3 * tp - rd;
+  //   const a = Math.min(ac, aj, ap);
+
+  //   return { a: a, ac: ac, aj: aj, ap: ap };
+  // }
 
   function runSimulation() {
     result = ciVals.map((ci) => {
-      return fvcb(ci, o, j, tp);
+      return fvcbMinW(ci, o, j, tp);
     });
   }
 
+  const lineAlpha = 0.35;
   let lineData = $derived.by(() => {
     return {
       labels: ciVals,
       datasets: [
         {
-          label: "a",
-          data: result.map((x) => x.a) as number[],
+          label: "An",
+          data: result.map((x) => x.an) as number[],
+          backgroundColor: c(3, 1.0),
+          borderColor: c(3, 1.0),
         },
         {
-          label: "ac",
-          data: result.map((x) => x.ac) as number[],
+          label: "Wc",
+          data: result.map((x) => x.wc) as number[],
+          backgroundColor: c(0, lineAlpha),
+          borderColor: c(0, lineAlpha),
         },
         {
-          label: "aj",
-          data: result.map((x) => x.aj) as number[],
+          label: "Wj",
+          data: result.map((x) => x.wj) as number[],
+          backgroundColor: c(1, lineAlpha),
+          borderColor: c(1, lineAlpha),
         },
         {
-          label: "ap",
-          data: result.map((x) => x.ap) as number[],
+          label: "Wp",
+          data: result.map((x) => x.wp) as number[],
+          backgroundColor: c(2, lineAlpha),
+          borderColor: c(2, lineAlpha),
         },
       ],
     };
