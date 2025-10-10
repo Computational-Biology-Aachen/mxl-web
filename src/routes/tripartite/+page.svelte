@@ -164,7 +164,7 @@
   </div>
 </div>
 
-<LineChart data={lineData} {yLim} />
+<LineChart data={lineData} yMax={yLim} />
 
 <style>
   span {

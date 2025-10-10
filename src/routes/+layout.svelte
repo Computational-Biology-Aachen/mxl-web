@@ -25,6 +25,7 @@
     <li><a href="{base}/population-dynamics">Population dynamics</a></li>
     <li><a href="{base}/tripartite">Tripartite dynamics</a></li>
     <li><a href="{base}/npq">NPQ</a></li>
+    <li><a href="{base}/fvcb">FvCB</a></li>
     <!-- <li><a href="{base}/plotly-test">test</a></li> -->
   </Navbar>
   {@render children()}

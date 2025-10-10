@@ -3,14 +3,20 @@
 
   let {
     data,
-    yLim,
+    yMin = 0,
+    yMax = undefined,
     xScale = "linear",
     yScale = "linear",
+    xLabel = "Time / unit",
+    yLabel = "Amount / unit",
   }: {
     data: ChartData;
-    yLim?: number;
+    yMax?: number;
+    yMin?: number;
     xScale?: "linear" | "logarithmic" | "category" | "time" | "timeseries";
     yScale?: "linear" | "logarithmic" | "category" | "time" | "timeseries";
+    xLabel?: string;
+    yLabel?: string;
   } = $props();
 
   function makeChart(canvas: HTMLCanvasElement, data: any) {
@@ -25,7 +31,7 @@
             type: xScale,
             title: {
               display: true,
-              text: "Time / unit",
+              text: xLabel,
             },
             ticks: {
               format: {
@@ -37,10 +43,11 @@
           y: {
             type: yScale,
             beginAtZero: true,
-            max: yLim,
+            min: yMin,
+            max: yMax,
             title: {
               display: true,
-              text: "Amount / unit",
+              text: yLabel,
             },
             ticks: {
               format: {
