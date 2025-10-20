@@ -12,7 +12,7 @@
   let mu_c = $state(0.3);
   let a_e = $state(0.1);
   let a_c = $derived(1 - a_e);
-  let delta_e = $state(0.01);
+  //let delta_e = $state(0.01);
   let theta = $state(0.001);
 
   // Initial conditions
@@ -25,13 +25,13 @@
 
   function model(t: number, vars: number[], pars: number[]) {
     const [e, c] = vars;
-    const [mu_e, mu_c, a_e, a_c, delta_e, theta] = pars;
+    const [mu_e, mu_c, a_e, a_c, theta] = pars;
 
     // Rates
     const v0 = e * a_e * mu_e;
-    const v1 = e * delta_e;
+  
 
-    const dEdt = v0 - v1;
+    const dEdt = v0 ;
     const dCdt = c * a_c * mu_c - c * theta * c;
     return [dEdt, dCdt];
   }
@@ -46,7 +46,7 @@
       initialValues: [e0, c0],
       tEnd: tEnd,
       stepSize: 0.01,
-      pars: [mu_e, mu_c, a_e, a_c, delta_e, theta],
+      pars: [mu_e, mu_c, a_e, a_c, theta],
     });
   });
 
@@ -65,7 +65,7 @@
       ],
     };
   });
-  const eqE = String.raw`\frac{dE}{dt} = E\,a_e\,\mu_e - E\,\delta_e`;
+  const eqE = String.raw`\frac{dE}{dt} = E\,a_e\,\mu_e`;
   const eqC = String.raw`\frac{dC}{dt} = C\,a_c\,\mu_c - \theta\,C^2`;
 </script>
 
@@ -85,7 +85,7 @@
     bind:val={tEnd}
     min="1.0"
     max="10000.0"
-    step="10"
+    step="1"
   />
 </div>
 <div class="row">
@@ -99,13 +99,6 @@
   <Slider
     name="E. coli affinity"
     bind:val={a_e}
-    min="0.0"
-    max="1.0"
-    step="0.05"
-  />
-  <Slider
-    name="E. coli death rate"
-    bind:val={delta_e}
     min="0.0"
     max="1.0"
     step="0.05"
