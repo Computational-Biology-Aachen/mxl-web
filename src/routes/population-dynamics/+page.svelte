@@ -10,8 +10,8 @@
 
   let mu_e = $state(0.4);
   let mu_c = $state(0.3);
-  let a_e = $state(0.1);
-  let a_c = $derived(1 - a_e);
+  let a_e = $state(6.0);
+  let a_c = $derived(10 - a_e);
   //let delta_e = $state(0.01);
   let theta = $state(0.001);
 
@@ -100,8 +100,8 @@
     name="E. coli affinity"
     bind:val={a_e}
     min="0.0"
-    max="1.0"
-    step="0.05"
+    max="10.0"
+    step="0.5"
   />
   <Slider
     name="C. glut growth rate"
@@ -114,8 +114,8 @@
     name="C. glut affinity"
     bind:val={a_c}
     min="0.0"
-    max="1.0"
-    step="0.05" 
+    max="10.0"
+    step="0.5" 
   />
   <Slider
     name="C. glut density loss"

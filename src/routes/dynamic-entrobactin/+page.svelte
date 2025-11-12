@@ -12,13 +12,13 @@
   let mu_e = $state(0.4);
   let mu_c = $state(0.3);
 
-  let a_e = $state(0.1);
-  let a_c = $derived(1 - a_e);
+  let a_e = $state(6.0);
+  let a_c = $derived(10 - a_e);
 
   let K_e = $state(0.5);
   let K_c = $state(0.5);
 
-  let delta_e = $state(0.01);
+  
   let theta = $state(0.001);
 
   let r_prod = $state(0.2);
@@ -38,7 +38,7 @@
   function model(t: number, vars: number[], pars: number[]) {
     const [E, C, B] = vars;
     const [
-      mu_e, mu_c, a_e, a_c, K_e, K_c, delta_e, theta, r_prod, r_cons_e, r_cons_c
+      mu_e, mu_c, a_e, a_c, K_e, K_c, theta, r_prod, r_cons_e, r_cons_c
     ] = pars;
 
     // Monod terms for growth
@@ -49,7 +49,7 @@
     const cons_term_E = mu_e * ((a_e * B) / (K_e + a_e * B)) * E;
     const cons_term_C = mu_c * ((a_c * B) / (K_c + a_c * B)) * C;
 
-    const dEdt = mu_e * uptake_E_growth * E - delta_e * E;
+    const dEdt = mu_e * uptake_E_growth * E;
     const dCdt = mu_c * uptake_C_growth * C - theta * C * C;
     const dBdt = r_prod * E - r_cons_e * cons_term_E - r_cons_c * cons_term_C;
 
@@ -62,7 +62,7 @@
       tEnd: tEnd,
       stepSize: 0.01,
       pars: [
-        mu_e, mu_c, a_e, a_c, K_e, K_c, delta_e, theta, r_prod, r_cons_e, r_cons_c
+        mu_e, mu_c, a_e, a_c, K_e, K_c, theta, r_prod, r_cons_e, r_cons_c
       ],
     });
   });
@@ -101,7 +101,7 @@
 
 <div class="row">
   <Slider name="E. coli growth rate (μ_E)" bind:val={mu_e} min="0.0" max="2.0" step="0.01" />
-  <Slider name="E. coli affinity (a_E)" bind:val={a_e} min="0.0" max="1.0" step="0.01" />
+  <Slider name="E. coli affinity (a_E)" bind:val={a_e} min="0.0" max="10.0" step="0.1" />
   <Slider name="C. glut growth rate (μ_C)" bind:val={mu_c} min="0.0" max="2.0" step="0.01" />
   <Slider name="C. glut affinity (a_C = 1 - a_E)" bind:val={a_c} min="0.0" max="1.0" step="0.01" disabled />
 </div>
@@ -109,7 +109,6 @@
 <div class="row">
   <Slider name="K_E (half-sat E)" bind:val={K_e} min="0.00000001" max="1.0" step="0.000001" />
   <Slider name="K_C (half-sat C)" bind:val={K_c} min="0.00000001" max="1.0" step="0.000001" />
-  <Slider name="E production cost (δ_E)" bind:val={delta_e} min="0.0" max="1.0" step="0.000001" />
   <Slider name="C density loss (θ)" bind:val={theta} min="0.0" max="1.0" step="0.0001" />
 </div>
 
