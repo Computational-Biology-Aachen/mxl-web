@@ -24,6 +24,7 @@
     <li><a href="{base}/">Lotka Volterra</a></li>
     <li><a href="{base}/population-dynamics">Population dynamics</a></li>
     <li><a href="{base}/tripartite">Tripartite dynamics</a></li>
+    <li><a href="{base}/dynamic-entrobactin">Entrobactin</a></li>
     <li><a href="{base}/npq">NPQ</a></li>
     <li><a href="{base}/fvcb">FvCB</a></li>
     <!-- <li><a href="{base}/plotly-test">test</a></li> -->
