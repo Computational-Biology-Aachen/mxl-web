@@ -9,28 +9,66 @@
     return arr.map((x) => x[n]);
   }
 
+  const model = `
+    def lotka_volterra(
+        t: float,
+        y: Iterable[float],
+        alpha: float,
+        beta: float,
+        gamma: float,
+        delta: float,
+    ) -> Iterable[float]:
+        prey, pred = y
+
+        dxdt = alpha * prey - beta * prey * pred
+        dydt = -gamma * pred + delta * prey * pred
+        return dxdt, dydt
+
+    lotka_volterra
+    `;
+
+  // Simulation constants
   const initialValues = [10.0, 10.0];
   const tEnd = 100;
-  const stepSize = 0.01;
+
+  // Simulation variables
+  let worker: Worker | null = null;
+  let result = $state({ time: [], values: [] });
   let alpha = $state(0.1);
   let beta = $state(0.02);
   let gamma = $state(0.4);
   let delta = $state(0.02);
   let yLim = $state(100);
 
-  let worker: Worker | null = null;
-  let result = $state({ time: [], values: [] });
+  onMount(() => {
+    // worker only in browser
+    if (!browser) return;
+
+    worker = new Worker(new URL("$lib/workers/pyWorker.ts", import.meta.url), {
+      type: "module",
+    });
+    worker.onmessage = (e: MessageEvent) => {
+      result = e.data;
+    };
+    worker.onerror = (e) => {
+      console.log(e);
+    };
+
+    // Initial run
+    runSimulation();
+    return () => worker?.terminate();
+  });
 
   function runSimulation() {
-    // Sadly we can't pass the function object to a web worker
-    // so we have to define it **in** the worker.
     worker?.postMessage({
+      model: model,
       initialValues: initialValues,
       tEnd: tEnd,
-      stepSize: stepSize,
       pars: [alpha, beta, gamma, delta],
     });
   }
+
+  // Plot
   let lineData = $derived.by(() => {
     return {
       labels: result.time as number[],
@@ -45,28 +83,6 @@
         },
       ],
     };
-  });
-
-  onMount(() => {
-    // worker only in browser
-    if (!browser) return;
-
-    worker = new Worker(
-      new URL("$lib/workers/lotka-volterra.worker.ts", import.meta.url),
-      {
-        type: "module",
-      },
-    );
-    worker.onmessage = (e: MessageEvent) => {
-      result = e.data;
-    };
-    worker.onerror = (e) => {
-      console.log(e);
-    };
-
-    // Initial run
-    runSimulation();
-    return () => worker?.terminate();
   });
 </script>
 

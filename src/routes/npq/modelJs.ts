@@ -1,4 +1,4 @@
-export function model(time: number, variables: number[], pars: number[]) {
+export function modelJs(time: number, variables: number[], pars: number[]) {
   let [
     ATP,
     Plastoquinone_oxidised,
@@ -303,3 +303,4 @@ export function model(time: number, variables: number[], pars: number[]) {
     dViolaxanthindt,
   ];
 }
+

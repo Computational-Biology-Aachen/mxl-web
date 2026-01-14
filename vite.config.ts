@@ -7,8 +7,8 @@ import wasm from "vite-plugin-wasm";
 
 
 export default defineConfig({
-	plugins: [sveltekit(), wasm(), devtoolsJson(),
-	topLevelAwait()],
+	plugins: [sveltekit(), wasm(), devtoolsJson(), topLevelAwait()],
+	worker: { format: 'es' },
 	test: {
 		projects: [
 			{
