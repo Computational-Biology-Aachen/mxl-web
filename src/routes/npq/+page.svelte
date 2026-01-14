@@ -1,27 +1,107 @@
 <script lang="ts">
+  import { browser } from "$app/environment";
   import LineChart from "$lib/chartjs/lineChart.svelte";
-  import type { Integration } from "$lib/integrators";
-  import { kvaerno45 } from "$lib/integrators/implicit/kvaerno45";
-  import type { Protocol } from "$lib/simulations/pam";
-  import { pam } from "$lib/simulations/pam";
   import Slider from "$lib/Slider.svelte";
-  import { model } from "./model";
-
-  type LineData = {
-    labels: number[];
-    datasets: {
-      label: string;
-      data: any;
-    }[];
-  };
+  import { onMount } from "svelte";
+  import { modelJs } from "./modelJs";
+  import { modelPy } from "./modelPy";
 
   function arrayColumn<T>(arr: Array<Array<T>>, n: number): Array<T> {
     return arr.map((x) => x[n]);
   }
 
-  function mapResults(result: Integration): LineData {
+  // Simulation constants
+  const initialValues = [
+    1.6999999999999997, 4.706348349506148, 3.9414515288091567,
+    3.7761613271207324, 7.737821100836988, 0.5105293511676007,
+    0.5000000001374878, 0.09090909090907397,
+  ];
+  const tEnd = 10.0;
+
+  // Simulation variables
+  let backend: { worker: Worker | null; model: string } = $state({
+    worker: null,
+    model: "",
+  });
+
+  let pyWorker: Worker | null = null;
+  let jsWorker: Worker | null = null;
+
+  let backends: Array<{
+    name: string;
+    backend: { worker: Worker | null; model: string };
+  }> = $state([]);
+
+  let result = $state({ time: [], values: [] });
+  let ppfd = $state(100);
+  let yLim = $state(8);
+
+  onMount(() => {
+    // worker only in browser
+    if (!browser) return;
+
+    pyWorker = new Worker(
+      new URL("$lib/workers/pyWorker.ts", import.meta.url),
+      {
+        type: "module",
+      },
+    );
+    pyWorker.onmessage = (e: MessageEvent) => {
+      result = e.data;
+    };
+    pyWorker.onerror = (e: ErrorEvent) => {
+      console.log(e);
+    };
+
+    jsWorker = new Worker(
+      new URL("$lib/workers/jsWorker.ts", import.meta.url),
+      {
+        type: "module",
+      },
+    );
+    jsWorker.onmessage = (e: MessageEvent) => {
+      result = e.data;
+    };
+    jsWorker.onerror = (e: ErrorEvent) => {
+      console.log(e);
+    };
+    jsWorker;
+
+    backends = [
+      {
+        name: "native",
+        backend: { worker: jsWorker, model: modelJs.toString() },
+      },
+      { name: "pyodide", backend: { worker: pyWorker, model: modelPy } },
+    ];
+
+    // Set default backend
+    backend = backends[1].backend;
+
+    // Initial run
+    runSimulation();
+
+    // Cleanup
+    return () => {
+      pyWorker?.terminate();
+      jsWorker?.terminate();
+    };
+  });
+
+  function runSimulation() {
+    backend.worker?.postMessage({
+      model: backend.model,
+      initialValues: initialValues,
+      tEnd: tEnd,
+      pars: [ppfd],
+      method: "LSODA",
+    });
+  }
+
+  // Plot
+  let lineData = $derived.by(() => {
     return {
-      labels: result.time,
+      labels: result.time as number[],
       datasets: [
         {
           label: "ATP",
@@ -57,74 +137,34 @@
         },
       ],
     };
-  }
-
-  // Line chart
-  let ppfd = $state(100);
-  let yLim = $state(8);
-  let result = $derived.by(() => {
-    return kvaerno45(model, {
-      initialValues: [
-        1.6999999999999997, 4.706348349506148, 3.9414515288091567,
-        3.7761613271207324, 7.737821100836988, 0.5105293511676007,
-        0.5000000001374878, 0.09090909090907397,
-      ],
-      tEnd: 50,
-      pars: [ppfd],
-      rtol: 1e-4,
-      atol: 1e-4,
-    });
   });
-  let lineData = $derived.by(() => {
-    return mapResults(result);
-  });
-
-  // PAM chart
-  let pulsePpfd = $state(1500);
-  let protocol: Protocol = $derived.by(() => {
-    return [
-      { tEnd: 4, pars: [100] },
-      { tEnd: 5, pars: [pulsePpfd] },
-      { tEnd: 14, pars: [100] },
-      { tEnd: 15, pars: [pulsePpfd] },
-      { tEnd: 24, pars: [100] },
-      { tEnd: 25, pars: [pulsePpfd] },
-      { tEnd: 34, pars: [100] },
-    ];
-  });
-  let pamResult: Integration = $derived.by(() => {
-    return pam(model, protocol, kvaerno45, {
-      initialValues: [
-        1.6999999999999997, 4.706348349506148, 3.9414515288091567,
-        3.7761613271207324, 7.737821100836988, 0.5105293511676007,
-        0.5000000001374878, 0.09090909090907397,
-      ],
-      tEnd: 0, // FIXME: change interface to remove this
-      pars: [ppfd],
-      rtol: 1e-4,
-      atol: 1e-4,
-    });
-  });
-  let pamData: LineData = $derived.by(() => mapResults(pamResult));
 </script>
 
 <h1>Non-photochemical quenching</h1>
 <div>
-  <Slider name="PPFD" bind:val={ppfd} min="50.0" max="100.0" step="10" />
-</div>
-<LineChart data={lineData} yMax={yLim} />
-
-<h2>PAM Simulation</h2>
-<div>
   <Slider
-    name="Pulse PPFD"
-    bind:val={pulsePpfd}
-    min="1000.0"
-    max="2000.0"
+    name="PPFD"
+    bind:val={ppfd}
+    callback={runSimulation}
+    min="50.0"
+    max="150.0"
     step="10"
   />
+  <select
+    bind:value={backend}
+    onchange={() => {
+      runSimulation();
+    }}
+  >
+    <option value="" disabled selected>backend</option>
+    {#each backends as item}
+      <option value={item.backend}>
+        {item.name}
+      </option>
+    {/each}
+  </select>
 </div>
-<LineChart data={pamData} />
+<LineChart data={lineData} yMax={yLim} />
 
 <style>
   div {

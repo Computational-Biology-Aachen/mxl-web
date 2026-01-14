@@ -49,11 +49,12 @@
 		"@picocss/pico": "^2.1.1",
 		"@sveltejs/adapter-static": "^3.0.8",
 		"chart.js": "^4.5.0",
+		"katex": "^0.16.11",
 		"plotly.js": "^3.0.3",
 		"plotly.js-dist-min": "^3.0.3",
+		"pyodide": "^0.29.1",
 		"shiki": "^3.8.0",
 		"svelte-fa": "^4.0.4",
-		"katex": "^0.16.11",
 		"svelte-media-queries": "^1.6.2"
 	}
 }
