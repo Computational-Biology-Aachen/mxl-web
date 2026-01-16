@@ -1,11 +1,10 @@
 <script lang="ts">
   import LineChart from "$lib/chartjs/lineChart.svelte";
-  import Math from "$lib/Math.svelte";
   import Slider from "$lib/Slider.svelte";
   import {
     jsWorkerManager,
     pyWorkerManager,
-    WorkerManager,
+    type WorkerManager,
   } from "$lib/stores/workerStore";
   import { arrayColumn } from "$lib/utils";
   import { onMount } from "svelte";
@@ -38,22 +37,20 @@
   // End shared setup
 
   // Simulation state
-  let mu_e = $state(0.4);
-  let mu_c = $state(0.3);
-  let a_e = $state(6.0);
-  let a_c = $derived(10 - a_e);
-  let theta = $state(0.001);
-  let e0 = $state(5.0);
-  let c0 = $state(5.0);
-  let tEnd = $state(100);
-  let yLim = undefined;
+  const initialValues = [10.0, 10.0];
+  const tEnd = 100;
+  let alpha = $state(0.1);
+  let beta = $state(0.02);
+  let gamma = $state(0.4);
+  let delta = $state(0.02);
+  let yLim = $state(100);
 
   function runSimulation() {
     backend.worker.postMessage({
       model: backend.model,
-      initialValues: [e0, c0],
+      initialValues: initialValues,
       tEnd: tEnd,
-      pars: [mu_e, mu_c, a_e, a_c, theta],
+      pars: [alpha, beta, gamma, delta],
       method: "LSODA",
     });
   }
@@ -85,99 +82,59 @@
     };
   });
 
+  // Plot
   let lineData = $derived.by(() => {
     return {
-      labels: result.time,
+      labels: result.time as number[],
       datasets: [
         {
-          label: "E. coli",
-          data: arrayColumn(result.values, 0),
+          label: "Prey",
+          data: arrayColumn(result.values, 0) as number[],
         },
         {
-          label: "C. glutamicum",
-          data: arrayColumn(result.values, 1),
+          label: "Predator",
+          data: arrayColumn(result.values, 1) as number[],
         },
       ],
     };
   });
-  const eqE = String.raw`\frac{dE}{dt} = E\,a_e\,\mu_e`;
-  const eqC = String.raw`\frac{dC}{dt} = C\,a_c\,\mu_c - \theta\,C^2`;
 </script>
 
-<h1>Population dynamics</h1>
-<section>
-  <h3>Model equations</h3>
-  <Math tex={eqE} display />
-  <Math tex={eqC} display />
-</section>
+<h1>Lotka-Volterra</h1>
+<p>Quick and dirty demo to get ODE integration running on the client-side.</p>
 
-<h3>Initial conditions & settings</h3>
-<div class="row">
+<div>
   <Slider
-    name="E. coli"
-    bind:val={e0}
+    name="Alpha"
+    bind:val={alpha}
     callback={runSimulation}
-    min="0.0"
-    max="1000.0"
-    step="1"
-  />
-  <Slider
-    name="C. glutamicum"
-    bind:val={c0}
-    callback={runSimulation}
-    min="0.0"
-    max="1000.0"
-    step="1"
-  />
-  <Slider
-    name="Simulate until"
-    bind:val={tEnd}
-    callback={runSimulation}
-    min="1.0"
-    max="10000.0"
-    step="1"
-  />
-</div>
-<div class="row">
-  <Slider
-    name="E. coli growth rate"
-    bind:val={mu_e}
-    callback={runSimulation}
-    min="0.0"
+    min="0.01"
     max="1.0"
     step="0.05"
   />
   <Slider
-    name="E. coli affinity"
-    bind:val={a_e}
+    name="Beta"
+    bind:val={beta}
     callback={runSimulation}
-    min="0.0"
-    max="10.0"
-    step="0.5"
-  />
-  <Slider
-    name="C. glut growth rate"
-    bind:val={mu_c}
-    callback={runSimulation}
-    min="0.0"
+    min="0.01"
     max="1.0"
     step="0.05"
   />
   <Slider
-    name="C. glut affinity"
-    bind:val={a_c}
+    name="Gamma"
+    bind:val={gamma}
     callback={runSimulation}
-    min="0.0"
-    max="10.0"
-    step="0.5"
-  />
-  <Slider
-    name="C. glut density loss"
-    bind:val={theta}
-    callback={runSimulation}
-    min="0.0"
+    min="0.01"
     max="1.0"
     step="0.05"
+  />
+  <Slider
+    name="Delta "
+    bind:val={delta}
+    callback={runSimulation}
+    min="0.01"
+    max="1.0"
+    step="0.001"
   />
 </div>
 <LineChart data={lineData} yMax={yLim} />
@@ -198,9 +155,8 @@
 </select>
 
 <style>
-  .row {
+  div {
     display: flex;
     flex-direction: row;
-    align-items: center;
   }
 </style>

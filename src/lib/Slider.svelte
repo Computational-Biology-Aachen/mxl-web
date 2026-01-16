@@ -5,6 +5,7 @@
     min,
     max,
     step,
+    disabled = false,
     callback,
   }: {
     val: number;
@@ -12,6 +13,7 @@
     max: string;
     step: string;
     name: string;
+    disabled?: boolean;
     callback?: () => void;
   } = $props();
 
@@ -43,6 +45,7 @@
     onmouseup={stopDrag}
     ontouchstart={startDrag}
     ontouchend={stopDrag}
+    {disabled}
   />
 </label>
 
