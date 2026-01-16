@@ -13,44 +13,8 @@
   import { modelJs } from "./modelJs";
   import { modelPy } from "./modelPy";
 
-  // Shared setup
-  // Get shared workers
-  const pyWorker = pyWorkerManager;
-  const jsWorker = jsWorkerManager;
-  let backend: { worker: WorkerManager; model: string } = $state({
-    worker: jsWorker,
-    model: "",
-  });
-
-  let backends: Array<{
-    name: string;
-    backend: { worker: WorkerManager; model: string };
-  }> = $state([
-    {
-      name: "native",
-      backend: { worker: jsWorker, model: modelJs.toString() },
-    },
-    { name: "pyodide", backend: { worker: pyWorker, model: modelPy } },
-  ]);
-  let result = $state<{ time: number[]; values: number[][] }>({
-    time: [],
-    values: [],
-  });
-  // End shared setup
-
   // Simulation state
-  let r_p = $state(0.4); // intrinsic growth (Public, P)
-  let r_m = $state(0.2); // intrinsic growth (Private, M)
-  let alpha = $state(0.0002); // cooperation: P→C
-  let beta = $state(0.0001); // competition: P↔M
-  let eta = $state(0.0001); // density constraint for P
-  let gamma = $state(0.0001); // density constraint for M
-  let nu = $state(0.00001); // density constraint for C
-  let p0 = $state(1.0); // Public metabolizers (P)
-  let c0 = $state(1.0); // Cheaters (C)
-  let m0 = $state(1.0); // Private metabolizers (M)
   let tEnd = $state(100);
-  let yLim = undefined;
 
   // Eq.
   // dP/dt = r_p·P − α·P·C − β·P·M − η·P^2

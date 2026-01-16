@@ -1,105 +1,52 @@
 <script lang="ts">
-  import LineChart from "$lib/chartjs/lineChart.svelte";
   import Math from "$lib/Math.svelte";
-  import Slider from "$lib/Slider.svelte";
-  import {
-    jsWorkerManager,
-    pyWorkerManager,
-    WorkerManager,
-  } from "$lib/stores/workerStore";
-  import { arrayColumn } from "$lib/utils";
-  import { onMount } from "svelte";
+  import Simulator from "$lib/Simulator.svelte";
   import { modelJs } from "./modelJs";
   import { modelPy } from "./modelPy";
-
-  // Shared setup
-  // Get shared workers
-  const pyWorker = pyWorkerManager;
-  const jsWorker = jsWorkerManager;
-  let backend: { worker: WorkerManager; model: string } = $state({
-    worker: jsWorker,
-    model: "",
-  });
-
-  let backends: Array<{
-    name: string;
-    backend: { worker: WorkerManager; model: string };
-  }> = $state([
+  const pars = [
     {
-      name: "native",
-      backend: { worker: jsWorker, model: modelJs.toString() },
+      name: "E. coli growth rate",
+      init: 0.4,
+      min: "0.0",
+      max: "1.0",
+      step: "0.05",
     },
-    { name: "pyodide", backend: { worker: pyWorker, model: modelPy } },
-  ]);
-  let result = $state<{ time: number[]; values: number[][] }>({
-    time: [],
-    values: [],
-  });
-  // End shared setup
+    {
+      name: "C. glut growth rate",
+      init: 0.3,
+      min: "0.0",
+      max: "1.0",
+      step: "0.05",
+    },
+    {
+      name: "E. coli affinity",
+      init: 6.0,
+      min: "0.0",
+      max: "10.0",
+      step: "0.5",
+    },
+    {
+      name: "C. glut affinity ",
+      init: 4.0,
+      min: "0.0",
+      max: "10.0",
+      step: "0.5",
+    },
+    { name: "theta ", init: 0.001, min: "0.0", max: "1.0", step: "0.05" },
+  ];
 
-  // Simulation state
-  let mu_e = $state(0.4);
-  let mu_c = $state(0.3);
-  let a_e = $state(6.0);
-  let a_c = $derived(10 - a_e);
-  let theta = $state(0.001);
-  let e0 = $state(5.0);
-  let c0 = $state(5.0);
-  let tEnd = $state(100);
-  let yLim = undefined;
+  const variables = [
+    { name: "E. coli", init: 5.0, min: "0.0", max: "1000.0", step: "1.0" },
+    {
+      name: "C. glutamicum",
+      init: 5.0,
+      min: "0.0",
+      max: "1000.0",
+      step: "1.0",
+    },
+  ];
 
-  function runSimulation() {
-    backend.worker.postMessage({
-      model: backend.model,
-      initialValues: [e0, c0],
-      tEnd: tEnd,
-      pars: [mu_e, mu_c, a_e, a_c, theta],
-      method: "LSODA",
-    });
-  }
-
-  onMount(() => {
-    // Set up message handlers for this component
-    const unsubscribePy = pyWorker.onMessage((data) => {
-      if (backend.worker === pyWorker) {
-        result = data;
-      }
-    });
-
-    const unsubscribeJs = jsWorker.onMessage((data) => {
-      if (backend.worker === jsWorker) {
-        result = data;
-      }
-    });
-
-    // Set default backend
-    backend = backends[1].backend;
-
-    // Initial run
-    runSimulation();
-
-    // Cleanup handlers (workers are shared so don't terminate them)
-    return () => {
-      unsubscribePy();
-      unsubscribeJs();
-    };
-  });
-
-  let lineData = $derived.by(() => {
-    return {
-      labels: result.time,
-      datasets: [
-        {
-          label: "E. coli",
-          data: arrayColumn(result.values, 0),
-        },
-        {
-          label: "C. glutamicum",
-          data: arrayColumn(result.values, 1),
-        },
-      ],
-    };
-  });
+  const tEnd = 100;
   const eqE = String.raw`\frac{dE}{dt} = E\,a_e\,\mu_e`;
   const eqC = String.raw`\frac{dC}{dt} = C\,a_c\,\mu_c - \theta\,C^2`;
 </script>
@@ -111,96 +58,4 @@
   <Math tex={eqC} display />
 </section>
 
-<h3>Initial conditions & settings</h3>
-<div class="row">
-  <Slider
-    name="E. coli"
-    bind:val={e0}
-    callback={runSimulation}
-    min="0.0"
-    max="1000.0"
-    step="1"
-  />
-  <Slider
-    name="C. glutamicum"
-    bind:val={c0}
-    callback={runSimulation}
-    min="0.0"
-    max="1000.0"
-    step="1"
-  />
-  <Slider
-    name="Simulate until"
-    bind:val={tEnd}
-    callback={runSimulation}
-    min="1.0"
-    max="10000.0"
-    step="1"
-  />
-</div>
-<div class="row">
-  <Slider
-    name="E. coli growth rate"
-    bind:val={mu_e}
-    callback={runSimulation}
-    min="0.0"
-    max="1.0"
-    step="0.05"
-  />
-  <Slider
-    name="E. coli affinity"
-    bind:val={a_e}
-    callback={runSimulation}
-    min="0.0"
-    max="10.0"
-    step="0.5"
-  />
-  <Slider
-    name="C. glut growth rate"
-    bind:val={mu_c}
-    callback={runSimulation}
-    min="0.0"
-    max="1.0"
-    step="0.05"
-  />
-  <Slider
-    name="C. glut affinity"
-    bind:val={a_c}
-    callback={runSimulation}
-    min="0.0"
-    max="10.0"
-    step="0.5"
-  />
-  <Slider
-    name="C. glut density loss"
-    bind:val={theta}
-    callback={runSimulation}
-    min="0.0"
-    max="1.0"
-    step="0.05"
-  />
-</div>
-<LineChart data={lineData} yMax={yLim} />
-
-<label for="backend-select">Choose an integration backend:</label>
-<select
-  id="backend-select"
-  bind:value={backend}
-  onchange={() => {
-    runSimulation();
-  }}
->
-  {#each backends as item}
-    <option value={item.backend}>
-      {item.name}
-    </option>
-  {/each}
-</select>
-
-<style>
-  .row {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-  }
-</style>
+<Simulator modelJs={modelJs.toString()} {modelPy} {pars} {tEnd} {variables} />

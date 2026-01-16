@@ -16,6 +16,7 @@ onmessage = (event: MessageEvent) => {
     const y0 = event.data.initialValues;
     const tEnd = event.data.tEnd;
     const pars = event.data.pars;
+    const requestId = event.data.requestId;
 
     console.log("Starting js integration")
     console.log(`Pars: ${pars}`)
@@ -29,5 +30,5 @@ onmessage = (event: MessageEvent) => {
     });
 
     console.log(`Javascript integration took ${Date.now() - tStart} ms`);
-    postMessage(outcome);
+    postMessage({...outcome, requestId: requestId});
 }
