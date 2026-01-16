@@ -133,9 +133,23 @@
   });
 </script>
 
+<div class="row">
+  <div>
+    <label for="backend-select">Choose an integration backend:</label>
+    <select id="backend-select" bind:value={backend} onchange={runSimulation}>
+      {#each backends as item}
+        <option value={item.backend}>
+          {item.name}
+        </option>
+      {/each}
+    </select>
+  </div>
+  <button onclick={reset}>Reset</button>
+</div>
+
 {#if pars.some((i) => i.fixed === undefined || !i.fixed)}
   <h3>Parameters</h3>
-  <div class="row">
+  <div class="grid-row">
     {#each pars as par, idx (par.name)}
       <Slider
         name={par.name}
@@ -151,7 +165,7 @@
 
 {#if variables.some((i) => i.fixed === undefined || !i.fixed)}
   <h3>Variables</h3>
-  <div>
+  <div class="grid-row">
     {#each variables as { name, min, max, step, fixed }, idx}
       {#if fixed === undefined || !fixed}
         <Slider
@@ -167,21 +181,6 @@
   </div>
 {/if}
 
-<div class="row">
-  <div>
-    <label for="backend-select">Choose an integration backend:</label>
-    <select id="backend-select" bind:value={backend} onchange={runSimulation}>
-      {#each backends as item}
-        <option value={item.backend}>
-          {item.name}
-        </option>
-      {/each}
-    </select>
-  </div>
-
-  <button onclick={reset}>Reset</button>
-</div>
-
 <LineChart data={lineData} yMax={yLim} />
 
 <style>
@@ -191,18 +190,9 @@
     width: 100%;
     justify-content: space-between;
   }
-  span {
-    font-size: 0.8rem;
-    font-weight: 700;
-  }
   .grid-row {
     display: grid;
-    grid-template-columns: 5rem 1fr;
-  }
-  .inner-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, 10rem);
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
     align-items: center;
-    gap: 0 1rem;
   }
 </style>
