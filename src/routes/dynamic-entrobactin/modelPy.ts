@@ -5,7 +5,6 @@ export const modelPy = `
         mu_e,
         mu_c,
         a_e,
-        a_c,
         K_e,
         K_c,
         theta,
@@ -14,6 +13,8 @@ export const modelPy = `
         r_cons_c,
     ):
         (E, C, B) = variables
+
+        a_e = 10 - a_e
 
         # // Monod terms for growth
         uptake_E_growth = (a_e * B) / (K_e + B)

@@ -60,14 +60,6 @@
       step: "0.01",
     },
     {
-      name: "C. glut affinity (a_C = 1 - a_E)",
-      init: 10 - 6.0, // FIXME
-      min: "0.0",
-      max: "1.0",
-      step: "0.01",
-      disabled: true,
-    },
-    {
       name: "K_E (half-sat E)",
       init: 0.5,
       min: "0.00000001",

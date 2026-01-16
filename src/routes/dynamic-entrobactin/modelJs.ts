@@ -1,7 +1,10 @@
 export function modelJs(t: number, vars: number[], pars: number[]) {
     const [E, C, B] = vars;
-    const [mu_e, mu_c, a_e, a_c, K_e, K_c, theta, r_prod, r_cons_e, r_cons_c] =
+    const [mu_e, mu_c, a_e, K_e, K_c, theta, r_prod, r_cons_e, r_cons_c] =
       pars;
+
+    // C. glut affinity (a_C = 1 - a_E)
+    const a_c = 10 - a_e;
 
     // Monod terms for growth
     const uptake_E_growth = (a_e * B) / (K_e + B);
