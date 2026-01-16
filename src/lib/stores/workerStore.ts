@@ -4,6 +4,7 @@ import { base } from "$app/paths";
 interface WorkerMessage {
   time: number[];
   values: number[][];
+  requestId?: string;
 }
 
 interface SimulationRequest {
@@ -12,6 +13,7 @@ interface SimulationRequest {
   tEnd: number;
   pars: number[];
   method?: string;
+  requestId?: string;
 }
 
 type MessageHandler = (data: WorkerMessage) => void;
@@ -78,6 +80,10 @@ export class WorkerManager {
       return;
     }
     this.worker.postMessage(data);
+  }
+
+  static generateRequestId(): string {
+    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 
   terminate() {

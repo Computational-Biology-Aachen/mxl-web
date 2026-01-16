@@ -18,8 +18,14 @@
   } = $props();
 
   let liveVal = $state(finalValue);
-
   let dragging = false;
+
+  // Sync liveVal with finalValue when not dragging (external updates like reset)
+  $effect(() => {
+    if (!dragging) {
+      liveVal = finalValue;
+    }
+  });
 
   function startDrag() {
     dragging = true;

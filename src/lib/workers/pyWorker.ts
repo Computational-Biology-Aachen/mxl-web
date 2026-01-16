@@ -46,6 +46,7 @@ onmessage = async function(event: MessageEvent){
   const y0 = event.data.initialValues;
   const tEnd = event.data.tEnd;
   const pars = event.data.pars;
+  const requestId = event.data.requestId;
 
 
   console.log("Starting py integration")
@@ -56,6 +57,6 @@ onmessage = async function(event: MessageEvent){
   const values = yPy.toJs();
 
   console.log(`Python integration took ${Date.now() - tStart} ms`);
-  postMessage({time: time, values: values})
+  postMessage({time: time, values: values, requestId: requestId})
 
 }
