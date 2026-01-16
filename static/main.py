@@ -5,9 +5,80 @@ from typing import Any, Literal
 import numpy as np
 from scipy.integrate import solve_ivp
 
+
 ###############################################################################
 # models
 ###############################################################################
+def enterobactin(
+    time: float,
+    variables: Iterable[float],
+    mu_e,
+    mu_c,
+    a_e,
+    a_c,
+    K_e,
+    K_c,
+    theta,
+    r_prod,
+    r_cons_e,
+    r_cons_c,
+) -> Iterable[float]:
+    (E, C, B) = variables
+
+    # Monod terms for growth
+    uptake_E_growth = (a_e * B) / (K_e + B)
+    uptake_C_growth = (a_c * B) / (K_c + B)
+
+    # Consumption terms in dB/dt (as specified: K + a*B)
+    cons_term_E = mu_e * ((a_e * B) / (K_e + a_e * B)) * E
+    cons_term_C = mu_c * ((a_c * B) / (K_c + a_c * B)) * C
+
+    dEdt = mu_e * uptake_E_growth * E
+    dCdt = mu_c * uptake_C_growth * C - theta * C * C
+    dBdt = r_prod * E - r_cons_e * cons_term_E - r_cons_c * cons_term_C
+    return dEdt, dCdt, dBdt
+
+
+def population_dynamics(
+    time: float,
+    variables: Iterable[float],
+    mu_e: float,
+    mu_c: float,
+    a_e: float,
+    a_c: float,
+    theta: float,
+) -> Iterable[float]:
+    e, c = variables
+
+    # Rates
+    v0 = e * a_e * mu_e
+
+    dEdt = v0
+    dCdt = c * a_c * mu_c - c * theta * c
+    return dEdt, dCdt
+
+
+def tripartite(
+    time: float,
+    variables: Iterable[float],
+    r_p: float,
+    r_m: float,
+    alpha: float,
+    beta: float,
+    eta: float,
+    gamma: float,
+    nu: float,
+) -> Iterable[float]:
+    P, C, M = variables
+
+    # Eq.
+    # dP/dt = r_p·P − α·P·C − β·P·M − η·P^2
+    # dC/dt = α·P·C − ν·C^2
+    # dM/dt = r_m·M − β·M·P − γ·M^2
+    dPdt = r_p * P - alpha * P * C - beta * P * M - eta * P * P
+    dCdt = alpha * P * C - nu * C * C
+    dMdt = r_m * M - beta * M * P - gamma * M * M
+    return dPdt, dCdt, dMdt
 
 
 def lotka_volterra(
@@ -29,7 +100,7 @@ def npq(
     time: float,
     variables: Iterable[float],
     ppfd: float,
-):
+) -> Iterable[float]:
     (
         ATP,
         Plastoquinone_oxidised,
@@ -327,7 +398,7 @@ def npq(
     dLight_harvesting_complexdt: float = (
         -lhc_state_transition_12 + lhc_state_transition_21
     )
-    return [
+    return (
         dATPdt,
         dPlastoquinone_oxidiseddt,
         dPlastocyanine_oxidiseddt,
@@ -336,7 +407,7 @@ def npq(
         dLight_harvesting_complexdt,
         dPsbS_de_protonateddt,
         dViolaxanthindt,
-    ]
+    )
 
 
 ###############################################################################

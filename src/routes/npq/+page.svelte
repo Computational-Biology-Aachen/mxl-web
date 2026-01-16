@@ -1,14 +1,16 @@
 <script lang="ts">
-  import { browser } from "$app/environment";
   import LineChart from "$lib/chartjs/lineChart.svelte";
   import Slider from "$lib/Slider.svelte";
+  import {
+    jsWorkerManager,
+    pyWorkerManager,
+    type WorkerManager,
+  } from "$lib/stores/workerStore";
   import { onMount } from "svelte";
   import { modelJs } from "./modelJs";
   import { modelPy } from "./modelPy";
 
-  function arrayColumn<T>(arr: Array<Array<T>>, n: number): Array<T> {
-    return arr.map((x) => x[n]);
-  }
+  import { arrayColumn } from "$lib/utils";
 
   // Simulation constants
   const initialValues = [
@@ -18,62 +20,47 @@
   ];
   const tEnd = 10.0;
 
+  // Get shared workers
+  const pyWorker = pyWorkerManager;
+  const jsWorker = jsWorkerManager;
+
   // Simulation variables
-  let backend: { worker: Worker | null; model: string } = $state({
-    worker: null,
+  let backend: { worker: WorkerManager; model: string } = $state({
+    worker: jsWorker,
     model: "",
   });
 
-  let pyWorker: Worker | null = null;
-  let jsWorker: Worker | null = null;
-
   let backends: Array<{
     name: string;
-    backend: { worker: Worker | null; model: string };
-  }> = $state([]);
+    backend: { worker: WorkerManager; model: string };
+  }> = $state([
+    {
+      name: "native",
+      backend: { worker: jsWorker, model: modelJs.toString() },
+    },
+    { name: "pyodide", backend: { worker: pyWorker, model: modelPy } },
+  ]);
 
-  let result = $state({ time: [], values: [] });
+  let result = $state<{ time: number[]; values: number[][] }>({
+    time: [],
+    values: [],
+  });
   let ppfd = $state(100);
   let yLim = $state(8);
 
   onMount(() => {
-    // worker only in browser
-    if (!browser) return;
+    // Set up message handlers for this component
+    const unsubscribePy = pyWorker.onMessage((data) => {
+      if (backend.worker === pyWorker) {
+        result = data;
+      }
+    });
 
-    pyWorker = new Worker(
-      new URL("$lib/workers/pyWorker.ts", import.meta.url),
-      {
-        type: "module",
-      },
-    );
-    pyWorker.onmessage = (e: MessageEvent) => {
-      result = e.data;
-    };
-    pyWorker.onerror = (e: ErrorEvent) => {
-      console.log(e);
-    };
-
-    jsWorker = new Worker(
-      new URL("$lib/workers/jsWorker.ts", import.meta.url),
-      {
-        type: "module",
-      },
-    );
-    jsWorker.onmessage = (e: MessageEvent) => {
-      result = e.data;
-    };
-    jsWorker.onerror = (e: ErrorEvent) => {
-      console.log(e);
-    };
-    jsWorker;
-
-    backends = [
-      {
-        name: "native",
-        backend: { worker: jsWorker, model: modelJs.toString() },
-      },
-      { name: "pyodide", backend: { worker: pyWorker, model: modelPy } },
-    ];
+    const unsubscribeJs = jsWorker.onMessage((data) => {
+      if (backend.worker === jsWorker) {
+        result = data;
+      }
+    });
 
     // Set default backend
     backend = backends[1].backend;
@@ -81,15 +68,15 @@
     // Initial run
     runSimulation();
 
-    // Cleanup
+    // Cleanup handlers (workers are shared so don't terminate them)
     return () => {
-      pyWorker?.terminate();
-      jsWorker?.terminate();
+      unsubscribePy();
+      unsubscribeJs();
     };
   });
 
   function runSimulation() {
-    backend.worker?.postMessage({
+    backend.worker.postMessage({
       model: backend.model,
       initialValues: initialValues,
       tEnd: tEnd,
@@ -150,21 +137,23 @@
     max="150.0"
     step="10"
   />
-  <select
-    bind:value={backend}
-    onchange={() => {
-      runSimulation();
-    }}
-  >
-    <option value="" disabled selected>backend</option>
-    {#each backends as item}
-      <option value={item.backend}>
-        {item.name}
-      </option>
-    {/each}
-  </select>
 </div>
 <LineChart data={lineData} yMax={yLim} />
+
+<label for="backend-select">Choose an integration backend:</label>
+<select
+  id="backend-select"
+  bind:value={backend}
+  onchange={() => {
+    runSimulation();
+  }}
+>
+  {#each backends as item}
+    <option value={item.backend}>
+      {item.name}
+    </option>
+  {/each}
+</select>
 
 <style>
   div {

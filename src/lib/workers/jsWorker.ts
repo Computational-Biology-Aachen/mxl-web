@@ -1,32 +1,33 @@
-// keep this a module so TypeScript treats it as a worker module
 import type { Model } from "$lib/integrators";
 import { euler } from "$lib/integrators/explicit";
-export { };
-
-
-
-
-
+export { }; // keep this a module so TypeScript treats it as a worker module
 
 onmessage = (event: MessageEvent) => {
+    // Handle initialization message
+    if (event.data.type === '__INIT__') {
+        return;
+    }
 
-    console.log("Starting js integration")
-    console.log(`Pars: ${event.data.pars}`)
     let tStart = Date.now();
     let model: Model = (t: number, y: number[], pars: number[]) => y;
 
-    // console.log(event.data.model);
-    eval(`model = ${event.data.model}`);
-    console.log(model)
 
+    const modelString = event.data.model;
+    const y0 = event.data.initialValues;
+    const tEnd = event.data.tEnd;
+    const pars = event.data.pars;
+
+    console.log("Starting js integration")
+    console.log(`Pars: ${pars}`)
+    eval(`model = ${modelString}`);
     const outcome = euler(model, {
-        initialValues: event.data.initialValues,
+        initialValues: y0,
         tStart: 0,
-        tEnd: event.data.tEnd,
+        tEnd: tEnd,
         stepSize: 0.01,
-        pars: event.data.pars,
+        pars: pars,
     });
 
-    console.log(`Javascript Integration took ${Date.now() - tStart} ms`);
+    console.log(`Javascript integration took ${Date.now() - tStart} ms`);
     postMessage(outcome);
 }
