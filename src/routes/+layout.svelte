@@ -21,7 +21,8 @@
 
 <OneColumnLayout>
   <Navbar>
-    <li><a href="{base}/">Lotka Volterra</a></li>
+    <li><a href="{base}/">Home</a></li>
+    <li><a href="{base}/lotka-volterra">Lotka Volterra</a></li>
     <li><a href="{base}/population-dynamics">Population dynamics</a></li>
     <li><a href="{base}/tripartite">Tripartite dynamics</a></li>
     <li><a href="{base}/dynamic-entrobactin">Entrobactin</a></li>
