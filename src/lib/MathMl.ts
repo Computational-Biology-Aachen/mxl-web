@@ -2,6 +2,7 @@ export abstract class Base {
   // Acts as a common ancestor for all expression node types
   abstract toJs(): string;
   abstract toPy(): string;
+  abstract getSymbols(symbols: Set<string>): Set<string>;
 }
 
 export class Symbol extends Base {
@@ -16,6 +17,11 @@ export class Symbol extends Base {
   toPy(): string {
     return this.name;
   }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    symbols.add(this.name);
+    return symbols;
+  }
 }
 
 export class Number extends Base {
@@ -29,9 +35,11 @@ export class Number extends Base {
   toPy(): string {
     return `${this.value}`;
   }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return symbols;
+  }
 }
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Unary fns
@@ -47,6 +55,10 @@ export class Abs extends Base {
   toPy(): string {
     return `abs(${this.child.toPy()})`;
   }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
+  }
 }
 
 export class Ceiling extends Base {
@@ -59,6 +71,10 @@ export class Ceiling extends Base {
   toPy(): string {
     return `ceil(${this.child.toPy()})`;
   }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
+  }
 }
 
 export class Exp extends Base {
@@ -70,6 +86,10 @@ export class Exp extends Base {
   }
   toPy(): string {
     return `math.exp(${this.child.toPy()})`;
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
   }
 }
 
@@ -85,6 +105,10 @@ export class Factorial extends Base {
   toPy(): string {
     return `math.factorial(${this.child.toPy()})`;
   }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
+  }
 }
 
 export class Floor extends Base {
@@ -98,6 +122,10 @@ export class Floor extends Base {
 
   toPy(): string {
     return `math.floor(${this.child.toPy()})`;
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
   }
 }
 
@@ -113,10 +141,17 @@ export class Ln extends Base {
   toPy(): string {
     return `math.log(${this.child.toPy()})`;
   }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
+  }
 }
 
 export class Log extends Base {
-  constructor(public readonly base: Base, public readonly child: Base) {
+  constructor(
+    public readonly base: Base,
+    public readonly child: Base,
+  ) {
     super();
   }
 
@@ -127,10 +162,16 @@ export class Log extends Base {
   toPy(): string {
     return `math.log(${this.child.toPy()}, ${this.base.toPy()})`;
   }
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
+  }
 }
 
 export class Sqrt extends Base {
-  constructor(public readonly base: Base, public readonly child: Base) {
+  constructor(
+    public readonly base: Base,
+    public readonly child: Base,
+  ) {
     super();
   }
 
@@ -140,6 +181,11 @@ export class Sqrt extends Base {
 
   toPy(): string {
     return `math.pow(${this.child.toPy()}, 1 / ${this.base.toPy()})`;
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    this.base.getSymbols(symbols);
+    return this.child.getSymbols(symbols);
   }
 }
 
@@ -155,6 +201,10 @@ export class Sin extends Base {
   toPy(): string {
     return `math.sin(${this.child.toPy()})`;
   }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
+  }
 }
 
 export class Cos extends Base {
@@ -168,6 +218,10 @@ export class Cos extends Base {
 
   toPy(): string {
     return `math.cos(${this.child.toPy()})`;
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
   }
 }
 
@@ -183,6 +237,10 @@ export class Tan extends Base {
   toPy(): string {
     return `math.tan(${this.child.toPy()})`;
   }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
+  }
 }
 
 export class Sec extends Base {
@@ -196,6 +254,10 @@ export class Sec extends Base {
 
   toPy(): string {
     return `1 / math.cos(${this.child.toPy()})`;
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
   }
 }
 
@@ -211,6 +273,10 @@ export class Csc extends Base {
   toPy(): string {
     return `1 / math.sin(${this.child.toPy()})`;
   }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
+  }
 }
 
 export class Cot extends Base {
@@ -224,6 +290,10 @@ export class Cot extends Base {
 
   toPy(): string {
     return `1 / math.tan(${this.child.toPy()})`;
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
   }
 }
 
@@ -239,6 +309,10 @@ export class Asin extends Base {
   toPy(): string {
     return `math.asin(${this.child.toPy()})`;
   }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
+  }
 }
 
 export class Acos extends Base {
@@ -252,6 +326,10 @@ export class Acos extends Base {
 
   toPy(): string {
     return `math.acos(${this.child.toPy()})`;
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
   }
 }
 
@@ -267,6 +345,10 @@ export class Atan extends Base {
   toPy(): string {
     return `math.atan(${this.child.toPy()})`;
   }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
+  }
 }
 
 export class Acot extends Base {
@@ -280,6 +362,10 @@ export class Acot extends Base {
 
   toPy(): string {
     return `math.atan(1 / ${this.child.toPy()})`;
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
   }
 }
 
@@ -295,6 +381,10 @@ export class ArcSec extends Base {
   toPy(): string {
     return `math.acos(1 / ${this.child.toPy()})`;
   }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
+  }
 }
 
 export class ArcCsc extends Base {
@@ -308,6 +398,10 @@ export class ArcCsc extends Base {
 
   toPy(): string {
     return `math.asin(1 / ${this.child.toPy()})`;
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
   }
 }
 
@@ -323,6 +417,10 @@ export class Sinh extends Base {
   toPy(): string {
     return `math.sinh(${this.child.toPy()})`;
   }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
+  }
 }
 
 export class Cosh extends Base {
@@ -336,6 +434,10 @@ export class Cosh extends Base {
 
   toPy(): string {
     return `math.cosh(${this.child.toPy()})`;
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
   }
 }
 
@@ -351,6 +453,10 @@ export class Tanh extends Base {
   toPy(): string {
     return `math.tanh(${this.child.toPy()})`;
   }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
+  }
 }
 
 export class Sech extends Base {
@@ -364,6 +470,10 @@ export class Sech extends Base {
 
   toPy(): string {
     return `1 / math.cosh(${this.child.toPy()})`;
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
   }
 }
 
@@ -379,6 +489,10 @@ export class Csch extends Base {
   toPy(): string {
     return `1 / math.sinh(${this.child.toPy()})`;
   }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
+  }
 }
 
 export class Coth extends Base {
@@ -392,6 +506,10 @@ export class Coth extends Base {
 
   toPy(): string {
     return `1 / math.tanh(${this.child.toPy()})`;
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
   }
 }
 
@@ -407,6 +525,10 @@ export class ArcSinh extends Base {
   toPy(): string {
     return `math.asinh(${this.child.toPy()})`;
   }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
+  }
 }
 
 export class ArcCosh extends Base {
@@ -420,6 +542,10 @@ export class ArcCosh extends Base {
 
   toPy(): string {
     return `math.acosh(${this.child.toPy()})`;
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
   }
 }
 
@@ -435,6 +561,10 @@ export class ArcTanh extends Base {
   toPy(): string {
     return `math.atanh(${this.child.toPy()})`;
   }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
+  }
 }
 
 export class ArcCsch extends Base {
@@ -448,6 +578,10 @@ export class ArcCsch extends Base {
 
   toPy(): string {
     return `math.asinh(1 / ${this.child.toPy()})`;
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
   }
 }
 
@@ -463,6 +597,10 @@ export class ArcSech extends Base {
   toPy(): string {
     return `math.acosh(1 / ${this.child.toPy()})`;
   }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
+  }
 }
 
 export class ArcCoth extends Base {
@@ -476,6 +614,10 @@ export class ArcCoth extends Base {
 
   toPy(): string {
     return `math.atanh(1 / ${this.child.toPy()})`;
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
   }
 }
 
@@ -491,6 +633,10 @@ export class RateOf extends Base {
   toPy(): string {
     return `rate_of(${this.target.toPy()})`;
   }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.target.getSymbols(symbols);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -498,7 +644,10 @@ export class RateOf extends Base {
 ///////////////////////////////////////////////////////////////////////////////
 
 export class Pow extends Base {
-  constructor(public readonly left: Base, public readonly right: Base) {
+  constructor(
+    public readonly left: Base,
+    public readonly right: Base,
+  ) {
     super();
   }
 
@@ -509,10 +658,18 @@ export class Pow extends Base {
   toPy(): string {
     return `(${this.left.toPy()}) ** (${this.right.toPy()})`;
   }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    this.left.getSymbols(symbols);
+    return this.right.getSymbols(symbols);
+  }
 }
 
 export class Implies extends Base {
-  constructor(public readonly left: Base, public readonly right: Base) {
+  constructor(
+    public readonly left: Base,
+    public readonly right: Base,
+  ) {
     super();
   }
 
@@ -523,6 +680,11 @@ export class Implies extends Base {
   toPy(): string {
     return `((not ${this.left.toPy()}) or (${this.right.toPy()}))`;
   }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    this.left.getSymbols(symbols);
+    return this.right.getSymbols(symbols);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -530,7 +692,10 @@ export class Implies extends Base {
 ///////////////////////////////////////////////////////////////////////////////
 
 export class FunctionCall extends Base {
-  constructor(public readonly name: string, public readonly children: Base[]) {
+  constructor(
+    public readonly name: string,
+    public readonly children: Base[],
+  ) {
     super();
   }
 
@@ -540,6 +705,13 @@ export class FunctionCall extends Base {
 
   toPy(): string {
     return `${this.name}(${this.children.map((c) => c.toPy()).join(", ")})`;
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    for (const child of this.children) {
+      child.getSymbols(symbols);
+    }
+    return symbols;
   }
 }
 
@@ -555,6 +727,13 @@ export class Max extends Base {
   toPy(): string {
     return `max(${this.children.map((c) => c.toPy()).join(", ")})`;
   }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    for (const child of this.children) {
+      child.getSymbols(symbols);
+    }
+    return symbols;
+  }
 }
 
 export class Min extends Base {
@@ -569,6 +748,13 @@ export class Min extends Base {
   toPy(): string {
     return `min(${this.children.map((c) => c.toPy()).join(", ")})`;
   }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    for (const child of this.children) {
+      child.getSymbols(symbols);
+    }
+    return symbols;
+  }
 }
 
 export class Piecewise extends Base {
@@ -582,6 +768,13 @@ export class Piecewise extends Base {
 
   toPy(): string {
     return `piecewise(${this.children.map((c) => c.toPy()).join(", ")})`;
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    for (const child of this.children) {
+      child.getSymbols(symbols);
+    }
+    return symbols;
   }
 }
 
@@ -603,10 +796,20 @@ export class Rem extends Base {
       .map((c) => c.toPy())
       .reduce((acc, cur) => `(${acc}) % (${cur})`);
   }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    for (const child of this.children) {
+      child.getSymbols(symbols);
+    }
+    return symbols;
+  }
 }
 
 export class LambdaFn extends Base {
-  constructor(public readonly fn: Base, public readonly args: Base[]) {
+  constructor(
+    public readonly fn: Base,
+    public readonly args: Base[],
+  ) {
     super();
   }
 
@@ -618,6 +821,13 @@ export class LambdaFn extends Base {
   toPy(): string {
     const argList = this.args.map((a) => a.toPy()).join(", ");
     return `lambda ${argList}: (${this.fn.toPy()})`;
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    for (const arg of this.args) {
+      arg.getSymbols(symbols);
+    }
+    return this.fn.getSymbols(symbols);
   }
 }
 
@@ -632,6 +842,13 @@ export class And extends Base {
 
   toPy(): string {
     return this.children.map((c) => c.toPy()).join(" and ");
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    for (const child of this.children) {
+      child.getSymbols(symbols);
+    }
+    return symbols;
   }
 }
 
@@ -651,6 +868,13 @@ export class Not extends Base {
     if (this.children.length === 1) return `not (${this.children[0].toPy()})`;
     return `not (${this.children.map((c) => c.toPy()).join(" and ")})`;
   }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    for (const child of this.children) {
+      child.getSymbols(symbols);
+    }
+    return symbols;
+  }
 }
 
 export class Or extends Base {
@@ -664,6 +888,13 @@ export class Or extends Base {
 
   toPy(): string {
     return this.children.map((c) => c.toPy()).join(" or ");
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    for (const child of this.children) {
+      child.getSymbols(symbols);
+    }
+    return symbols;
   }
 }
 
@@ -681,6 +912,13 @@ export class Xor extends Base {
     if (this.children.length === 0) return "0";
     return this.children.map((c) => `(${c.toPy()})`).join(" ^ ");
   }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    for (const child of this.children) {
+      child.getSymbols(symbols);
+    }
+    return symbols;
+  }
 }
 
 export class Eq extends Base {
@@ -693,12 +931,23 @@ export class Eq extends Base {
     return this.children
       .map((c) => c.toJs())
       .slice(1)
-      .reduce((acc, cur, idx) => `(${acc}) && (${this.children[idx].toJs()} === ${cur})`, "true");
+      .reduce(
+        (acc, cur, idx) =>
+          `(${acc}) && (${this.children[idx].toJs()} === ${cur})`,
+        "true",
+      );
   }
 
   toPy(): string {
     if (this.children.length === 0) return "True";
     return this.children.map((c) => c.toPy()).join(" == ");
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    for (const child of this.children) {
+      child.getSymbols(symbols);
+    }
+    return symbols;
   }
 }
 
@@ -712,12 +961,23 @@ export class GreaterEqual extends Base {
     return this.children
       .map((c) => c.toJs())
       .slice(1)
-      .reduce((acc, cur, idx) => `(${acc}) && (${this.children[idx].toJs()} >= ${cur})`, "true");
+      .reduce(
+        (acc, cur, idx) =>
+          `(${acc}) && (${this.children[idx].toJs()} >= ${cur})`,
+        "true",
+      );
   }
 
   toPy(): string {
     if (this.children.length === 0) return "True";
     return this.children.map((c) => c.toPy()).join(" >= ");
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    for (const child of this.children) {
+      child.getSymbols(symbols);
+    }
+    return symbols;
   }
 }
 
@@ -731,12 +991,23 @@ export class GreaterThan extends Base {
     return this.children
       .map((c) => c.toJs())
       .slice(1)
-      .reduce((acc, cur, idx) => `(${acc}) && (${this.children[idx].toJs()} > ${cur})`, "true");
+      .reduce(
+        (acc, cur, idx) =>
+          `(${acc}) && (${this.children[idx].toJs()} > ${cur})`,
+        "true",
+      );
   }
 
   toPy(): string {
     if (this.children.length === 0) return "True";
     return this.children.map((c) => c.toPy()).join(" > ");
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    for (const child of this.children) {
+      child.getSymbols(symbols);
+    }
+    return symbols;
   }
 }
 
@@ -750,12 +1021,23 @@ export class LessEqual extends Base {
     return this.children
       .map((c) => c.toJs())
       .slice(1)
-      .reduce((acc, cur, idx) => `(${acc}) && (${this.children[idx].toJs()} <= ${cur})`, "true");
+      .reduce(
+        (acc, cur, idx) =>
+          `(${acc}) && (${this.children[idx].toJs()} <= ${cur})`,
+        "true",
+      );
   }
 
   toPy(): string {
     if (this.children.length === 0) return "True";
     return this.children.map((c) => c.toPy()).join(" <= ");
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    for (const child of this.children) {
+      child.getSymbols(symbols);
+    }
+    return symbols;
   }
 }
 
@@ -769,12 +1051,23 @@ export class LessThan extends Base {
     return this.children
       .map((c) => c.toJs())
       .slice(1)
-      .reduce((acc, cur, idx) => `(${acc}) && (${this.children[idx].toJs()} < ${cur})`, "true");
+      .reduce(
+        (acc, cur, idx) =>
+          `(${acc}) && (${this.children[idx].toJs()} < ${cur})`,
+        "true",
+      );
   }
 
   toPy(): string {
     if (this.children.length === 0) return "True";
     return this.children.map((c) => c.toPy()).join(" < ");
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    for (const child of this.children) {
+      child.getSymbols(symbols);
+    }
+    return symbols;
   }
 }
 
@@ -788,12 +1081,23 @@ export class NotEqual extends Base {
     return this.children
       .map((c) => c.toJs())
       .slice(1)
-      .reduce((acc, cur, idx) => `(${acc}) || (${this.children[idx].toJs()} !== ${cur})`, "false");
+      .reduce(
+        (acc, cur, idx) =>
+          `(${acc}) || (${this.children[idx].toJs()} !== ${cur})`,
+        "false",
+      );
   }
 
   toPy(): string {
     if (this.children.length === 0) return "False";
     return this.children.map((c) => c.toPy()).join(" != ");
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    for (const child of this.children) {
+      child.getSymbols(symbols);
+    }
+    return symbols;
   }
 }
 
@@ -809,6 +1113,13 @@ export class Add extends Base {
   toPy(): string {
     return this.children.map((c) => c.toPy()).join(" + ");
   }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    for (const child of this.children) {
+      child.getSymbols(symbols);
+    }
+    return symbols;
+  }
 }
 
 export class Minus extends Base {
@@ -818,12 +1129,23 @@ export class Minus extends Base {
 
   toJs(): string {
     if (this.children.length === 0) return "0";
-    return this.children.map((c) => c.toJs()).reduce((acc, cur) => `(${acc}) - (${cur})`);
+    return this.children
+      .map((c) => c.toJs())
+      .reduce((acc, cur) => `(${acc}) - (${cur})`);
   }
 
   toPy(): string {
     if (this.children.length === 0) return "0";
-    return this.children.map((c) => c.toPy()).reduce((acc, cur) => `(${acc}) - (${cur})`);
+    return this.children
+      .map((c) => c.toPy())
+      .reduce((acc, cur) => `(${acc}) - (${cur})`);
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    for (const child of this.children) {
+      child.getSymbols(symbols);
+    }
+    return symbols;
   }
 }
 
@@ -839,6 +1161,13 @@ export class Mul extends Base {
   toPy(): string {
     return this.children.map((child) => child.toPy()).join(" * ");
   }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    for (const child of this.children) {
+      child.getSymbols(symbols);
+    }
+    return symbols;
+  }
 }
 
 export class Divide extends Base {
@@ -848,12 +1177,23 @@ export class Divide extends Base {
 
   toJs(): string {
     if (this.children.length === 0) return "0";
-    return this.children.map((c) => c.toJs()).reduce((acc, cur) => `(${acc}) / (${cur})`);
+    return this.children
+      .map((c) => c.toJs())
+      .reduce((acc, cur) => `(${acc}) / (${cur})`);
   }
 
   toPy(): string {
     if (this.children.length === 0) return "0";
-    return this.children.map((c) => c.toPy()).reduce((acc, cur) => `(${acc}) / (${cur})`);
+    return this.children
+      .map((c) => c.toPy())
+      .reduce((acc, cur) => `(${acc}) / (${cur})`);
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    for (const child of this.children) {
+      child.getSymbols(symbols);
+    }
+    return symbols;
   }
 }
 
@@ -864,13 +1204,24 @@ export class IntDivide extends Base {
 
   toJs(): string {
     if (this.children.length === 0) return "0";
-    const expr = this.children.map((c) => c.toJs()).reduce((acc, cur) => `(${acc}) / (${cur})`);
+    const expr = this.children
+      .map((c) => c.toJs())
+      .reduce((acc, cur) => `(${acc}) / (${cur})`);
     return `Math.trunc(${expr})`;
   }
 
   toPy(): string {
     if (this.children.length === 0) return "0";
-    return this.children.map((c) => c.toPy()).reduce((acc, cur) => `(${acc}) // (${cur})`);
+    return this.children
+      .map((c) => c.toPy())
+      .reduce((acc, cur) => `(${acc}) // (${cur})`);
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    for (const child of this.children) {
+      child.getSymbols(symbols);
+    }
+    return symbols;
   }
 }
 
@@ -885,5 +1236,12 @@ export class Delay extends Base {
 
   toPy(): string {
     return `delay(${this.children.map((c) => c.toPy()).join(", ")})`;
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    for (const child of this.children) {
+      child.getSymbols(symbols);
+    }
+    return symbols;
   }
 }
