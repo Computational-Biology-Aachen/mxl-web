@@ -17,7 +17,7 @@
     stoichiometry: { x1: -1.0, x2: 1.0 },
   });
   builder.addReaction("r2", {
-    fn: new Mul([new Symbol("p2"), new Symbol("x2")]),
+    fn: new Mul([new Symbol("kr"), new Symbol("x2")]),
     args: ["kr", "x2"],
     stoichiometry: { x1: 1.0, x2: -1.0 },
   });
@@ -31,5 +31,5 @@
     {builder.buildPython(["kf"])}
 </pre>
 <pre>
-    {builder.buildPython(["kf", "p2"])}
+    {builder.buildPython(["kf", "keq"])}
 </pre>
