@@ -22,53 +22,65 @@ export class ModelBuilder {
   // Variables
   addVariable(key: string, value: number) {
     this.variables[key] = value;
+    return this;
   }
 
   updateVariable(key: string, value: number) {
     this.variables[key] = value;
+    return this;
   }
 
   removeVariable(key: string) {
     delete this.variables[key];
+    return this;
   }
 
   // Parameters
   addParameter(key: string, value: number) {
     this.parameters[key] = value;
+    return this;
   }
 
   updateParameter(key: string, value: number) {
     this.parameters[key] = value;
+    return this;
   }
 
   removeParameter(key: string) {
     delete this.parameters[key];
+    return this;
   }
 
   // Derived
   addDerived(key: string, derived: Derived) {
     this.derived[key] = derived;
+    return this;
   }
 
   updateDerived(key: string, derived: Derived) {
     this.derived[key] = derived;
+    return this;
   }
 
   removeDerived(key: string) {
     delete this.derived[key];
+    return this;
   }
 
   // Reactions
   addReaction(key: string, reaction: Reaction) {
     this.reactions[key] = reaction;
+    return this;
   }
 
   updateReaction(key: string, reaction: Reaction) {
     this.reactions[key] = reaction;
+    return this;
   }
 
   removeReaction(key: string) {
     delete this.reactions[key];
+    return this;
   }
 
   sortDependencies(): string[] {
