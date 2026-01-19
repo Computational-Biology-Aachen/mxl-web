@@ -88,10 +88,12 @@ export class ModelBuilder {
       }),
     ];
 
-    const maxIters = toSort.length ^ 2;
+    const maxIters = toSort.length * toSort.length;
+
     let lastName = "";
     for (let i = 0; i < maxIters; i++) {
       const el = toSort.shift();
+
       if (el === undefined) {
         break;
       }
@@ -100,7 +102,7 @@ export class ModelBuilder {
         available = available.union(args);
         order.push(k);
       } else {
-        if (lastName == k) {
+        if (lastName === k) {
           order.push(lastName);
           break;
         }
@@ -113,7 +115,6 @@ export class ModelBuilder {
 
   buildPython(userParameters: string[]): string {
     const order = this.sortDependencies();
-
     const remove = new Set(userParameters);
     const parameters = Object.entries(this.parameters)
       .filter((entry) => {
