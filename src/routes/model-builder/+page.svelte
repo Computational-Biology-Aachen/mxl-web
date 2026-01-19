@@ -1,20 +1,24 @@
 <script lang="ts">
-  import { Mul, Symbol } from "$lib/MathMl";
+  import { Divide, Mul, Symbol } from "$lib/MathMl";
   import { ModelBuilder } from "$lib/ModelBuilder";
 
   let builder = new ModelBuilder();
   builder.addVariable("x1", 1.0);
   builder.addVariable("x2", 2.0);
-  builder.addParameter("p1", 1.0);
-  builder.addParameter("p2", 2.0);
+  builder.addParameter("kf", 1.0);
+  builder.addParameter("keq", 2.0);
+  builder.addDerived("kr", {
+    fn: new Divide([new Symbol("kf"), new Symbol("keq")]),
+    args: ["kf", "keq"],
+  });
   builder.addReaction("r1", {
-    fn: new Mul([new Symbol("p1"), new Symbol("x1")]),
-    args: ["p1", "x1"],
+    fn: new Mul([new Symbol("kf"), new Symbol("x1")]),
+    args: ["kf", "x1"],
     stoichiometry: { x1: -1.0, x2: 1.0 },
   });
   builder.addReaction("r2", {
     fn: new Mul([new Symbol("p2"), new Symbol("x2")]),
-    args: ["p2", "x2"],
+    args: ["kr", "x2"],
     stoichiometry: { x1: 1.0, x2: -1.0 },
   });
 </script>
@@ -24,8 +28,8 @@
     {builder.buildPython([])}
 </pre>
 <pre>
-    {builder.buildPython(["p1"])}
+    {builder.buildPython(["kf"])}
 </pre>
 <pre>
-    {builder.buildPython(["p1", "p2"])}
+    {builder.buildPython(["kf", "p2"])}
 </pre>
