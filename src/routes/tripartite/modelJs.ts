@@ -1,4 +1,4 @@
-export   function  modelJs(t: number, vars: number[], pars: number[]) {
+export function  modelJs(t: number, vars: number[], pars: number[]) {
     const [P, C, M] = vars;
     const [r_p, r_m, alpha, beta, eta, gamma, nu] = pars;
 
@@ -13,3 +13,4 @@ export   function  modelJs(t: number, vars: number[], pars: number[]) {
 
     return [dPdt, dCdt, dMdt];
   }
+
