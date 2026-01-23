@@ -112,7 +112,7 @@
 <div>
   <Slider name="PPFD" bind:val={ppfd} min="50.0" max="100.0" step="10" />
 </div>
-<LineChart data={lineData} {yLim} />
+<LineChart data={lineData} yMax={yLim} />
 
 <h2>PAM Simulation</h2>
 <div>

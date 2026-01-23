@@ -12,7 +12,7 @@
     max: string;
     step: string;
     name: string;
-    callback: () => void;
+    callback?: () => void;
   } = $props();
 
   let liveVal = $state(finalValue);
@@ -27,7 +27,7 @@
     dragging = false;
     finalValue = liveVal;
     console.log(`New slider value: ${liveVal}`);
-    callback();
+    if (callback) callback();
   }
 </script>
 

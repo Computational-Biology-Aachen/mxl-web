@@ -107,7 +107,7 @@
     step="0.001"
   />
 </div>
-<LineChart data={lineData} {yLim} />
+<LineChart data={lineData} yMax={yLim} />
 
 <style>
   div {
