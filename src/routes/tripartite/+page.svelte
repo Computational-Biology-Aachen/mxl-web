@@ -2,6 +2,7 @@
   import LineChart from "$lib/chartjs/lineChart.svelte";
   import { euler } from "$lib/integrators/explicit/euler";
   import Slider from "$lib/Slider.svelte";
+  import Math from "$lib/Math.svelte";
 
   function arrayColumn<T>(arr: Array<Array<T>>, n: number): Array<T> {
     return arr.map((x) => x[n]);
@@ -41,11 +42,6 @@
   }
 
   let result = $derived.by(() => {
-    // return rk45(model, {
-    // 	initialValues: [e0, c0],
-    // 	tEnd: tEnd,
-    // 	pars: [mu_e, mu_c, a_e, a_c, delta_e, theta]
-    // });
     return euler(model, {
       initialValues: [p0, c0, m0],
       tEnd: tEnd,
@@ -58,24 +54,27 @@
     return {
       labels: result.time,
       datasets: [
-        {
-          label: "Public",
-          data: arrayColumn(result.values, 0),
-        },
-        {
-          label: "Cheaters",
-          data: arrayColumn(result.values, 1),
-        },
-        {
-          label: "Private",
-          data: arrayColumn(result.values, 2),
-        },
+        { label: "Public", data: arrayColumn(result.values, 0) },
+        { label: "Cheaters", data: arrayColumn(result.values, 1) },
+        { label: "Private", data: arrayColumn(result.values, 2) },
       ],
     };
   });
+
+  // LaTeX equations (displayed)
+  const eqP = String.raw`\frac{dP}{dt} = r_p\,P - \alpha\,P\,C - \beta\,P\,M - \eta\,P^2`;
+  const eqC = String.raw`\frac{dC}{dt} = \alpha\,P\,C - \nu\,C^2`;
+  const eqM = String.raw`\frac{dM}{dt} = r_m\,M - \beta\,M\,P - \gamma\,M^2`;
 </script>
 
 <h1>Tripartite dynamics dynamics</h1>
+
+<section>
+  <h3>Model equations</h3>
+  <Math tex={eqP} display />
+  <Math tex={eqC} display />
+  <Math tex={eqM} display />
+</section>
 
 <div class="grid-row">
   <span>Initial conditions & settings</span>
@@ -125,6 +124,7 @@
     />
   </div>
 </div>
+
 <div class="grid-row">
   <span>Private (M)</span>
   <div class="inner-row">
@@ -144,6 +144,7 @@
     />
   </div>
 </div>
+
 <div class="grid-row">
   <span>Interaction</span>
   <div class="inner-row">
