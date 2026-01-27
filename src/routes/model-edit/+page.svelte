@@ -25,27 +25,32 @@
 
 <ul>
   {#each tabs as tab}
-    <button class:selected={cur === tab} onclick={() => (cur = tab)}>
+    <button
+      class:selected={cur === tab}
+      class="tab"
+      onclick={() => (cur = tab)}
+    >
       {tab.name}
     </button>
   {/each}
 </ul>
 <svelte:component this={cur.comp} />
 <br />
-<button>Save</button>
 
 <style>
   ul {
     list-style: none;
     padding: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
   }
-  button {
-    width: 8rem;
+  button.tab {
+    width: 100%;
     margin: 0rem;
     padding: 0.3rem;
     font-size: 0.75rem;
   }
-
   button.selected {
     border-top-right-radius: 8px;
     border-top-left-radius: 8px;
