@@ -1,6 +1,7 @@
 <script lang="ts">
   import LineChart from "$lib/chartjs/lineChart.svelte";
   import { euler } from "$lib/integrators/explicit/euler";
+  import Math from "$lib/Math.svelte";
   import Slider from "$lib/Slider.svelte";
 
   function arrayColumn<T>(arr: Array<Array<T>>, n: number): Array<T> {
@@ -29,6 +30,13 @@
   // dP/dt = r_p·P − α·P·C − β·P·M − η·P^2
   // dC/dt = α·P·C − ν·C^2
   // dM/dt = r_m·M − β·M·P − γ·M^2
+  const eqs = String.raw`
+  \begin{align*}
+    \frac{dP}{dt} &= r_p\,P - \alpha\,P\,C - \beta\,P\,M - \eta\,P^2 \\
+    \frac{dC}{dt} &= \alpha\,P\,C - \nu\,C^2 \\
+    \frac{dM}{dt} &= r_m\,M - \beta\,M\,P - \gamma\,M^2 \\
+  \end{align*}
+    `;
   function model(t: number, vars: number[], pars: number[]) {
     const [P, C, M] = vars;
     const [r_p, r_m, alpha, beta, eta, gamma, nu] = pars;
@@ -77,8 +85,12 @@
 
 <h1>Tripartite dynamics dynamics</h1>
 
+<h3>Model equations</h3>
+<Math tex={eqs} display />
+
+<h3>Initial conditions & settings</h3>
 <div class="grid-row">
-  <span>Initial conditions & settings</span>
+  <span>Initial conditions</span>
   <div class="inner-row">
     <Slider name="Public" bind:val={p0} min="0.0" max="10000.0" step="1" />
     <Slider name="Cheaters" bind:val={c0} min="0.0" max="10000.0" step="1" />
