@@ -12,8 +12,3 @@
     --text-caption: calc(10 * 0.0625)rem;
 }
 
-p {
-    /* Constraint max width of paragraphs to 60 characters for better
-    legibility */
-    max-width: 60ch;
-}
