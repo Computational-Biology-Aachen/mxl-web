@@ -1,164 +1,119 @@
 <script lang="ts">
-  import type { EditorNode } from "$lib/editorTypes";
+  import EquationNode from "./EquationNode.svelte";
+  import type { Add, Base, Divide, Mul, Name, Num } from "./MathMl";
 
-  export let node: EditorNode;
-  export let selectedId: string;
-  export let variables: string[];
-  export let onSelect: (id: string) => void;
-  export let onUpdateSymbol: (id: string, name: string) => void;
-  export let onUpdateNumber: (id: string, value: number) => void;
+  let {
+    node,
+    selectedId,
+    onSelect,
+  }: {
+    node: Base;
+    selectedId: number;
+    onSelect: (node: Base) => void;
+  } = $props();
 
-  const selectSelf = () => onSelect(node.id);
-
-  function handleSymbolChange(event: Event) {
-    const target = event.target as HTMLSelectElement;
-    onUpdateSymbol(node.id, target.value);
-  }
-
-  function handleNumberChange(event: Event) {
-    const target = event.target as HTMLInputElement;
-    const value = parseFloat(target.value);
-    if (!Number.isNaN(value)) {
-      onUpdateNumber(node.id, value);
-    }
-  }
+  const selectSelf = () => onSelect(node);
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-  class={`node node-${node.type}`}
+  class={`node node-${node.constructor.name}`}
   data-selected={selectedId === node.id}
-  on:click|stopPropagation={selectSelf}
+  onclick={(e) => {
+    e.stopPropagation();
+    selectSelf();
+  }}
 >
-  {#if node.type === "divide"}
+  {#if node.constructor.name === "Divide"}
     <div class="divide">
       <div class="child">
-        <svelte:self
-          node={node.children[0]}
+        <EquationNode
+          node={(node as Divide).children[0]}
           {selectedId}
-          {variables}
           {onSelect}
-          {onUpdateSymbol}
-          {onUpdateNumber}
         />
       </div>
       <button
         class="op"
         aria-label="Select divide"
-        on:click|stopPropagation={selectSelf}
+        onclick={(e) => {
+          e.stopPropagation();
+          selectSelf();
+        }}
       >
         /
       </button>
       <div class="child">
-        <svelte:self
-          node={node.children[1]}
+        <EquationNode
+          node={(node as Divide).children[1]}
           {selectedId}
-          {variables}
           {onSelect}
-          {onUpdateSymbol}
-          {onUpdateNumber}
         />
       </div>
     </div>
-  {:else if node.type === "mul"}
+  {:else if node.constructor.name === "Mul"}
     <div class="mul">
       <div class="child">
-        <svelte:self
-          node={node.children[0]}
+        <EquationNode
+          node={(node as Mul).children[0]}
           {selectedId}
-          {variables}
           {onSelect}
-          {onUpdateSymbol}
-          {onUpdateNumber}
         />
       </div>
       <button
         class="op"
         aria-label="Select mul"
-        on:click|stopPropagation={selectSelf}
+        onclick={(e) => {
+          e.stopPropagation();
+          selectSelf();
+        }}
       >
-        *
+        x
       </button>
       <div class="child">
-        <svelte:self
-          node={node.children[1]}
+        <EquationNode
+          node={(node as Mul).children[1]}
           {selectedId}
-          {variables}
           {onSelect}
-          {onUpdateSymbol}
-          {onUpdateNumber}
         />
       </div>
     </div>
-  {:else if node.type === "add"}
+  {:else if node.constructor.name === "Add"}
     <div class="mul">
       <div class="child">
-        <svelte:self
-          node={node.children[0]}
+        <EquationNode
+          node={(node as Add).children[0]}
           {selectedId}
-          {variables}
           {onSelect}
-          {onUpdateSymbol}
-          {onUpdateNumber}
         />
       </div>
       <button
         class="op"
         aria-label="Select mul"
-        on:click|stopPropagation={selectSelf}
+        onclick={(e) => {
+          e.stopPropagation();
+          selectSelf();
+        }}
       >
         +
       </button>
       <div class="child">
-        <svelte:self
-          node={node.children[1]}
+        <EquationNode
+          node={(node as Add).children[1]}
           {selectedId}
-          {variables}
           {onSelect}
-          {onUpdateSymbol}
-          {onUpdateNumber}
         />
       </div>
     </div>
-  {:else if node.type === "symbol"}
+  {:else if node.constructor.name === "Name"}
     <div class="leaf">
-      <!-- <span class="badge">var</span> -->
-      <span class="value">{node.name}</span>
+      <span class="value">{(node as Name).name}</span>
     </div>
-    {#if selectedId === node.id}
-      <div class="edit-row" on:click|stopPropagation>
-        <label for={`symbol-${node.id}`}>Variable</label>
-        <select
-          id={`symbol-${node.id}`}
-          value={node.name}
-          on:change={handleSymbolChange}
-        >
-          {#each variables as variable}
-            <option value={variable} selected={variable === node.name}
-              >{variable}</option
-            >
-          {/each}
-        </select>
-      </div>
-    {/if}
-  {:else if node.type === "number"}
+  {:else if node.constructor.name === "Num"}
     <div class="leaf">
-      <span class="badge">num</span>
-      <span class="value">{node.value}</span>
+      <span class="value">{(node as Num).value}</span>
     </div>
-    {#if selectedId === node.id}
-      <div class="edit-row" on:click|stopPropagation>
-        <label for={`number-${node.id}`}>Value</label>
-        <input
-          id={`number-${node.id}`}
-          type="number"
-          step="0.1"
-          value={node.value}
-          on:input={handleNumberChange}
-        />
-      </div>
-    {/if}
   {/if}
 </div>
 
@@ -202,10 +157,12 @@
     border-radius: 50%;
     width: 2.5rem;
     height: 2.5rem;
-    display: grid;
-    place-items: center;
     font-weight: 700;
     cursor: pointer;
+    display: grid;
+    place-items: center;
+    line-height: 1;
+    padding: 0;
   }
 
   .leaf {
@@ -229,27 +186,5 @@
 
   .value {
     font-size: 1rem;
-  }
-
-  .edit-row {
-    margin-top: 0.5rem;
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 0.35rem 0.6rem;
-    align-items: center;
-  }
-
-  label {
-    font-size: 0.9rem;
-    color: #374151;
-  }
-
-  select,
-  input[type="number"] {
-    width: 100%;
-    padding: 0.35rem 0.5rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    font-size: 0.95rem;
   }
 </style>
