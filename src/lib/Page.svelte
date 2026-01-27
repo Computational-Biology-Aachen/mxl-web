@@ -11,7 +11,7 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    max-width: 70ch;
+    max-width: 70rem;
     padding: 2rem 0;
     margin: auto;
     background-color: var(--pico-background-color);

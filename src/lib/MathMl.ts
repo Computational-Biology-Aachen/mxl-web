@@ -2,6 +2,7 @@ export abstract class Base {
   // Acts as a common ancestor for all expression node types
   abstract toJs(): string;
   abstract toPy(): string;
+  abstract toTex(): string;
   abstract getSymbols(symbols: Set<string>): Set<string>;
 }
 
@@ -15,6 +16,10 @@ export class Symbol extends Base {
   }
 
   toPy(): string {
+    return this.name;
+  }
+
+  toTex(): string {
     return this.name;
   }
 
@@ -33,6 +38,9 @@ export class Number extends Base {
     return `${this.value}`;
   }
   toPy(): string {
+    return `${this.value}`;
+  }
+  toTex(): string {
     return `${this.value}`;
   }
 
@@ -1187,6 +1195,13 @@ export class Divide extends Base {
     return this.children
       .map((c) => c.toPy())
       .reduce((acc, cur) => `(${acc}) / (${cur})`);
+  }
+
+  toTex(): string {
+    if (this.children.length === 0) return "0";
+    return this.children
+      .map((c) => c.toTex())
+      .reduce((acc, cur) => `\\frac{${acc}}{${cur}}`);
   }
 
   getSymbols(symbols: Set<string>): Set<string> {
