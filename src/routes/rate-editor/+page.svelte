@@ -1,167 +1,76 @@
 <script lang="ts">
-  import type { EditorNode, NodeKind } from "$lib/editorTypes";
   import EquationNode from "$lib/EquationNode.svelte";
   import Math from "$lib/Math.svelte";
+  import { Add, Divide, Mul, Name, Num, type Base } from "$lib/MathMl";
 
-  const variables = ["a", "b", "c"];
-  const palette: { label: string; type: NodeKind; hint: string }[] = [
-    { label: "Symbol", type: "symbol", hint: "Variable placeholder" },
-    { label: "Number", type: "number", hint: "Constant value" },
-    { label: "Divide", type: "divide", hint: "Two-part fraction" },
-    { label: "Multiply", type: "mul", hint: "Multiply" },
+  const variables = ["k_{cat}", "e_{0}", "V_{max}"];
+  const palette: {
+    label: string;
+    default: () => Base;
+    hint: string;
+  }[] = [
+    {
+      label: "Symbol",
+      default: Name.prototype.default,
+      hint: "Variable placeholder",
+    },
+    {
+      label: "Number",
+      default: Num.prototype.default,
+      hint: "Constant value",
+    },
+    {
+      label: "Divide",
+      default: Divide.prototype.default,
+      hint: "Two-part fraction",
+    },
+    {
+      label: "Multiply",
+      default: Mul.prototype.default, //
+      hint: "Multiply",
+    },
+    {
+      label: "Add",
+      default: Add.prototype.default, //
+      hint: "Add",
+    },
   ];
 
-  let idCounter = 0;
-  const makeId = () => `n-${++idCounter}`;
-
-  let makeSymbol = (name = variables[0]): EditorNode => ({
-    type: "symbol",
-    id: makeId(),
-    name,
-  });
-  let makeNumber = (value = 1): EditorNode => ({
-    type: "number",
-    id: makeId(),
-    value,
-  });
-  let makeMul = (): EditorNode => ({
-    type: "mul",
-    id: makeId(),
-    children: [makeSymbol(), makeNumber()],
-  });
-  let makeAdd = (): EditorNode => ({
-    type: "add",
-    id: makeId(),
-    children: [makeSymbol(), makeNumber()],
-  });
-  let makeDivide = (): EditorNode => ({
-    type: "divide",
-    id: makeId(),
-    children: [makeSymbol(), makeNumber()],
-  });
-
-  function initEq(): EditorNode {
-    return {
-      type: "mul",
-      id: makeId(),
-      children: [
-        {
-          type: "mul",
-          id: makeId(),
-          children: [makeSymbol("k_{cat}"), makeSymbol("e_0")],
-        },
-        {
-          type: "divide",
-          id: makeId(),
-          children: [
-            makeSymbol("S"),
-            {
-              type: "add",
-              id: makeId(),
-              children: [makeSymbol("K_m"), makeSymbol("S")],
-            },
-          ],
-        },
-      ],
-    };
+  function initEq(): Base {
+    return new Mul([
+      new Mul([new Name("k_{cat}"), new Name("e_{0}")]),
+      new Divide([new Name("S"), new Add([new Name("K_m"), new Name("S")])]),
+    ]);
   }
 
-  let root: EditorNode = $state(initEq());
-  let selectedId = $derived.by(() => {
-    return root.id;
-  });
+  let root: Base = $state(initEq());
+  let currentNode: Base = $derived(root);
   let latex = $derived.by(() => {
-    return nodeToLatex(root);
+    return root.toTex();
   });
-  // $inspect(root);
+  $inspect(root);
   // $inspect(latex);
 
-  function replaceNode(
-    tree: EditorNode,
-    targetId: string,
-    next: EditorNode,
-  ): EditorNode {
-    // Check if current id is target
-    if (tree.id === targetId) return next;
-
-    // Recurse through children
-    if (tree.type === "divide" || tree.type === "mul" || tree.type === "add") {
-      return {
-        ...tree,
-        children: tree.children.map((child) =>
-          replaceNode(child, targetId, next),
-        ) as [EditorNode, EditorNode],
-      };
-    }
-
-    // Otherwise exit
-    return tree;
+  function insertNode(fn: () => Base) {
+    const toInsert = fn();
+    root = root.replace(currentNode.id, toInsert);
+    console.log(root);
+    currentNode = toInsert;
   }
 
-  function updateNode(
-    tree: EditorNode,
-    targetId: string,
-    update: (node: EditorNode) => EditorNode,
-  ): EditorNode {
-    if (tree.id === targetId) return update(tree);
-    if (tree.type === "divide" || tree.type === "mul" || tree.type === "add") {
-      return {
-        ...tree,
-        children: tree.children.map((child) =>
-          updateNode(child, targetId, update),
-        ) as [EditorNode, EditorNode],
-      };
-    }
-    return tree;
+  function selectNode(node: Base) {
+    currentNode = node;
+  }
+  function handleSymbolChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    let node = (currentNode as Name).update(target.value);
+    insertNode(() => node);
   }
 
-  function createNode(type: NodeKind): EditorNode {
-    if (type === "symbol") return makeSymbol();
-    if (type === "number") return makeNumber();
-    if (type === "mul") return makeMul();
-    if (type === "add") return makeAdd();
-    return makeDivide();
-  }
-
-  function insertNode(type: NodeKind) {
-    const next = createNode(type);
-    root = replaceNode(root, selectedId, next);
-    selectedId = next.id;
-  }
-
-  function selectNode(id: string) {
-    selectedId = id;
-  }
-
-  function updateSymbol(id: string, name: string) {
-    root = updateNode(root, id, (node) =>
-      node.type === "symbol" ? { ...node, name } : node,
-    );
-  }
-
-  function updateNumber(id: string, value: number) {
-    root = updateNode(root, id, (node) =>
-      node.type === "number" ? { ...node, value } : node,
-    );
-  }
-
-  function nodeToLatex(node: EditorNode): string {
-    if (node.type === "symbol") return node.name;
-    if (node.type === "number") return `${node.value}`;
-    if (node.type === "mul") {
-      const [left, right] = node.children;
-      return `${nodeToLatex(left)} \\cdot ${nodeToLatex(right)}`;
-    }
-    if (node.type === "add") {
-      const [left, right] = node.children;
-      return `${nodeToLatex(left)} + ${nodeToLatex(right)}`;
-    }
-    if (node.type === "divide") {
-      const [left, right] = node.children;
-      return `\\frac{${nodeToLatex(left)}}{${nodeToLatex(right)}}`;
-    }
-
-    return "error";
+  function handleNumberChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    let node = (currentNode as Num).update(parseFloat(target.value));
+    insertNode(() => node);
   }
 </script>
 
@@ -178,7 +87,7 @@
 
   <div class="palette">
     {#each palette as item}
-      <button class="palette-button" onclick={() => insertNode(item.type)}>
+      <button class="palette-button" onclick={() => insertNode(item.default)}>
         <span class="label">{item.label}</span>
         <span class="hint">{item.hint}</span>
       </button>
@@ -191,16 +100,42 @@
       <div class="window-body">
         <EquationNode
           node={root}
-          {variables}
-          {selectedId}
+          selectedId={currentNode.id}
           onSelect={selectNode}
-          onUpdateSymbol={updateSymbol}
-          onUpdateNumber={updateNumber}
         />
         <p class="hint-line">
           Tip: click any element to select it, then choose a MathML element
           above or adjust its value.
         </p>
+        {#if currentNode.constructor.name === "Name"}
+          <div class="edit-row">
+            <label for={`symbol-${currentNode.id}`}>Name</label>
+            <select
+              id={`symbol-${currentNode.id}`}
+              value={(currentNode as Name).name}
+              onchange={handleSymbolChange}
+            >
+              {#each variables as variable}
+                <option
+                  value={variable}
+                  selected={variable === (currentNode as Name).name}
+                  >{variable}</option
+                >
+              {/each}
+            </select>
+          </div>
+        {:else if currentNode.constructor.name === "Num"}
+          <div class="edit-row">
+            <label for={`number-${currentNode.id}`}>Value</label>
+            <input
+              id={`number-${currentNode.id}`}
+              type="number"
+              step="0.1"
+              value={(currentNode as Num).value}
+              oninput={handleNumberChange}
+            />
+          </div>
+        {/if}
       </div>
     </div>
 
@@ -303,5 +238,27 @@
 
   .preview {
     gap: 1rem;
+  }
+
+  .edit-row {
+    margin-top: 0.5rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.35rem 0.6rem;
+    align-items: center;
+  }
+
+  label {
+    font-size: 0.9rem;
+    color: #374151;
+  }
+
+  select,
+  input[type="number"] {
+    width: 100%;
+    padding: 0.35rem 0.5rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.95rem;
   }
 </style>

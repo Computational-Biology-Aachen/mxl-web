@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Add, Divide, Minus, Mul, Symbol } from "$lib/MathMl";
+  import { Add, Divide, Minus, Mul, Name } from "$lib/MathMl";
   import type { Derived, Reaction } from "$lib/ModelBuilder";
   import { ModelBuilder } from "$lib/ModelBuilder";
   import Simulator from "$lib/Simulator.svelte";
@@ -11,16 +11,16 @@
       .addParameter("kf", 1.0)
       .addParameter("keq", 2.0)
       .addDerived("kr", {
-        fn: new Divide([new Symbol("kf"), new Symbol("keq")]),
+        fn: new Divide([new Name("kf"), new Name("keq")]),
         args: ["kf", "keq"],
       })
       .addReaction("r1", {
-        fn: new Mul([new Symbol("kf"), new Symbol("x1")]),
+        fn: new Mul([new Name("kf"), new Name("x1")]),
         args: ["kf", "x1"],
         stoichiometry: { x1: -1.0, x2: 1.0 },
       })
       .addReaction("r2", {
-        fn: new Mul([new Symbol("kr"), new Symbol("x2")]),
+        fn: new Mul([new Name("kr"), new Name("x2")]),
         args: ["kr", "x2"],
         stoichiometry: { x1: 1.0, x2: -1.0 },
       });
@@ -108,7 +108,7 @@
   }
 
   function createDerivedFn(template: string, args: string[]) {
-    const symbols = args.map((a) => new Symbol(a));
+    const symbols = args.map((a) => new Name(a));
     switch (template) {
       case "multiply":
         return new Mul(symbols);
