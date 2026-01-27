@@ -83,9 +83,15 @@
   });
 </script>
 
-<h1>Tripartite dynamics dynamics</h1>
+<h1>Tripartite population dynamics</h1>
+
+<p>
+  Dynamic model of a tripartite population of <b>P</b>ublic consumers,
+  <b>C</b>heaters and <b>P</b>rivate consumers.
+</p>
 
 <h3>Model equations</h3>
+
 <Math tex={eqs} display />
 
 <h3>Initial conditions & settings</h3>
