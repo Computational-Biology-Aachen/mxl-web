@@ -4,15 +4,11 @@
   import { stoichsToTex, type Stoichs } from "./utils";
 
   let {
-    stoichs,
+    stoichs = $bindable(),
     variables,
-    onSave,
-    popovertarget,
   }: {
     stoichs: Stoichs;
     variables: string[];
-    onSave: (fn: Stoichs) => void;
-    popovertarget: string;
   } = $props();
 
   let latex = $derived.by(() => {
@@ -89,7 +85,6 @@
         stoichs.push({ name: firstVarNotInUse(), value: new Num(1.0) });
       }}>+ add new item</button
     >
-    <button class="save">Save</button>
   </div>
   <div class="window">
     <div class="window-header">Preview</div>
@@ -97,12 +92,6 @@
       <Math tex={latex} display={true} />
     </div>
   </div>
-
-  <button
-    onclick={() => onSave(stoichs)}
-    popovertargetaction="hide"
-    {popovertarget}>Save</button
-  >
 </section>
 
 <style>

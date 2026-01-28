@@ -9,4 +9,4 @@
   ]);
 </script>
 
-<StoichEditor bind:stoichs {variables} />
+<StoichEditor {stoichs} {variables} />

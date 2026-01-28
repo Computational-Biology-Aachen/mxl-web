@@ -1,8 +1,9 @@
 <script lang="ts">
   import Math from "$lib/Math.svelte";
   import { Base, Minus, Mul, Name, Num } from "$lib/mathml";
-  import EqEditor from "$lib/model-editor/EqEditor.svelte";
-  import StoichEditor from "$lib/model-editor/StoichEditor.svelte";
+  import EqEditorPopover from "$lib/model-editor/EqEditorPopover.svelte";
+  import StoichEditorPopover from "./StoichEditorPopover.svelte";
+
   import { stoichsToTex, type Stoichs } from "./utils";
 
   let variables = ["x", "y", "x_{1}", "x_{total}", "k_{cat}", "e_{0}"];
@@ -75,7 +76,7 @@
 
 {#each derived as { name, fn, stoichs }, idx}
   <div popover id="eq-editor-{name}">
-    <EqEditor
+    <EqEditorPopover
       root={fn}
       {variables}
       onSave={(root) => onSaveEq(idx, root)}
@@ -83,7 +84,7 @@
     />
   </div>
   <div popover id="stoich-editor-{name}">
-    <StoichEditor
+    <StoichEditorPopover
       {stoichs}
       {variables}
       onSave={(stoichs) => onSaveStoichs(idx, stoichs)}

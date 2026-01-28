@@ -4,15 +4,11 @@
   import EquationNode from "$lib/model-editor/EqNode.svelte";
 
   let {
-    root,
+    root = $bindable(),
     variables,
-    onSave,
-    popovertarget,
   }: {
     root: Base;
     variables: string[];
-    onSave: (fn: Base) => void;
-    popovertarget: string;
   } = $props();
   const templates = [
     {
@@ -212,12 +208,6 @@
       </div>
     </div>
   </div>
-
-  <button
-    onclick={() => onSave(root)}
-    popovertargetaction="hide"
-    {popovertarget}>Save</button
-  >
 </section>
 
 <style>
