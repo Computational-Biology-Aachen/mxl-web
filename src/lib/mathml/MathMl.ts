@@ -8,7 +8,7 @@ export abstract class Base {
   abstract toTex(): string;
   abstract getSymbols(symbols: Set<string>): Set<string>;
   abstract default(): Base;
-  abstract replace(id: number, next: Base): Base;
+  abstract replace(id: number, next: Base): { node: Base; changed: boolean };
 
   constructor() {
     this.id = ++idCounter;
@@ -16,28 +16,40 @@ export abstract class Base {
 }
 
 // Other base classes to reduce code churn
-
 abstract class Nullary extends Base {
-  replace(id: number, next: Base): Base {
+  replace(id: number, next: Base): { node: Base; changed: boolean } {
     if (this.id === id) {
-      return next;
+      return { node: next, changed: true };
     }
-    return this;
+    return { node: this, changed: false };
   }
 }
 
 abstract class Unary extends Base {
   abstract child: Base;
 
-  default(): Base {
-    return this.constructor(Name.prototype.default());
+  replace(id: number, next: Base): { node: Base; changed: boolean } {
+    if (this.id === id) {
+      return { node: next, changed: true };
+    }
+
+    const { node, changed } = this.child.replace(id, next);
+    if (changed) {
+      const Constructor = this.constructor as new (child: Base) => this;
+      const cloned = new Constructor(node);
+      cloned.id = this.id;
+      return { node: cloned, changed: false };
+    }
+    return { node: this, changed: false };
   }
 
-  replace(id: number, next: Base): Base {
-    if (this.id === id) {
-      return next;
-    }
-    return this;
+  default(): Base {
+    const Constructor = this.constructor as new (child: Base) => this;
+    return new Constructor(Name.prototype.default());
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    return this.child.getSymbols(symbols);
   }
 }
 
@@ -46,14 +58,46 @@ abstract class Binary extends Base {
   abstract right: Base;
 
   default(): Base {
-    return this.constructor(Name.prototype.default(), Name.prototype.default());
+    const Constructor = this.constructor as new (
+      left: Base,
+      right: Base,
+    ) => this;
+    return new Constructor(Name.prototype.default(), Name.prototype.default());
   }
 
-  replace(id: number, next: Base): Base {
+  replace(id: number, next: Base): { node: Base; changed: boolean } {
     if (this.id === id) {
-      return next;
+      return { node: next, changed: true };
     }
-    return this;
+
+    const { node: left, changed: changedLeft } = this.left.replace(id, next);
+    if (changedLeft) {
+      const Constructor = this.constructor as new (
+        left: Base,
+        right: Base,
+      ) => this;
+      const cloned = new Constructor(left, this.right);
+      cloned.id = this.id;
+      return { node: cloned, changed: false };
+    }
+
+    const { node: right, changed: changedRight } = this.right.replace(id, next);
+    if (changedRight) {
+      const Constructor = this.constructor as new (
+        left: Base,
+        right: Base,
+      ) => this;
+      const cloned = new Constructor(this.left, right);
+      cloned.id = this.id;
+      return { node: cloned, changed: false };
+    }
+
+    return { node: this, changed: false };
+  }
+  getSymbols(symbols: Set<string>): Set<string> {
+    this.left.getSymbols(symbols);
+    this.right.getSymbols(symbols);
+    return symbols;
   }
 }
 
@@ -61,7 +105,8 @@ abstract class Nary extends Base {
   abstract children: Base[];
 
   default(): Base {
-    return this.constructor([
+    const Constructor = this.constructor as new (children: Base[]) => this;
+    return new Constructor([
       Name.prototype.default(),
       Name.prototype.default(),
     ]);
@@ -74,22 +119,23 @@ abstract class Nary extends Base {
     return symbols;
   }
 
-  replace(id: number, next: Base): Base {
+  replace(id: number, next: Base): { node: Base; changed: boolean } {
     if (this.id === id) {
-      return next;
+      return { node: next, changed: true };
     }
-    let changed = false;
-    const newChildren = this.children.map((child) => {
-      const updated = child.replace(id, next);
-      if (updated !== child) changed = true;
-      return updated;
+
+    // Check all children
+    const children = this.children.map((child) => {
+      return child.replace(id, next);
     });
 
-    if (!changed) return this;
-
-    const cloned = this.constructor(newChildren);
-    cloned.id = this.id;
-    return cloned;
+    if (children.some(({ changed }) => changed)) {
+      const Constructor = this.constructor as new (children: Base[]) => this;
+      const cloned = new Constructor(children.map(({ node }) => node));
+      cloned.id = this.id;
+      return { node: cloned, changed: false };
+    }
+    return { node: this, changed: false };
   }
 }
 
@@ -155,7 +201,7 @@ export class Num extends Nullary {
 ///////////////////////////////////////////////////////////////////////////////
 
 export class Abs extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
   toJs(): string {
@@ -167,14 +213,10 @@ export class Abs extends Unary {
   toTex(): string {
     return `abs(${this.child.toPy()})`;
   }
-
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
-  }
 }
 
 export class Ceiling extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
   toJs(): string {
@@ -183,14 +225,13 @@ export class Ceiling extends Unary {
   toPy(): string {
     return `ceil(${this.child.toPy()})`;
   }
-
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `\\lceil ${this.child.toTex()} \\rceil`;
   }
 }
 
 export class Exp extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
   toJs(): string {
@@ -199,17 +240,15 @@ export class Exp extends Unary {
   toPy(): string {
     return `math.exp(${this.child.toPy()})`;
   }
-
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `e^{${this.child.toTex()}}`;
   }
 }
 
 export class Factorial extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
-
   toJs(): string {
     return `factorial(${this.child.toJs()})`;
   }
@@ -218,16 +257,15 @@ export class Factorial extends Unary {
     return `math.factorial(${this.child.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `${this.child.toTex()}!`;
   }
 }
 
 export class Floor extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
-
   toJs(): string {
     return `Math.floor(${this.child.toJs()})`;
   }
@@ -236,13 +274,13 @@ export class Floor extends Unary {
     return `math.floor(${this.child.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `\\lfloor ${this.child.toTex()} \\rfloor`;
   }
 }
 
 export class Ln extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
 
@@ -254,55 +292,13 @@ export class Ln extends Unary {
     return `math.log(${this.child.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
-  }
-}
-
-export class Log extends Unary {
-  constructor(
-    public readonly base: Base,
-    public readonly child: Base,
-  ) {
-    super();
-  }
-
-  toJs(): string {
-    return `(Math.log(${this.child.toJs()}) / Math.log(${this.base.toJs()}))`;
-  }
-
-  toPy(): string {
-    return `math.log(${this.child.toPy()}, ${this.base.toPy()})`;
-  }
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
-  }
-}
-
-export class Sqrt extends Unary {
-  constructor(
-    public readonly base: Base,
-    public readonly child: Base,
-  ) {
-    super();
-  }
-
-  toJs(): string {
-    return `Math.pow(${this.child.toJs()}, 1 / ${this.base.toJs()})`;
-  }
-
-  toPy(): string {
-    return `math.pow(${this.child.toPy()}, 1 / ${this.base.toPy()})`;
-  }
-
-  getSymbols(symbols: Set<string>): Set<string> {
-    this.base.getSymbols(symbols);
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `\\ln(${this.child.toTex()})`;
   }
 }
 
 export class Sin extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
 
@@ -314,13 +310,13 @@ export class Sin extends Unary {
     return `math.sin(${this.child.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `\\sin(${this.child.toTex()})`;
   }
 }
 
 export class Cos extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
 
@@ -332,13 +328,13 @@ export class Cos extends Unary {
     return `math.cos(${this.child.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `\\cos(${this.child.toTex()})`;
   }
 }
 
 export class Tan extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
 
@@ -350,13 +346,13 @@ export class Tan extends Unary {
     return `math.tan(${this.child.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `\\tan(${this.child.toTex()})`;
   }
 }
 
 export class Sec extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
 
@@ -368,13 +364,13 @@ export class Sec extends Unary {
     return `1 / math.cos(${this.child.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `\\sec(${this.child.toTex()})`;
   }
 }
 
 export class Csc extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
 
@@ -386,13 +382,13 @@ export class Csc extends Unary {
     return `1 / math.sin(${this.child.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `\\csc(${this.child.toTex()})`;
   }
 }
 
 export class Cot extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
 
@@ -404,13 +400,13 @@ export class Cot extends Unary {
     return `1 / math.tan(${this.child.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `\\cot(${this.child.toTex()})`;
   }
 }
 
 export class Asin extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
 
@@ -422,13 +418,13 @@ export class Asin extends Unary {
     return `math.asin(${this.child.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `\\arcsin(${this.child.toTex()})`;
   }
 }
 
 export class Acos extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
 
@@ -440,13 +436,13 @@ export class Acos extends Unary {
     return `math.acos(${this.child.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `\\arccos(${this.child.toTex()})`;
   }
 }
 
 export class Atan extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
 
@@ -458,13 +454,13 @@ export class Atan extends Unary {
     return `math.atan(${this.child.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `\\arctan(${this.child.toTex()})`;
   }
 }
 
 export class Acot extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
 
@@ -476,13 +472,13 @@ export class Acot extends Unary {
     return `math.atan(1 / ${this.child.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `\\text{arccot}(${this.child.toTex()})`;
   }
 }
 
 export class ArcSec extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
 
@@ -494,13 +490,13 @@ export class ArcSec extends Unary {
     return `math.acos(1 / ${this.child.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `\\text{arcsec}(${this.child.toTex()})`;
   }
 }
 
 export class ArcCsc extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
 
@@ -512,13 +508,13 @@ export class ArcCsc extends Unary {
     return `math.asin(1 / ${this.child.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `\\text{arccsc}(${this.child.toTex()})`;
   }
 }
 
 export class Sinh extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
 
@@ -530,13 +526,13 @@ export class Sinh extends Unary {
     return `math.sinh(${this.child.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `\\sinh(${this.child.toTex()})`;
   }
 }
 
 export class Cosh extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
 
@@ -548,13 +544,13 @@ export class Cosh extends Unary {
     return `math.cosh(${this.child.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `\\cosh(${this.child.toTex()})`;
   }
 }
 
 export class Tanh extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
 
@@ -566,13 +562,13 @@ export class Tanh extends Unary {
     return `math.tanh(${this.child.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `\\tanh(${this.child.toTex()})`;
   }
 }
 
 export class Sech extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
 
@@ -584,13 +580,13 @@ export class Sech extends Unary {
     return `1 / math.cosh(${this.child.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `\\text{sech}(${this.child.toTex()})`;
   }
 }
 
 export class Csch extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
 
@@ -602,13 +598,13 @@ export class Csch extends Unary {
     return `1 / math.sinh(${this.child.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `\\text{csch}(${this.child.toTex()})`;
   }
 }
 
 export class Coth extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
 
@@ -620,13 +616,13 @@ export class Coth extends Unary {
     return `1 / math.tanh(${this.child.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `\\coth(${this.child.toTex()})`;
   }
 }
 
 export class ArcSinh extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
 
@@ -638,13 +634,13 @@ export class ArcSinh extends Unary {
     return `math.asinh(${this.child.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `\\text{arcsinh}(${this.child.toTex()})`;
   }
 }
 
 export class ArcCosh extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
 
@@ -656,13 +652,13 @@ export class ArcCosh extends Unary {
     return `math.acosh(${this.child.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `\\text{arccosh}(${this.child.toTex()})`;
   }
 }
 
 export class ArcTanh extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
 
@@ -674,13 +670,13 @@ export class ArcTanh extends Unary {
     return `math.atanh(${this.child.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `\\text{arctanh}(${this.child.toTex()})`;
   }
 }
 
 export class ArcCsch extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
 
@@ -692,13 +688,13 @@ export class ArcCsch extends Unary {
     return `math.asinh(1 / ${this.child.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `\\text{arccsch}(${this.child.toTex()})`;
   }
 }
 
 export class ArcSech extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
 
@@ -710,13 +706,13 @@ export class ArcSech extends Unary {
     return `math.acosh(1 / ${this.child.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `\\text{arcsech}(${this.child.toTex()})`;
   }
 }
 
 export class ArcCoth extends Unary {
-  constructor(public readonly child: Base) {
+  constructor(public child: Base) {
     super();
   }
 
@@ -728,39 +724,146 @@ export class ArcCoth extends Unary {
     return `math.atanh(1 / ${this.child.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.child.getSymbols(symbols);
+  toTex(): string {
+    return `\\text{arccoth}(${this.child.toTex()})`;
   }
 }
 
 export class RateOf extends Unary {
-  constructor(public readonly target: Base) {
+  constructor(public child: Base) {
     super();
   }
 
   toJs(): string {
-    return `rateOf(${this.target.toJs()})`;
+    return `rateOf(${this.child.toJs()})`;
   }
 
   toPy(): string {
-    return `rate_of(${this.target.toPy()})`;
+    return `rate_of(${this.child.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    return this.target.getSymbols(symbols);
+  toTex(): string {
+    return `\\frac{d}{dt}(${this.child.toTex()})`;
   }
 }
 
-// ///////////////////////////////////////////////////////////////////////////////
-// // Binary fns
-// ///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+// Special unary fns
+///////////////////////////////////////////////////////////////////////////////
+
+export class Log extends Base {
+  constructor(
+    public child: Base,
+    public base: Base,
+  ) {
+    super();
+  }
+  default(): Log {
+    return new Log(Name.prototype.default(), new Num(10));
+  }
+  replace(id: number, next: Base): { node: Base; changed: boolean } {
+    if (this.id === id) {
+      return { node: next, changed: true };
+    }
+
+    const { node: child, changed: changedChild } = this.child.replace(id, next);
+    if (changedChild) {
+      const cloned = new Log(child, this.base);
+      cloned.id = this.id;
+      return { node: cloned, changed: false };
+    }
+
+    const { node: base, changed: changedBase } = this.base.replace(id, next);
+    if (changedBase) {
+      const cloned = new Log(this.child, base);
+      cloned.id = this.id;
+      return { node: cloned, changed: false };
+    }
+    return { node: this, changed: false };
+  }
+
+  toJs(): string {
+    return `(Math.log(${this.child.toJs()}) / Math.log(${this.base.toJs()}))`;
+  }
+
+  toPy(): string {
+    return `math.log(${this.child.toPy()}, ${this.base.toPy()})`;
+  }
+
+  toTex(): string {
+    return `\\log_{${this.base.toTex()}}(${this.child.toTex()})`;
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    this.child.getSymbols(symbols);
+    this.base.getSymbols(symbols);
+    return symbols;
+  }
+}
+
+export class Sqrt extends Base {
+  constructor(
+    public child: Base,
+    public base: Base,
+  ) {
+    super();
+  }
+  default(): Sqrt {
+    return new Sqrt(Name.prototype.default(), new Num(2));
+  }
+  replace(id: number, next: Base): { node: Base; changed: boolean } {
+    if (this.id === id) {
+      return { node: next, changed: true };
+    }
+
+    const { node: child, changed: changedChild } = this.child.replace(id, next);
+    if (changedChild) {
+      const cloned = new Sqrt(child, this.base);
+      cloned.id = this.id;
+      return { node: cloned, changed: false };
+    }
+
+    const { node: base, changed: changedBase } = this.base.replace(id, next);
+    if (changedBase) {
+      const cloned = new Sqrt(this.child, base);
+      cloned.id = this.id;
+      return { node: cloned, changed: false };
+    }
+    return { node: this, changed: false };
+  }
+
+  toJs(): string {
+    return `Math.pow(${this.child.toJs()}, 1 / ${this.base.toJs()})`;
+  }
+
+  toPy(): string {
+    return `math.pow(${this.child.toPy()}, 1 / ${this.base.toPy()})`;
+  }
+
+  toTex(): string {
+    return `\\sqrt[${this.base.toTex()}]{${this.child.toTex()}}`;
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    this.child.getSymbols(symbols);
+    this.base.getSymbols(symbols);
+    return symbols;
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Binary fns
+///////////////////////////////////////////////////////////////////////////////
 
 export class Pow extends Binary {
   constructor(
-    public readonly left: Base,
-    public readonly right: Base,
+    public left: Base,
+    public right: Base,
   ) {
     super();
+  }
+  default(): Pow {
+    return new Pow(Name.prototype.default(), Name.prototype.default());
   }
 
   toJs(): string {
@@ -771,18 +874,20 @@ export class Pow extends Binary {
     return `(${this.left.toPy()}) ** (${this.right.toPy()})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    this.left.getSymbols(symbols);
-    return this.right.getSymbols(symbols);
+  toTex(): string {
+    return `{${this.left.toTex()}}^{${this.right.toTex()}}`;
   }
 }
 
 export class Implies extends Binary {
   constructor(
-    public readonly left: Base,
-    public readonly right: Base,
+    public left: Base,
+    public right: Base,
   ) {
     super();
+  }
+  default(): Implies {
+    return new Implies(Name.prototype.default(), Name.prototype.default());
   }
 
   toJs(): string {
@@ -793,9 +898,8 @@ export class Implies extends Binary {
     return `((not ${this.left.toPy()}) or (${this.right.toPy()}))`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    this.left.getSymbols(symbols);
-    return this.right.getSymbols(symbols);
+  toTex(): string {
+    return `${this.left.toTex()} \\Rightarrow ${this.right.toTex()}`;
   }
 }
 
@@ -803,32 +907,8 @@ export class Implies extends Binary {
 // n-ary fns
 ///////////////////////////////////////////////////////////////////////////////
 
-export class FunctionCall extends Nary {
-  constructor(
-    public readonly name: string,
-    public readonly children: Base[],
-  ) {
-    super();
-  }
-
-  toJs(): string {
-    return `${this.name}(${this.children.map((c) => c.toJs()).join(", ")})`;
-  }
-
-  toPy(): string {
-    return `${this.name}(${this.children.map((c) => c.toPy()).join(", ")})`;
-  }
-
-  getSymbols(symbols: Set<string>): Set<string> {
-    for (const child of this.children) {
-      child.getSymbols(symbols);
-    }
-    return symbols;
-  }
-}
-
 export class Max extends Nary {
-  constructor(public readonly children: Base[]) {
+  constructor(public children: Base[]) {
     super();
   }
 
@@ -840,16 +920,13 @@ export class Max extends Nary {
     return `max(${this.children.map((c) => c.toPy()).join(", ")})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    for (const child of this.children) {
-      child.getSymbols(symbols);
-    }
-    return symbols;
+  toTex(): string {
+    return `\\max(${this.children.map((c) => c.toTex()).join(", ")})`;
   }
 }
 
 export class Min extends Nary {
-  constructor(public readonly children: Base[]) {
+  constructor(public children: Base[]) {
     super();
   }
 
@@ -861,16 +938,13 @@ export class Min extends Nary {
     return `min(${this.children.map((c) => c.toPy()).join(", ")})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    for (const child of this.children) {
-      child.getSymbols(symbols);
-    }
-    return symbols;
+  toTex(): string {
+    return `\\min(${this.children.map((c) => c.toTex()).join(", ")})`;
   }
 }
 
 export class Piecewise extends Nary {
-  constructor(public readonly children: Base[]) {
+  constructor(public children: Base[]) {
     super();
   }
 
@@ -882,16 +956,13 @@ export class Piecewise extends Nary {
     return `piecewise(${this.children.map((c) => c.toPy()).join(", ")})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    for (const child of this.children) {
-      child.getSymbols(symbols);
-    }
-    return symbols;
+  toTex(): string {
+    return `\\begin{cases}${this.children.map((c) => c.toTex()).join(" \\\\ ")}\\end{cases}`;
   }
 }
 
 export class Rem extends Nary {
-  constructor(public readonly children: Base[]) {
+  constructor(public children: Base[]) {
     super();
   }
 
@@ -909,42 +980,16 @@ export class Rem extends Nary {
       .reduce((acc, cur) => `(${acc}) % (${cur})`);
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    for (const child of this.children) {
-      child.getSymbols(symbols);
-    }
-    return symbols;
-  }
-}
-
-export class LambdaFn extends Nary {
-  constructor(
-    public readonly fn: Base,
-    public readonly args: Base[],
-  ) {
-    super();
-  }
-
-  toJs(): string {
-    const argList = this.args.map((a) => a.toJs()).join(", ");
-    return `(${argList}) => (${this.fn.toJs()})`;
-  }
-
-  toPy(): string {
-    const argList = this.args.map((a) => a.toPy()).join(", ");
-    return `lambda ${argList}: (${this.fn.toPy()})`;
-  }
-
-  getSymbols(symbols: Set<string>): Set<string> {
-    for (const arg of this.args) {
-      arg.getSymbols(symbols);
-    }
-    return this.fn.getSymbols(symbols);
+  toTex(): string {
+    if (this.children.length === 0) return "0";
+    return this.children
+      .map((c) => c.toTex())
+      .reduce((acc, cur) => `(${acc}) \\bmod (${cur})`);
   }
 }
 
 export class And extends Nary {
-  constructor(public readonly children: Base[]) {
+  constructor(public children: Base[]) {
     super();
   }
 
@@ -956,16 +1001,13 @@ export class And extends Nary {
     return this.children.map((c) => c.toPy()).join(" and ");
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    for (const child of this.children) {
-      child.getSymbols(symbols);
-    }
-    return symbols;
+  toTex(): string {
+    return this.children.map((c) => c.toTex()).join(" \\land ");
   }
 }
 
 export class Not extends Nary {
-  constructor(public readonly children: Base[]) {
+  constructor(public children: Base[]) {
     super();
   }
 
@@ -981,16 +1023,16 @@ export class Not extends Nary {
     return `not (${this.children.map((c) => c.toPy()).join(" and ")})`;
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    for (const child of this.children) {
-      child.getSymbols(symbols);
-    }
-    return symbols;
+  toTex(): string {
+    if (this.children.length === 0) return "\\neg \\text{false}";
+    if (this.children.length === 1)
+      return `\\neg (${this.children[0].toTex()})`;
+    return `\\neg (${this.children.map((c) => c.toTex()).join(" \\land ")})`;
   }
 }
 
 export class Or extends Nary {
-  constructor(public readonly children: Base[]) {
+  constructor(public children: Base[]) {
     super();
   }
 
@@ -1002,16 +1044,13 @@ export class Or extends Nary {
     return this.children.map((c) => c.toPy()).join(" or ");
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    for (const child of this.children) {
-      child.getSymbols(symbols);
-    }
-    return symbols;
+  toTex(): string {
+    return this.children.map((c) => c.toTex()).join(" \\lor ");
   }
 }
 
 export class Xor extends Nary {
-  constructor(public readonly children: Base[]) {
+  constructor(public children: Base[]) {
     super();
   }
 
@@ -1025,16 +1064,14 @@ export class Xor extends Nary {
     return this.children.map((c) => `(${c.toPy()})`).join(" ^ ");
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    for (const child of this.children) {
-      child.getSymbols(symbols);
-    }
-    return symbols;
+  toTex(): string {
+    if (this.children.length === 0) return "0";
+    return this.children.map((c) => `(${c.toTex()})`).join(" \\oplus ");
   }
 }
 
 export class Eq extends Nary {
-  constructor(public readonly children: Base[]) {
+  constructor(public children: Base[]) {
     super();
   }
 
@@ -1055,16 +1092,14 @@ export class Eq extends Nary {
     return this.children.map((c) => c.toPy()).join(" == ");
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    for (const child of this.children) {
-      child.getSymbols(symbols);
-    }
-    return symbols;
+  toTex(): string {
+    if (this.children.length === 0) return "\\text{true}";
+    return this.children.map((c) => c.toTex()).join(" = ");
   }
 }
 
 export class GreaterEqual extends Nary {
-  constructor(public readonly children: Base[]) {
+  constructor(public children: Base[]) {
     super();
   }
 
@@ -1085,16 +1120,14 @@ export class GreaterEqual extends Nary {
     return this.children.map((c) => c.toPy()).join(" >= ");
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    for (const child of this.children) {
-      child.getSymbols(symbols);
-    }
-    return symbols;
+  toTex(): string {
+    if (this.children.length === 0) return "\\text{true}";
+    return this.children.map((c) => c.toTex()).join(" \\geq ");
   }
 }
 
 export class GreaterThan extends Nary {
-  constructor(public readonly children: Base[]) {
+  constructor(public children: Base[]) {
     super();
   }
 
@@ -1115,16 +1148,14 @@ export class GreaterThan extends Nary {
     return this.children.map((c) => c.toPy()).join(" > ");
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    for (const child of this.children) {
-      child.getSymbols(symbols);
-    }
-    return symbols;
+  toTex(): string {
+    if (this.children.length === 0) return "\\text{true}";
+    return this.children.map((c) => c.toTex()).join(" > ");
   }
 }
 
 export class LessEqual extends Nary {
-  constructor(public readonly children: Base[]) {
+  constructor(public children: Base[]) {
     super();
   }
 
@@ -1145,16 +1176,14 @@ export class LessEqual extends Nary {
     return this.children.map((c) => c.toPy()).join(" <= ");
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    for (const child of this.children) {
-      child.getSymbols(symbols);
-    }
-    return symbols;
+  toTex(): string {
+    if (this.children.length === 0) return "\\text{true}";
+    return this.children.map((c) => c.toTex()).join(" \\leq ");
   }
 }
 
 export class LessThan extends Nary {
-  constructor(public readonly children: Base[]) {
+  constructor(public children: Base[]) {
     super();
   }
 
@@ -1175,16 +1204,14 @@ export class LessThan extends Nary {
     return this.children.map((c) => c.toPy()).join(" < ");
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    for (const child of this.children) {
-      child.getSymbols(symbols);
-    }
-    return symbols;
+  toTex(): string {
+    if (this.children.length === 0) return "\\text{true}";
+    return this.children.map((c) => c.toTex()).join(" < ");
   }
 }
 
 export class NotEqual extends Nary {
-  constructor(public readonly children: Base[]) {
+  constructor(public children: Base[]) {
     super();
   }
 
@@ -1205,38 +1232,15 @@ export class NotEqual extends Nary {
     return this.children.map((c) => c.toPy()).join(" != ");
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    for (const child of this.children) {
-      child.getSymbols(symbols);
-    }
-    return symbols;
+  toTex(): string {
+    if (this.children.length === 0) return "\\text{false}";
+    return this.children.map((c) => c.toTex()).join(" \\neq ");
   }
 }
 
 export class Add extends Nary {
   constructor(public children: Base[]) {
     super();
-  }
-  default(): Add {
-    return new Add([Name.prototype.default(), Name.prototype.default()]);
-  }
-  replace(id: number, next: Base): Base {
-    if (this.id === id) {
-      console.log(`Replacing add with id ${id}`);
-      return next;
-    }
-    let changed = false;
-    const newChildren = this.children.map((child) => {
-      const updated = child.replace(id, next);
-      if (updated !== child) changed = true;
-      return updated;
-    });
-
-    if (!changed) return this;
-
-    const cloned = new Add(newChildren);
-    cloned.id = this.id; // preserve node identity for selection
-    return cloned;
   }
 
   toJs(): string {
@@ -1250,41 +1254,11 @@ export class Add extends Nary {
   toTex(): string {
     return this.children.map((c) => c.toTex()).join(" + ");
   }
-
-  getSymbols(symbols: Set<string>): Set<string> {
-    for (const child of this.children) {
-      child.getSymbols(symbols);
-    }
-    return symbols;
-  }
 }
 
 export class Minus extends Nary {
   constructor(public children: Base[]) {
     super();
-  }
-
-  default(): Minus {
-    return new Minus([Name.prototype.default(), Name.prototype.default()]);
-  }
-
-  replace(id: number, next: Base): Base {
-    if (this.id === id) {
-      console.log(`Replacing add with id ${id}`);
-      return next;
-    }
-    let changed = false;
-    const newChildren = this.children.map((child) => {
-      const updated = child.replace(id, next);
-      if (updated !== child) changed = true;
-      return updated;
-    });
-
-    if (!changed) return this;
-
-    const cloned = new Add(newChildren);
-    cloned.id = this.id; // preserve node identity for selection
-    return cloned;
   }
 
   toJs(): string {
@@ -1304,41 +1278,12 @@ export class Minus extends Nary {
   toTex(): string {
     return this.children.map((c) => c.toTex()).join(" - ");
   }
-
-  getSymbols(symbols: Set<string>): Set<string> {
-    for (const child of this.children) {
-      child.getSymbols(symbols);
-    }
-    return symbols;
-  }
 }
 
 export class Mul extends Nary {
   constructor(public children: Base[]) {
     super();
   }
-  default(): Mul {
-    return new Mul([Name.prototype.default(), Name.prototype.default()]);
-  }
-  replace(id: number, next: Base): Base {
-    if (this.id === id) {
-      console.log(`Replacing mul with id ${id}`);
-      return next;
-    }
-    let changed = false;
-    const newChildren = this.children.map((child) => {
-      const updated = child.replace(id, next);
-      if (updated !== child) changed = true;
-      return updated;
-    });
-
-    if (!changed) return this;
-
-    const cloned = new Mul(newChildren);
-    cloned.id = this.id;
-    return cloned;
-  }
-
   toJs(): string {
     return this.children.map((child) => child.toJs()).join(" * ");
   }
@@ -1348,41 +1293,13 @@ export class Mul extends Nary {
   toTex(): string {
     return this.children.map((child) => child.toTex()).join(" \\cdot ");
   }
-  getSymbols(symbols: Set<string>): Set<string> {
-    for (const child of this.children) {
-      child.getSymbols(symbols);
-    }
-    return symbols;
-  }
 }
 
-export class Divide extends Binary {
+export class Divide extends Nary {
   constructor(public children: Base[]) {
     super();
   }
 
-  default(): Divide {
-    return new Divide([Name.prototype.default(), Name.prototype.default()]);
-  }
-
-  replace(id: number, next: Base): Base {
-    if (this.id === id) {
-      console.log(`Replacing div with id ${id}`);
-      return next;
-    }
-    let changed = false;
-    const newChildren = this.children.map((child) => {
-      const updated = child.replace(id, next);
-      if (updated !== child) changed = true;
-      return updated;
-    });
-
-    if (!changed) return this;
-
-    const cloned = new Divide(newChildren);
-    cloned.id = this.id;
-    return cloned;
-  }
   toJs(): string {
     if (this.children.length === 0) return "0";
     return this.children
@@ -1403,17 +1320,10 @@ export class Divide extends Binary {
       .map((c) => c.toTex())
       .reduce((acc, cur) => `\\frac{${acc}}{${cur}}`);
   }
-
-  getSymbols(symbols: Set<string>): Set<string> {
-    for (const child of this.children) {
-      child.getSymbols(symbols);
-    }
-    return symbols;
-  }
 }
 
-export class IntDivide extends Binary {
-  constructor(public readonly children: Base[]) {
+export class IntDivide extends Nary {
+  constructor(public children: Base[]) {
     super();
   }
 
@@ -1432,16 +1342,18 @@ export class IntDivide extends Binary {
       .reduce((acc, cur) => `(${acc}) // (${cur})`);
   }
 
-  getSymbols(symbols: Set<string>): Set<string> {
-    for (const child of this.children) {
-      child.getSymbols(symbols);
-    }
-    return symbols;
+  toTex(): string {
+    if (this.children.length === 0) return "0";
+    return this.children
+      .map((c) => c.toTex())
+      .reduce(
+        (acc, cur) => `\\left\\lfloor\\frac{${acc}}{${cur}}\\right\\rfloor`,
+      );
   }
 }
 
 // export class Delay extends Nary {
-//   constructor(public readonly children: Base[]) {
+//   constructor(public children: Base[]) {
 //     super();
 //   }
 
@@ -1452,11 +1364,67 @@ export class IntDivide extends Binary {
 //   toPy(): string {
 //     return `delay(${this.children.map((c) => c.toPy()).join(", ")})`;
 //   }
+// }
+
+///////////////////////////////////////////////////////////////////////////////
+// Special n-ary fns
+///////////////////////////////////////////////////////////////////////////////
+
+// export class FunctionCall extends Nary {
+//   constructor(
+//     public name: string,
+//     public children: Base[],
+//   ) {
+//     super();
+//   }
+
+//   toJs(): string {
+//     return `${this.name}(${this.children.map((c) => c.toJs()).join(", ")})`;
+//   }
+
+//   toPy(): string {
+//     return `${this.name}(${this.children.map((c) => c.toPy()).join(", ")})`;
+//   }
+
+//   toTex(): string {
+//     return `\\text{${this.name}}(${this.children.map((c) => c.toTex()).join(", ")})`;
+//   }
 
 //   getSymbols(symbols: Set<string>): Set<string> {
 //     for (const child of this.children) {
 //       child.getSymbols(symbols);
 //     }
 //     return symbols;
+//   }
+// }
+
+// export class LambdaFn extends Nary {
+//   constructor(
+//     public children: Base[],
+//     public fn: Base,
+//   ) {
+//     super();
+//   }
+
+//   toJs(): string {
+//     const argList = this.args.map((a) => a.toJs()).join(", ");
+//     return `(${argList}) => (${this.fn.toJs()})`;
+//   }
+
+//   toPy(): string {
+//     const argList = this.args.map((a) => a.toPy()).join(", ");
+//     return `lambda ${argList}: (${this.fn.toPy()})`;
+//   }
+
+//   toTex(): string {
+//     const argList = this.args.map((a) => a.toTex()).join(", ");
+//     return `\\lambda ${argList}. (${this.fn.toTex()})`;
+//   }
+
+//   getSymbols(symbols: Set<string>): Set<string> {
+//     for (const arg of this.args) {
+//       arg.getSymbols(symbols);
+//     }
+//     return this.fn.getSymbols(symbols);
 //   }
 // }
