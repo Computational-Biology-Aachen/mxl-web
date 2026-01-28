@@ -1,6 +1,6 @@
 <script lang="ts">
-  import EquationNode from "./EquationNode.svelte";
-  import type { Add, Base, Divide, Mul, Name, Num } from "./mathml";
+  import type { Add, Base, Divide, Mul, Name, Num } from "$lib/mathml";
+  import EquationNode from "$lib/model-editor/EquationNode.svelte";
 
   let {
     node,

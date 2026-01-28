@@ -1,20 +1,22 @@
 <script lang="ts">
   import Math from "$lib/Math.svelte";
-  import { Add, Mul, Name, Num } from "$lib/mathml";
+  import { Num } from "$lib/mathml";
+  import { stoichsToTex, type Stoichs } from "./utils";
 
   let {
-    stoichs = $bindable(),
+    stoichs,
     variables,
-  }: { stoichs: Array<{ name: string; value: Num }>; variables: string[] } =
-    $props();
+    onSave,
+    popovertarget,
+  }: {
+    stoichs: Stoichs;
+    variables: string[];
+    onSave: (fn: Stoichs) => void;
+    popovertarget: string;
+  } = $props();
 
   let latex = $derived.by(() => {
-    return stoichs
-      .map(({ name, value }) => {
-        return new Mul([value, new Name(name)]);
-      })
-      .reduce((previous, current) => new Add([previous, current]))
-      .toTex();
+    return stoichsToTex(stoichs);
   });
 
   function firstVarNotInUse(): string {
@@ -95,6 +97,12 @@
       <Math tex={latex} display={true} />
     </div>
   </div>
+
+  <button
+    onclick={() => onSave(stoichs)}
+    popovertargetaction="hide"
+    {popovertarget}>Save</button
+  >
 </section>
 
 <style>
