@@ -359,18 +359,27 @@ export class Minus extends Nary {
   }
 
   toJs(): string {
+    if (this.children.length === 1) {
+      return `- ${this.children[0].toJs()}`;
+    }
     return this.children
       .map((c) => c.toJs())
       .reduce((acc, cur) => `(${acc}) - (${cur})`);
   }
 
   toPy(): string {
+    if (this.children.length === 1) {
+      return `- ${this.children[0].toPy()}`;
+    }
     return this.children
       .map((c) => c.toPy())
       .reduce((acc, cur) => `(${acc}) - (${cur})`);
   }
 
   toTex(): string {
+    if (this.children.length === 1) {
+      return `- ${this.children[0].toTex()}`;
+    }
     return this.children.map((c) => c.toTex()).join(" - ");
   }
 }

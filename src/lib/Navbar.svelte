@@ -1,8 +1,8 @@
 <script lang="ts">
+  import ThemeSwitcher from "$lib/ThemeSwitcher.svelte";
   import { faGithub } from "@fortawesome/free-brands-svg-icons";
   import Fa from "svelte-fa";
   import { MediaQuery } from "svelte/reactivity";
-  import ThemeSwitcher from "./ThemeSwitcher.svelte";
 
   const small = new MediaQuery("max-width: 800px");
   let { children } = $props();

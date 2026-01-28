@@ -13,7 +13,7 @@
     { name: "V_{max}", fn: new Mul([new Name("k_{cat}"), new Name("e_{0}")]) },
   ]);
 
-  function onSave(idx: number, fn: Base) {
+  function onSaveEq(idx: number, fn: Base) {
     derived[idx].fn = fn;
     derived = derived.slice();
   }
@@ -49,7 +49,7 @@
     <EqEditor
       root={fn}
       {variables}
-      onSave={(root) => onSave(idx, root)}
+      onSave={(root) => onSaveEq(idx, root)}
       popovertarget={`eq-editor-${name}`}
     />
   </div>
