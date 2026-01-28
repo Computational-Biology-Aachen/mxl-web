@@ -7,7 +7,7 @@ export abstract class Base {
   abstract toPy(): string;
   abstract toTex(): string;
   abstract getSymbols(symbols: Set<string>): Set<string>;
-  abstract default(): Base;
+  // abstract default(): Base;
   abstract replace(id: number, next: Base): { node: Base; changed: boolean };
 
   constructor() {
@@ -28,6 +28,11 @@ export abstract class Nullary extends Base {
 export abstract class Unary extends Base {
   abstract child: Base;
 
+  // default(): Base {
+  //   const Constructor = this.constructor as new (child: Base) => this;
+  //   return new Constructor(Name.prototype.default());
+  // }
+
   replace(id: number, next: Base): { node: Base; changed: boolean } {
     if (this.id === id) {
       return { node: next, changed: true };
@@ -43,11 +48,6 @@ export abstract class Unary extends Base {
     return { node: this, changed: false };
   }
 
-  default(): Base {
-    const Constructor = this.constructor as new (child: Base) => this;
-    return new Constructor(Name.prototype.default());
-  }
-
   getSymbols(symbols: Set<string>): Set<string> {
     return this.child.getSymbols(symbols);
   }
@@ -57,13 +57,13 @@ export abstract class Binary extends Base {
   abstract left: Base;
   abstract right: Base;
 
-  default(): Base {
-    const Constructor = this.constructor as new (
-      left: Base,
-      right: Base,
-    ) => this;
-    return new Constructor(Name.prototype.default(), Name.prototype.default());
-  }
+  // default(): Base {
+  //   const Constructor = this.constructor as new (
+  //     left: Base,
+  //     right: Base,
+  //   ) => this;
+  //   return new Constructor(Name.prototype.default(), Name.prototype.default());
+  // }
 
   replace(id: number, next: Base): { node: Base; changed: boolean } {
     if (this.id === id) {
@@ -104,20 +104,13 @@ export abstract class Binary extends Base {
 export abstract class Nary extends Base {
   abstract children: Base[];
 
-  default(): Base {
-    const Constructor = this.constructor as new (children: Base[]) => this;
-    return new Constructor([
-      Name.prototype.default(),
-      Name.prototype.default(),
-    ]);
-  }
-
-  getSymbols(symbols: Set<string>): Set<string> {
-    for (const child of this.children) {
-      child.getSymbols(symbols);
-    }
-    return symbols;
-  }
+  // default(): Base {
+  //   const Constructor = this.constructor as new (children: Base[]) => this;
+  //   return new Constructor([
+  //     Name.prototype.default(),
+  //     Name.prototype.default(),
+  //   ]);
+  // }
 
   replace(id: number, next: Base): { node: Base; changed: boolean } {
     if (this.id === id) {
@@ -136,6 +129,13 @@ export abstract class Nary extends Base {
       return { node: cloned, changed: true };
     }
     return { node: this, changed: false };
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    for (const child of this.children) {
+      child.getSymbols(symbols);
+    }
+    return symbols;
   }
 }
 

@@ -106,6 +106,33 @@
         />
       </div>
     </div>
+  {:else if node.constructor.name === "Minus"}
+    <div class="mul">
+      <div class="child">
+        <EquationNode
+          node={(node as Add).children[0]}
+          {selectedId}
+          {onSelect}
+        />
+      </div>
+      <button
+        class="op"
+        aria-label="Select mul"
+        onclick={(e) => {
+          e.stopPropagation();
+          selectSelf();
+        }}
+      >
+        -
+      </button>
+      <div class="child">
+        <EquationNode
+          node={(node as Add).children[1]}
+          {selectedId}
+          {onSelect}
+        />
+      </div>
+    </div>
   {:else if node.constructor.name === "Name"}
     <div class="leaf">
       <span class="value">{(node as Name).name}</span>
