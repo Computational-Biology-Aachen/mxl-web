@@ -182,7 +182,14 @@
   }
 
   let tEnd = $state(100);
-  let pars = [];
+  let pars: {
+    name: string;
+    init: number;
+    min: string;
+    max: string;
+    step: string;
+    fixed?: boolean;
+  }[] = [];
   let variables = [
     {
       name: "x1",
