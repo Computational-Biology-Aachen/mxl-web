@@ -1192,40 +1192,59 @@ export class Add extends Base {
   }
 }
 
-// export class Minus extends Base {
-//   constructor(public children: Base[]) {
-//     super();
-//   }
-//   replace(id: number, next: Base): Base {
-//     if (this.id === id) {
-//       return next;
-//     }
+export class Minus extends Base {
+  constructor(public children: Base[]) {
+    super();
+  }
 
-//     this.children = this.children.map((child) => child.replace(id, next));
-//     return this;
-//   }
+  default(): Minus {
+    return new Minus([Name.prototype.default(), Name.prototype.default()]);
+  }
 
-//   toJs(): string {
-//     if (this.children.length === 0) return "0";
-//     return this.children
-//       .map((c) => c.toJs())
-//       .reduce((acc, cur) => `(${acc}) - (${cur})`);
-//   }
+  replace(id: number, next: Base): Base {
+    if (this.id === id) {
+      console.log(`Replacing add with id ${id}`);
+      return next;
+    }
+    let changed = false;
+    const newChildren = this.children.map((child) => {
+      const updated = child.replace(id, next);
+      if (updated !== child) changed = true;
+      return updated;
+    });
 
-//   toPy(): string {
-//     if (this.children.length === 0) return "0";
-//     return this.children
-//       .map((c) => c.toPy())
-//       .reduce((acc, cur) => `(${acc}) - (${cur})`);
-//   }
+    if (!changed) return this;
 
-//   getSymbols(symbols: Set<string>): Set<string> {
-//     for (const child of this.children) {
-//       child.getSymbols(symbols);
-//     }
-//     return symbols;
-//   }
-// }
+    const cloned = new Add(newChildren);
+    cloned.id = this.id; // preserve node identity for selection
+    return cloned;
+  }
+
+  toJs(): string {
+    if (this.children.length === 0) return "0";
+    return this.children
+      .map((c) => c.toJs())
+      .reduce((acc, cur) => `(${acc}) - (${cur})`);
+  }
+
+  toPy(): string {
+    if (this.children.length === 0) return "0";
+    return this.children
+      .map((c) => c.toPy())
+      .reduce((acc, cur) => `(${acc}) - (${cur})`);
+  }
+
+  toTex(): string {
+    return this.children.map((c) => c.toTex()).join(" - ");
+  }
+
+  getSymbols(symbols: Set<string>): Set<string> {
+    for (const child of this.children) {
+      child.getSymbols(symbols);
+    }
+    return symbols;
+  }
+}
 
 export class Mul extends Base {
   constructor(public children: Base[]) {

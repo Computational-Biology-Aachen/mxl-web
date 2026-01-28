@@ -21,4 +21,9 @@
 </ul>
 
 <h2>Model builder</h2>
-<p>Under construction</p>
+<ul>
+  <li><a href="{base}/dev/eq-editor">Eq editor</a></li>
+  <li><a href="{base}/dev/stoich-editor">Stoich editor</a></li>
+  <li><a href="{base}/dev/model-builder">Model builder</a></li>
+  <li><a href="{base}/dev/model-edit">Model edit</a></li>
+</ul>
