@@ -3,7 +3,45 @@
   import Math from "$lib/Math.svelte";
   import { Add, Divide, Mul, Name, Num, type Base } from "$lib/MathMl";
 
-  const variables = ["k_{cat}", "e_{0}", "V_{max}"];
+  const variables = ["S", "k_{cat}", "k_{M}", "e_{0}", "V_{max}"];
+  const templates = [
+    {
+      name: "Proportional",
+      code: () => {
+        return new Mul([Name.prototype.default(), Name.prototype.default()]);
+      },
+    },
+    {
+      name: "Mass-action",
+      code: () => {
+        return new Mul([
+          Name.prototype.default(),
+          new Mul([Name.prototype.default(), Name.prototype.default()]),
+        ]);
+      },
+    },
+    {
+      name: "Michaelis-Menten",
+      code: () => {
+        return new Divide([
+          new Mul([Name.prototype.default(), Name.prototype.default()]),
+          new Add([Name.prototype.default(), Name.prototype.default()]),
+        ]);
+      },
+    },
+    {
+      name: "Michaelis-Menten (e0)",
+      code: () => {
+        return new Divide([
+          new Mul([
+            Name.prototype.default(),
+            new Mul([Name.prototype.default(), Name.prototype.default()]),
+          ]),
+          new Add([Name.prototype.default(), Name.prototype.default()]),
+        ]);
+      },
+    },
+  ];
   const palette: {
     label: string;
     default: () => Base;
@@ -61,6 +99,14 @@
   function selectNode(node: Base) {
     currentNode = node;
   }
+  function handleTemplateChoice(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const template = templates.at(parseInt(target.value));
+    if (template !== undefined) {
+      root = template.code();
+    }
+  }
+
   function handleSymbolChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     let node = (currentNode as Name).update(target.value);
@@ -82,6 +128,14 @@
         Build an expression by selecting a node and replacing it with a MathML
         element, then adjust symbols to the allowed variable names.
       </p>
+      <div class="edit-row">
+        <label for={`root`}>Template</label>
+        <select id={`root`} value="---" onchange={handleTemplateChoice}>
+          {#each templates as template, idx}
+            <option selected={false} value={idx}>{template.name}</option>
+          {/each}
+        </select>
+      </div>
     </div>
   </header>
 
