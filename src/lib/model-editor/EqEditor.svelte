@@ -1,10 +1,19 @@
 <script lang="ts">
   import EquationNode from "$lib/EquationNode.svelte";
   import Math from "$lib/Math.svelte";
-  import { Add, Divide, Mul, Name, Num, type Base } from "$lib/mathml";
+  import { Add, Divide, Minus, Mul, Name, Num, type Base } from "$lib/mathml";
 
-  let { root = $bindable(), variables }: { root: Base; variables: string[] } =
-    $props();
+  let {
+    root,
+    variables,
+    onSave,
+    popovertarget,
+  }: {
+    root: Base;
+    variables: string[];
+    onSave: (fn: Base) => void;
+    popovertarget: string;
+  } = $props();
   const templates = [
     {
       name: "Proportional",
@@ -72,6 +81,11 @@
       label: "Add",
       default: Add.prototype.default, //
       hint: "Add",
+    },
+    {
+      label: "Sub",
+      default: Minus.prototype.default, //
+      hint: "Sub",
     },
   ];
 
@@ -190,6 +204,12 @@
       </div>
     </div>
   </div>
+
+  <button
+    onclick={() => onSave(root)}
+    popovertargetaction="hide"
+    {popovertarget}>Save</button
+  >
 </section>
 
 <style>

@@ -12,7 +12,7 @@
       displayMode: display,
       throwOnError: false,
       trust: true,
-      output: "htmlAndMathml",
+      output: "html",
     });
   });
 </script>

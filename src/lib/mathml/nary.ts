@@ -359,14 +359,12 @@ export class Minus extends Nary {
   }
 
   toJs(): string {
-    if (this.children.length === 0) return "0";
     return this.children
       .map((c) => c.toJs())
       .reduce((acc, cur) => `(${acc}) - (${cur})`);
   }
 
   toPy(): string {
-    if (this.children.length === 0) return "0";
     return this.children
       .map((c) => c.toPy())
       .reduce((acc, cur) => `(${acc}) - (${cur})`);
@@ -378,7 +376,7 @@ export class Minus extends Nary {
 }
 
 export class Mul extends Nary {
-  constructor(public children: Base[]) {
+  public constructor(public children: Base[]) {
     super();
   }
   toJs(): string {
