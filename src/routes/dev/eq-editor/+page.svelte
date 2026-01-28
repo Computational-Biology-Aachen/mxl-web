@@ -1,7 +1,7 @@
 <script lang="ts">
   import EquationNode from "$lib/EquationNode.svelte";
   import Math from "$lib/Math.svelte";
-  import { Add, Divide, Mul, Name, Num, type Base } from "$lib/mathml/MathMl";
+  import { Add, Divide, Mul, Name, Num, type Base } from "$lib/mathml";
 
   const variables = ["S", "k_{cat}", "k_{M}", "e_{0}", "V_{max}"];
   const templates = [
@@ -91,8 +91,7 @@
 
   function insertNode(fn: () => Base) {
     const toInsert = fn();
-    root = root.replace(currentNode.id, toInsert);
-    console.log(root);
+    root = root.replace(currentNode.id, toInsert).node;
     currentNode = toInsert;
   }
 

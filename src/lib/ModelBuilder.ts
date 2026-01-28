@@ -1,4 +1,4 @@
-import type { Base } from "./mathml/MathMl";
+import type { Base } from "./mathml";
 
 export type Derived = {
   fn: Base;
