@@ -69,22 +69,30 @@
     },
     {
       label: "Divide",
-      default: Divide.prototype.default,
+      default: () => {
+        return new Divide([Name.prototype.default(), Name.prototype.default()]);
+      },
       hint: "Two-part fraction",
     },
     {
       label: "Multiply",
-      default: Mul.prototype.default, //
+      default: () => {
+        return new Mul([Name.prototype.default(), Name.prototype.default()]);
+      }, //
       hint: "Multiply",
     },
     {
       label: "Add",
-      default: Add.prototype.default, //
+      default: () => {
+        return new Add([Name.prototype.default(), Name.prototype.default()]);
+      }, //
       hint: "Add",
     },
     {
       label: "Sub",
-      default: Minus.prototype.default, //
+      default: () => {
+        return new Minus([Name.prototype.default(), Name.prototype.default()]);
+      }, //
       hint: "Sub",
     },
   ];
