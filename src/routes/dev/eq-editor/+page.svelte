@@ -123,7 +123,7 @@
 <section class="page">
   <header class="header">
     <div>
-      <h1>Rate Editor</h1>
+      <h1>Eq Editor</h1>
       <p class="comment">
         Build an expression by selecting a node and replacing it with a MathML
         element, then adjust symbols to the allowed variable names.
