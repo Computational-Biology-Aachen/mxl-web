@@ -26,18 +26,70 @@ abstract class Nullary extends Base {
   }
 }
 
-abstract class Unary extends Base {}
+abstract class Unary extends Base {
+  abstract child: Base;
 
-abstract class Binary extends Base {}
+  default(): Base {
+    return this.constructor(Name.prototype.default());
+  }
+
+  replace(id: number, next: Base): Base {
+    if (this.id === id) {
+      return next;
+    }
+    return this;
+  }
+}
+
+abstract class Binary extends Base {
+  abstract left: Base;
+  abstract right: Base;
+
+  default(): Base {
+    return this.constructor(Name.prototype.default(), Name.prototype.default());
+  }
+
+  replace(id: number, next: Base): Base {
+    if (this.id === id) {
+      return next;
+    }
+    return this;
+  }
+}
 
 abstract class Nary extends Base {
   abstract children: Base[];
+
+  default(): Base {
+    return this.constructor([
+      Name.prototype.default(),
+      Name.prototype.default(),
+    ]);
+  }
 
   getSymbols(symbols: Set<string>): Set<string> {
     for (const child of this.children) {
       child.getSymbols(symbols);
     }
     return symbols;
+  }
+
+  replace(id: number, next: Base): Base {
+    if (this.id === id) {
+      return next;
+    }
+    let changed = false;
+    const newChildren = this.children.map((child) => {
+      const updated = child.replace(id, next);
+      if (updated !== child) changed = true;
+      return updated;
+    });
+
+    if (!changed) return this;
+
+    const cloned = this.constructor(newChildren);
+    cloned.id = this.id;
+    return cloned;
   }
 }
 
@@ -751,7 +803,7 @@ export class Implies extends Binary {
 // n-ary fns
 ///////////////////////////////////////////////////////////////////////////////
 
-export class FunctionCall extends Base {
+export class FunctionCall extends Nary {
   constructor(
     public readonly name: string,
     public readonly children: Base[],
@@ -775,7 +827,7 @@ export class FunctionCall extends Base {
   }
 }
 
-export class Max extends Base {
+export class Max extends Nary {
   constructor(public readonly children: Base[]) {
     super();
   }
@@ -796,7 +848,7 @@ export class Max extends Base {
   }
 }
 
-export class Min extends Base {
+export class Min extends Nary {
   constructor(public readonly children: Base[]) {
     super();
   }
@@ -817,7 +869,7 @@ export class Min extends Base {
   }
 }
 
-export class Piecewise extends Base {
+export class Piecewise extends Nary {
   constructor(public readonly children: Base[]) {
     super();
   }
@@ -838,7 +890,7 @@ export class Piecewise extends Base {
   }
 }
 
-export class Rem extends Base {
+export class Rem extends Nary {
   constructor(public readonly children: Base[]) {
     super();
   }
@@ -865,7 +917,7 @@ export class Rem extends Base {
   }
 }
 
-export class LambdaFn extends Base {
+export class LambdaFn extends Nary {
   constructor(
     public readonly fn: Base,
     public readonly args: Base[],
@@ -891,7 +943,7 @@ export class LambdaFn extends Base {
   }
 }
 
-export class And extends Base {
+export class And extends Nary {
   constructor(public readonly children: Base[]) {
     super();
   }
@@ -912,7 +964,7 @@ export class And extends Base {
   }
 }
 
-export class Not extends Base {
+export class Not extends Nary {
   constructor(public readonly children: Base[]) {
     super();
   }
@@ -937,7 +989,7 @@ export class Not extends Base {
   }
 }
 
-export class Or extends Base {
+export class Or extends Nary {
   constructor(public readonly children: Base[]) {
     super();
   }
@@ -958,7 +1010,7 @@ export class Or extends Base {
   }
 }
 
-export class Xor extends Base {
+export class Xor extends Nary {
   constructor(public readonly children: Base[]) {
     super();
   }
@@ -981,7 +1033,7 @@ export class Xor extends Base {
   }
 }
 
-export class Eq extends Base {
+export class Eq extends Nary {
   constructor(public readonly children: Base[]) {
     super();
   }
@@ -1011,7 +1063,7 @@ export class Eq extends Base {
   }
 }
 
-export class GreaterEqual extends Base {
+export class GreaterEqual extends Nary {
   constructor(public readonly children: Base[]) {
     super();
   }
@@ -1041,7 +1093,7 @@ export class GreaterEqual extends Base {
   }
 }
 
-export class GreaterThan extends Base {
+export class GreaterThan extends Nary {
   constructor(public readonly children: Base[]) {
     super();
   }
@@ -1071,7 +1123,7 @@ export class GreaterThan extends Base {
   }
 }
 
-export class LessEqual extends Base {
+export class LessEqual extends Nary {
   constructor(public readonly children: Base[]) {
     super();
   }
@@ -1101,7 +1153,7 @@ export class LessEqual extends Base {
   }
 }
 
-export class LessThan extends Base {
+export class LessThan extends Nary {
   constructor(public readonly children: Base[]) {
     super();
   }
@@ -1131,7 +1183,7 @@ export class LessThan extends Base {
   }
 }
 
-export class NotEqual extends Base {
+export class NotEqual extends Nary {
   constructor(public readonly children: Base[]) {
     super();
   }
@@ -1161,7 +1213,7 @@ export class NotEqual extends Base {
   }
 }
 
-export class Add extends Base {
+export class Add extends Nary {
   constructor(public children: Base[]) {
     super();
   }
@@ -1207,7 +1259,7 @@ export class Add extends Base {
   }
 }
 
-export class Minus extends Base {
+export class Minus extends Nary {
   constructor(public children: Base[]) {
     super();
   }
@@ -1261,7 +1313,7 @@ export class Minus extends Base {
   }
 }
 
-export class Mul extends Base {
+export class Mul extends Nary {
   constructor(public children: Base[]) {
     super();
   }
@@ -1388,7 +1440,7 @@ export class IntDivide extends Binary {
   }
 }
 
-// export class Delay extends Base {
+// export class Delay extends Nary {
 //   constructor(public readonly children: Base[]) {
 //     super();
 //   }
