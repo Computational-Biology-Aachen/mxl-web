@@ -1,7 +1,7 @@
 <script lang="ts">
   import Math from "$lib/Math.svelte";
   import { Add, Divide, Minus, Mul, Name, Num, type Base } from "$lib/mathml";
-  import EquationNode from "$lib/model-editor/EquationNode.svelte";
+  import EquationNode from "$lib/model-editor/EqNode.svelte";
 
   let {
     root,
