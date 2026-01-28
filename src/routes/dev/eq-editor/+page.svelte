@@ -1,7 +1,7 @@
 <script lang="ts">
   import EquationNode from "$lib/EquationNode.svelte";
   import Math from "$lib/Math.svelte";
-  import { Add, Divide, Mul, Name, Num, type Base } from "$lib/MathMl";
+  import { Add, Divide, Mul, Name, Num, type Base } from "$lib/mathml/MathMl";
 
   const variables = ["S", "k_{cat}", "k_{M}", "e_{0}", "V_{max}"];
   const templates = [

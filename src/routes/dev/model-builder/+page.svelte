@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Add, Divide, Minus, Mul, Name } from "$lib/MathMl";
+  import { Add, Divide, Minus, Mul, Name } from "$lib/mathml/MathMl";
   import type { Derived, Reaction } from "$lib/ModelBuilder";
   import { ModelBuilder } from "$lib/ModelBuilder";
   import Simulator from "$lib/Simulator.svelte";
