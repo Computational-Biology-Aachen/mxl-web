@@ -19,7 +19,6 @@ interface SimulationRequest {
 type MessageHandler = (data: WorkerMessage) => void;
 type ErrorHandler = (error: ErrorEvent) => void;
 
-
 const pyWorkerUrl = new URL("../workers/pyWorker.ts", import.meta.url);
 const jsWorkerUrl = new URL("../workers/jsWorker.ts", import.meta.url);
 
@@ -41,12 +40,11 @@ export class WorkerManager {
     this.worker = new Worker(this.workerUrl, {
       type: "module",
     });
-// Send initialization message with base path
+    // Send initialization message with base path
     this.worker.postMessage({
-      type: '__INIT__',
-      basePath: base
+      type: "__INIT__",
+      basePath: base,
     });
-
 
     this.worker.onmessage = (e: MessageEvent) => {
       this.messageHandlers.forEach((handler) => handler(e.data));
@@ -103,6 +101,5 @@ export class WorkerManager {
 
 // Create singleton instances
 export let pyWorkerManager: WorkerManager = new WorkerManager(pyWorkerUrl);
+export let pyWorkerManager2: WorkerManager = new WorkerManager(pyWorkerUrl);
 export let jsWorkerManager: WorkerManager = new WorkerManager(jsWorkerUrl);
-
-
