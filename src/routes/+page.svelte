@@ -26,4 +26,5 @@
   <li><a href="{base}/dev/stoich-editor">Stoich editor</a></li>
   <li><a href="{base}/dev/model-builder">Model builder</a></li>
   <li><a href="{base}/dev/model-edit">Model edit</a></li>
+  <li><a href="{base}/dev/model-comp">Model comparison</a></li>
 </ul>
