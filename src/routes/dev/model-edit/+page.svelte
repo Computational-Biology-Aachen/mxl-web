@@ -49,7 +49,8 @@
     width: 100%;
     margin: 0rem;
     padding: 0.3rem;
-    font-size: 0.75rem;
+    font-size: 0.95rem;
+    font-weight: 700;
   }
   button.selected {
     border-top-right-radius: 8px;
