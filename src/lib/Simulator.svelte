@@ -60,6 +60,7 @@
     },
   ]);
 
+  let loading = $state(true);
   let result = $state<{ time: number[]; values: number[][] }>({
     time: [],
     values: [],
@@ -70,6 +71,7 @@
   let currentRequestId = $state<string | null>(null);
 
   function runSimulation() {
+    loading = true;
     const requestId = WorkerManager.generateRequestId();
     currentRequestId = requestId;
 
@@ -109,6 +111,7 @@
       // Only update if this message is for us
       if (data.requestId === currentRequestId) {
         result = data;
+        loading = false;
       }
     });
 
@@ -116,6 +119,7 @@
       // Only update if this message is for us
       if (data.requestId === currentRequestId) {
         result = data;
+        loading = false;
       }
     });
 
@@ -181,7 +185,7 @@
   </div>
 {/if}
 
-<LineChart data={lineData} yMax={yLim} />
+<LineChart data={lineData} yMax={yLim} {loading} />
 
 <style>
   .row {
