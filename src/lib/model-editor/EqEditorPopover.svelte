@@ -4,19 +4,19 @@
 
   let {
     root,
-    variables,
+    variableNames,
     onSave,
     popovertarget,
   }: {
     root: Base;
-    variables: string[];
+    variableNames: string[];
     onSave: (fn: Base) => void;
     popovertarget: string;
   } = $props();
 </script>
 
 <section class="page">
-  <EqEditor bind:root {variables} />
+  <EqEditor bind:root {variableNames} />
 
   <button
     onclick={() => onSave(root)}

@@ -1,8 +1,100 @@
 <script lang="ts">
-  import TableDerived from "$lib/model-editor/TableDerived.svelte";
+  import { Divide, Mul, Name, Num } from "$lib/mathml";
+  import {
+    ModelBuilder,
+    ModelView,
+    type AssView,
+    type ParView,
+    type RxnView,
+    type VarView,
+  } from "$lib/model-editor/model";
+  import TableAssignments from "$lib/model-editor/TableAssignment.svelte";
   import TableParameters from "$lib/model-editor/TableParameters.svelte";
   import TableReactions from "$lib/model-editor/TableReactions.svelte";
   import TableVariables from "$lib/model-editor/TableVariables.svelte";
+
+  function initialModel(): ModelBuilder {
+    return new ModelBuilder()
+      .addVariable("x1", 1.0)
+      .addVariable("x2", 2.0)
+      .addParameter("kf", 1.0)
+      .addParameter("keq", 2.0)
+      .addAssignment("kr", {
+        fn: new Divide([new Name("kf"), new Name("keq")]),
+        args: ["kf", "keq"],
+      })
+      .addReaction("r1", {
+        fn: new Mul([new Name("kf"), new Name("x1")]),
+        args: ["kf", "x1"],
+        stoichiometry: [
+          { name: "x1", value: new Num(-1.0) },
+          { name: "x2", value: new Num(1.0) },
+        ],
+      })
+      .addReaction("r2", {
+        fn: new Mul([new Name("kr"), new Name("x2")]),
+        args: ["kr", "x2"],
+        stoichiometry: [
+          { name: "x1", value: new Num(1.0) },
+          { name: "x2", value: new Num(-1.0) },
+        ],
+      });
+  }
+
+  let userParameters: string[] = [];
+
+  let variables: VarView = $state([
+    ["x0", 1.0],
+    ["x1", 1.0],
+  ]);
+  let parameters: ParView = $state([
+    ["kf", 1.0],
+    ["keq", 1.0],
+  ]);
+  let assignments: AssView = $state([
+    [
+      "kr",
+      {
+        fn: new Divide([new Name("kf"), new Name("keq")]),
+        args: ["kf", "keq"],
+      },
+    ],
+  ]);
+  let reactions: RxnView = $state([
+    [
+      "r1",
+      {
+        fn: new Mul([new Name("kf"), new Name("x1")]),
+        args: ["kf", "x1"],
+        stoichiometry: [
+          { name: "x0", value: new Num(-1.0) },
+          { name: "x1", value: new Num(1.0) },
+        ],
+      },
+    ],
+    [
+      "r2",
+      {
+        fn: new Mul([new Name("kr"), new Name("x2")]),
+        args: ["kr", "x2"],
+        stoichiometry: [
+          { name: "x0", value: new Num(1.0) },
+          { name: "x1", value: new Num(-1.0) },
+        ],
+      },
+    ],
+  ]);
+
+  let modelView = $derived.by(() => {
+    let lcl = new ModelView();
+    lcl.variables = variables;
+    lcl.parameters = parameters;
+    lcl.assignments = assignments;
+    lcl.reactions = reactions;
+    return lcl;
+  });
+  let builder = $derived(modelView.toBuilder());
+  let pycode = $derived.by(() => builder.buildPython(userParameters));
 
   let tabs = [
     { name: "Variables", comp: TableVariables },
@@ -11,8 +103,8 @@
       comp: TableParameters,
     },
     {
-      name: "Derived",
-      comp: TableDerived,
+      name: "Assignments",
+      comp: TableAssignments,
     },
     {
       name: "Reactions",
@@ -20,7 +112,7 @@
     },
   ];
 
-  let cur = tabs[0];
+  let cur = $state(tabs[0]);
 </script>
 
 <ul>
@@ -34,8 +126,14 @@
     </button>
   {/each}
 </ul>
-<svelte:component this={cur.comp} />
+
+<cur.comp bind:variables bind:parameters bind:assignments bind:reactions />
 <br />
+
+<div class="section">
+  <h2>Generated Python Code</h2>
+  <pre>{pycode}</pre>
+</div>
 
 <style>
   ul {

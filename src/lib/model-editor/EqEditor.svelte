@@ -5,10 +5,10 @@
 
   let {
     root = $bindable(),
-    variables,
+    variableNames,
   }: {
     root: Base;
-    variables: string[];
+    variableNames: string[];
   } = $props();
   const templates = [
     {
@@ -177,7 +177,7 @@
               value={(currentNode as Name).name}
               onchange={handleSymbolChange}
             >
-              {#each variables as variable}
+              {#each variableNames as variable}
                 <option
                   value={variable}
                   selected={variable === (currentNode as Name).name}

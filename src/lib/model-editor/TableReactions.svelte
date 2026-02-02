@@ -1,44 +1,39 @@
 <script lang="ts">
+  import type {
+    AssView,
+    ParView,
+    RxnView,
+    Stoichiometry,
+    VarView,
+  } from "./model";
+
+  let {
+    variables = $bindable(),
+    parameters = $bindable(),
+    assignments = $bindable(),
+    reactions = $bindable(),
+  }: {
+    variables: VarView;
+    parameters: ParView;
+    assignments: AssView;
+    reactions: RxnView;
+  } = $props();
+
   import Math from "$lib/Math.svelte";
-  import { Base, Minus, Mul, Name, Num } from "$lib/mathml";
+  import { Base } from "$lib/mathml";
   import EqEditorPopover from "$lib/model-editor/EqEditorPopover.svelte";
   import StoichEditorPopover from "./StoichEditorPopover.svelte";
 
-  import { stoichsToTex, type Stoichs } from "./utils";
-
-  let variables = ["x", "y", "x_{1}", "x_{total}", "k_{cat}", "e_{0}"];
-
-  let derived: Array<{
-    name: string;
-    fn: Base;
-    stoichs: Array<{ name: string; value: Num }>;
-  }> = $state([
-    {
-      name: "x_{2}",
-      fn: new Minus([new Name("x_{total}"), new Name("x_{1}")]),
-      stoichs: [
-        { name: "x", value: new Num(-1.0) },
-        { name: "y", value: new Num(1.0) },
-      ],
-    },
-    {
-      name: "V_{max}",
-      fn: new Mul([new Name("k_{cat}"), new Name("e_{0}")]),
-      stoichs: [
-        { name: "x", value: new Num(1.0) },
-        { name: "y", value: new Num(-1.0) },
-      ],
-    },
-  ]);
-
   function onSaveEq(idx: number, fn: Base) {
-    derived[idx].fn = fn;
-    derived = derived.slice();
+    reactions[idx][1].fn = fn;
+    reactions = reactions.slice();
   }
-  function onSaveStoichs(idx: number, stoich: Stoichs) {
-    derived[idx].stoichs = stoich;
-    derived = derived.slice();
+  function onSaveStoichs(idx: number, stoichiometry: Stoichiometry) {
+    reactions[idx][1].stoichiometry = stoichiometry;
+    reactions = reactions.slice();
   }
+
+  let variableNames = $derived.by(() => variables.map((el) => el[0]));
 </script>
 
 <table>
@@ -50,18 +45,18 @@
     </tr>
   </thead>
   <tbody>
-    {#each derived as { name, fn, stoichs }}
+    {#each reactions as [name], idx}
       <tr>
-        <td>{name}</td>
+        <td> <input type="text" bind:value={reactions[idx][0]} /> </td>
         <td>
           <div class="row">
-            <Math tex={fn.toTex()} display={true} />
+            <Math tex={reactions[idx][1].fn.toTex()} display={true} />
             <button popovertarget="eq-editor-{name}">Edit</button>
           </div>
         </td>
         <td>
           <div class="row">
-            <Math tex={stoichsToTex(stoichs)} display={true} />
+            <!-- <Math tex={stoichsToTex(stoichs)} display={true} /> -->
             <button popovertarget="stoich-editor-{name}">Edit</button>
           </div>
         </td>
@@ -74,19 +69,19 @@
   <button class="save">Save</button>
 </div>
 
-{#each derived as { name, fn, stoichs }, idx}
+{#each reactions as [name, { fn, stoichiometry }], idx}
   <div popover id="eq-editor-{name}">
     <EqEditorPopover
       root={fn}
-      {variables}
+      {variableNames}
       onSave={(root) => onSaveEq(idx, root)}
       popovertarget={`eq-editor-${name}`}
     />
   </div>
   <div popover id="stoich-editor-{name}">
     <StoichEditorPopover
-      {stoichs}
-      {variables}
+      {stoichiometry}
+      {variableNames}
       onSave={(stoichs) => onSaveStoichs(idx, stoichs)}
       popovertarget={`stoich-editor-${name}`}
     />

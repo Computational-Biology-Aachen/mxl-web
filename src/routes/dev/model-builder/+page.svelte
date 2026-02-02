@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Add, Divide, Minus, Mul, Name } from "$lib/mathml";
-  import type { Derived, Reaction } from "$lib/ModelBuilder";
-  import { ModelBuilder } from "$lib/ModelBuilder";
+  import type { Assign, Reaction } from "$lib/model-editor/model";
+  import { ModelBuilder } from "$lib/model-editor/model";
   import Simulator from "$lib/Simulator.svelte";
 
   function initialModel(): ModelBuilder {
@@ -10,7 +10,7 @@
       .addVariable("x2", 2.0)
       .addParameter("kf", 1.0)
       .addParameter("keq", 2.0)
-      .addDerived("kr", {
+      .addAssignment("kr", {
         fn: new Divide([new Name("kf"), new Name("keq")]),
         args: ["kf", "keq"],
       })
@@ -124,13 +124,17 @@
   }
 
   function addDerived() {
-    if (newDerivedName && newDerivedArgs && !builder.derived[newDerivedName]) {
+    if (
+      newDerivedName &&
+      newDerivedArgs &&
+      !builder.assignments[newDerivedName]
+    ) {
       const args = newDerivedArgs.split(",").map((s) => s.trim());
-      const derived: Derived = {
+      const derived: Assign = {
         fn: createDerivedFn(newDerivedTemplate, args),
         args: args,
       };
-      builder.addDerived(newDerivedName, derived);
+      builder.addAssignment(newDerivedName, derived);
       newDerivedName = "";
       newDerivedArgs = "";
       builder = builder;
@@ -138,7 +142,7 @@
   }
 
   function removeDerived(key: string) {
-    builder.removeDerived(key);
+    builder.removeAssignment(key);
     builder = builder;
   }
 
@@ -284,7 +288,7 @@
   <div class="section">
     <h2>Derived Values</h2>
     <div class="list">
-      {#each Object.entries(builder.derived) as [name, derived]}
+      {#each Object.entries(builder.assignments) as [name, derived]}
         <div class="item">
           <span class="name">{name}</span>
           <span class="value">{derived.fn.toPy()}</span>

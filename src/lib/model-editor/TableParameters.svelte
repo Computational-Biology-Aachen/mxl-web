@@ -1,3 +1,19 @@
+<script lang="ts">
+  import type { AssView, ParView, RxnView, VarView } from "./model";
+
+  let {
+    variables = $bindable(),
+    parameters = $bindable(),
+    assignments = $bindable(),
+    reactions = $bindable(),
+  }: {
+    variables: VarView;
+    parameters: ParView;
+    assignments: AssView;
+    reactions: RxnView;
+  } = $props();
+</script>
+
 <table>
   <thead>
     <tr>
@@ -6,14 +22,16 @@
     </tr>
   </thead>
   <tbody>
-    <tr>
-      <td>p1</td>
-      <td>1.0</td>
-    </tr>
-    <tr>
-      <td>p2</td>
-      <td>2.0</td>
-    </tr>
+    {#each parameters as [], idx}
+      <tr>
+        <td>
+          <input type="text" bind:value={parameters[idx][0]} />
+        </td>
+        <td>
+          <input type="number" bind:value={parameters[idx][1]} />
+        </td>
+      </tr>
+    {/each}
   </tbody>
 </table>
 <div class="row">
