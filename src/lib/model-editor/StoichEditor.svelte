@@ -1,24 +1,24 @@
 <script lang="ts">
   import Math from "$lib/Math.svelte";
   import { Num } from "$lib/mathml";
-  import { stoichsToTex, type Stoichs } from "./utils";
+  import { stoichToTex, type Stoichiometry } from "./model";
 
   let {
-    stoichs = $bindable(),
-    variables,
+    stoichiometry = $bindable(),
+    variableNames,
   }: {
-    stoichs: Stoichs;
-    variables: string[];
+    stoichiometry: Stoichiometry;
+    variableNames: string[];
   } = $props();
 
   let latex = $derived.by(() => {
-    return stoichsToTex(stoichs);
+    return stoichToTex(stoichiometry);
   });
 
   function firstVarNotInUse(): string {
-    const inUse = new Set(stoichs.map(({ name }) => name));
+    const inUse = new Set(stoichiometry.map(({ name }) => name));
 
-    for (const val of variables) {
+    for (const val of variableNames) {
       if (!inUse.has(val)) {
         return val;
       }
@@ -47,11 +47,11 @@
       </tr>
     </thead>
     <tbody>
-      {#each stoichs as { name }, idx}
+      {#each stoichiometry as { name }, idx}
         <tr>
           <td>
-            <select bind:value={stoichs[idx].name}>
-              {#each variables as variable}
+            <select bind:value={stoichiometry[idx].name}>
+              {#each variableNames as variable}
                 <option selected={variable === name}>{variable}</option>
               {/each}
             </select>
@@ -59,17 +59,18 @@
           <td>
             <input
               type="number"
-              bind:value={stoichs[idx].value.value}
+              bind:value={stoichiometry[idx].value.value}
               step="1.0"
               onchange={(e) => {
-                stoichs = stoichs.slice();
+                e.preventDefault();
+                stoichiometry = stoichiometry.slice();
               }}
             />
           </td>
           <td>
             <button
               onclick={() => {
-                stoichs = stoichs.filter((i) => {
+                stoichiometry = stoichiometry.filter((i) => {
                   return i.name !== name;
                 });
               }}>x</button
@@ -82,7 +83,7 @@
   <div class="row">
     <button
       onclick={() => {
-        stoichs.push({ name: firstVarNotInUse(), value: new Num(1.0) });
+        stoichiometry.push({ name: firstVarNotInUse(), value: new Num(1.0) });
       }}>+ add new item</button
     >
   </div>

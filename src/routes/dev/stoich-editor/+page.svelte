@@ -3,10 +3,11 @@
   import StoichEditor from "$lib/model-editor/StoichEditor.svelte";
 
   const variables = ["x", "y", "z"];
+
   let stoichs = $state([
     { name: "x", value: new Num(-1.0) },
     { name: "y", value: new Num(1.0) },
   ]);
 </script>
 
-<StoichEditor {stoichs} {variables} />
+<StoichEditor stoichiometry={stoichs} variableNames={variables} />

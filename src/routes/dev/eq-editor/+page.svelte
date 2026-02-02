@@ -14,4 +14,4 @@
   $inspect(root);
 </script>
 
-<EqEditor {variables} bind:root></EqEditor>
+<EqEditor variableNames={variables} bind:root></EqEditor>

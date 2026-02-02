@@ -1,26 +1,45 @@
+<script lang="ts">
+  import type { AssView, ParView, RxnView, VarView } from "./model";
+
+  let {
+    variables = $bindable(),
+    parameters = $bindable(),
+    assignments = $bindable(),
+    reactions = $bindable(),
+  }: {
+    variables: VarView;
+    parameters: ParView;
+    assignments: AssView;
+    reactions: RxnView;
+  } = $props();
+</script>
+
 <table>
   <thead>
     <tr>
       <th>Name</th>
       <th>Initial value</th>
-      <th>Description</th>
     </tr>
   </thead>
   <tbody>
-    <tr>
-      <td>x1</td>
-      <td>1.0</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>x2</td>
-      <td>2.0</td>
-      <td></td>
-    </tr>
+    {#each variables as [], idx}
+      <tr>
+        <td>
+          <input type="text" bind:value={variables[idx][0]} />
+        </td>
+        <td>
+          <input type="number" bind:value={variables[idx][1]} />
+        </td>
+      </tr>
+    {/each}
   </tbody>
 </table>
 <div class="row">
-  <button>+ add new item</button>
+  <button
+    onclick={() => {
+      variables = [...variables, [`x${variables.length}`, 1.0]];
+    }}>+ add new item</button
+  >
   <button class="save">Save</button>
 </div>
 
