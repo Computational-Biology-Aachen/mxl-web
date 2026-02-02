@@ -34,17 +34,16 @@
     </tr>
   </thead>
   <tbody>
-    {#each assignments as [name, der], idx}
+    {#each assignments as [], idx}
       <tr>
         <td>
-          <!-- <input type="text" bind:value={assignments[idx][0]} /> -->
           <input type="text" bind:value={assignments[idx][0]} />
         </td>
         <td>
-          <Math tex={der.fn.toTex()} display={true} />
+          <Math tex={assignments[idx][1].fn.toTex()} display={true} />
         </td>
         <td>
-          <button popovertarget="eq-editor-{name}">Edit</button>
+          <button popovertarget="eq-editor-{idx}">Edit</button>
         </td>
       </tr>
     {/each}
@@ -63,7 +62,7 @@
 </div>
 
 {#each assignments as [name, { fn }], idx}
-  <div popover id="eq-editor-{name}">
+  <div popover id="eq-editor-{idx}">
     <EqEditor
       root={fn}
       {variableNames}
@@ -76,9 +75,6 @@
 <style>
   table {
     font-size: 0.75rem;
-  }
-  td:nth-child(2) {
-    width: 80%;
   }
   td:nth-last-child(1) {
     text-align: right;
