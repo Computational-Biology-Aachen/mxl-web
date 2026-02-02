@@ -46,6 +46,7 @@
   const backend1 = { worker: pyWorker1, model: modelPy1 };
   const backend2 = { worker: pyWorker2, model: modelPy2 };
 
+  let loading = $state(true);
   let result1 = $state<{ time: number[]; values: number[][] }>({
     time: [],
     values: [],
@@ -60,6 +61,7 @@
   let currentRequestId = $state<string | null>(null);
 
   function runSimulation() {
+    loading = true;
     const requestId = WorkerManager.generateRequestId();
     currentRequestId = requestId;
 
@@ -119,12 +121,14 @@
       // Only update if this message is for us
       if (data.requestId === currentRequestId) {
         result1 = data;
+        loading = false;
       }
     });
     const unsubscribePy2 = pyWorker2.onMessage((data) => {
       // Only update if this message is for us
       if (data.requestId === currentRequestId) {
         result2 = data;
+        loading = false;
       }
     });
     // Initial run
@@ -189,11 +193,11 @@
 <div class="row2">
   <div>
     <Math tex={tex1} display={true} />
-    <LineChart data={lineData1} yMax={yLim} />
+    <LineChart data={lineData1} yMax={yLim} {loading} />
   </div>
   <div>
     <Math tex={tex2} display={true} />
-    <LineChart data={lineData2} yMax={yLim} />
+    <LineChart data={lineData2} yMax={yLim} {loading} />
   </div>
 </div>
 
