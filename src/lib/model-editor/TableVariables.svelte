@@ -28,6 +28,10 @@
   table {
     font-size: 0.75rem;
   }
+  table thead {
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
   .row {
     display: flex;
     flex-direction: row;

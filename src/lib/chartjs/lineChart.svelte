@@ -23,7 +23,7 @@
     loadingDelay?: number;
   } = $props();
 
-  let showLoadingSpinner = $state(true);
+  let showLoadingSpinner = $state(loading);
   let loadingTimeout: ReturnType<typeof setTimeout> | null = null;
 
   $effect(() => {
@@ -47,6 +47,7 @@
         responsive: true,
         maintainAspectRatio: false,
         scales: {
+          // @ts-ignore
           x: {
             type: xScale,
             title: {
@@ -60,6 +61,7 @@
               },
             },
           },
+          // @ts-ignore
           y: {
             type: yScale,
             beginAtZero: true,

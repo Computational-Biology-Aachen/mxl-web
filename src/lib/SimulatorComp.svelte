@@ -46,7 +46,9 @@
   const backend1 = { worker: pyWorker1, model: modelPy1 };
   const backend2 = { worker: pyWorker2, model: modelPy2 };
 
-  let loading = $state(true);
+  let loading1 = $state(true);
+  let loading2 = $state(true);
+  let loading = $derived(loading1 && loading2);
   let result1 = $state<{ time: number[]; values: number[][] }>({
     time: [],
     values: [],
@@ -61,7 +63,8 @@
   let currentRequestId = $state<string | null>(null);
 
   function runSimulation() {
-    loading = true;
+    loading1 = true;
+    loading2 = true;
     const requestId = WorkerManager.generateRequestId();
     currentRequestId = requestId;
 
@@ -121,14 +124,14 @@
       // Only update if this message is for us
       if (data.requestId === currentRequestId) {
         result1 = data;
-        loading = false;
+        loading1 = false;
       }
     });
     const unsubscribePy2 = pyWorker2.onMessage((data) => {
       // Only update if this message is for us
       if (data.requestId === currentRequestId) {
         result2 = data;
-        loading = false;
+        loading2 = false;
       }
     });
     // Initial run
