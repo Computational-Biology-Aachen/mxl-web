@@ -30,7 +30,6 @@
     <tr>
       <th>Name</th>
       <th>Function</th>
-      <th>Edit</th>
     </tr>
   </thead>
   <tbody>
@@ -40,26 +39,33 @@
           <input type="text" bind:value={assignments[idx][0]} />
         </td>
         <td>
-          <Math tex={assignments[idx][1].fn.toTex()} display={true} />
-        </td>
-        <td>
-          <button popovertarget="eq-editor-{idx}">Edit</button>
+          <div class="row">
+            <Math
+              tex={assignments[idx][1].fn.toTex()}
+              display={true}
+              fontSize={"0.75rem"}
+            />
+
+            <button class="btn-inline" popovertarget="eq-editor-{idx}"
+              >Edit</button
+            >
+          </div>
         </td>
       </tr>
     {/each}
   </tbody>
 </table>
-<div class="row">
-  <button
-    onclick={() => {
-      assignments = [
-        ...assignments,
-        [`x${variables.length}`, { fn: new Num(1.0), args: [] }],
-      ];
-    }}>+ add new item</button
-  >
-  <button class="save">Save</button>
-</div>
+
+<button
+  class="btn-add"
+  onclick={() => {
+    assignments = [
+      ...assignments,
+      [`a${assignments.length}`, { fn: new Num(1.0), args: [] }],
+    ];
+  }}
+  >+ add new item
+</button>
 
 {#each assignments as [name, { fn }], idx}
   <div popover id="eq-editor-{idx}">
@@ -75,30 +81,50 @@
 <style>
   table {
     font-size: 0.75rem;
+    padding: 0;
+    margin: 0;
   }
   table thead {
-    font-size: 0.9rem;
+    font-size: 1rem;
     font-weight: 500;
+  }
+  table td {
+    margin: 0;
+    padding: 2px;
+  }
+  table input {
+    font-size: 0.75rem;
+    height: 1.5rem;
+    padding: 0 8px;
+    margin: 0;
+  }
+  .btn-inline {
+    font-size: 0.75rem;
+    height: 1.5rem;
+    padding: 0 4px;
+    margin: 0;
   }
   .row {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    margin-bottom: 2rem;
+    align-items: center;
+    padding: 0 0.5rem;
   }
-  button {
+  .btn-add {
     width: 8rem;
     margin: 0rem;
     padding: 0.3rem;
     font-size: 0.75rem;
   }
-  button.save {
-    width: 8rem;
-    margin: 0rem;
-    padding: 0.3rem;
-    font-size: 0.75rem;
+  [popover] {
+    inset: unset;
+    position: absolute;
+    top: 4rem;
+    left: 4rem;
+    width: calc(100% - 8rem);
   }
-  td:nth-last-child(1) {
-    text-align: right;
+  [popover]::backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
   }
 </style>

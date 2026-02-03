@@ -81,6 +81,16 @@ export class ModelBuilder {
 
   constructor() {}
 
+  //
+  clone(): ModelBuilder {
+    let cl = new ModelBuilder();
+    cl.parameters = this.parameters;
+    cl.variables = this.variables;
+    cl.assignments = this.assignments;
+    cl.reactions = this.reactions;
+    return cl;
+  }
+
   // Variables
   addVariable(key: string, value: number) {
     this.variables.set(key, value);
@@ -256,7 +266,7 @@ export class ModelBuilder {
     const rhsString = Object.entries(rhs)
       .map((el) => {
         let [name, stoich] = el;
-        return `d${name}dt = ${stoich}`;
+        return `d${name}dt = ${stoich.length > 0 ? stoich : "0"}`;
       })
       .join("\n    ");
 
