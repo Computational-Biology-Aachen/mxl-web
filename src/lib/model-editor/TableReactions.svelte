@@ -51,13 +51,13 @@
         <td>
           <div class="row">
             <Math tex={reactions[idx][1].fn.toTex()} display={true} />
-            <button popovertarget="eq-editor-{name}">Edit</button>
+            <button popovertarget="eq-editor-{idx}">Edit</button>
           </div>
         </td>
         <td>
           <div class="row">
             <!-- <Math tex={stoichsToTex(stoichs)} display={true} /> -->
-            <button popovertarget="stoich-editor-{name}">Edit</button>
+            <button popovertarget="stoich-editor-{idx}">Edit</button>
           </div>
         </td>
       </tr>
@@ -70,20 +70,20 @@
 </div>
 
 {#each reactions as [name, { fn, stoichiometry }], idx}
-  <div popover id="eq-editor-{name}">
+  <div popover id="eq-editor-{idx}">
     <EqEditorPopover
       root={fn}
       {variableNames}
       onSave={(root) => onSaveEq(idx, root)}
-      popovertarget={`eq-editor-${name}`}
+      popovertarget={`eq-editor-${idx}`}
     />
   </div>
-  <div popover id="stoich-editor-{name}">
+  <div popover id="stoich-editor-{idx}">
     <StoichEditorPopover
       {stoichiometry}
       {variableNames}
       onSave={(stoichs) => onSaveStoichs(idx, stoichs)}
-      popovertarget={`stoich-editor-${name}`}
+      popovertarget={`stoich-editor-${idx}`}
     />
   </div>
 {/each}
@@ -91,6 +91,10 @@
 <style>
   table {
     font-size: 0.75rem;
+  }
+  table thead {
+    font-size: 0.9rem;
+    font-weight: 500;
   }
   .row {
     display: flex;

@@ -203,7 +203,7 @@ export class ModelBuilder {
         return `${name} = ${value}`;
       })
       .toArray()
-      .join("\n        ");
+      .join("\n    ");
 
     const variables = this.variables
       .entries()
@@ -212,14 +212,6 @@ export class ModelBuilder {
       })
       .toArray()
       .join(", ");
-
-    // const ass = this.assignments
-    //   .entries()
-    //   .map(([name, ass]) => {
-    //     return `${name} = ${ass.fn.toPy()}`;
-    //   })
-    //   .toArray()
-    //   .join("\n        ");
 
     const dxdt = this.variables
       .entries()
@@ -241,7 +233,7 @@ export class ModelBuilder {
           return `${name} = ${el.toPy()}`;
         }
       })
-      .join("\n        ");
+      .join("\n    ");
 
     // Build rhs
     let rhs: Record<string, string> = Object.fromEntries(
@@ -266,18 +258,27 @@ export class ModelBuilder {
         let [name, stoich] = el;
         return `d${name}dt = ${stoich}`;
       })
-      .join("\n        ");
+      .join("\n    ");
+
+    const extraArgs = `${userParameters.map((i) => `${i}: float`).join(",\n    ")}`;
+
+    const y0 = this.variables
+      .entries()
+      .map(([name, value]) => `"${name}": ${value}`)
+      .toArray()
+      .join(", ");
 
     return `def model(
-      time: float,
-      variables: float,
-      ${userParameters.map((i) => `${i}: float`).join(",\n      ")}
-    ):
-        ${variables} = variables
-        ${parameters}
-        ${fns}
-        ${rhsString}
-        return [${dxdt}]
+    time: float,
+    variables: float, ${extraArgs.length > 0 ? "\n      " + extraArgs : ""}
+):
+    ${variables} = variables
+    ${parameters}
+    ${fns}
+    ${rhsString}
+    return [${dxdt}]
+
+y0 = {${y0}}
     `;
   }
   buildJs(): string {

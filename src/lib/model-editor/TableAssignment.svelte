@@ -15,7 +15,7 @@
 
   import Math from "$lib/Math.svelte";
   import { Base, Num } from "$lib/mathml";
-  import EqEditor from "$lib/model-editor/EqEditorPopover.svelte";
+  import EqEditorPopover from "$lib/model-editor/EqEditorPopover.svelte";
 
   function onSaveEq(idx: number, fn: Base) {
     assignments[idx][1].fn = fn;
@@ -63,11 +63,11 @@
 
 {#each assignments as [name, { fn }], idx}
   <div popover id="eq-editor-{idx}">
-    <EqEditor
+    <EqEditorPopover
       root={fn}
       {variableNames}
       onSave={(root) => onSaveEq(idx, root)}
-      popovertarget={`eq-editor-${name}`}
+      popovertarget={`eq-editor-${idx}`}
     />
   </div>
 {/each}
@@ -76,8 +76,9 @@
   table {
     font-size: 0.75rem;
   }
-  td:nth-last-child(1) {
-    text-align: right;
+  table thead {
+    font-size: 0.9rem;
+    font-weight: 500;
   }
   .row {
     display: flex;
@@ -95,5 +96,8 @@
     margin: 0rem;
     padding: 0.3rem;
     font-size: 0.75rem;
+  }
+  td:nth-last-child(1) {
+    text-align: right;
   }
 </style>
