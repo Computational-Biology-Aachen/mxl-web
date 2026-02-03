@@ -118,7 +118,7 @@
 <ul>
   {#each tabs as tab}
     <button
-      class:selected={cur === tab}
+      class:selected={cur.name === tab.name}
       class="tab"
       onclick={() => (cur = tab)}
     >
@@ -128,7 +128,6 @@
 </ul>
 
 <cur.comp bind:variables bind:parameters bind:assignments bind:reactions />
-<br />
 
 <div class="section">
   <h2>Generated Python Code</h2>
@@ -155,5 +154,8 @@
     border-top-left-radius: 8px;
     border-top-width: 8px;
     border-color: #333;
+  }
+  pre {
+    padding: var(--pico-spacing);
   }
 </style>
