@@ -1,7 +1,6 @@
 <script lang="ts">
   import { Divide, Mul, Name, Num } from "$lib/mathml";
   import {
-    ModelBuilder,
     ModelView,
     type AssView,
     type ParView,
@@ -12,34 +11,6 @@
   import TableParameters from "$lib/model-editor/TableParameters.svelte";
   import TableReactions from "$lib/model-editor/TableReactions.svelte";
   import TableVariables from "$lib/model-editor/TableVariables.svelte";
-
-  function initialModel(): ModelBuilder {
-    return new ModelBuilder()
-      .addVariable("x1", 1.0)
-      .addVariable("x2", 2.0)
-      .addParameter("kf", 1.0)
-      .addParameter("keq", 2.0)
-      .addAssignment("kr", {
-        fn: new Divide([new Name("kf"), new Name("keq")]),
-        args: ["kf", "keq"],
-      })
-      .addReaction("r1", {
-        fn: new Mul([new Name("kf"), new Name("x1")]),
-        args: ["kf", "x1"],
-        stoichiometry: [
-          { name: "x1", value: new Num(-1.0) },
-          { name: "x2", value: new Num(1.0) },
-        ],
-      })
-      .addReaction("r2", {
-        fn: new Mul([new Name("kr"), new Name("x2")]),
-        args: ["kr", "x2"],
-        stoichiometry: [
-          { name: "x1", value: new Num(1.0) },
-          { name: "x2", value: new Num(-1.0) },
-        ],
-      });
-  }
 
   let userParameters: string[] = [];
 
