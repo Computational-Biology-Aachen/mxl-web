@@ -12,3 +12,7 @@
     --text-caption: calc(10 * 0.0625)rem;
 }
 
+.katex-display {
+    margin: 0 !important;
+    padding: 0 !important;
+}

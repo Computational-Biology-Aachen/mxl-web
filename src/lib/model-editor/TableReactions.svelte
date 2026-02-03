@@ -21,7 +21,7 @@
   } = $props();
 
   import Math from "$lib/Math.svelte";
-  import { Base } from "$lib/mathml";
+  import { Base, Num } from "$lib/mathml";
   import EqEditorPopover from "$lib/model-editor/EqEditorPopover.svelte";
   import StoichEditorPopover from "./StoichEditorPopover.svelte";
 
@@ -34,7 +34,10 @@
     reactions = reactions.slice();
   }
 
-  let variableNames = $derived.by(() => variables.map((el) => el[0]));
+  let varNames = $derived(variables.map((el) => el[0]));
+  let argNames = $derived.by(() => {
+    return [...variables.map((el) => el[0]), ...assignments.map((el) => el[0])];
+  });
 </script>
 
 <table>
@@ -51,8 +54,14 @@
         <td> <input type="text" bind:value={reactions[idx][0]} /> </td>
         <td>
           <div class="row">
-            <Math tex={reactions[idx][1].fn.toTex()} display={true} />
-            <button popovertarget="eq-editor-{idx}">Edit</button>
+            <Math
+              tex={reactions[idx][1].fn.toTex()}
+              display={true}
+              fontSize={"0.75rem"}
+            />
+            <button class="btn-inline" popovertarget="eq-editor-{idx}"
+              >Edit</button
+            >
           </div>
         </td>
         <td>
@@ -60,24 +69,37 @@
             <Math
               tex={stoichToTex(reactions[idx][1].stoichiometry)}
               display={true}
+              fontSize={"0.75rem"}
             />
-            <button popovertarget="stoich-editor-{idx}">Edit</button>
+            <button class="btn-inline" popovertarget="stoich-editor-{idx}"
+              >Edit</button
+            >
           </div>
         </td>
       </tr>
     {/each}
   </tbody>
 </table>
-<div class="row">
-  <button>+ add new item</button>
-  <button class="save">Save</button>
-</div>
+
+<button
+  class="btn-add"
+  onclick={() => {
+    reactions = [
+      ...reactions,
+      [
+        `v${reactions.length}`,
+        { fn: new Num(1.0), args: [], stoichiometry: [] },
+      ],
+    ];
+  }}
+  >+ add new item
+</button>
 
 {#each reactions as [name, { fn, stoichiometry }], idx}
   <div popover id="eq-editor-{idx}">
     <EqEditorPopover
       root={fn}
-      {variableNames}
+      variableNames={argNames}
       onSave={(root) => onSaveEq(idx, root)}
       popovertarget={`eq-editor-${idx}`}
     />
@@ -85,7 +107,7 @@
   <div popover id="stoich-editor-{idx}">
     <StoichEditorPopover
       {stoichiometry}
-      {variableNames}
+      variableNames={varNames}
       onSave={(stoichs) => onSaveStoichs(idx, stoichs)}
       popovertarget={`stoich-editor-${idx}`}
     />
@@ -95,27 +117,50 @@
 <style>
   table {
     font-size: 0.75rem;
+    padding: 0;
+    margin: 0;
   }
   table thead {
-    font-size: 0.9rem;
+    font-size: 1rem;
     font-weight: 500;
+  }
+  table td {
+    margin: 0;
+    padding: 2px;
+  }
+  table input {
+    font-size: 0.75rem;
+    height: 1.5rem;
+    padding: 0 8px;
+    margin: 0;
+  }
+  .btn-inline {
+    font-size: 0.75rem;
+    height: 1.5rem;
+    padding: 0 4px;
+    margin: 0;
   }
   .row {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    margin-bottom: 2rem;
+    align-items: center;
+    padding: 0 0.5rem;
   }
-  button {
+  .btn-add {
     width: 8rem;
     margin: 0rem;
     padding: 0.3rem;
     font-size: 0.75rem;
   }
-  button.save {
-    width: 8rem;
-    margin: 0rem;
-    padding: 0.3rem;
-    font-size: 0.75rem;
+  [popover] {
+    inset: unset;
+    position: absolute;
+    top: 4rem;
+    left: 4rem;
+    width: calc(100% - 8rem);
+  }
+  [popover]::backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
   }
 </style>
