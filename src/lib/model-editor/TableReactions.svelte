@@ -1,10 +1,11 @@
 <script lang="ts">
-  import type {
-    AssView,
-    ParView,
-    RxnView,
-    Stoichiometry,
-    VarView,
+  import {
+    stoichToTex,
+    type AssView,
+    type ParView,
+    type RxnView,
+    type Stoichiometry,
+    type VarView,
   } from "./model";
 
   let {
@@ -56,7 +57,10 @@
         </td>
         <td>
           <div class="row">
-            <!-- <Math tex={stoichsToTex(stoichs)} display={true} /> -->
+            <Math
+              tex={stoichToTex(reactions[idx][1].stoichiometry)}
+              display={true}
+            />
             <button popovertarget="stoich-editor-{idx}">Edit</button>
           </div>
         </td>
