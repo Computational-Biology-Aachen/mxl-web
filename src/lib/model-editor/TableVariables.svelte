@@ -55,6 +55,7 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    margin-bottom: 2rem;
   }
   button {
     width: 8rem;
