@@ -22,7 +22,7 @@
 
   import Icon from "$lib/Icon.svelte";
   import Math from "$lib/Math.svelte";
-  import { Base, Num } from "$lib/mathml";
+  import { Base, Name, Num } from "$lib/mathml";
   import EqEditorPopover from "$lib/model-editor/EqEditorPopover.svelte";
   import StoichEditorPopover from "./StoichEditorPopover.svelte";
 
@@ -101,7 +101,11 @@
         ...reactions,
         [
           `v${reactions.length}`,
-          { fn: new Num(1.0), args: [], stoichiometry: [] },
+          {
+            fn: new Name("Default"),
+            args: [],
+            stoichiometry: [{ name: "Default", value: new Num(1.0) }],
+          },
         ],
       ];
     }}

@@ -55,6 +55,7 @@
 <section>
   <h3>Model equations</h3>
   <Math tex={eqE} display />
+  <br />
   <Math tex={eqC} display />
 </section>
 
