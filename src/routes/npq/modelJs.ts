@@ -303,4 +303,3 @@ export function modelJs(time: number, variables: number[], pars: number[]) {
     dViolaxanthindt,
   ];
 }
-

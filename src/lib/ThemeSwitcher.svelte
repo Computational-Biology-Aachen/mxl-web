@@ -72,13 +72,13 @@
 
 <style>
   button {
-    text-decoration: none;
-    background: none;
-    border: none;
-    box-shadow: none;
     outline: none;
+    box-shadow: none;
+    border: none;
+    background: none;
     padding: var(--pico-nav-element-spacing-vertical)
       var(--pico-nav-element-spacing-horizontal);
+    text-decoration: none;
   }
   button:hover {
     color: var(--pico-primary-hover);

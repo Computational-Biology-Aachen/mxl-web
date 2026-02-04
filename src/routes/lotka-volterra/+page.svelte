@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Icon from "$lib/Icon.svelte";
   import { Mul, Name, Num } from "$lib/mathml";
   import { ModelBuilder } from "$lib/model-editor/model";
   import ModelEditorPopover from "$lib/model-editor/ModelEditorPopover.svelte";
@@ -95,20 +96,28 @@
   let model = $state(initModel());
 </script>
 
-<h1>Lotka-Volterra</h1>
-<div class="row">
-  <p>Quick and dirty demo to get ODE integration running on the client-side.</p>
-  <button
-    onclick={() => {
-      model = initModel();
-      simulatorComponent.runSimulation(model);
-    }}>Reset</button
-  >
-  <button popovertarget="model-editor">Edit model</button>
+<div class="topbar">
+  <div class="breadcrumbs">
+    <a class="light" href="/">Models</a>
+    <span class="light">/</span>
+    <span class="bold">Lotka-Volterra</span>
+  </div>
+  <div class="row">
+    <button
+      onclick={() => {
+        model = initModel();
+        simulatorComponent.runSimulation(model);
+      }}>Reset</button
+    >
+    <button popovertarget="model-editor">Edit model</button>
+  </div>
 </div>
 
 {#if parSliders.some((i) => i.fixed === undefined || !i.fixed)}
-  <h3>Parameters</h3>
+  <div class="heading">
+    <Icon>tune</Icon>
+    <h3>Simulation parameters</h3>
+  </div>
   <div class="grid-row">
     {#each parSliders as par, idx (par.name)}
       <Slider
@@ -131,7 +140,10 @@
 {/if}
 
 {#if varSliders.some((i) => i.fixed === undefined || !i.fixed)}
-  <h3>Variables</h3>
+  <div class="heading">
+    <Icon>tune</Icon>
+    <h3>Initial conditions</h3>
+  </div>
   <div class="grid-row">
     {#each varSliders as { name, min, max, step, fixed }, idx}
       {#if fixed === undefined || !fixed}
@@ -166,16 +178,62 @@
 />
 
 <style>
-  .row {
+  .topbar {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
     width: 100%;
+  }
+  .breadcrumbs {
+    display: flex;
+    gap: 0.5rem;
+    font-size: var(--text-sm);
+  }
+  .row {
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  .heading {
+    display: flex;
+    gap: 0.5rem;
   }
   .grid-row {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
     align-items: center;
+    box-shadow: var(--shadow);
+    border-radius: 0.75rem;
+    background-color: var(--bg-l1);
+    padding: 1.5rem;
+  }
+  .bold {
+    font-weight: 600;
+  }
+  .light {
+    color: var(--slate-400);
+    font-weight: 400;
+  }
+  a.light:hover {
+    color: var(--primary);
+  }
+  button {
+    cursor: pointer;
+    border: none;
+    border-radius: 0.5rem;
+    background-color: var(--primary);
+    padding: 0 1rem;
+    min-width: 1rem;
+    height: 2rem;
+    color: white;
+    font-weight: var(--weight-bold);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    letter-spacing: 0.025em;
+  }
+  button:hover {
+    background-color: lch(from var(--primary) calc(l - 20) c h);
   }
 </style>

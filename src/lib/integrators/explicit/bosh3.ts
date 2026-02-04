@@ -9,16 +9,15 @@
  */
 
 type ExplicitButcherTableau = {
-    aLower: number[][],
-    bSol: number[],
-    bErr: number[],
-    c: number[],
-}
-
+  aLower: number[][];
+  bSol: number[];
+  bErr: number[];
+  c: number[];
+};
 
 const Tableau: ExplicitButcherTableau = {
-    aLower: [[1 / 2], [0.0, 3 / 4], [2 / 9, 1 / 3, 4 / 9]],
-    bSol: [2 / 9, 1 / 3, 4 / 9, 0.0],
-    bErr: [2 / 9 - 7 / 24, 1 / 3 - 1 / 4, 4 / 9 - 1 / 3, -1 / 8],
-    c: [1 / 2, 3 / 4, 1.0],
-}
+  aLower: [[1 / 2], [0.0, 3 / 4], [2 / 9, 1 / 3, 4 / 9]],
+  bSol: [2 / 9, 1 / 3, 4 / 9, 0.0],
+  bErr: [2 / 9 - 7 / 24, 1 / 3 - 1 / 4, 4 / 9 - 1 / 3, -1 / 8],
+  c: [1 / 2, 3 / 4, 1.0],
+};

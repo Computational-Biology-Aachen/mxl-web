@@ -1,35 +1,37 @@
 import { loadPyodide, version } from "pyodide";
-export { }; // make it a module
+export {}; // make it a module
 
 let pyodideReady = false;
 let pyFuncs: any;
-let basePath = ''; // Will be set via initialization message
+let basePath = ""; // Will be set via initialization message
 let pyodidePromise: Promise<any> | null = null;
 
 const indexURL = `https://cdn.jsdelivr.net/pyodide/v${version}/full/`;
 
 async function setupPyodide() {
   try {
-    const pyodide = await loadPyodide({ indexURL, packages: ['numpy', "scipy"] });
+    const pyodide = await loadPyodide({
+      indexURL,
+      packages: ["numpy", "scipy"],
+    });
 
     const response = await fetch(`${basePath}/main.py`);
     const pythonScript = await response.text();
     pyFuncs = pyodide.runPython(pythonScript);
-    console.log('Python Ready');
+    console.log("Python Ready");
     pyodideReady = true;
-    return pyodide
-  } catch(e) {
-    console.error('Python loading failed.');
+    return pyodide;
+  } catch (e) {
+    console.error("Python loading failed.");
     console.error(e);
   }
 }
 
-
-onmessage = async function(event: MessageEvent){
+onmessage = async function (event: MessageEvent) {
   // Handle initialization message
-  if (event.data.type === '__INIT__') {
+  if (event.data.type === "__INIT__") {
     console.log("Setting up Python");
-    basePath = event.data.basePath || '';
+    basePath = event.data.basePath || "";
     pyodidePromise = setupPyodide();
     return;
   }
@@ -48,15 +50,18 @@ onmessage = async function(event: MessageEvent){
   const pars = event.data.pars;
   const requestId = event.data.requestId;
 
+  console.log("Starting py integration");
+  console.log(`Pars: ${pars}`);
 
-  console.log("Starting py integration")
-  console.log(`Pars: ${pars}`)
-
-  const [tPy, yPy] = pyFuncs.integrate(pyodide.runPython(model), y0, tEnd, pars);
+  const [tPy, yPy] = pyFuncs.integrate(
+    pyodide.runPython(model),
+    y0,
+    tEnd,
+    pars,
+  );
   const time = tPy.toJs();
   const values = yPy.toJs();
 
   console.log(`Python integration took ${Date.now() - tStart} ms`);
-  postMessage({time: time, values: values, requestId: requestId})
-
-}
+  postMessage({ time: time, values: values, requestId: requestId });
+};

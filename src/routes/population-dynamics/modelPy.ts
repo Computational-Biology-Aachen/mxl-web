@@ -18,4 +18,4 @@ export const modelPy = `
         return dEdt, dCdt
 
     population_dynamics
-`
+`;

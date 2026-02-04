@@ -11,8 +11,6 @@ interface IntegratorKws extends BaseIntegratorKws {
   maxSteps?: number;
 }
 
-
-
 // const γ: number = 0.26
 // const a21: number = γ
 // const a31: number = 0.13
@@ -91,9 +89,6 @@ interface IntegratorKws extends BaseIntegratorKws {
 //   bErr: [a71 - a61, a72 - a62, a73 - a63, a74 - a64, a75 - a65, a76 - γ, γ],
 //   c: [0.52, 1.230333209967908, 0.8957659843500759, 0.43639360985864756, 1.0, 1.0],
 // }
-
-
-
 
 /** Kvaerno 4/5 IRK integrator with adaptive time stepping */
 export function kvaerno45(

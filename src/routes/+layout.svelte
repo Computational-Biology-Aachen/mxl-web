@@ -4,7 +4,6 @@
   import "../app.css";
 
   import Navbar from "$lib/Navbar.svelte";
-  import OneColumnLayout from "$lib/Page.svelte";
 
   let { children } = $props();
 </script>
@@ -19,16 +18,25 @@
   <meta name="twitter:card" content="summary" />
 </svelte:head>
 
-<OneColumnLayout>
-  <Navbar>
-    <li><a href="{base}/">Home</a></li>
-    <li><a href="{base}/lotka-volterra">Lotka Volterra</a></li>
-    <li><a href="{base}/population-dynamics">Population dynamics</a></li>
-    <li><a href="{base}/tripartite">Tripartite dynamics</a></li>
-    <li><a href="{base}/dynamic-entrobactin">Entrobactin</a></li>
-    <li><a href="{base}/npq">NPQ</a></li>
-    <li><a href="{base}/fvcb">FvCB</a></li>
-    <!-- <li><a href="{base}/plotly-test">test</a></li> -->
-  </Navbar>
+<Navbar>
+  <li><a href="{base}/">Home</a></li>
+  <li><a href="{base}/lotka-volterra">Lotka Volterra</a></li>
+  <li><a href="{base}/population-dynamics">Population dynamics</a></li>
+  <li><a href="{base}/tripartite">Tripartite dynamics</a></li>
+  <li><a href="{base}/dynamic-entrobactin">Entrobactin</a></li>
+  <li><a href="{base}/npq">NPQ</a></li>
+  <li><a href="{base}/fvcb">FvCB</a></li>
+</Navbar>
+
+<main>
   {@render children()}
-</OneColumnLayout>
+</main>
+
+<style>
+  main {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 2rem 5rem;
+  }
+</style>

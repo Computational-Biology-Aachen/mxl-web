@@ -147,19 +147,19 @@
 <style>
   .node {
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
+    box-shadow: var(--shadow);
     border: 1px solid #d7d7d7;
     border-radius: 10px;
-    padding: 0.75rem;
     background: #fafafa;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    padding: 0.75rem;
   }
 
   .node[data-selected="true"] {
-    border-color: #0f766e;
-    box-shadow: 0 0 0 2px rgba(15, 118, 110, 0.2);
-    background: #f0fdfa;
+    box-shadow: var(--shadow);
+    border-color: var(--primary);
+    background: rgb(from var(--primary) r g b / 5%);
   }
 
   .divide {
@@ -178,37 +178,37 @@
   }
 
   .op {
-    border: 1px solid #0f766e;
-    background: #0f766e;
-    color: #fff;
-    border-radius: 50%;
-    width: 2.5rem;
-    height: 2.5rem;
-    font-weight: 700;
-    cursor: pointer;
     display: grid;
     place-items: center;
-    line-height: 1;
+    cursor: pointer;
+    border: 1px solid var(--primary);
+    border-radius: 50%;
+    background: var(--primary);
     padding: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    color: #fff;
+    font-weight: 700;
+    line-height: 1;
   }
 
   .leaf {
     display: inline-flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     gap: 0.35rem;
-    padding: 0.35rem 0.55rem;
-    background: #e2e8f0;
     border-radius: 999px;
-    font-weight: 600;
+    background: #e2e8f0;
+    padding: 0.35rem 0.55rem;
     color: #1f2937;
+    font-weight: 600;
   }
 
   .badge {
-    text-transform: uppercase;
+    color: #4b5563;
     font-size: 0.65rem;
     letter-spacing: 0.05em;
-    color: #4b5563;
+    text-transform: uppercase;
   }
 
   .value {

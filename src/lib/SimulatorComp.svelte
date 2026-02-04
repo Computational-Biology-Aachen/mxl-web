@@ -208,8 +208,8 @@
   .row {
     display: flex;
     flex-direction: row;
-    width: 100%;
     justify-content: space-between;
+    width: 100%;
   }
   .row2 {
     display: grid;
