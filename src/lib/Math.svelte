@@ -31,8 +31,8 @@
 <style>
   span {
     display: inline-block;
-    padding: 0;
     margin: 0;
+    padding: 0;
     /* transform-origin: left; */
     /* transform: scale(0.75); */
   }

@@ -74,4 +74,17 @@
   });
 </script>
 
-<LineChart data={lineData} yMax={yLim} {loading} />
+<div>
+  <h2>Trajectory</h2>
+  <LineChart data={lineData} yMax={yLim} {loading} />
+</div>
+
+<style>
+  div {
+    margin: 1rem 0;
+    box-shadow: var(--shadow);
+    border-radius: 0.75rem;
+    background-color: var(--bg-l1);
+    padding: 2rem;
+  }
+</style>

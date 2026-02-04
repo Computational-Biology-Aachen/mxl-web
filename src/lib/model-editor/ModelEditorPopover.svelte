@@ -12,13 +12,22 @@
 </script>
 
 <div popover id="model-editor">
-  <ModelEditor {parent} {onSave} popovertarget={`model-editor`} />
+  <section class="page">
+    <ModelEditor {parent} {onSave} popovertarget={`model-editor`} />
+  </section>
 </div>
 
 <style>
+  .page {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem;
+  }
+
   [popover] {
-    inset: unset;
     position: absolute;
+    inset: unset;
     top: 2rem;
     left: 2rem;
     width: calc(100% - 4rem);

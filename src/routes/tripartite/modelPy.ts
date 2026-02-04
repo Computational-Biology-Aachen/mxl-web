@@ -22,4 +22,4 @@ export const modelPy = `
         return dPdt, dCdt, dMdt
 
     tripartite
-    `
+    `;

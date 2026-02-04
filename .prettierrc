@@ -4,9 +4,7 @@
   "singleQuote": false,
   "trailingComma": "all",
   "printWidth": 80,
-  "plugins": [
-    "prettier-plugin-svelte"
-  ],
+  "plugins": ["prettier-plugin-svelte", "prettier-plugin-css-order"],
   "overrides": [
     {
       "files": "*.svelte",

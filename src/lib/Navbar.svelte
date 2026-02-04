@@ -1,5 +1,4 @@
 <script lang="ts">
-  import ThemeSwitcher from "$lib/ThemeSwitcher.svelte";
   import { faGithub } from "@fortawesome/free-brands-svg-icons";
   import Fa from "svelte-fa";
   import { MediaQuery } from "svelte/reactivity";
@@ -9,26 +8,91 @@
 </script>
 
 <nav>
+  <div>
+    <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+      <path
+        clip-rule="evenodd"
+        d="M24 18.4228L42 11.475V34.3663C42 34.7796 41.7457 35.1504 41.3601 35.2992L24 42V18.4228Z"
+        fill="currentColor"
+        fill-rule="evenodd"
+      ></path>
+      <path
+        clip-rule="evenodd"
+        d="M24 8.18819L33.4123 11.574L24 15.2071L14.5877 11.574L24 8.18819ZM9 15.8487L21 20.4805V37.6263L9 32.9945V15.8487ZM27 37.6263V20.4805L39 15.8487V32.9945L27 37.6263ZM25.354 2.29885C24.4788 1.98402 23.5212 1.98402 22.646 2.29885L4.98454 8.65208C3.7939 9.08038 3 10.2097 3 11.475V34.3663C3 36.0196 4.01719 37.5026 5.55962 38.098L22.9197 44.7987C23.6149 45.0671 24.3851 45.0671 25.0803 44.7987L42.4404 38.098C43.9828 37.5026 45 36.0196 45 34.3663V11.475C45 10.2097 44.2061 9.08038 43.0155 8.65208L25.354 2.29885Z"
+        fill="currentColor"
+        fill-rule="evenodd"
+      ></path>
+    </svg>
+    <h2>mxlweb</h2>
+  </div>
+
   <ul>
-    <ThemeSwitcher />
     <li>
+      <a href="/"> Home </a>
+    </li>
+    <li>
+      <a href="/"> Models </a>
+    </li>
+    <li class="img">
       <a href="https://github.com/Computational-Biology-Aachen/mxl-web"
         ><Fa icon={faGithub} /></a
       >
     </li>
-    <details class="dropdown">
-      <summary> models </summary>
-      <ul dir="rtl">
-        {@render children()}
-      </ul>
-    </details>
   </ul>
 </nav>
 
 <style>
   nav {
-    min-height: 4rem;
-    justify-content: flex-end;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
     align-items: center;
+    border-width: 0 0 1px 0;
+    border-style: solid;
+    border-color: lightgray;
+    background-color: var(--bg-l1);
+    padding: 1rem 2.5rem;
+    width: 100%;
+    font-weight: 500;
+    font-size: 0.875rem;
+  }
+
+  svg {
+    margin: 0 1rem;
+    width: 2rem;
+    height: 2rem;
+    color: var(--primary);
+  }
+
+  h2 {
+    font-size: 0.875rem;
+  }
+
+  div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  ul {
+    display: inline;
+  }
+
+  li {
+    display: inline;
+    padding: 0 1rem;
+  }
+
+  a {
+    color: var(--slate);
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--primary);
+  }
+
+  .img {
+    font-size: 1.5rem;
   }
 </style>

@@ -234,34 +234,34 @@
   }
 
   .palette-button {
-    text-align: left;
-    padding: 0.75rem 0.9rem;
-    border-radius: 10px;
-    border: 1px solid #d1d5db;
-    background: #f9fafb;
-    cursor: pointer;
     transition:
       transform 120ms ease,
       box-shadow 120ms ease,
       border-color 120ms ease;
+    cursor: pointer;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    background: #f9fafb;
+    padding: 0.75rem 0.9rem;
+    text-align: left;
   }
 
   .palette-button:hover {
     transform: translateY(-2px);
-    border-color: #0f766e;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    border-color: var(--primary);
   }
 
   .palette-button .label {
     display: block;
-    font-weight: 700;
     color: #111827;
+    font-weight: 700;
   }
 
   .palette-button .hint {
     display: block;
-    font-size: 0.9rem;
     color: #4b5563;
+    font-size: 0.9rem;
   }
 
   .editor-grid {
@@ -271,25 +271,29 @@
   }
 
   .window {
+    box-shadow: var(--shadow);
     border: 1px solid #e5e7eb;
     border-radius: 12px;
-    overflow: hidden;
     background: #fff;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
   }
 
   .window-header {
-    background: linear-gradient(90deg, #0f766e, #14b8a6);
-    color: white;
+    background: linear-gradient(
+      90deg,
+      var(--primary),
+      lch(from var(--primary) calc(l + 20) c h)
+    );
     padding: 0.75rem 1rem;
+    color: white;
     font-weight: 700;
   }
 
   .window-body {
-    padding: 1rem;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    padding: 1rem;
   }
 
   .hint-line {
@@ -303,24 +307,24 @@
   }
 
   .edit-row {
-    margin-top: 0.5rem;
     display: grid;
     grid-template-columns: auto 1fr;
-    gap: 0.35rem 0.6rem;
     align-items: center;
+    gap: 0.35rem 0.6rem;
+    margin-top: 0.5rem;
   }
 
   label {
-    font-size: 0.9rem;
     color: #374151;
+    font-size: 0.9rem;
   }
 
   select,
   input[type="number"] {
-    width: 100%;
-    padding: 0.35rem 0.5rem;
     border: 1px solid #cbd5e1;
     border-radius: 6px;
+    padding: 0.35rem 0.5rem;
+    width: 100%;
     font-size: 0.95rem;
   }
 </style>

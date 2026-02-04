@@ -113,11 +113,8 @@
 <style>
   .chart-container {
     width: 100%;
-    min-height: 400px;
     height: auto;
-    margin: 1rem 0;
-    padding: 2rem;
-    /* border: 1px solid #ccc; */
+    min-height: 400px;
   }
 
   canvas {
@@ -128,25 +125,25 @@
   .loading-container {
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
-    height: 100%;
+    align-items: center;
     gap: 1rem;
+    height: 100%;
   }
 
   .loading-container p {
     margin: 0;
-    font-size: 0.95rem;
     color: rgba(0, 0, 0, 0.6);
+    font-size: 0.95rem;
   }
 
   .spinner {
+    animation: spin 1s linear infinite;
     border: 3px solid rgba(0, 0, 0, 0.1);
     border-top-color: currentColor;
     border-radius: 50%;
     width: 40px;
     height: 40px;
-    animation: spin 1s linear infinite;
   }
 
   @keyframes spin {

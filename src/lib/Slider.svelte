@@ -40,7 +40,10 @@
 </script>
 
 <label>
-  <span>{name}: {liveVal}</span>
+  <div class="row">
+    <span class="name">{name}</span>
+    <span class="number">{liveVal}</span>
+  </div>
   <input
     type="range"
     {min}
@@ -57,9 +60,25 @@
 
 <style>
   span {
-    font-size: 0.8rem;
+    font-size: var(--text-sm);
+  }
+  span.name {
+    font-weight: var(--weight-medium);
+  }
+  span.number {
+    color: var(--primary);
+    font-weight: var(--weight-bold);
+  }
+  .row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
   }
   label {
     padding: 0 0.5rem;
+  }
+  input {
+    width: 100%;
   }
 </style>

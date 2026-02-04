@@ -34,7 +34,6 @@
   ];
 </script>
 
-<h1>Lotka-Volterra</h1>
-<p>Quick and dirty demo to get ODE integration running on the client-side.</p>
+<h1>Model comparison</h1>
 
 <SimulatorComp {modelPy1} {modelPy2} {pars} {tEnd} {variables} />
