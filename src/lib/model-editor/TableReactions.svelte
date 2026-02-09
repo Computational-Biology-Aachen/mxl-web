@@ -37,7 +37,11 @@
 
   let varNames = $derived(variables.map((el) => el[0]));
   let argNames = $derived.by(() => {
-    return [...variables.map((el) => el[0]), ...assignments.map((el) => el[0])];
+    return [
+      ...variables.map((el) => el[0]),
+      ...parameters.map((el) => el[0]),
+      ...assignments.map((el) => el[0]),
+    ];
   });
 </script>
 
