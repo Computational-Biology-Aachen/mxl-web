@@ -9,12 +9,10 @@ export type Stoichiometry = Array<Stoich>;
 
 export type Assign = {
   fn: Base;
-  args: Args;
 };
 
 export type Reaction = {
   fn: Base;
-  args: Args;
   stoichiometry: Stoichiometry;
 };
 
@@ -167,10 +165,10 @@ export class ModelBuilder {
     ]);
     let toSort: Array<{ k: string; args: Set<string> }> = [
       ...this.assignments.entries().map(([key, val]) => {
-        return { k: key, args: new Set(val.args) };
+        return { k: key, args: val.fn.getSymbols(new Set()) };
       }),
       ...this.reactions.entries().map(([key, val]) => {
-        return { k: key, args: new Set(val.args) };
+        return { k: key, args: val.fn.getSymbols(new Set()) };
       }),
     ];
 
