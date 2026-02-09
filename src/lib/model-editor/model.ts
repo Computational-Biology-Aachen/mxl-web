@@ -4,6 +4,9 @@ import type { Base } from "../mathml";
 
 type Args = string[];
 
+export type SliderArgs = { min: string; max: string; step: string };
+export type Variable = { value: number; slider?: SliderArgs };
+
 export type Stoich = { name: string; value: Num };
 export type Stoichiometry = Array<Stoich>;
 
@@ -172,6 +175,8 @@ export class ModelBuilder {
       }),
     ];
 
+    console.log("toSort", toSort);
+
     const maxIters = toSort.length * toSort.length;
 
     let lastName = "";
@@ -182,8 +187,9 @@ export class ModelBuilder {
         break;
       }
       const { k, args } = el;
+      console.log(k, args);
       if (args.isSubsetOf(available)) {
-        available = available.union(args);
+        available = available.add(k);
         order.push(k);
       } else {
         if (lastName === k) {
@@ -194,11 +200,13 @@ export class ModelBuilder {
         lastName = k;
       }
     }
+    console.log("toSort", toSort);
     return order;
   }
 
   buildPython(userParameters: string[]): string {
     const order = this.sortDependencies();
+    console.log("Order", order);
 
     const remove = new Set(userParameters);
     const parameters = this.parameters
