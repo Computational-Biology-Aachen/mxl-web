@@ -8,7 +8,6 @@
 
   // Simulation state
   const tEnd = 100;
-
   let simulatorComponent: Simulator;
 
   function initModel(): ModelBuilder {
@@ -21,17 +20,14 @@
       .addVariable("Prey", 10.0)
       .addReaction("v0", {
         fn: new Mul([new Name("Alpha"), new Name("Prey")]),
-        args: ["Alpha", "Prey"],
         stoichiometry: [{ name: "Prey", value: new Num(1.0) }],
       })
       .addReaction("v1", {
         fn: new Mul([new Name("Beta"), new Name("Prey"), new Name("Predator")]),
-        args: ["Beta", "Prey", "Predator"],
         stoichiometry: [{ name: "Prey", value: new Num(-1.0) }],
       })
       .addReaction("v2", {
         fn: new Mul([new Name("Gamma"), new Name("Predator")]),
-        args: ["Gamma", "Predator"],
         stoichiometry: [{ name: "Predator", value: new Num(-1.0) }],
       })
       .addReaction("v3", {
@@ -40,7 +36,6 @@
           new Name("Prey"),
           new Name("Predator"),
         ]),
-        args: ["Delta", "Prey", "Predator"],
         stoichiometry: [{ name: "Predator", value: new Num(1.0) }],
       });
   }

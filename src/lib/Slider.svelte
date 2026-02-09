@@ -1,6 +1,7 @@
 <script lang="ts">
   let {
     name,
+    desc = "",
     val: finalValue = $bindable(),
     min,
     max,
@@ -9,6 +10,7 @@
     callback,
   }: {
     val: number;
+    desc?: string;
     min: string;
     max: string;
     step: string;
@@ -41,7 +43,7 @@
 
 <label>
   <div class="row">
-    <span class="name">{name}</span>
+    <span class="name">{name}{desc ? ` (${desc})` : ""}</span>
     <span class="number">{liveVal}</span>
   </div>
   <input

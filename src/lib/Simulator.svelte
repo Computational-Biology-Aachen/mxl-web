@@ -17,6 +17,8 @@
 
   const pyWorker = pyWorkerManager;
 
+  let yLimInternal = $state(yLim);
+
   let loading = $state(true);
   let result = $state<{ time: number[]; values: number[][] }>({
     time: [],
@@ -76,7 +78,9 @@
 
 <div>
   <h2>Trajectory</h2>
-  <LineChart data={lineData} yMax={yLim} {loading} />
+  <!-- <label for="yLimSlider">yLim</label> -->
+  <!-- <input id="yLimSlider" type="number" bind:value={yLimInternal} /> -->
+  <LineChart data={lineData} {loading} />
 </div>
 
 <style>

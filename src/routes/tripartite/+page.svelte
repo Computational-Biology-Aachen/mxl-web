@@ -15,6 +15,7 @@
 
   // Simulation state
   let tEnd = $state(100);
+  let simulatorComponent: Simulator;
 
   // Eq.
   // dP/dt = r_p·P − α·P·C − β·P·M − η·P^2
