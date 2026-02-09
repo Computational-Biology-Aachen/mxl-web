@@ -19,13 +19,17 @@
 </div>
 
 <div class="card">
-  <p>Quickly start by picking one of our pre-build models</p>
+  <p>Quickly start by picking one of our pre-build ODE models</p>
   <ul>
     <li><a href="{base}/lotka-volterra">Lotka Volterra</a></li>
     <li><a href="{base}/population-dynamics">Population dynamics</a></li>
     <li><a href="{base}/tripartite">Tripartite dynamics</a></li>
     <li><a href="{base}/dynamic-entrobactin">Entrobactin</a></li>
-    <li><a href="{base}/npq">NPQ</a></li>
+    <!-- <li><a href="{base}/npq">NPQ</a></li> -->
+  </ul>
+
+  <p>Steady-state models</p>
+  <ul>
     <li><a href="{base}/fvcb">FvCB</a></li>
   </ul>
 </div>

@@ -13,13 +13,58 @@
 
   function initModel(): ModelBuilder {
     return new ModelBuilder()
-      .addVariable("e_coli", 5.0)
-      .addVariable("c_gluta", 5.0)
-      .addParameter("mu_e", 0.4)
-      .addParameter("mu_c", 0.3)
-      .addParameter("a_e", 6.0)
-      .addParameter("a_c", 4.0)
-      .addParameter("theta", 0.001)
+      .addVariable("e_coli", {
+        value: 5.0,
+        slider: { min: "0.0", max: "1000.0", step: "1.0" },
+      })
+      .addVariable("c_gluta", {
+        value: 5.0,
+        slider: {
+          min: "0.0",
+          max: "1000.0",
+          step: "1.0",
+        },
+      })
+      .addParameter("mu_e", {
+        value: 0.4,
+        slider: {
+          min: "0.0",
+          max: "1.0",
+          step: "0.05",
+        },
+      })
+      .addParameter("mu_c", {
+        value: 0.3,
+        slider: {
+          min: "0.0",
+          max: "1.0",
+          step: "0.05",
+        },
+      })
+      .addParameter("a_e", {
+        value: 6.0,
+        slider: {
+          min: "0.0",
+          max: "10.0",
+          step: "0.5",
+        },
+      })
+      .addParameter("a_c", {
+        value: 4.0,
+        slider: {
+          min: "0.0",
+          max: "10.0",
+          step: "0.5",
+        },
+      })
+      .addParameter("theta", {
+        value: 0.001,
+        slider: {
+          min: "0.0",
+          max: "1.0",
+          step: "0.05",
+        },
+      })
       .addReaction("dEdt", {
         fn: new Mul([new Name("e_coli"), new Name("a_e"), new Name("mu_e")]),
         stoichiometry: [{ name: "e_coli", value: new Num(1.0) }],
@@ -40,64 +85,37 @@
 
   let model = $state(initModel());
 
-  const varSliders = [
-    { name: "e_coli", init: 5.0, min: "0.0", max: "1000.0", step: "1.0" },
-    {
-      name: "c_gluta",
-      init: 5.0,
-      min: "0.0",
-      max: "1000.0",
-      step: "1.0",
-      fixed: false,
-    },
-  ];
-  const parSliders = [
-    {
-      name: "mu_e",
-      desc: "E. coli growth rate",
-      init: 0.4,
-      min: "0.0",
-      max: "1.0",
-      step: "0.05",
-      fixed: false,
-    },
-    {
-      name: "mu_c",
-      desc: "C. glut growth rate",
-      init: 0.3,
-      min: "0.0",
-      max: "1.0",
-      step: "0.05",
-      fixed: false,
-    },
-    {
-      name: "a_e",
-      desc: "E. coli affinity",
-      init: 6.0,
-      min: "0.0",
-      max: "10.0",
-      step: "0.5",
-      fixed: false,
-    },
-    {
-      name: "a_c",
-      desc: "C. glut affinity ",
-      init: 4.0,
-      min: "0.0",
-      max: "10.0",
-      step: "0.5",
-      fixed: false,
-    },
-    {
-      name: "theta",
-      desc: "",
-      init: 0.001,
-      min: "0.0",
-      max: "1.0",
-      step: "0.05",
-      fixed: false,
-    },
-  ];
+  let parSliders = $derived.by(() => {
+    return model.parameters
+      .entries()
+      .filter((k) => k[1].slider !== undefined)
+      .map(([name, par]) => {
+        return {
+          name: name,
+          init: par.value,
+          min: par.slider!.min,
+          max: par.slider!.max,
+          step: par.slider!.step,
+        };
+      })
+      .toArray();
+  });
+
+  let varSliders = $derived.by(() => {
+    return model.variables
+      .entries()
+      .filter((k) => k[1].slider !== undefined)
+      .map(([name, par]) => {
+        return {
+          name: name,
+          init: par.value,
+          min: par.slider!.min,
+          max: par.slider!.max,
+          step: par.slider!.step,
+        };
+      })
+      .toArray();
+  });
 
   const eqs = String.raw`
     \begin{align*}
@@ -107,17 +125,11 @@
   `;
 </script>
 
-<h1>Population dynamics</h1>
-<section>
-  <h3>Model equations</h3>
-  <Math tex={eqs} display />
-</section>
-
 <div class="topbar">
   <div class="breadcrumbs">
     <a class="light" href="/">Models</a>
     <span class="light">/</span>
-    <span class="bold">Lotka-Volterra</span>
+    <span class="bold">Population dynamics</span>
   </div>
   <div class="row">
     <button
@@ -130,7 +142,11 @@
   </div>
 </div>
 
-{#if parSliders.some((i) => i.fixed === undefined || !i.fixed)}
+<h3>Model equations</h3>
+
+<Math tex={eqs} display />
+
+{#if parSliders.length > 0}
   <div class="heading">
     <Icon>tune</Icon>
     <h3>Simulation parameters</h3>
@@ -142,10 +158,15 @@
         callback={() => simulatorComponent.runSimulation(model)}
         bind:val={
           () => {
-            return model.parameters.get(par.name) ?? 0;
+            return model.parameters.get(par.name)!.value;
           },
           (val) => {
-            model.parameters = model.parameters.set(par.name, val!);
+            let old = model.parameters.get(par.name)!;
+
+            model.parameters = model.parameters.set(par.name, {
+              ...old,
+              value: val,
+            });
           }
         }
         min={par.min}
@@ -156,30 +177,29 @@
   </div>
 {/if}
 
-{#if varSliders.some((i) => i.fixed === undefined || !i.fixed)}
+{#if varSliders.length > 0}
   <div class="heading">
     <Icon>tune</Icon>
     <h3>Initial conditions</h3>
   </div>
   <div class="grid-row">
-    {#each varSliders as { name, min, max, step, fixed }, idx}
-      {#if fixed === undefined || !fixed}
-        <Slider
-          {name}
-          callback={() => simulatorComponent.runSimulation(model)}
-          bind:val={
-            () => {
-              return model.variables.get(name) ?? 0;
-            },
-            (val) => {
-              model.variables = model.variables.set(name, val!);
-            }
+    {#each varSliders as { name, min, max, step }, idx}
+      <Slider
+        {name}
+        callback={() => simulatorComponent.runSimulation(model)}
+        bind:val={
+          () => {
+            return model.variables.get(name)!.value;
+          },
+          (val) => {
+            let old = model.variables.get(name)!;
+            model.variables = model.variables.set(name, { ...old, value: val });
           }
-          {min}
-          {max}
-          {step}
-        />
-      {/if}
+        }
+        {min}
+        {max}
+        {step}
+      />
     {/each}
   </div>
 {/if}

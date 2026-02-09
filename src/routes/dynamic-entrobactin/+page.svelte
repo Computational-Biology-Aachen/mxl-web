@@ -13,18 +13,112 @@
 
   function initModel(): ModelBuilder {
     return new ModelBuilder()
-      .addVariable("e_coli", 5.0)
-      .addVariable("c_gluta", 5.0)
-      .addVariable("enterobactin", 5.0)
-      .addParameter("mu_e", 0.4)
-      .addParameter("mu_c", 0.3)
-      .addParameter("a_e", 6.0)
-      .addParameter("K_e", 0.5)
-      .addParameter("K_c", 0.5)
-      .addParameter("theta", 0.001)
-      .addParameter("r_prod", 0.2)
-      .addParameter("r_cons_e", 1.0)
-      .addParameter("r_cons_c", 1.0)
+      .addVariable("e_coli", {
+        value: 5.0,
+        slider: {
+          min: "0.0",
+          max: "1000.0",
+          step: "1",
+        },
+      })
+      .addVariable("c_gluta", {
+        value: 5.0,
+        slider: {
+          min: "0.0",
+          max: "1000.0",
+          step: "1",
+        },
+      })
+      .addVariable("enterobactin", {
+        value: 1.0,
+        slider: {
+          desc: "B₀",
+          min: "0.0",
+          max: "1000.0",
+          step: "0.5",
+        },
+      })
+      .addParameter("mu_e", {
+        value: 0.4,
+        slider: {
+          desc: "E. coli growth rate",
+          min: "0.0",
+          max: "2.0",
+          step: "0.01",
+        },
+      })
+      .addParameter("mu_c", {
+        value: 0.3,
+        slider: {
+          desc: "C. glut growth rate",
+          min: "0.0",
+          max: "2.0",
+          step: "0.01",
+        },
+      })
+      .addParameter("a_e", {
+        value: 6.0,
+        slider: {
+          desc: "E. coli affinity",
+          min: "0.0",
+          max: "10.0",
+          step: "0.1",
+        },
+      })
+      .addParameter("K_e", {
+        value: 0.5,
+        slider: {
+          desc: "(half-sat E. coli)",
+          min: "0.00000001",
+          max: "1.0",
+          step: "0.000001",
+        },
+      })
+      .addParameter("K_c", {
+        value: 0.5,
+        slider: {
+          desc: "(half-sat C)",
+          min: "0.00000001",
+          max: "1.0",
+          step: "0.000001",
+        },
+      })
+      .addParameter("theta", {
+        value: 0.001,
+        slider: {
+          desc: "C density loss",
+          min: "0.0",
+          max: "1.0",
+          step: "0.0001",
+        },
+      })
+      .addParameter("r_prod", {
+        value: 0.2,
+        slider: {
+          desc: "B production by E",
+          min: "0.0",
+          max: "5.0",
+          step: "0.0001",
+        },
+      })
+      .addParameter("r_cons_e", {
+        value: 1.0,
+        slider: {
+          desc: "B consumption weight E",
+          min: "0.0",
+          max: "5.0",
+          step: "0.0001",
+        },
+      })
+      .addParameter("r_cons_c", {
+        value: 1.0,
+        slider: {
+          desc: "B consumption weight C",
+          min: "0.0",
+          max: "5.0",
+          step: "0.0001",
+        },
+      })
       .addAssignment("a_c", {
         fn: new Minus([new Num(10), new Name("a_e")]),
       })
@@ -102,137 +196,55 @@
 
   let model = $state(initModel());
 
-  const varSliders = [
-    {
-      name: "e_coli",
-      init: 5.0,
-      min: "0.0",
-      max: "1000.0",
-      step: "1",
-      fixed: false,
-    },
-    {
-      name: "c_gluta",
-      init: 5.0,
-      min: "0.0",
-      max: "1000.0",
-      step: "1",
-      fixed: false,
-    },
-    {
-      name: "enterobactin",
-      desc: "B₀",
-      init: 1.0,
-      min: "0.0",
-      max: "1000.0",
-      step: "0.5",
-      fixed: false,
-    },
-  ];
+  let parSliders = $derived.by(() => {
+    return model.parameters
+      .entries()
+      .filter((k) => k[1].slider !== undefined)
+      .map(([name, par]) => {
+        return {
+          name: name,
+          init: par.value,
+          min: par.slider!.min,
+          max: par.slider!.max,
+          step: par.slider!.step,
+        };
+      })
+      .toArray();
+  });
 
-  const parSliders = [
-    {
-      name: "mu_e",
-      desc: "E. coli growth rate",
-      init: 0.4,
-      min: "0.0",
-      max: "2.0",
-      step: "0.01",
-      fixed: false,
-    },
-    {
-      name: "a_e",
-      desc: "E. coli affinity",
-      init: 6.0,
-      min: "0.0",
-      max: "10.0",
-      step: "0.1",
-      fixed: false,
-    },
-    {
-      name: "mu_C",
-      desc: "C. glut growth rate",
-      init: 0.3,
-      min: "0.0",
-      max: "2.0",
-      step: "0.01",
-      fixed: false,
-    },
-    {
-      name: "K_e",
-      desc: "(half-sat E. coli)",
-      init: 0.5,
-      min: "0.00000001",
-      max: "1.0",
-      step: "0.000001",
-      fixed: false,
-    },
-    {
-      name: "K_C",
-      desc: "(half-sat C)",
-      init: 0.5,
-      min: "0.00000001",
-      max: "1.0",
-      step: "0.000001",
-      fixed: false,
-    },
-    {
-      name: "theta",
-      desc: "C density loss",
-      init: 0.001,
-      min: "0.0",
-      max: "1.0",
-      step: "0.0001",
-      fixed: false,
-    },
-    {
-      name: "r_prod",
-      desc: "B production by E",
-      init: 0.2,
-      min: "0.0",
-      max: "5.0",
-      step: "0.0001",
-      fixed: false,
-    },
-    {
-      name: "r_cons_e",
-      desc: "B consumption weight E",
-      init: 1.0,
-      min: "0.0",
-      max: "5.0",
-      step: "0.0001",
-      fixed: false,
-    },
-    {
-      name: "r_cons_c",
-      desc: "B consumption weight C",
-      init: 1.0,
-      min: "0.0",
-      max: "5.0",
-      step: "0.0001",
-      fixed: false,
-    },
-  ];
+  let varSliders = $derived.by(() => {
+    return model.variables
+      .entries()
+      .filter((k) => k[1].slider !== undefined)
+      .map(([name, par]) => {
+        return {
+          name: name,
+          init: par.value,
+          min: par.slider!.min,
+          max: par.slider!.max,
+          step: par.slider!.step,
+        };
+      })
+      .toArray();
+  });
 
+  // FIXME @ Tanvir: you wrote
+  // \frac{dE}{dt}&=\mu_E\,\frac{a_E\,B}{K_E+B}\,E-\delta_E\,E \\
+  // but didn't implement the "-\delta_E\,E" part. Dunno what your
+  // model is supposed to be, so I'm removing this from the tex display
   const eqs = String.raw`
   \begin{align*}
-    \frac{dE}{dt}&=\mu_E\,\frac{a_E\,B}{K_E+B}\,E-\delta_E\,E \\
+    \frac{dE}{dt}&=\mu_E\,\frac{a_E\,B}{K_E+B}\,E \\
     \frac{dC}{dt}&=\mu_C\,\frac{a_C\,B}{K_C+B}\,C-\theta\,C^2 \\
     \frac{dB}{dt}&=r_{\text{prod}}\,E - r_{\text{cons,E}}\!\left(\mu_E\,\frac{a_E\,B}{K_E+a_E\,B}\,E\right) - r_{\text{cons,C}}\!\left(\mu_C\,\frac{a_C\,B}{K_C+a_C\,B}\,C\right) \\
   \end{align*}`;
 </script>
 
-<h1>Dynamic-Entrobactin</h1>
-<section>
-  <h3>Model equations</h3>
-  <Math tex={eqs} display />
-</section>
-
 <div class="topbar">
   <div class="breadcrumbs">
     <a class="light" href="/">Models</a>
     <span class="light">/</span>
-    <span class="bold">Lotka-Volterra</span>
+    <span class="bold">Dynamic-Entrobactin</span>
   </div>
   <div class="row">
     <button
@@ -245,7 +257,11 @@
   </div>
 </div>
 
-{#if parSliders.some((i) => i.fixed === undefined || !i.fixed)}
+<h3>Model equations</h3>
+
+<Math tex={eqs} display />
+
+{#if parSliders.length > 0}
   <div class="heading">
     <Icon>tune</Icon>
     <h3>Simulation parameters</h3>
@@ -257,10 +273,15 @@
         callback={() => simulatorComponent.runSimulation(model)}
         bind:val={
           () => {
-            return model.parameters.get(par.name) ?? 0;
+            return model.parameters.get(par.name)!.value;
           },
           (val) => {
-            model.parameters = model.parameters.set(par.name, val!);
+            let old = model.parameters.get(par.name)!;
+
+            model.parameters = model.parameters.set(par.name, {
+              ...old,
+              value: val,
+            });
           }
         }
         min={par.min}
@@ -271,31 +292,29 @@
   </div>
 {/if}
 
-{#if varSliders.some((i) => i.fixed === undefined || !i.fixed)}
+{#if varSliders.length > 0}
   <div class="heading">
     <Icon>tune</Icon>
     <h3>Initial conditions</h3>
   </div>
   <div class="grid-row">
-    {#each varSliders as { name, desc, min, max, step, fixed }, idx}
-      {#if fixed === undefined || !fixed}
-        <Slider
-          {name}
-          {desc}
-          callback={() => simulatorComponent.runSimulation(model)}
-          bind:val={
-            () => {
-              return model.variables.get(name) ?? 0;
-            },
-            (val) => {
-              model.variables = model.variables.set(name, val!);
-            }
+    {#each varSliders as { name, min, max, step }, idx}
+      <Slider
+        {name}
+        callback={() => simulatorComponent.runSimulation(model)}
+        bind:val={
+          () => {
+            return model.variables.get(name)!.value;
+          },
+          (val) => {
+            let old = model.variables.get(name)!;
+            model.variables = model.variables.set(name, { ...old, value: val });
           }
-          {min}
-          {max}
-          {step}
-        />
-      {/if}
+        }
+        {min}
+        {max}
+        {step}
+      />
     {/each}
   </div>
 {/if}

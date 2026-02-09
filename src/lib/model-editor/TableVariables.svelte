@@ -1,6 +1,7 @@
 <script lang="ts">
   import Icon from "$lib/Icon.svelte";
-  import type { AssView, ParView, RxnView, VarView } from "./model";
+  import type { AssView, ParView, RxnView, Variable, VarView } from "./model";
+  import SliderEditorPopover from "./SliderEditorPopover.svelte";
 
   let {
     variables = $bindable(),
@@ -13,6 +14,11 @@
     assignments: AssView;
     reactions: RxnView;
   } = $props();
+
+  function onSaveSlider(idx: number, update: Variable) {
+    variables[idx][1] = update;
+    variables = variables.slice();
+  }
 </script>
 
 <table>
@@ -33,13 +39,8 @@
           <input type="number" bind:value={variables[idx][1]} />
         </td>
         <td class="actions">
-          <button
-            class="close"
-            onclick={() => {
-              variables = variables.filter((i) => {
-                return i[0] !== name;
-              });
-            }}><Icon>edit</Icon></button
+          <button class="close" popovertarget="var-editor-{idx}"
+            ><Icon>edit</Icon></button
           >
           <button
             class="close"
@@ -58,11 +59,21 @@
   <button
     class="add"
     onclick={() => {
-      variables = [...variables, [`x${variables.length}`, 1.0]];
+      variables = [...variables, [`x${variables.length}`, { value: 1.0 }]];
     }}
     >+ add new item
   </button>
 </div>
+
+{#each variables as [name, variable], idx}
+  <div popover id="var-editor-{idx}">
+    <SliderEditorPopover
+      target={variable}
+      onSave={(root) => onSaveSlider(idx, root)}
+      popovertarget={`var-editor-${idx}`}
+    />
+  </div>
+{/each}
 
 <style>
   /* General */
@@ -176,5 +187,16 @@
   }
   button.add:hover {
     background-color: lch(from var(--primary) calc(l - 10) c h);
+  }
+
+  [popover] {
+    position: absolute;
+    inset: unset;
+    top: 4rem;
+    left: 4rem;
+    width: calc(100% - 8rem);
+  }
+  [popover]::backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
   }
 </style>

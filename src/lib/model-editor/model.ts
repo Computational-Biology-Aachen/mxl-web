@@ -2,7 +2,12 @@ import { Add, Minus, Mul, Name, Num } from "$lib/mathml";
 import { SvelteMap } from "svelte/reactivity";
 import type { Base } from "../mathml";
 
-export type SliderArgs = { min: string; max: string; step: string };
+export type SliderArgs = {
+  desc?: string;
+  min: string;
+  max: string;
+  step: string;
+};
 export type Variable = { value: number; slider?: SliderArgs };
 export type Parameter = { value: number; slider?: SliderArgs };
 
