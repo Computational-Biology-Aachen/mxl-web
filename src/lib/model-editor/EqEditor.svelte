@@ -95,7 +95,7 @@
 
   let currentNode: Base = $derived(root);
   let latex = $derived.by(() => {
-    return root.toTex();
+    return root.toTex(texNames);
   });
 
   function insertNode(fn: () => Base) {

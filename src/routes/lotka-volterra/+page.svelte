@@ -1,5 +1,6 @@
 <script lang="ts">
   import Icon from "$lib/Icon.svelte";
+  import Math from "$lib/Math.svelte";
   import { Mul, Name, Num } from "$lib/mathml";
   import { ModelBuilder } from "$lib/model-editor/model";
   import ModelEditorPopover from "$lib/model-editor/ModelEditorPopover.svelte";
@@ -14,11 +15,17 @@
           min: "0.01",
           max: "1.0",
           step: "0.05",
+          texName: String.raw`\alpha`,
         },
       })
       .addParameter("Beta", {
         value: 0.02,
-        slider: { min: "0.01", max: "1.0", step: "0.05" },
+        slider: {
+          min: "0.01",
+          max: "1.0",
+          step: "0.05",
+          texName: String.raw`\beta`,
+        },
       })
       .addParameter("Gamma", {
         value: 0.4,
@@ -26,6 +33,7 @@
           min: "0.01",
           max: "1.0",
           step: "0.05",
+          texName: String.raw`\gamma`,
         },
       })
       .addParameter("Delta", {
@@ -34,9 +42,10 @@
           min: "0.01",
           max: "1.0",
           step: "0.001",
+          texName: String.raw`\delta`,
         },
       })
-      .addVariable("Predator", {
+      .addVariable("Prey", {
         value: 10.0,
         slider: {
           min: "1.0",
@@ -44,7 +53,7 @@
           step: "1.0",
         },
       })
-      .addVariable("Prey", {
+      .addVariable("Predator", {
         value: 10.0,
         slider: {
           min: "1.0",
@@ -61,16 +70,16 @@
         stoichiometry: [{ name: "Prey", value: new Num(-1.0) }],
       })
       .addReaction("v2", {
-        fn: new Mul([new Name("Gamma"), new Name("Predator")]),
-        stoichiometry: [{ name: "Predator", value: new Num(-1.0) }],
-      })
-      .addReaction("v3", {
         fn: new Mul([
           new Name("Delta"),
           new Name("Prey"),
           new Name("Predator"),
         ]),
         stoichiometry: [{ name: "Predator", value: new Num(1.0) }],
+      })
+      .addReaction("v3", {
+        fn: new Mul([new Name("Gamma"), new Name("Predator")]),
+        stoichiometry: [{ name: "Predator", value: new Num(-1.0) }],
       });
   }
 
@@ -128,6 +137,8 @@
     <button popovertarget="model-editor">Edit model</button>
   </div>
 </div>
+
+<Math tex={model.buildTex()} display />
 
 {#if parSliders.length > 0}
   <div class="heading">

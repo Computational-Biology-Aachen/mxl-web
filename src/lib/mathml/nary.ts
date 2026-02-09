@@ -17,8 +17,8 @@ export class Max extends Nary {
     return `max(${this.children.map((c) => c.toPy()).join(", ")})`;
   }
 
-  toTex(): string {
-    return `\\max(${this.children.map((c) => c.toTex()).join(", ")})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\max(${this.children.map((c) => c.toTex(texNames)).join(", ")})`;
   }
 }
 
@@ -35,8 +35,8 @@ export class Min extends Nary {
     return `min(${this.children.map((c) => c.toPy()).join(", ")})`;
   }
 
-  toTex(): string {
-    return `\\min(${this.children.map((c) => c.toTex()).join(", ")})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\min(${this.children.map((c) => c.toTex(texNames)).join(", ")})`;
   }
 }
 
@@ -53,8 +53,8 @@ export class Piecewise extends Nary {
     return `piecewise(${this.children.map((c) => c.toPy()).join(", ")})`;
   }
 
-  toTex(): string {
-    return `\\begin{cases}${this.children.map((c) => c.toTex()).join(" \\\\ ")}\\end{cases}`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\begin{cases}${this.children.map((c) => c.toTex(texNames)).join(" \\\\ ")}\\end{cases}`;
   }
 }
 
@@ -77,10 +77,10 @@ export class Rem extends Nary {
       .reduce((acc, cur) => `(${acc}) % (${cur})`);
   }
 
-  toTex(): string {
+  toTex(texNames: Map<string, string>): string {
     if (this.children.length === 0) return "0";
     return this.children
-      .map((c) => c.toTex())
+      .map((c) => c.toTex(texNames))
       .reduce((acc, cur) => `(${acc}) \\bmod (${cur})`);
   }
 }
@@ -98,8 +98,8 @@ export class And extends Nary {
     return this.children.map((c) => c.toPy()).join(" and ");
   }
 
-  toTex(): string {
-    return this.children.map((c) => c.toTex()).join(" \\land ");
+  toTex(texNames: Map<string, string>): string {
+    return this.children.map((c) => c.toTex(texNames)).join(" \\land ");
   }
 }
 
@@ -120,11 +120,11 @@ export class Not extends Nary {
     return `not (${this.children.map((c) => c.toPy()).join(" and ")})`;
   }
 
-  toTex(): string {
+  toTex(texNames: Map<string, string>): string {
     if (this.children.length === 0) return "\\neg \\text{false}";
     if (this.children.length === 1)
-      return `\\neg (${this.children[0].toTex()})`;
-    return `\\neg (${this.children.map((c) => c.toTex()).join(" \\land ")})`;
+      return `\\neg (${this.children[0].toTex(texNames)})`;
+    return `\\neg (${this.children.map((c) => c.toTex(texNames)).join(" \\land ")})`;
   }
 }
 
@@ -141,8 +141,8 @@ export class Or extends Nary {
     return this.children.map((c) => c.toPy()).join(" or ");
   }
 
-  toTex(): string {
-    return this.children.map((c) => c.toTex()).join(" \\lor ");
+  toTex(texNames: Map<string, string>): string {
+    return this.children.map((c) => c.toTex(texNames)).join(" \\lor ");
   }
 }
 
@@ -161,9 +161,9 @@ export class Xor extends Nary {
     return this.children.map((c) => `(${c.toPy()})`).join(" ^ ");
   }
 
-  toTex(): string {
+  toTex(texNames: Map<string, string>): string {
     if (this.children.length === 0) return "0";
-    return this.children.map((c) => `(${c.toTex()})`).join(" \\oplus ");
+    return this.children.map((c) => `(${c.toTex(texNames)})`).join(" \\oplus ");
   }
 }
 
@@ -189,9 +189,9 @@ export class Eq extends Nary {
     return this.children.map((c) => c.toPy()).join(" == ");
   }
 
-  toTex(): string {
+  toTex(texNames: Map<string, string>): string {
     if (this.children.length === 0) return "\\text{true}";
-    return this.children.map((c) => c.toTex()).join(" = ");
+    return this.children.map((c) => c.toTex(texNames)).join(" = ");
   }
 }
 
@@ -217,9 +217,9 @@ export class GreaterEqual extends Nary {
     return this.children.map((c) => c.toPy()).join(" >= ");
   }
 
-  toTex(): string {
+  toTex(texNames: Map<string, string>): string {
     if (this.children.length === 0) return "\\text{true}";
-    return this.children.map((c) => c.toTex()).join(" \\geq ");
+    return this.children.map((c) => c.toTex(texNames)).join(" \\geq ");
   }
 }
 
@@ -245,9 +245,9 @@ export class GreaterThan extends Nary {
     return this.children.map((c) => c.toPy()).join(" > ");
   }
 
-  toTex(): string {
+  toTex(texNames: Map<string, string>): string {
     if (this.children.length === 0) return "\\text{true}";
-    return this.children.map((c) => c.toTex()).join(" > ");
+    return this.children.map((c) => c.toTex(texNames)).join(" > ");
   }
 }
 
@@ -273,9 +273,9 @@ export class LessEqual extends Nary {
     return this.children.map((c) => c.toPy()).join(" <= ");
   }
 
-  toTex(): string {
+  toTex(texNames: Map<string, string>): string {
     if (this.children.length === 0) return "\\text{true}";
-    return this.children.map((c) => c.toTex()).join(" \\leq ");
+    return this.children.map((c) => c.toTex(texNames)).join(" \\leq ");
   }
 }
 
@@ -301,9 +301,9 @@ export class LessThan extends Nary {
     return this.children.map((c) => c.toPy()).join(" < ");
   }
 
-  toTex(): string {
+  toTex(texNames: Map<string, string>): string {
     if (this.children.length === 0) return "\\text{true}";
-    return this.children.map((c) => c.toTex()).join(" < ");
+    return this.children.map((c) => c.toTex(texNames)).join(" < ");
   }
 }
 
@@ -329,9 +329,9 @@ export class NotEqual extends Nary {
     return this.children.map((c) => c.toPy()).join(" != ");
   }
 
-  toTex(): string {
+  toTex(texNames: Map<string, string>): string {
     if (this.children.length === 0) return "\\text{false}";
-    return this.children.map((c) => c.toTex()).join(" \\neq ");
+    return this.children.map((c) => c.toTex(texNames)).join(" \\neq ");
   }
 }
 
@@ -348,8 +348,8 @@ export class Add extends Nary {
     return this.children.map((c) => c.toPy()).join(" + ");
   }
 
-  toTex(): string {
-    return this.children.map((c) => c.toTex()).join(" + ");
+  toTex(texNames: Map<string, string>): string {
+    return this.children.map((c) => c.toTex(texNames)).join(" + ");
   }
 }
 
@@ -376,11 +376,11 @@ export class Minus extends Nary {
       .reduce((acc, cur) => `(${acc}) - (${cur})`);
   }
 
-  toTex(): string {
+  toTex(texNames: Map<string, string>): string {
     if (this.children.length === 1) {
-      return `- ${this.children[0].toTex()}`;
+      return `- ${this.children[0].toTex(texNames)}`;
     }
-    return this.children.map((c) => c.toTex()).join(" - ");
+    return this.children.map((c) => c.toTex(texNames)).join(" - ");
   }
 }
 
@@ -394,8 +394,8 @@ export class Mul extends Nary {
   toPy(): string {
     return this.children.map((child) => child.toPy()).join(" * ");
   }
-  toTex(): string {
-    return this.children.map((child) => child.toTex()).join(" \\cdot ");
+  toTex(texNames: Map<string, string>): string {
+    return this.children.map((child) => child.toTex(texNames)).join(" \\cdot ");
   }
 }
 
@@ -418,10 +418,10 @@ export class Divide extends Nary {
       .reduce((acc, cur) => `(${acc}) / (${cur})`);
   }
 
-  toTex(): string {
+  toTex(texNames: Map<string, string>): string {
     if (this.children.length === 0) return "0";
     return this.children
-      .map((c) => c.toTex())
+      .map((c) => c.toTex(texNames))
       .reduce((acc, cur) => `\\frac{${acc}}{${cur}}`);
   }
 }
@@ -446,10 +446,10 @@ export class IntDivide extends Nary {
       .reduce((acc, cur) => `(${acc}) // (${cur})`);
   }
 
-  toTex(): string {
+  toTex(texNames: Map<string, string>): string {
     if (this.children.length === 0) return "0";
     return this.children
-      .map((c) => c.toTex())
+      .map((c) => c.toTex(texNames))
       .reduce(
         (acc, cur) => `\\left\\lfloor\\frac{${acc}}{${cur}}\\right\\rfloor`,
       );
@@ -490,8 +490,8 @@ export class IntDivide extends Nary {
 //     return `${this.name}(${this.children.map((c) => c.toPy()).join(", ")})`;
 //   }
 
-//   toTex(): string {
-//     return `\\text{${this.name}}(${this.children.map((c) => c.toTex()).join(", ")})`;
+//   toTex(texNames: Map<string, string>): string {
+//     return `\\text{${this.name}}(${this.children.map((c) => c.toTex(texNames)).join(", ")})`;
 //   }
 
 //   getSymbols(symbols: Set<string>): Set<string> {
@@ -520,9 +520,9 @@ export class IntDivide extends Nary {
 //     return `lambda ${argList}: (${this.fn.toPy()})`;
 //   }
 
-//   toTex(): string {
-//     const argList = this.args.map((a) => a.toTex()).join(", ");
-//     return `\\lambda ${argList}. (${this.fn.toTex()})`;
+//   toTex(texNames: Map<string, string>): string {
+//     const argList = this.args.map((a) => a.toTex(texNames)).join(", ");
+//     return `\\lambda ${argList}. (${this.fn.toTex(texNames)})`;
 //   }
 
 //   getSymbols(symbols: Set<string>): Set<string> {

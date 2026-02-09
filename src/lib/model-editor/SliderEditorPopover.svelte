@@ -15,19 +15,23 @@
   let minVal: string = $state(target.slider?.min || "0.0");
   let maxVal: string = $state(target.slider?.max || "1.0");
   let stepVal: string = $state(target.slider?.step || "0.1");
+  let texName: string | undefined = $state(target.slider?.texName);
 </script>
 
 <section class="page">
+  <label for="tex-name">LaTeX name</label>
+  <input id="tex-name" type="text" bind:value={texName} />
+
   <div class="row">
     <label for="slider-enabled">Display slider?</label>
     <input id="slider-enabled" type="checkbox" bind:checked={enabled} />
   </div>
   {#if enabled}
-    <label for="">Min</label>
+    <label for="min-slider">Min</label>
     <input id="min-slider" type="number" bind:value={minVal} />
-    <label for="">Max</label>
+    <label for="max-slider">Max</label>
     <input id="max-slider" type="number" bind:value={maxVal} />
-    <label for="">Step</label>
+    <label for="step-slider">Step</label>
     <input id="step-slider" type="number" bind:value={stepVal} />
   {/if}
 

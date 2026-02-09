@@ -5,7 +5,7 @@ export abstract class Base {
   id: number;
   abstract toJs(): string;
   abstract toPy(): string;
-  abstract toTex(): string;
+  abstract toTex(texNames: Map<string, string>): string;
   abstract getSymbols(symbols: Set<string>): Set<string>;
   // abstract default(): Base;
   abstract replace(id: number, next: Base): { node: Base; changed: boolean };
@@ -162,8 +162,8 @@ export class Name extends Nullary {
   toPy(): string {
     return this.name;
   }
-  toTex(): string {
-    return this.name;
+  toTex(texNames: Map<string, string>): string {
+    return texNames.get(this.name) || this.name;
   }
   getSymbols(symbols: Set<string>): Set<string> {
     symbols.add(this.name);
@@ -187,7 +187,7 @@ export class Num extends Nullary {
   toPy(): string {
     return `${this.value}`;
   }
-  toTex(): string {
+  toTex(texNames: Map<string, string>): string {
     return `${this.value}`;
   }
 

@@ -23,8 +23,8 @@ export class Pow extends Binary {
     return `(${this.left.toPy()}) ** (${this.right.toPy()})`;
   }
 
-  toTex(): string {
-    return `{${this.left.toTex()}}^{${this.right.toTex()}}`;
+  toTex(texNames: Map<string, string>): string {
+    return `{${this.left.toTex(texNames)}}^{${this.right.toTex(texNames)}}`;
   }
 }
 
@@ -47,7 +47,7 @@ export class Implies extends Binary {
     return `((not ${this.left.toPy()}) or (${this.right.toPy()}))`;
   }
 
-  toTex(): string {
-    return `${this.left.toTex()} \\Rightarrow ${this.right.toTex()}`;
+  toTex(texNames: Map<string, string>): string {
+    return `${this.left.toTex(texNames)} \\Rightarrow ${this.right.toTex(texNames)}`;
   }
 }

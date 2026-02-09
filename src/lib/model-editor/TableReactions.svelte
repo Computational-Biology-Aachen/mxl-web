@@ -1,5 +1,6 @@
 <script lang="ts">
   import {
+    getTexNames,
     stoichToTex,
     type AssView,
     type ParView,
@@ -43,6 +44,10 @@
       ...assignments.map((el) => el[0]),
     ];
   });
+
+  let texNames: Map<string, string> = $derived(
+    getTexNames(variables, parameters),
+  );
 </script>
 
 <table>
@@ -61,7 +66,7 @@
         <td>
           <div class="row">
             <Math
-              tex={reactions[idx][1].fn.toTex()}
+              tex={reactions[idx][1].fn.toTex(texNames)}
               display={true}
               fontSize={"0.75rem"}
             />

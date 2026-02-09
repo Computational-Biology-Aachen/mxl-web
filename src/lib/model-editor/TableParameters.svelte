@@ -36,7 +36,7 @@
           <input type="text" bind:value={parameters[idx][0]} />
         </td>
         <td>
-          <input type="number" bind:value={parameters[idx][1]} />
+          <input type="number" bind:value={parameters[idx][1].value} />
         </td>
         <td class="actions">
           <button class="close" popovertarget="var-editor-{idx}"

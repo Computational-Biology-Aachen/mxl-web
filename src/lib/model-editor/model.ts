@@ -3,10 +3,11 @@ import { SvelteMap } from "svelte/reactivity";
 import type { Base } from "../mathml";
 
 export type SliderArgs = {
-  desc?: string;
   min: string;
   max: string;
   step: string;
+  desc?: string;
+  texName?: string;
 };
 export type Variable = { value: number; slider?: SliderArgs };
 export type Parameter = { value: number; slider?: SliderArgs };
@@ -45,6 +46,26 @@ export class ModelView {
   }
 }
 
+export function getTexNames(
+  variables: Iterable<[string, Variable]>,
+  parameters: Iterable<[string, Parameter]>,
+): Map<string, string> {
+  // Get all tex names
+  const texNames: Map<string, string> = new Map();
+
+  for (const [name, variable] of variables) {
+    if (variable.slider?.texName) {
+      texNames.set(name, variable.slider.texName);
+    }
+  }
+  for (const [name, parameter] of parameters) {
+    if (parameter.slider?.texName) {
+      texNames.set(name, parameter.slider.texName);
+    }
+  }
+  return texNames;
+}
+
 export function stoichToJs(stoich: Stoichiometry): string {
   return "";
 }
@@ -75,7 +96,7 @@ export function stoichToTex(stoich: Stoichiometry): string {
       }
       return new Add([previous, current]);
     })
-    .toTex();
+    .toTex(new Map());
 }
 
 export class ModelBuilder {
@@ -255,7 +276,6 @@ export class ModelBuilder {
     let rhs: Record<string, string> = Object.fromEntries(
       this.variables.entries().map((entry) => [entry[0], ""]),
     );
-
     this.reactions.entries().forEach((element) => {
       const [rxnName, rxn] = element;
 
@@ -308,5 +328,43 @@ y0 = {${y0}}
 
 
         }`;
+  }
+
+  buildTex(): string {
+    // Get all tex names
+    const texNames: Map<string, string> = getTexNames(
+      this.variables.entries(),
+      this.parameters.entries(),
+    );
+
+    // Collect rhs
+    let rhs: Record<string, string> = Object.fromEntries(
+      this.variables.entries().map((entry) => [entry[0], ""]),
+    );
+    this.reactions.entries().forEach(([_, rxn]) => {
+      rxn.stoichiometry.forEach(({ name: varName, value: num }) => {
+        const prefix = num.value < 0 ? "-" : "+";
+        const rxnTex = rxn.fn.toTex(texNames);
+
+        if (num.value === -1 || num.value === 1) {
+          rhs[varName] += `${prefix}${rxnTex}`;
+        } else {
+          rhs[varName] += `${prefix}${Math.abs(num.value)}*${rxnTex}`;
+        }
+      });
+    });
+
+    // Finalize rhs
+    const rhsString = Object.entries(rhs)
+      .map(([name, stoich]) => {
+        let stoichFixed = stoich;
+        if (stoich.startsWith("+")) stoichFixed = stoich.slice(1);
+        return `\\frac{d ${name}}{dt} &= ${stoich.length > 0 ? stoichFixed : "0"}`;
+      })
+      .join("\\\\ \n");
+
+    return String.raw`\begin{align*}
+      ${rhsString}
+    \end{align*}`;
   }
 }
