@@ -1,5 +1,11 @@
 <script lang="ts">
-  import type { AssView, ParView, RxnView, VarView } from "./model";
+  import {
+    getTexNames,
+    type AssView,
+    type ParView,
+    type RxnView,
+    type VarView,
+  } from "./model";
 
   let {
     variables = $bindable(),
@@ -30,6 +36,10 @@
       ...assignments.map((el) => el[0]),
     ];
   });
+
+  let texNames: Map<string, string> = $derived(
+    getTexNames(variables, parameters),
+  );
 </script>
 
 <table>
@@ -49,7 +59,7 @@
         <td>
           <div class="row">
             <Math
-              tex={assignments[idx][1].fn.toTex()}
+              tex={assignments[idx][1].fn.toTex(texNames)}
               display={true}
               fontSize={"0.75rem"}
             />

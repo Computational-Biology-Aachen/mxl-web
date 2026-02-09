@@ -14,7 +14,7 @@ export class Abs extends Unary {
   toPy(): string {
     return `abs(${this.child.toPy()})`;
   }
-  toTex(): string {
+  toTex(texNames: Map<string, string>): string {
     return `abs(${this.child.toPy()})`;
   }
 }
@@ -29,8 +29,8 @@ export class Ceiling extends Unary {
   toPy(): string {
     return `ceil(${this.child.toPy()})`;
   }
-  toTex(): string {
-    return `\\lceil ${this.child.toTex()} \\rceil`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\lceil ${this.child.toTex(texNames)} \\rceil`;
   }
 }
 
@@ -44,8 +44,8 @@ export class Exp extends Unary {
   toPy(): string {
     return `math.exp(${this.child.toPy()})`;
   }
-  toTex(): string {
-    return `e^{${this.child.toTex()}}`;
+  toTex(texNames: Map<string, string>): string {
+    return `e^{${this.child.toTex(texNames)}}`;
   }
 }
 
@@ -61,8 +61,8 @@ export class Factorial extends Unary {
     return `math.factorial(${this.child.toPy()})`;
   }
 
-  toTex(): string {
-    return `${this.child.toTex()}!`;
+  toTex(texNames: Map<string, string>): string {
+    return `${this.child.toTex(texNames)}!`;
   }
 }
 
@@ -78,8 +78,8 @@ export class Floor extends Unary {
     return `math.floor(${this.child.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\lfloor ${this.child.toTex()} \\rfloor`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\lfloor ${this.child.toTex(texNames)} \\rfloor`;
   }
 }
 
@@ -96,8 +96,8 @@ export class Ln extends Unary {
     return `math.log(${this.child.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\ln(${this.child.toTex()})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\ln(${this.child.toTex(texNames)})`;
   }
 }
 
@@ -114,8 +114,8 @@ export class Sin extends Unary {
     return `math.sin(${this.child.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\sin(${this.child.toTex()})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\sin(${this.child.toTex(texNames)})`;
   }
 }
 
@@ -132,8 +132,8 @@ export class Cos extends Unary {
     return `math.cos(${this.child.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\cos(${this.child.toTex()})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\cos(${this.child.toTex(texNames)})`;
   }
 }
 
@@ -150,8 +150,8 @@ export class Tan extends Unary {
     return `math.tan(${this.child.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\tan(${this.child.toTex()})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\tan(${this.child.toTex(texNames)})`;
   }
 }
 
@@ -168,8 +168,8 @@ export class Sec extends Unary {
     return `1 / math.cos(${this.child.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\sec(${this.child.toTex()})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\sec(${this.child.toTex(texNames)})`;
   }
 }
 
@@ -186,8 +186,8 @@ export class Csc extends Unary {
     return `1 / math.sin(${this.child.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\csc(${this.child.toTex()})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\csc(${this.child.toTex(texNames)})`;
   }
 }
 
@@ -204,8 +204,8 @@ export class Cot extends Unary {
     return `1 / math.tan(${this.child.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\cot(${this.child.toTex()})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\cot(${this.child.toTex(texNames)})`;
   }
 }
 
@@ -222,8 +222,8 @@ export class Asin extends Unary {
     return `math.asin(${this.child.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\arcsin(${this.child.toTex()})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\arcsin(${this.child.toTex(texNames)})`;
   }
 }
 
@@ -240,8 +240,8 @@ export class Acos extends Unary {
     return `math.acos(${this.child.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\arccos(${this.child.toTex()})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\arccos(${this.child.toTex(texNames)})`;
   }
 }
 
@@ -258,8 +258,8 @@ export class Atan extends Unary {
     return `math.atan(${this.child.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\arctan(${this.child.toTex()})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\arctan(${this.child.toTex(texNames)})`;
   }
 }
 
@@ -276,8 +276,8 @@ export class Acot extends Unary {
     return `math.atan(1 / ${this.child.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\text{arccot}(${this.child.toTex()})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\text{arccot}(${this.child.toTex(texNames)})`;
   }
 }
 
@@ -294,8 +294,8 @@ export class ArcSec extends Unary {
     return `math.acos(1 / ${this.child.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\text{arcsec}(${this.child.toTex()})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\text{arcsec}(${this.child.toTex(texNames)})`;
   }
 }
 
@@ -312,8 +312,8 @@ export class ArcCsc extends Unary {
     return `math.asin(1 / ${this.child.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\text{arccsc}(${this.child.toTex()})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\text{arccsc}(${this.child.toTex(texNames)})`;
   }
 }
 
@@ -330,8 +330,8 @@ export class Sinh extends Unary {
     return `math.sinh(${this.child.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\sinh(${this.child.toTex()})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\sinh(${this.child.toTex(texNames)})`;
   }
 }
 
@@ -348,8 +348,8 @@ export class Cosh extends Unary {
     return `math.cosh(${this.child.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\cosh(${this.child.toTex()})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\cosh(${this.child.toTex(texNames)})`;
   }
 }
 
@@ -366,8 +366,8 @@ export class Tanh extends Unary {
     return `math.tanh(${this.child.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\tanh(${this.child.toTex()})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\tanh(${this.child.toTex(texNames)})`;
   }
 }
 
@@ -384,8 +384,8 @@ export class Sech extends Unary {
     return `1 / math.cosh(${this.child.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\text{sech}(${this.child.toTex()})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\text{sech}(${this.child.toTex(texNames)})`;
   }
 }
 
@@ -402,8 +402,8 @@ export class Csch extends Unary {
     return `1 / math.sinh(${this.child.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\text{csch}(${this.child.toTex()})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\text{csch}(${this.child.toTex(texNames)})`;
   }
 }
 
@@ -420,8 +420,8 @@ export class Coth extends Unary {
     return `1 / math.tanh(${this.child.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\coth(${this.child.toTex()})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\coth(${this.child.toTex(texNames)})`;
   }
 }
 
@@ -438,8 +438,8 @@ export class ArcSinh extends Unary {
     return `math.asinh(${this.child.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\text{arcsinh}(${this.child.toTex()})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\text{arcsinh}(${this.child.toTex(texNames)})`;
   }
 }
 
@@ -456,8 +456,8 @@ export class ArcCosh extends Unary {
     return `math.acosh(${this.child.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\text{arccosh}(${this.child.toTex()})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\text{arccosh}(${this.child.toTex(texNames)})`;
   }
 }
 
@@ -474,8 +474,8 @@ export class ArcTanh extends Unary {
     return `math.atanh(${this.child.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\text{arctanh}(${this.child.toTex()})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\text{arctanh}(${this.child.toTex(texNames)})`;
   }
 }
 
@@ -492,8 +492,8 @@ export class ArcCsch extends Unary {
     return `math.asinh(1 / ${this.child.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\text{arccsch}(${this.child.toTex()})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\text{arccsch}(${this.child.toTex(texNames)})`;
   }
 }
 
@@ -510,8 +510,8 @@ export class ArcSech extends Unary {
     return `math.acosh(1 / ${this.child.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\text{arcsech}(${this.child.toTex()})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\text{arcsech}(${this.child.toTex(texNames)})`;
   }
 }
 
@@ -528,8 +528,8 @@ export class ArcCoth extends Unary {
     return `math.atanh(1 / ${this.child.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\text{arccoth}(${this.child.toTex()})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\text{arccoth}(${this.child.toTex(texNames)})`;
   }
 }
 
@@ -546,7 +546,7 @@ export class RateOf extends Unary {
     return `rate_of(${this.child.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\frac{d}{dt}(${this.child.toTex()})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\frac{d}{dt}(${this.child.toTex(texNames)})`;
   }
 }

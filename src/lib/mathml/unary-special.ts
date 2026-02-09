@@ -43,8 +43,8 @@ export class Log extends Base {
     return `math.log(${this.child.toPy()}, ${this.base.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\log_{${this.base.toTex()}}(${this.child.toTex()})`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\log_{${this.base.toTex(texNames)}}(${this.child.toTex(texNames)})`;
   }
 
   getSymbols(symbols: Set<string>): Set<string> {
@@ -93,8 +93,8 @@ export class Sqrt extends Base {
     return `math.pow(${this.child.toPy()}, 1 / ${this.base.toPy()})`;
   }
 
-  toTex(): string {
-    return `\\sqrt[${this.base.toTex()}]{${this.child.toTex()}}`;
+  toTex(texNames: Map<string, string>): string {
+    return `\\sqrt[${this.base.toTex(texNames)}]{${this.child.toTex(texNames)}}`;
   }
 
   getSymbols(symbols: Set<string>): Set<string> {
