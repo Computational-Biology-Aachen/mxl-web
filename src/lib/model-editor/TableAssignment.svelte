@@ -23,7 +23,13 @@
     assignments = assignments.slice();
   }
 
-  let variableNames = $derived.by(() => variables.map((el) => el[0]));
+  let argNames = $derived.by(() => {
+    return [
+      ...variables.map((el) => el[0]),
+      ...parameters.map((el) => el[0]),
+      ...assignments.map((el) => el[0]),
+    ];
+  });
 </script>
 
 <table>
@@ -84,7 +90,7 @@
   <div popover id="eq-editor-{idx}">
     <EqEditorPopover
       root={fn}
-      {variableNames}
+      variableNames={argNames}
       onSave={(root) => onSaveEq(idx, root)}
       popovertarget={`eq-editor-${idx}`}
     />
