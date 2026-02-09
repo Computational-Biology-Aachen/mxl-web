@@ -196,7 +196,7 @@ export class ModelBuilder {
       }),
     ];
 
-    console.log("toSort", toSort);
+    // console.log("toSort", toSort);
 
     const maxIters = toSort.length * toSort.length;
 
@@ -208,7 +208,7 @@ export class ModelBuilder {
         break;
       }
       const { k, args } = el;
-      console.log(k, args);
+      // console.log(k, args);
       if (args.isSubsetOf(available)) {
         available = available.add(k);
         order.push(k);
@@ -221,13 +221,13 @@ export class ModelBuilder {
         lastName = k;
       }
     }
-    console.log("toSort", toSort);
+    // console.log("toSort", toSort);
     return order;
   }
 
   buildPython(userParameters: string[]): string {
     const order = this.sortDependencies();
-    console.log("Order", order);
+    // console.log("Order", order);
 
     const remove = new Set(userParameters);
     const parameters = this.parameters

@@ -34,7 +34,7 @@
   </ul>
 </div>
 
-<div class="heading">
+<!-- <div class="heading">
   <Icon>settings</Icon>
   <h2>Development pages</h2>
 </div>
@@ -47,7 +47,7 @@
     <li><a href="{base}/dev/model-edit">Model edit</a></li>
     <li><a href="{base}/dev/model-comp">Model comparison</a></li>
   </ul>
-</div>
+</div> -->
 
 <style>
   .heading {

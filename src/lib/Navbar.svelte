@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { base } from "$app/paths";
   import { faGithub } from "@fortawesome/free-brands-svg-icons";
   import Fa from "svelte-fa";
   import { MediaQuery } from "svelte/reactivity";
@@ -28,10 +29,10 @@
 
   <ul>
     <li>
-      <a href="/"> Home </a>
+      <a href="{base}/"> Home </a>
     </li>
     <li>
-      <a href="/"> Models </a>
+      <a href="{base}/"> Models </a>
     </li>
     <li class="img">
       <a href="https://github.com/Computational-Biology-Aachen/mxl-web"

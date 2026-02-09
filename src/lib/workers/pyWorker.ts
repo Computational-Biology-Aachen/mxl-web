@@ -18,7 +18,7 @@ async function setupPyodide() {
     const response = await fetch(`${basePath}/main.py`);
     const pythonScript = await response.text();
     pyFuncs = pyodide.runPython(pythonScript);
-    console.log("Python Ready");
+    // console.log("Python Ready");
     pyodideReady = true;
     return pyodide;
   } catch (e) {
@@ -30,7 +30,7 @@ async function setupPyodide() {
 onmessage = async function (event: MessageEvent) {
   // Handle initialization message
   if (event.data.type === "__INIT__") {
-    console.log("Setting up Python");
+    // console.log("Setting up Python");
     basePath = event.data.basePath || "";
     pyodidePromise = setupPyodide();
     return;
@@ -50,8 +50,8 @@ onmessage = async function (event: MessageEvent) {
   const pars = event.data.pars;
   const requestId = event.data.requestId;
 
-  console.log("Starting py integration");
-  console.log(`Pars: ${pars}`);
+  // console.log("Starting py integration");
+  // console.log(`Pars: ${pars}`);
 
   const [tPy, yPy] = pyFuncs.integrate(
     pyodide.runPython(model),
@@ -62,6 +62,6 @@ onmessage = async function (event: MessageEvent) {
   const time = tPy.toJs();
   const values = yPy.toJs();
 
-  console.log(`Python integration took ${Date.now() - tStart} ms`);
+  // console.log(`Python integration took ${Date.now() - tStart} ms`);
   postMessage({ time: time, values: values, requestId: requestId });
 };

@@ -17,8 +17,8 @@ onmessage = (event: MessageEvent) => {
   const pars = event.data.pars;
   const requestId = event.data.requestId;
 
-  console.log("Starting js integration");
-  console.log(`Pars: ${pars}`);
+  // console.log("Starting js integration");
+  // console.log(`Pars: ${pars}`);
   eval(`model = ${modelString}`);
   const outcome = euler(model, {
     initialValues: y0,
@@ -28,6 +28,6 @@ onmessage = (event: MessageEvent) => {
     pars: pars,
   });
 
-  console.log(`Javascript integration took ${Date.now() - tStart} ms`);
+  // console.log(`Javascript integration took ${Date.now() - tStart} ms`);
   postMessage({ ...outcome, requestId: requestId });
 };

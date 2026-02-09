@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { base } from "$app/paths";
   import Icon from "$lib/Icon.svelte";
   import Math from "$lib/Math.svelte";
   import { Add, Divide, Minus, Mul, Name, Num } from "$lib/mathml";
@@ -242,7 +243,7 @@
 
 <div class="topbar">
   <div class="breadcrumbs">
-    <a class="light" href="/">Models</a>
+    <a class="light" href="{base}/">Models</a>
     <span class="light">/</span>
     <span class="bold">Dynamic-Entrobactin</span>
   </div>
