@@ -32,7 +32,15 @@
         <td>
           <input type="number" bind:value={variables[idx][1]} />
         </td>
-        <td>
+        <td class="actions">
+          <button
+            class="close"
+            onclick={() => {
+              variables = variables.filter((i) => {
+                return i[0] !== name;
+              });
+            }}><Icon>edit</Icon></button
+          >
           <button
             class="close"
             onclick={() => {
@@ -118,6 +126,12 @@
 
   table input:hover {
     border: 1px solid var(--primary);
+  }
+
+  td.actions {
+    display: flex;
+    gap: 0 10px;
+    width: 7rem;
   }
 
   /* Close button */

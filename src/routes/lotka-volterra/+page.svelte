@@ -6,18 +6,52 @@
   import Simulator from "$lib/Simulator.svelte";
   import Slider from "$lib/Slider.svelte";
 
-  // Simulation state
-  const tEnd = 100;
-  let simulatorComponent: Simulator;
-
   function initModel(): ModelBuilder {
     return new ModelBuilder()
-      .addParameter("Alpha", 0.1)
-      .addParameter("Beta", 0.02)
-      .addParameter("Gamma", 0.4)
-      .addParameter("Delta", 0.02)
-      .addVariable("Predator", 10.0)
-      .addVariable("Prey", 10.0)
+      .addParameter("Alpha", {
+        value: 0.1,
+        slider: {
+          min: "0.01",
+          max: "1.0",
+          step: "0.05",
+        },
+      })
+      .addParameter("Beta", {
+        value: 0.02,
+        slider: { min: "0.01", max: "1.0", step: "0.05" },
+      })
+      .addParameter("Gamma", {
+        value: 0.4,
+        slider: {
+          min: "0.01",
+          max: "1.0",
+          step: "0.05",
+        },
+      })
+      .addParameter("Delta", {
+        value: 0.02,
+        slider: {
+          min: "0.01",
+          max: "1.0",
+          step: "0.001",
+        },
+      })
+      .addVariable("Predator", {
+        value: 10.0,
+        slider: {
+          min: "1.0",
+          max: "20.0",
+          step: "1.0",
+        },
+      })
+      .addVariable("Prey", {
+        value: 10.0,
+        slider: {
+          min: "1.0",
+          max: "20.0",
+          step: "1.0",
+        },
+      })
       .addReaction("v0", {
         fn: new Mul([new Name("Alpha"), new Name("Prey")]),
         stoichiometry: [{ name: "Prey", value: new Num(1.0) }],
@@ -40,55 +74,42 @@
       });
   }
 
-  const parSliders = [
-    {
-      name: "Alpha",
-      min: "0.01",
-      max: "1.0",
-      step: "0.05",
-      fixed: false,
-    },
-    {
-      name: "Beta",
-      min: "0.01",
-      max: "1.0",
-      step: "0.05",
-      fixed: false,
-    },
-    {
-      name: "Gamma",
-      min: "0.01",
-      max: "1.0",
-      step: "0.05",
-      fixed: false,
-    },
-    {
-      name: "Delta",
-      min: "0.01",
-      max: "1.0",
-      step: "0.001",
-      fixed: false,
-    },
-  ];
-
-  const varSliders = [
-    {
-      name: "Prey",
-      min: "1.0",
-      max: "20.0",
-      step: "1.0",
-      fixed: false,
-    },
-    {
-      name: "Predator",
-      min: "1.0",
-      max: "20.0",
-      step: "1.0",
-      fixed: false,
-    },
-  ];
-
+  // Simulation state
+  const tEnd = 100;
+  let simulatorComponent: Simulator;
   let model = $state(initModel());
+
+  let parSliders = $derived.by(() => {
+    return model.parameters
+      .entries()
+      .filter((k) => k[1].slider !== undefined)
+      .map(([name, par]) => {
+        return {
+          name: name,
+          init: par.value,
+          min: par.slider!.min,
+          max: par.slider!.max,
+          step: par.slider!.step,
+        };
+      })
+      .toArray();
+  });
+
+  let varSliders = $derived.by(() => {
+    return model.variables
+      .entries()
+      .filter((k) => k[1].slider !== undefined)
+      .map(([name, par]) => {
+        return {
+          name: name,
+          init: par.value,
+          min: par.slider!.min,
+          max: par.slider!.max,
+          step: par.slider!.step,
+        };
+      })
+      .toArray();
+  });
 </script>
 
 <div class="topbar">
@@ -108,7 +129,7 @@
   </div>
 </div>
 
-{#if parSliders.some((i) => i.fixed === undefined || !i.fixed)}
+{#if parSliders.length > 0}
   <div class="heading">
     <Icon>tune</Icon>
     <h3>Simulation parameters</h3>
@@ -120,10 +141,15 @@
         callback={() => simulatorComponent.runSimulation(model)}
         bind:val={
           () => {
-            return model.parameters.get(par.name) ?? 0;
+            return model.parameters.get(par.name)!.value;
           },
           (val) => {
-            model.parameters = model.parameters.set(par.name, val!);
+            let old = model.parameters.get(par.name)!;
+
+            model.parameters = model.parameters.set(par.name, {
+              ...old,
+              value: val,
+            });
           }
         }
         min={par.min}
@@ -134,30 +160,29 @@
   </div>
 {/if}
 
-{#if varSliders.some((i) => i.fixed === undefined || !i.fixed)}
+{#if varSliders.length > 0}
   <div class="heading">
     <Icon>tune</Icon>
     <h3>Initial conditions</h3>
   </div>
   <div class="grid-row">
-    {#each varSliders as { name, min, max, step, fixed }, idx}
-      {#if fixed === undefined || !fixed}
-        <Slider
-          {name}
-          callback={() => simulatorComponent.runSimulation(model)}
-          bind:val={
-            () => {
-              return model.variables.get(name) ?? 0;
-            },
-            (val) => {
-              model.variables = model.variables.set(name, val!);
-            }
+    {#each varSliders as { name, min, max, step }, idx}
+      <Slider
+        {name}
+        callback={() => simulatorComponent.runSimulation(model)}
+        bind:val={
+          () => {
+            return model.variables.get(name)!.value;
+          },
+          (val) => {
+            let old = model.variables.get(name)!;
+            model.variables = model.variables.set(name, { ...old, value: val });
           }
-          {min}
-          {max}
-          {step}
-        />
-      {/if}
+        }
+        {min}
+        {max}
+        {step}
+      />
     {/each}
   </div>
 {/if}

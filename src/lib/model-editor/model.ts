@@ -2,10 +2,9 @@ import { Add, Minus, Mul, Name, Num } from "$lib/mathml";
 import { SvelteMap } from "svelte/reactivity";
 import type { Base } from "../mathml";
 
-type Args = string[];
-
 export type SliderArgs = { min: string; max: string; step: string };
 export type Variable = { value: number; slider?: SliderArgs };
+export type Parameter = { value: number; slider?: SliderArgs };
 
 export type Stoich = { name: string; value: Num };
 export type Stoichiometry = Array<Stoich>;
@@ -20,13 +19,13 @@ export type Reaction = {
 };
 
 // Views
-export type VarView = Array<[string, number]>;
-export type ParView = Array<[string, number]>;
+export type VarView = Array<[string, Variable]>;
+export type ParView = Array<[string, Parameter]>;
 export type AssView = Array<[string, Assign]>;
 export type RxnView = Array<[string, Reaction]>;
 export class ModelView {
-  parameters: Array<[string, number]> = [];
-  variables: Array<[string, number]> = [];
+  parameters: Array<[string, Parameter]> = [];
+  variables: Array<[string, Variable]> = [];
   assignments: Array<[string, Assign]> = [];
   reactions: Array<[string, Reaction]> = [];
   constructor() {}
@@ -75,8 +74,8 @@ export function stoichToTex(stoich: Stoichiometry): string {
 }
 
 export class ModelBuilder {
-  parameters: SvelteMap<string, number> = new SvelteMap();
-  variables: SvelteMap<string, number> = new SvelteMap();
+  parameters: SvelteMap<string, Parameter> = new SvelteMap();
+  variables: SvelteMap<string, Variable> = new SvelteMap();
   assignments: SvelteMap<string, Assign> = new SvelteMap();
   reactions: SvelteMap<string, Reaction> = new SvelteMap();
 
@@ -93,12 +92,12 @@ export class ModelBuilder {
   }
 
   // Variables
-  addVariable(key: string, value: number) {
+  addVariable(key: string, value: Variable) {
     this.variables.set(key, value);
     return this;
   }
 
-  updateVariable(key: string, value: number) {
+  updateVariable(key: string, value: Variable) {
     this.variables.set(key, value);
     return this;
   }
@@ -107,18 +106,14 @@ export class ModelBuilder {
     this.variables.delete(key);
     return this;
   }
-  renameVariable(key: string, newKey: string) {
-    this.variables.set(newKey, this.variables.get(key) || 0.0);
-    this.removeVariable(key);
-  }
 
   // Parameters
-  addParameter(key: string, value: number) {
+  addParameter(key: string, value: Parameter) {
     this.parameters.set(key, value);
     return this;
   }
 
-  updateParameter(key: string, value: number) {
+  updateParameter(key: string, value: Parameter) {
     this.parameters.set(key, value);
     return this;
   }
@@ -216,7 +211,7 @@ export class ModelBuilder {
       })
       .map((entry) => {
         let [name, value] = entry;
-        return `${name} = ${value}`;
+        return `${name} = ${value.value}`;
       })
       .toArray()
       .join("\n    ");
@@ -280,7 +275,7 @@ export class ModelBuilder {
 
     const y0 = this.variables
       .entries()
-      .map(([name, value]) => `"${name}": ${value}`)
+      .map(([name, value]) => `"${name}": ${value.value}`)
       .toArray()
       .join(", ");
 
