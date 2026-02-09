@@ -34,7 +34,12 @@
 
     pyWorker.postMessage({
       model: `${model.buildPython([])}\nmodel`,
-      initialValues: model.variables.values().toArray(),
+      initialValues: model.variables
+        .values()
+        .map((val) => {
+          return val.value;
+        })
+        .toArray(),
       tEnd: tEnd,
       pars: [],
       method: "LSODA",
