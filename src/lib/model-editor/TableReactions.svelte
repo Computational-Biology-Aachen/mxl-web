@@ -103,7 +103,6 @@
           `v${reactions.length}`,
           {
             fn: new Name("Default"),
-            args: [],
             stoichiometry: [{ name: "Default", value: new Num(1.0) }],
           },
         ],

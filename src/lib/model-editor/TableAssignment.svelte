@@ -73,7 +73,7 @@
     onclick={() => {
       assignments = [
         ...assignments,
-        [`a${assignments.length}`, { fn: new Num(1.0), args: [] }],
+        [`a${assignments.length}`, { fn: new Num(1.0) }],
       ];
     }}
     >+ add new item
