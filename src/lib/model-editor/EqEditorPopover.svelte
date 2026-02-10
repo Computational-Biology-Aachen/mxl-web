@@ -1,22 +1,27 @@
 <script lang="ts">
   import { Base } from "$lib/mathml";
   import EqEditor from "$lib/model-editor/EqEditor.svelte";
+  import type { AssView, ParView, VarView } from "./model";
 
   let {
     root,
-    variableNames,
+    variables,
+    parameters,
+    assignments,
     onSave,
     popovertarget,
   }: {
     root: Base;
-    variableNames: string[];
+    variables: VarView;
+    parameters: ParView;
+    assignments: AssView;
     onSave: (fn: Base) => void;
     popovertarget: string;
   } = $props();
 </script>
 
 <section class="page">
-  <EqEditor bind:root {variableNames} />
+  <EqEditor bind:root {variables} {parameters} {assignments} />
 
   <button
     class="save"

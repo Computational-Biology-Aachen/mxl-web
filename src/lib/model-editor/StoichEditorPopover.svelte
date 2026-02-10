@@ -1,22 +1,31 @@
 <script lang="ts">
   import StoichEditor from "./StoichEditor.svelte";
-  import { type Stoichiometry } from "./model";
+  import {
+    type AssView,
+    type ParView,
+    type Stoichiometry,
+    type VarView,
+  } from "./model";
 
   let {
     stoichiometry,
-    variableNames,
+    variables,
+    parameters,
+    assignments,
     onSave,
     popovertarget,
   }: {
     stoichiometry: Stoichiometry;
-    variableNames: string[];
+    variables: VarView;
+    parameters: ParView;
+    assignments: AssView;
     onSave: (fn: Stoichiometry) => void;
     popovertarget: string;
   } = $props();
 </script>
 
 <section class="page">
-  <StoichEditor bind:stoichiometry {variableNames} />
+  <StoichEditor bind:stoichiometry {variables} {parameters} {assignments} />
 
   <button
     class="save"

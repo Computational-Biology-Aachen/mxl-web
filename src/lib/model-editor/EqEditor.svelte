@@ -2,14 +2,35 @@
   import Math from "$lib/Math.svelte";
   import { Add, Divide, Minus, Mul, Name, Num, type Base } from "$lib/mathml";
   import EquationNode from "$lib/model-editor/EqNode.svelte";
+  import {
+    getTexNames,
+    type AssView,
+    type ParView,
+    type VarView,
+  } from "./model";
 
   let {
     root = $bindable(),
-    variableNames,
+    variables,
+    parameters,
+    assignments,
   }: {
     root: Base;
-    variableNames: string[];
+    variables: VarView;
+    parameters: ParView;
+    assignments: AssView;
   } = $props();
+
+  let argNames = $derived.by(() => {
+    return [
+      ...variables.map((el) => el[0]),
+      ...parameters.map((el) => el[0]),
+      ...assignments.map((el) => el[0]),
+    ];
+  });
+
+  let texNames = getTexNames(variables, parameters);
+
   const templates = [
     {
       name: "Proportional",
@@ -177,7 +198,7 @@
               value={(currentNode as Name).name}
               onchange={handleSymbolChange}
             >
-              {#each variableNames as variable}
+              {#each argNames as variable}
                 <option
                   value={variable}
                   selected={variable === (currentNode as Name).name}

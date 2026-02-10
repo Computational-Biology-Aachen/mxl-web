@@ -29,14 +29,6 @@
     assignments = assignments.slice();
   }
 
-  let argNames = $derived.by(() => {
-    return [
-      ...variables.map((el) => el[0]),
-      ...parameters.map((el) => el[0]),
-      ...assignments.map((el) => el[0]),
-    ];
-  });
-
   let texNames: Map<string, string> = $derived(
     getTexNames(variables, parameters),
   );
@@ -100,7 +92,9 @@
   <div popover id="eq-editor-{idx}">
     <EqEditorPopover
       root={fn}
-      variableNames={argNames}
+      {variables}
+      {parameters}
+      {assignments}
       onSave={(root) => onSaveEq(idx, root)}
       popovertarget={`eq-editor-${idx}`}
     />

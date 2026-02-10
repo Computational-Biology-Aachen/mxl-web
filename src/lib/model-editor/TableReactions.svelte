@@ -36,15 +36,6 @@
     reactions = reactions.slice();
   }
 
-  let varNames = $derived(variables.map((el) => el[0]));
-  let argNames = $derived.by(() => {
-    return [
-      ...variables.map((el) => el[0]),
-      ...parameters.map((el) => el[0]),
-      ...assignments.map((el) => el[0]),
-    ];
-  });
-
   let texNames: Map<string, string> = $derived(
     getTexNames(variables, parameters),
   );
@@ -78,7 +69,7 @@
         <td>
           <div class="row">
             <Math
-              tex={stoichToTex(reactions[idx][1].stoichiometry)}
+              tex={stoichToTex(reactions[idx][1].stoichiometry, texNames)}
               display={true}
               fontSize={"0.75rem"}
             />
@@ -125,7 +116,9 @@
   <div popover id="eq-editor-{idx}">
     <EqEditorPopover
       root={fn}
-      variableNames={argNames}
+      {variables}
+      {parameters}
+      {assignments}
       onSave={(root) => onSaveEq(idx, root)}
       popovertarget={`eq-editor-${idx}`}
     />
@@ -133,7 +126,9 @@
   <div popover id="stoich-editor-{idx}">
     <StoichEditorPopover
       {stoichiometry}
-      variableNames={varNames}
+      {variables}
+      {parameters}
+      {assignments}
       onSave={(stoichs) => onSaveStoichs(idx, stoichs)}
       popovertarget={`stoich-editor-${idx}`}
     />

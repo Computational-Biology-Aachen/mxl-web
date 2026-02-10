@@ -2,18 +2,35 @@
   import Icon from "$lib/Icon.svelte";
   import Math from "$lib/Math.svelte";
   import { Num } from "$lib/mathml";
-  import { stoichToTex, type Stoichiometry } from "./model";
+  import {
+    getTexNames,
+    stoichToTex,
+    type AssView,
+    type ParView,
+    type Stoichiometry,
+    type VarView,
+  } from "./model";
 
   let {
     stoichiometry = $bindable(),
-    variableNames,
+    variables,
+    parameters,
+    assignments,
   }: {
     stoichiometry: Stoichiometry;
-    variableNames: string[];
+    variables: VarView;
+    parameters: ParView;
+    assignments: AssView;
   } = $props();
 
+  let texNames = getTexNames(variables, parameters);
+
+  let variableNames = $derived.by(() => {
+    return [...variables.map((el) => el[0])];
+  });
+
   let latex = $derived.by(() => {
-    return stoichToTex(stoichiometry);
+    return stoichToTex(stoichiometry, texNames);
   });
 
   function firstVarNotInUse(): string {
@@ -50,7 +67,17 @@
       {#each stoichiometry as { name }, idx}
         <tr>
           <td>
-            <select bind:value={stoichiometry[idx].name}>
+            <select
+              bind:value={
+                () => {
+                  return stoichiometry[idx].name;
+                },
+                (v: string) => {
+                  stoichiometry[idx].name = v;
+                  stoichiometry = stoichiometry.slice();
+                }
+              }
+            >
               {#each variableNames as variable}
                 <option selected={variable === name}>{variable}</option>
               {/each}
@@ -59,12 +86,16 @@
           <td>
             <input
               type="number"
-              bind:value={stoichiometry[idx].value.value}
+              bind:value={
+                () => {
+                  return stoichiometry[idx].value.value;
+                },
+                (v: number) => {
+                  stoichiometry[idx].value.value = v;
+                  stoichiometry = stoichiometry.slice();
+                }
+              }
               step="1.0"
-              onchange={(e) => {
-                e.preventDefault();
-                stoichiometry = stoichiometry.slice();
-              }}
             />
           </td>
           <td>
@@ -86,7 +117,10 @@
     <button
       class="add"
       onclick={() => {
-        stoichiometry.push({ name: firstVarNotInUse(), value: new Num(1.0) });
+        stoichiometry = [
+          ...stoichiometry,
+          { name: firstVarNotInUse(), value: new Num(1.0) },
+        ];
       }}>+ add new item</button
     >
   </div>
