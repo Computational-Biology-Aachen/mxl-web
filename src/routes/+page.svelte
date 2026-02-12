@@ -1,11 +1,10 @@
 <script lang="ts">
   import { base } from "$app/paths";
   import Icon from "$lib/Icon.svelte";
-  import { jsWorkerManager, pyWorkerManager } from "$lib/stores/workerStore";
+  import { pyWorkerManager } from "$lib/stores/workerStore";
 
   // Get shared workers to initialise them
   const pyWorker = pyWorkerManager;
-  const jsWorker = jsWorkerManager;
 </script>
 
 <hgroup>

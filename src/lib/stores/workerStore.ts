@@ -19,8 +19,11 @@ interface SimulationRequest {
 type MessageHandler = (data: WorkerMessage) => void;
 type ErrorHandler = (error: ErrorEvent) => void;
 
-const pyWorkerUrl = new URL("../workers/pyWorker.ts", import.meta.url);
-const jsWorkerUrl = new URL("../workers/jsWorker.ts", import.meta.url);
+// Use ?worker&url to prevent inlining and get the actual worker URL
+// const pyWorkerUrl = new URL("../workers/pyWorker.ts", import.meta.url);
+import pyWorkerUrlString from "../workers/pyWorker.ts?worker&url";
+
+const pyWorkerUrl = new URL(pyWorkerUrlString, import.meta.url);
 
 export class WorkerManager {
   private worker: Worker | null = null;
@@ -102,4 +105,4 @@ export class WorkerManager {
 // Create singleton instances
 export let pyWorkerManager: WorkerManager = new WorkerManager(pyWorkerUrl);
 export let pyWorkerManager2: WorkerManager = new WorkerManager(pyWorkerUrl);
-export let jsWorkerManager: WorkerManager = new WorkerManager(jsWorkerUrl);
+

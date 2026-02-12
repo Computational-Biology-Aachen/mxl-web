@@ -6,7 +6,12 @@ import wasm from "vite-plugin-wasm";
 
 export default defineConfig({
   plugins: [sveltekit(), wasm(), devtoolsJson(), topLevelAwait()],
-  worker: { format: "es" },
+  worker: {
+    format: "es",
+  },
+  optimizeDeps: {
+    exclude: ["pyodide"],
+  },
   test: {
     projects: [
       {
