@@ -13,7 +13,7 @@
 </hgroup>
 
 <div class="heading">
-  <Icon>bolt</Icon>
+  <Icon color="primary">bolt</Icon>
   <h2>Select a pre-defined model</h2>
 </div>
 
@@ -51,6 +51,7 @@
 <style>
   .heading {
     display: flex;
+    align-items: center;
     gap: 0.5rem;
   }
   .card {

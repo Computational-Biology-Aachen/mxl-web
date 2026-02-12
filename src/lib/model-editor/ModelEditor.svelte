@@ -24,38 +24,31 @@
   } = $props();
 
   let userParameters: string[] = [];
-  // @ts-ignore
-  let variables: VarView = $state(
-    // svelte-ignore state_referenced_locally
+
+  let variables = $derived(
     parent.variables
       .entries()
       .map(([name, value]) => [name, value])
       .toArray(),
-  );
-  // @ts-ignore
-  let parameters: ParView = $state(
-    // svelte-ignore state_referenced_locally
+  ) as VarView;
+  let parameters = $derived(
     parent.parameters
       .entries()
       .map(([name, value]) => [name, value])
       .toArray(),
-  );
-  // @ts-ignore
-  let assignments: AssView = $state(
-    // svelte-ignore state_referenced_locally
+  ) as ParView;
+  let assignments = $derived(
     parent.assignments
       .entries()
       .map(([name, assign]) => [name, assign])
       .toArray(),
-  );
-  // @ts-ignore
-  let reactions: RxnView = $state(
-    // svelte-ignore state_referenced_locally
+  ) as AssView;
+  let reactions = $derived(
     parent.reactions
       .entries()
       .map(([name, assign]) => [name, assign])
       .toArray(),
-  );
+  ) as RxnView;
 
   let modelView = $derived.by(() => {
     let lcl = new ModelView();

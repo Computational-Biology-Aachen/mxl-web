@@ -29,8 +29,7 @@
     ];
   });
 
-  // svelte-ignore state_referenced_locally
-  let texNames = getTexNames(variables, parameters);
+  let texNames = $derived(getTexNames(variables, parameters));
 
   const templates = [
     {

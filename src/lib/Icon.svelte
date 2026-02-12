@@ -13,7 +13,7 @@
   } = $props();
 </script>
 
-<span class="material-symbols-outlined col-${color} ft-{fontSize}">
+<span class="material-symbols-outlined col-{color} ft-{fontSize}">
   {@render children()}
 </span>
 

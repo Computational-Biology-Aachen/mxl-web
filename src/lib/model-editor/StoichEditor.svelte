@@ -24,8 +24,8 @@
   } = $props();
 
   // We don't want these to react
-  // svelte-ignore state_referenced_locally
-  let texNames = getTexNames(variables, parameters);
+
+  let texNames = $derived(getTexNames(variables, parameters));
 
   let variableNames = $derived.by(() => {
     return [...variables.map((el) => el[0])];

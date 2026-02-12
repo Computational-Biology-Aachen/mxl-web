@@ -11,16 +11,11 @@
     popovertarget: string;
   } = $props();
 
-  // svelte-ignore state_referenced_locally
-  let enabled: boolean = $state(target.slider ? true : false);
-  // svelte-ignore state_referenced_locally
-  let minVal: string = $state(target.slider?.min || "0.0");
-  // svelte-ignore state_referenced_locally
-  let maxVal: string = $state(target.slider?.max || "1.0");
-  // svelte-ignore state_referenced_locally
-  let stepVal: string = $state(target.slider?.step || "0.1");
-  // svelte-ignore state_referenced_locally
-  let texName: string | undefined = $state(target.slider?.texName);
+  let enabled: boolean = $derived(target.slider ? true : false);
+  let minVal: string = $derived(target.slider?.min || "0.0");
+  let maxVal: string = $derived(target.slider?.max || "1.0");
+  let stepVal: string = $derived(target.slider?.step || "0.1");
+  let texName: string | undefined = $derived(target.slider?.texName);
 </script>
 
 <section class="page">
