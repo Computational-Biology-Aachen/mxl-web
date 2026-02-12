@@ -43,8 +43,8 @@
 
   const pyWorker1 = pyWorkerManager;
   const pyWorker2 = pyWorkerManager2;
-  const backend1 = { worker: pyWorker1, model: modelPy1 };
-  const backend2 = { worker: pyWorker2, model: modelPy2 };
+  const backend1 = $derived({ worker: pyWorker1, model: modelPy1 });
+  const backend2 = $derived({ worker: pyWorker2, model: modelPy2 });
 
   let loading1 = $state(true);
   let loading2 = $state(true);
@@ -58,8 +58,8 @@
     values: [],
   });
 
-  let localVariables = $state(variables.map((i) => i.init));
-  let localPars = $state(pars.map((i) => i.init));
+  let localVariables = $derived(variables.map((i) => i.init));
+  let localPars = $derived(pars.map((i) => i.init));
   let currentRequestId = $state<string | null>(null);
 
   function runSimulation() {
