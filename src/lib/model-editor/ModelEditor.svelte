@@ -24,9 +24,9 @@
   } = $props();
 
   let userParameters: string[] = [];
-
   // @ts-ignore
   let variables: VarView = $state(
+    // svelte-ignore state_referenced_locally
     parent.variables
       .entries()
       .map(([name, value]) => [name, value])
@@ -34,6 +34,7 @@
   );
   // @ts-ignore
   let parameters: ParView = $state(
+    // svelte-ignore state_referenced_locally
     parent.parameters
       .entries()
       .map(([name, value]) => [name, value])
@@ -41,6 +42,7 @@
   );
   // @ts-ignore
   let assignments: AssView = $state(
+    // svelte-ignore state_referenced_locally
     parent.assignments
       .entries()
       .map(([name, assign]) => [name, assign])
@@ -48,6 +50,7 @@
   );
   // @ts-ignore
   let reactions: RxnView = $state(
+    // svelte-ignore state_referenced_locally
     parent.reactions
       .entries()
       .map(([name, assign]) => [name, assign])

@@ -17,8 +17,6 @@
 
   const pyWorker = pyWorkerManager;
 
-  let yLimInternal = $state(yLim);
-
   let loading = $state(true);
   let result = $state<{ time: number[]; values: number[][] }>({
     time: [],

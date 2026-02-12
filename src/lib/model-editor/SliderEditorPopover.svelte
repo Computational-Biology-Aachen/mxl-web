@@ -11,10 +11,15 @@
     popovertarget: string;
   } = $props();
 
+  // svelte-ignore state_referenced_locally
   let enabled: boolean = $state(target.slider ? true : false);
+  // svelte-ignore state_referenced_locally
   let minVal: string = $state(target.slider?.min || "0.0");
+  // svelte-ignore state_referenced_locally
   let maxVal: string = $state(target.slider?.max || "1.0");
+  // svelte-ignore state_referenced_locally
   let stepVal: string = $state(target.slider?.step || "0.1");
+  // svelte-ignore state_referenced_locally
   let texName: string | undefined = $state(target.slider?.texName);
 </script>
 

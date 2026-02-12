@@ -23,6 +23,7 @@
     loadingDelay?: number;
   } = $props();
 
+  // svelte-ignore state_referenced_locally
   let showLoadingSpinner = $state(loading);
   let loadingTimeout: ReturnType<typeof setTimeout> | null = null;
 

@@ -23,6 +23,8 @@
     assignments: AssView;
   } = $props();
 
+  // We don't want these to react
+  // svelte-ignore state_referenced_locally
   let texNames = getTexNames(variables, parameters);
 
   let variableNames = $derived.by(() => {
