@@ -191,7 +191,7 @@
           Tip: click any element to select it, then choose a MathML element
           above or adjust its value.
         </p>
-        {#if currentNode.constructor.name === "Name"}
+        {#if currentNode instanceof Name}
           <div class="edit-row">
             <label for={`symbol-${currentNode.id}`}>Name</label>
             <select
@@ -208,7 +208,7 @@
               {/each}
             </select>
           </div>
-        {:else if currentNode.constructor.name === "Num"}
+        {:else if currentNode instanceof Num}
           <div class="edit-row">
             <label for={`number-${currentNode.id}`}>Value</label>
             <input

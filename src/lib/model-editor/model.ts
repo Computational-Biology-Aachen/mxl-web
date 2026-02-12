@@ -89,11 +89,11 @@ export function getTexNames(
 //     })
 //     .reduce((previous, current) => {
 //       // a + b
-//       if (current.constructor.name === "Name") {
+//       if (current instanceof Name) {
 //         return new Add([previous, current]);
 //       }
 //       // a - b
-//       if (current.constructor.name === "Minus") {
+//       if (current instanceof Minus) {
 //         return new Minus([previous, ...(current as Minus).children]);
 //       }
 

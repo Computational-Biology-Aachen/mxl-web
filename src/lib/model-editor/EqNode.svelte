@@ -1,5 +1,6 @@
 <script lang="ts">
-  import type { Add, Base, Divide, Mul, Name, Num } from "$lib/mathml";
+  import type { Base } from "$lib/mathml";
+  import { Add, Divide, Minus, Mul, Name, Num } from "$lib/mathml";
   import EquationNode from "$lib/model-editor/EqNode.svelte";
 
   let {
@@ -13,19 +14,29 @@
   } = $props();
 
   const selectSelf = () => onSelect(node);
+
+  function getNodeClassName(node: Base): string {
+    if (node instanceof Divide) return "Divide";
+    if (node instanceof Mul) return "Mul";
+    if (node instanceof Add) return "Add";
+    if (node instanceof Minus) return "Minus";
+    if (node instanceof Name) return "Name";
+    if (node instanceof Num) return "Num";
+    return "";
+  }
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-  class={`node node-${node.constructor.name}`}
+  class={`node node-${getNodeClassName(node)}`}
   data-selected={selectedId === node.id}
   onclick={(e) => {
     e.stopPropagation();
     selectSelf();
   }}
 >
-  {#if node.constructor.name === "Divide"}
+  {#if node instanceof Divide}
     <div class="divide">
       <div class="child">
         <EquationNode
@@ -52,7 +63,7 @@
         />
       </div>
     </div>
-  {:else if node.constructor.name === "Mul"}
+  {:else if node instanceof Mul}
     <div class="mul">
       <div class="child">
         <EquationNode
@@ -79,7 +90,7 @@
         />
       </div>
     </div>
-  {:else if node.constructor.name === "Add"}
+  {:else if node instanceof Add}
     <div class="mul">
       <div class="child">
         <EquationNode
@@ -106,11 +117,11 @@
         />
       </div>
     </div>
-  {:else if node.constructor.name === "Minus"}
+  {:else if node instanceof Minus}
     <div class="mul">
       <div class="child">
         <EquationNode
-          node={(node as Add).children[0]}
+          node={(node as Minus).children[0]}
           {selectedId}
           {onSelect}
         />
@@ -127,17 +138,17 @@
       </button>
       <div class="child">
         <EquationNode
-          node={(node as Add).children[1]}
+          node={(node as Minus).children[1]}
           {selectedId}
           {onSelect}
         />
       </div>
     </div>
-  {:else if node.constructor.name === "Name"}
+  {:else if node instanceof Name}
     <div class="leaf">
       <span class="value">{(node as Name).name}</span>
     </div>
-  {:else if node.constructor.name === "Num"}
+  {:else if node instanceof Num}
     <div class="leaf">
       <span class="value">{(node as Num).value}</span>
     </div>
