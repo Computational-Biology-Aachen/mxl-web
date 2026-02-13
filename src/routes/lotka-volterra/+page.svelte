@@ -94,7 +94,6 @@
     idx: number;
     title: string;
     span: number;
-    simulator: undefined | Simulator;
     tEnd: number;
   };
 
@@ -105,7 +104,6 @@
       title: "Short Simulation",
       col: 1,
       span: 3,
-      simulator: undefined,
       tEnd: 100,
     },
     {
@@ -114,7 +112,6 @@
       title: "Long Simulation",
       col: 4,
       span: 3,
-      simulator: undefined,
       tEnd: 200,
     },
   ]);
@@ -288,7 +285,11 @@
   <div popover id="analysis-editor-{idx}">
     <AnalysisEditorPopover
       parent={analysis}
-      onSave={() => {}}
+      onSave={({ tEnd }) => {
+        analyses[idx] = { ...analysis, tEnd: tEnd };
+        analyses = analyses.slice();
+        simulatorRefs[analysis.id]?.runSimulation(model);
+      }}
       popovertarget={`analysis-editor-${idx}`}
     />
   </div>
@@ -355,7 +356,7 @@
     background-color: lch(from var(--primary) calc(l - 20) c h);
   }
   [popover] {
-    position: absolute;
+    position: fixed;
     inset: unset;
     top: 2rem;
     left: 2rem;

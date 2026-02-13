@@ -372,7 +372,7 @@
             <h2>{box.title}</h2>
           </div>
           <span>
-            <button class="close" popovertarget="analysis-editor-${box.id}">
+            <button class="close" popovertarget="analysis-editor-{box.id}">
               <Icon color="inherit">menu</Icon>
             </button>
             <button class="close" onclick={() => removeBox(row, box.id)}>

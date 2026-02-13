@@ -11,11 +11,11 @@
     popovertarget,
   }: {
     parent: Analysis;
-    onSave: () => void;
+    onSave: (options: Analysis) => void;
     popovertarget: string;
   } = $props();
 
-  let tEnd = $state(100);
+  let tEnd = $derived(parent.tEnd);
 </script>
 
 <section class="page">
@@ -24,7 +24,7 @@
 
   <button
     class="save"
-    onclick={() => onSave()}
+    onclick={() => onSave({ tEnd })}
     popovertargetaction="hide"
     {popovertarget}
   >
