@@ -4,6 +4,7 @@
   import Icon from "$lib/Icon.svelte";
   import Math from "$lib/Math.svelte";
   import { Mul, Name, Num } from "$lib/mathml";
+  import AnalysisEditorPopover from "$lib/model-editor/AnalysisEditorPopover.svelte";
   import { ModelBuilder } from "$lib/model-editor/model";
   import ModelEditorPopover from "$lib/model-editor/ModelEditorPopover.svelte";
   import Simulator from "$lib/Simulator.svelte";
@@ -118,10 +119,18 @@
     },
   ]);
 
-  function runAllSimulations() {
+  let simulatorRefs = $state<Record<number, Simulator | undefined>>({});
+  let analysisById = $derived.by(() => {
+    const map = new Map<number, Analysis>();
     for (const analysis of analyses) {
-      console.log(`Running simulator\n`, analysis.simulator);
-      analysis.simulator?.runSimulation(model);
+      map.set(analysis.id, analysis);
+    }
+    return map;
+  });
+
+  function runAllSimulations() {
+    for (const [id, simulator] of Object.entries(simulatorRefs)) {
+      simulator?.runSimulation(model);
     }
   }
 
@@ -183,7 +192,7 @@
     <h3>Simulation parameters</h3>
   </div>
   <div class="grid-row">
-    {#each parSliders as par, idx (par.name)}
+    {#each parSliders as par (par.name)}
       <Slider
         name={par.name}
         callback={runAllSimulations}
@@ -214,7 +223,7 @@
     <h3>Initial conditions</h3>
   </div>
   <div class="grid-row">
-    {#each varSliders as { name, min, max, step }, idx}
+    {#each varSliders as { name, min, max, step }}
       <Slider
         {name}
         callback={runAllSimulations}
@@ -238,30 +247,32 @@
 <DynBoxRow
   items={analyses}
   onAdd={(box) => {
-    analyses = [
-      ...analyses,
-      {
-        id: box.id,
-        idx: analyses.length,
-        title: "New",
-        span: box.span,
-        simulator: undefined,
-        tEnd: 10,
-      },
-    ];
-    return analyses.length;
+    const newAnalysis = {
+      id: box.id,
+      idx: analyses.length,
+      title: "New",
+      span: box.span,
+      simulator: undefined,
+      tEnd: 10,
+    };
+    analyses = [...analyses, newAnalysis];
+    return analyses.length - 1;
   }}
   onRemove={(box) => {
-    delete analyses[box.idx];
-    analyses = [...analyses];
+    analyses = analyses.filter((a) => a.id !== box.id);
+    delete simulatorRefs[box.id];
+    simulatorRefs = { ...simulatorRefs };
   }}
 >
   {#snippet children({ box })}
-    <Simulator
-      bind:this={analyses[box.idx].simulator}
-      {model}
-      tEnd={analyses[box.idx].tEnd}
-    />
+    {@const analysis = analysisById.get(box.id)}
+    {#if analysis}
+      <Simulator
+        bind:this={simulatorRefs[box.id]}
+        {model}
+        tEnd={analysis.tEnd}
+      />
+    {/if}
   {/snippet}
 </DynBoxRow>
 
@@ -272,6 +283,16 @@
     runAllSimulations();
   }}
 />
+
+{#each analyses as analysis, idx}
+  <div popover id="analysis-editor-{idx}">
+    <AnalysisEditorPopover
+      parent={analysis}
+      onSave={() => {}}
+      popovertarget={`analysis-editor-${idx}`}
+    />
+  </div>
+{/each}
 
 <style>
   .topbar {
@@ -332,5 +353,15 @@
   }
   button:hover {
     background-color: lch(from var(--primary) calc(l - 20) c h);
+  }
+  [popover] {
+    position: absolute;
+    inset: unset;
+    top: 2rem;
+    left: 2rem;
+    width: calc(100% - 4rem);
+  }
+  [popover]::backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
   }
 </style>

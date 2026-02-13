@@ -40,6 +40,7 @@
 
   const GRID_COLS = 6;
   const DEFAULT_COL_SPAN = 3;
+  const DEBUG = false;
 
   function getNextId(initialBoxes: Array<Box[]>): number {
     let maxId = 0;
@@ -76,7 +77,7 @@
     return null;
   }
 
-  let boxes: Box[][] = $derived.by(() => {
+  function initBoxes() {
     const rows: Box[][] = [];
     let nextSeedId = 1;
 
@@ -103,12 +104,14 @@
       }
     }
     return rows;
-  });
+  }
+
+  let boxes: Box[][] = $state(initBoxes());
   let maxRowUsed = $derived(boxes.length);
   let nextId = $derived(getNextId(boxes));
 
   let gridEl: HTMLDivElement | null = $state(null);
-  let dragPreview: DragPreview | null = $state(null);
+  let DRAG_PREVIEW: DragPreview | null = $state(null);
 
   /** Check which columns of the row are full */
   function buildOccupancy(row: number, ignoreId?: number): Set<number> {
@@ -250,7 +253,7 @@
     const startColSpan = box.span;
     const maxColSpan = GRID_COLS - box.col + 1;
 
-    dragPreview = {
+    DRAG_PREVIEW = {
       boxId,
       row: row,
       col: box.col,
@@ -266,7 +269,7 @@
         Math.min(maxColSpan, startColSpan + step),
       );
       if (canPlace(row, box.col, nextColSpan, boxId)) {
-        dragPreview = {
+        DRAG_PREVIEW = {
           boxId,
           row: row,
           col: box.col,
@@ -278,10 +281,10 @@
     };
 
     const handleUp = () => {
-      if (dragPreview?.boxId === boxId) {
-        tryResize(row, boxId, dragPreview.span);
+      if (DRAG_PREVIEW?.boxId === boxId) {
+        tryResize(row, boxId, DRAG_PREVIEW.span);
       }
-      dragPreview = null;
+      DRAG_PREVIEW = null;
       window.removeEventListener("pointermove", handleMove);
       window.removeEventListener("pointerup", handleUp);
     };
@@ -306,8 +309,9 @@
     const startY = event.clientY;
     const startCol = box.col;
     const maxCol = GRID_COLS - box.span + 1;
+    const maxRow = boxes.length;
 
-    dragPreview = {
+    DRAG_PREVIEW = {
       boxId,
       row: startRow,
       col: box.col,
@@ -321,9 +325,9 @@
       const stepX = Math.round(deltaX / metrics.pitch);
       const stepY = Math.round(deltaY / metrics.pitch);
       const nextCol = Math.max(1, Math.min(maxCol, startCol + stepX));
-      const nextRow = Math.max(1, startRow + stepY);
+      const nextRow = Math.max(0, Math.min(maxRow, startRow + stepY));
       if (canPlace(nextRow, nextCol, box.span, boxId)) {
-        dragPreview = {
+        DRAG_PREVIEW = {
           boxId,
           row: nextRow,
           col: nextCol,
@@ -334,10 +338,10 @@
     };
 
     const handlePointerUp = () => {
-      if (dragPreview?.boxId === boxId) {
-        moveBox(boxId, startRow, dragPreview.row, dragPreview.col);
+      if (DRAG_PREVIEW?.boxId === boxId) {
+        moveBox(boxId, startRow, DRAG_PREVIEW.row, DRAG_PREVIEW.col);
       }
-      dragPreview = null;
+      DRAG_PREVIEW = null;
       window.removeEventListener("pointermove", handleMove);
       window.removeEventListener("pointerup", handlePointerUp);
     };
@@ -358,22 +362,29 @@
         class="box"
         style={`grid-column: ${box.col} / span ${box.span}; grid-row: ${row + 1};`}
       >
-        <div
-          class="box-header"
-          role="button"
-          tabindex="0"
-          onpointerdown={(event) => startMove(event, row, box.id)}
-        >
-          <h2>{box.title}</h2>
+        <div class="box-header">
+          <div
+            class="grabbable"
+            role="button"
+            tabindex="0"
+            onpointerdown={(event) => startMove(event, row, box.id)}
+          >
+            <h2>{box.title}</h2>
+          </div>
+          <span>
+            <button class="close" popovertarget="analysis-editor-${box.id}">
+              <Icon color="inherit">menu</Icon>
+            </button>
+            <button class="close" onclick={() => removeBox(row, box.id)}>
+              <Icon color="inherit">close</Icon>
+            </button>
+          </span>
         </div>
 
         <div class="box-body">
           {@render children({ box })}
         </div>
 
-        <button class="close" onclick={() => removeBox(row, box.id)}>
-          <Icon color="inherit">close</Icon>
-        </button>
         <button
           class="resize-handle"
           onpointerdown={(event) => startResize(event, row, box.id, "width")}
@@ -392,11 +403,15 @@
     {/if}
   {/each}
 
-  {#if dragPreview}
+  {#if DRAG_PREVIEW}
     <div
       class="preview-box"
-      style={`grid-column: ${dragPreview.col} / span ${dragPreview.span}; grid-row: ${dragPreview.row + 1}`}
-    ></div>
+      style={`grid-column: ${DRAG_PREVIEW.col} / span ${DRAG_PREVIEW.span}; grid-row: ${DRAG_PREVIEW.row + 1}`}
+    >
+      {#if DEBUG}
+        {DRAG_PREVIEW.row}x{DRAG_PREVIEW.col}
+      {/if}
+    </div>
   {/if}
   <button
     class="add"
@@ -428,11 +443,20 @@
     width: 100%;
   }
 
+  .grabbable {
+    cursor: grab;
+  }
+
   .box-header {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: space-between;
     gap: 4px;
-    cursor: grab;
+    width: 100%;
+  }
+  .box-header span {
+    display: flex;
+    flex-direction: row;
   }
 
   .box-header:active {
@@ -441,9 +465,6 @@
 
   button.close {
     display: flex;
-    position: absolute;
-    top: 12px;
-    right: 12px;
     justify-content: center;
     align-items: center;
     cursor: pointer;
