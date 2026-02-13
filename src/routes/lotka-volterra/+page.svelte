@@ -1,5 +1,6 @@
 <script lang="ts">
   import { base } from "$app/paths";
+  import DynBoxRow from "$lib/DynBoxRow.svelte";
   import Icon from "$lib/Icon.svelte";
   import Math from "$lib/Math.svelte";
   import { Mul, Name, Num } from "$lib/mathml";
@@ -85,9 +86,44 @@
   }
 
   // Simulation state
-  const tEnd = 100;
-  let simulatorComponent: Simulator;
   let model = $state(initModel());
+
+  type Analysis = {
+    id: number;
+    idx: number;
+    title: string;
+    span: number;
+    simulator: undefined | Simulator;
+    tEnd: number;
+  };
+
+  let analyses: Analysis[] = $state([
+    {
+      id: 0,
+      idx: 0,
+      title: "Short Simulation",
+      col: 1,
+      span: 3,
+      simulator: undefined,
+      tEnd: 100,
+    },
+    {
+      id: 1,
+      idx: 1,
+      title: "Long Simulation",
+      col: 4,
+      span: 3,
+      simulator: undefined,
+      tEnd: 200,
+    },
+  ]);
+
+  function runAllSimulations() {
+    for (const analysis of analyses) {
+      console.log(`Running simulator\n`, analysis.simulator);
+      analysis.simulator?.runSimulation(model);
+    }
+  }
 
   let parSliders = $derived.by(() => {
     return model.parameters
@@ -132,7 +168,7 @@
     <button
       onclick={() => {
         model = initModel();
-        simulatorComponent.runSimulation(model);
+        runAllSimulations();
       }}>Reset</button
     >
     <button popovertarget="model-editor">Edit model</button>
@@ -150,7 +186,7 @@
     {#each parSliders as par, idx (par.name)}
       <Slider
         name={par.name}
-        callback={() => simulatorComponent.runSimulation(model)}
+        callback={runAllSimulations}
         bind:val={
           () => {
             return model.parameters.get(par.name)!.value;
@@ -181,7 +217,7 @@
     {#each varSliders as { name, min, max, step }, idx}
       <Slider
         {name}
-        callback={() => simulatorComponent.runSimulation(model)}
+        callback={runAllSimulations}
         bind:val={
           () => {
             return model.variables.get(name)!.value;
@@ -199,13 +235,41 @@
   </div>
 {/if}
 
-<Simulator bind:this={simulatorComponent} {model} {tEnd}></Simulator>
+<DynBoxRow
+  items={analyses}
+  onAdd={(box) => {
+    analyses = [
+      ...analyses,
+      {
+        id: box.id,
+        idx: analyses.length,
+        title: "New",
+        span: box.span,
+        simulator: undefined,
+        tEnd: 10,
+      },
+    ];
+    return analyses.length;
+  }}
+  onRemove={(box) => {
+    delete analyses[box.idx];
+    analyses = [...analyses];
+  }}
+>
+  {#snippet children({ box })}
+    <Simulator
+      bind:this={analyses[box.idx].simulator}
+      {model}
+      tEnd={analyses[box.idx].tEnd}
+    />
+  {/snippet}
+</DynBoxRow>
 
 <ModelEditorPopover
   parent={model}
   onSave={(edited) => {
     model = edited;
-    simulatorComponent.runSimulation(model);
+    runAllSimulations();
   }}
 />
 

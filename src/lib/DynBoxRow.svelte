@@ -2,16 +2,19 @@
   import type { Snippet } from "svelte";
   import Icon from "./Icon.svelte";
 
-  let {
-    children,
-  }: {
-    children?: Snippet;
-  } = $props();
-
   type Box = {
     id: number;
+    idx: number;
     col: number;
     span: number;
+    title: string;
+  };
+
+  type BoxSeed = {
+    id: number;
+    idx: number;
+    span: number;
+    col?: number;
     title: string;
   };
 
@@ -23,79 +26,94 @@
     kind: "width" | "move";
   };
 
+  let {
+    children,
+    items,
+    onAdd,
+    onRemove,
+  }: {
+    children: Snippet<[{ box: Box }]>;
+    items: BoxSeed[];
+    onAdd: (box: Box) => number;
+    onRemove: (box: Box) => void;
+  } = $props();
+
   const GRID_COLS = 6;
   const DEFAULT_COL_SPAN = 3;
 
-  let boxes: Array<Box[]> = $state([
-    [
-      {
-        id: 1,
-        col: 1,
-        span: 3,
-        title: "Analysis 1",
-      },
-      {
-        id: 2,
-        col: 4,
-        span: 3,
-        title: "Analysis 2",
-      },
-    ],
-    [
-      {
-        id: 3,
-        col: 1,
-        span: 3,
-        title: "Analysis 3",
-      },
-      {
-        id: 4,
-        col: 4,
-        span: 2,
-        title: "Analysis 4",
-      },
-    ],
-    [
-      {
-        id: 5,
-        col: 1,
-        span: 2,
-        title: "Analysis 5",
-      },
-      {
-        id: 6,
-        col: 4,
-        span: 3,
-        title: "Analysis 6",
-      },
-    ],
-    [
-      {
-        id: 7,
-        col: 1,
-        span: 2,
-        title: "Analysis 7",
-      },
-      {
-        id: 8,
-        col: 4,
-        span: 2,
-        title: "Analysis 8",
-      },
-    ],
-  ]);
+  function getNextId(initialBoxes: Array<Box[]>): number {
+    let maxId = 0;
+    for (const row of initialBoxes) {
+      for (const box of row) {
+        maxId++;
+      }
+    }
+    return maxId;
+  }
+
+  function findSpotInRowFor(
+    rows: Array<Box[]>,
+    row: number,
+    span: number,
+  ): number | null {
+    const occupied = new Set<number>();
+    const rowBoxes = rows[row] ?? [];
+    for (const box of rowBoxes) {
+      for (let c = box.col; c < box.col + box.span; c += 1) {
+        occupied.add(c);
+      }
+    }
+    for (let col = 1; col <= GRID_COLS - span + 1; col += 1) {
+      let fits = true;
+      for (let c = col; c < col + span; c += 1) {
+        if (occupied.has(c)) {
+          fits = false;
+          break;
+        }
+      }
+      if (fits) return col;
+    }
+    return null;
+  }
+
+  let boxes: Box[][] = $derived.by(() => {
+    const rows: Box[][] = [];
+    let nextSeedId = 1;
+
+    for (const item of items) {
+      const span = item.span;
+      let row = 0;
+      while (true) {
+        const col = item.col ?? findSpotInRowFor(rows, row, span);
+
+        if (col !== null) {
+          const id = item.id ?? nextSeedId;
+          rows[row] = rows[row] ?? [];
+          rows[row].push({
+            id,
+            idx: item.idx,
+            col,
+            span,
+            title: item.title ?? `Analysis ${id}`,
+          });
+          nextSeedId = Math.max(nextSeedId, id + 1);
+          break;
+        }
+        row += 1;
+      }
+    }
+    return rows;
+  });
   let maxRowUsed = $derived(boxes.length);
-  let nextId = $state(9);
+  let nextId = $derived(getNextId(boxes));
 
   let gridEl: HTMLDivElement | null = $state(null);
   let dragPreview: DragPreview | null = $state(null);
 
   /** Check which columns of the row are full */
   function buildOccupancy(row: number, ignoreId?: number): Set<number> {
-    console.log(row);
-
     const occupied = new Set<number>();
-    for (const box of boxes[row]) {
+    for (const box of boxes.at(row) ?? []) {
       if (box.id === ignoreId) continue;
       for (let c = box.col; c < box.col + box.span; c += 1) {
         occupied.add(c);
@@ -126,11 +144,6 @@
     }
   }
 
-  function removeBox(row: number, boxId: number) {
-    boxes[row] = boxes[row].filter((box) => box.id !== boxId);
-    clearEmptyRow(row);
-  }
-
   function tryResize(row: number, boxId: number, span: number) {
     boxes[row] = boxes[row].map((box) => {
       if (box.id !== boxId) return box;
@@ -152,6 +165,13 @@
       }
     }
     return [boxesFalse, boxesTrue[0]];
+  }
+
+  function removeBox(row: number, boxId: number) {
+    const [others, box] = splitByCond(boxes[row], boxId);
+    boxes[row] = others;
+    clearEmptyRow(row);
+    onRemove(box);
   }
 
   /** Move box to another row.
@@ -176,32 +196,29 @@
   function addRightAtRow(row: number) {
     const col = findSpotInRow(row, 1);
     if (col === null) return;
-    boxes[row] = [
-      ...boxes[row],
-      {
-        id: nextId,
-        col,
-        span: 1,
-        title: `Analysis ${nextId}`,
-      },
-    ];
+    const newBox = {
+      id: nextId,
+      col,
+      idx: -1, // garbage value
+      span: GRID_COLS - col + 1,
+      title: `Analysis ${nextId}`,
+    };
+    newBox.idx = onAdd(newBox);
+
+    boxes[row] = [...boxes[row], newBox];
     boxes = boxes.slice();
-    nextId += 1;
   }
 
   function addBelow() {
-    boxes = [
-      ...boxes,
-      [
-        {
-          id: nextId,
-          col: 1,
-          span: DEFAULT_COL_SPAN,
-          title: `Analysis ${nextId}`,
-        },
-      ],
-    ];
-    nextId += 1;
+    const newBox = {
+      id: nextId,
+      col: 1,
+      idx: -1, // garbage value
+      span: DEFAULT_COL_SPAN,
+      title: `Analysis ${nextId}`,
+    };
+    newBox.idx = onAdd(newBox);
+    boxes = [...boxes, [newBox]];
   }
 
   function getGridMetrics() {
@@ -347,11 +364,15 @@
           tabindex="0"
           onpointerdown={(event) => startMove(event, row, box.id)}
         >
-          <div class="title">{box.title}</div>
-          <div class="subtitle">Placeholder</div>
+          <h2>{box.title}</h2>
         </div>
-        <button class="btn-close" onclick={() => removeBox(row, box.id)}>
-          <Icon>close</Icon>
+
+        <div class="box-body">
+          {@render children({ box })}
+        </div>
+
+        <button class="close" onclick={() => removeBox(row, box.id)}>
+          <Icon color="inherit">close</Icon>
         </button>
         <button
           class="resize-handle"
@@ -362,7 +383,7 @@
     {/each}
     {#if rowNotFull(row)}
       <button
-        class="ghost add-button"
+        class="add"
         style={`grid-column: ${findSpotInRow(row, 1)} / span 1; grid-row: ${row + 1};`}
         onclick={() => addRightAtRow(row)}
       >
@@ -378,53 +399,33 @@
     ></div>
   {/if}
   <button
-    class="ghost add-button add-button--below"
+    class="add"
     style={`grid-column: 1 / span ${GRID_COLS}; grid-row: ${maxRowUsed + 1};`}
     onclick={addBelow}
   >
-    Add new analysis
+    <Icon color="inherit">add</Icon>
   </button>
 </div>
 
 <style>
-  .ghost {
-    transition:
-      background 0.2s ease,
-      border-color 0.2s ease;
-    cursor: pointer;
-    border: 1px solid rgba(120, 120, 120, 0.5);
-    border-radius: 10px;
-    background: rgba(120, 120, 120, 0.1);
-    padding: 10px 16px;
-    color: #1f1f1f;
-  }
-
-  .ghost:hover {
-    background: rgba(120, 120, 120, 0.25);
-  }
-
   .grid {
-    --gap: 12px;
+    --gap: 1rem;
     display: grid;
-    grid-template-columns: repeat(6, var(--cell));
-    align-items: stretch;
+    grid-template-columns: repeat(6, 1fr);
     gap: var(--gap);
   }
-
-  .grid > * {
-    position: relative;
-  }
-
   .box {
     display: flex;
     position: relative;
     flex-direction: column;
     gap: 12px;
     z-index: 2;
+    box-shadow: var(--shadow);
     border: 1px solid #d0d0d0;
-    border-radius: 14px;
-    background: #f2f2f2;
-    padding: 12px;
+    border-radius: 0.75rem;
+    background-color: var(--bg-l1);
+    padding: 2rem;
+    width: 100%;
   }
 
   .box-header {
@@ -438,26 +439,25 @@
     cursor: grabbing;
   }
 
-  .title {
-    font-weight: 600;
-    letter-spacing: 0.2px;
-  }
-
-  .subtitle {
-    color: #5a5a5a;
-    font-size: 0.85rem;
-  }
-
-  .btn-close {
+  button.close {
+    display: flex;
     position: absolute;
     top: 12px;
     right: 12px;
+    justify-content: center;
+    align-items: center;
     cursor: pointer;
     border: none;
-    border-radius: 50px;
+    border-radius: 5rem;
+    background-color: var(--bg-l1);
+    width: 1.5rem;
+    height: 1.5rem;
+    color: black;
+    font-size: 0.75rem;
   }
-  .btn-close:hover {
-    background-color: lch(from var(--primary) calc(l - 20) c h);
+  button.close:hover {
+    background-color: lch(from var(--primary) calc(l - 10) c h);
+    color: white;
   }
 
   .resize-handle {
@@ -476,6 +476,12 @@
     height: 18px;
   }
 
+  .box-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+  }
+
   .box:hover .resize-handle {
     opacity: 1;
   }
@@ -484,14 +490,27 @@
     z-index: 3;
     border: 2px dashed rgba(90, 90, 90, 0.8);
     border-radius: 12px;
-    background: rgba(160, 160, 160, 0.15);
+    background: rgba(160, 160, 160, 0.1);
     pointer-events: none;
   }
 
-  .add-button {
+  button.add {
     display: grid;
     place-items: center;
     z-index: 1;
+    transition:
+      background 0.2s ease,
+      border-color 0.2s ease;
+    cursor: pointer;
+    border: 1px solid rgba(120, 120, 120, 0.5);
+    border-radius: 10px;
+    background: var(--bg-l1);
+    padding: 10px 16px;
+    color: #1f1f1f;
     text-align: center;
+  }
+
+  button.add:hover {
+    background: rgba(from var(--bg-l1), r g b 0.1);
   }
 </style>
