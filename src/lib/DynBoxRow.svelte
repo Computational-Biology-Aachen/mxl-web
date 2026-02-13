@@ -120,11 +120,15 @@
     return true;
   }
 
-  function removeBox(row: number, boxId: number) {
-    boxes[row] = boxes[row].filter((box) => box.id !== boxId);
+  function clearEmptyRow(row: number) {
     if (boxes[row].length === 0) {
       boxes = [...boxes.slice(0, row), ...boxes.slice(row + 1)];
     }
+  }
+
+  function removeBox(row: number, boxId: number) {
+    boxes[row] = boxes[row].filter((box) => box.id !== boxId);
+    clearEmptyRow(row);
   }
 
   function tryResize(row: number, boxId: number, span: number) {
@@ -159,6 +163,7 @@
     box.col = col;
     boxes[fromRow] = row;
     boxes[toRow] = [...boxes[toRow], box];
+    clearEmptyRow(fromRow);
   }
 
   function findSpotInRow(row: number, span: number): number | null {
@@ -372,13 +377,12 @@
       style={`grid-column: ${dragPreview.col} / span ${dragPreview.span}; grid-row: ${dragPreview.row + 1}`}
     ></div>
   {/if}
-
   <button
     class="ghost add-button add-button--below"
     style={`grid-column: 1 / span ${GRID_COLS}; grid-row: ${maxRowUsed + 1};`}
     onclick={addBelow}
   >
-    Add analysis below
+    Add new analysis
   </button>
 </div>
 
@@ -400,11 +404,9 @@
   }
 
   .grid {
-    --cell: 160px;
     --gap: 12px;
     display: grid;
     grid-template-columns: repeat(6, var(--cell));
-    grid-auto-rows: var(--cell);
     align-items: stretch;
     gap: var(--gap);
   }
@@ -448,8 +450,8 @@
 
   .btn-close {
     position: absolute;
-    top: 5%;
-    right: 3%;
+    top: 12px;
+    right: 12px;
     cursor: pointer;
     border: none;
     border-radius: 50px;
@@ -491,9 +493,5 @@
     place-items: center;
     z-index: 1;
     text-align: center;
-  }
-
-  .add-button--below {
-    height: 100%;
   }
 </style>
