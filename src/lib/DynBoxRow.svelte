@@ -1,5 +1,12 @@
 <script lang="ts">
+  import type { Snippet } from "svelte";
   import Icon from "./Icon.svelte";
+
+  let {
+    children,
+  }: {
+    children?: Snippet;
+  } = $props();
 
   type Box = {
     id: number;
@@ -78,7 +85,6 @@
     ],
   ]);
   let maxRowUsed = $derived(boxes.length);
-  let addBelowRow = $derived.by(() => maxRowUsed + 1);
   let nextId = $state(9);
 
   let gridEl: HTMLDivElement | null = $state(null);
@@ -219,7 +225,6 @@
     );
 
     const startX = event.clientX;
-    const startY = event.clientY;
     const startColSpan = box.span;
     const maxColSpan = GRID_COLS - box.col + 1;
 
@@ -232,37 +237,22 @@
     };
 
     const handleMove = (moveEvent: PointerEvent) => {
-      if (kind === "width") {
-        const delta = moveEvent.clientX - startX;
-        const step = Math.round(delta / metrics.pitch);
-        const nextColSpan = Math.max(
-          1,
-          Math.min(maxColSpan, startColSpan + step),
-        );
-        if (canPlace(row, box.col, nextColSpan, boxId)) {
-          dragPreview = {
-            boxId,
-            row: row,
-            col: box.col,
-            span: nextColSpan,
-            kind,
-          };
-        }
-        return;
-      }
-
-      // Y-MOVE
-      const delta = moveEvent.clientY - startY;
+      const delta = moveEvent.clientX - startX;
       const step = Math.round(delta / metrics.pitch);
-      if (canPlace(row, box.col, startColSpan, boxId)) {
+      const nextColSpan = Math.max(
+        1,
+        Math.min(maxColSpan, startColSpan + step),
+      );
+      if (canPlace(row, box.col, nextColSpan, boxId)) {
         dragPreview = {
           boxId,
           row: row,
           col: box.col,
-          span: startColSpan,
+          span: nextColSpan,
           kind,
         };
       }
+      return;
     };
 
     const handleUp = () => {
@@ -335,8 +325,7 @@
   }
 
   function rowNotFull(row: number): boolean {
-    if (findSpotInRow(row, 1) !== null) return true;
-    return false;
+    return findSpotInRow(row, 1) !== null;
   }
 </script>
 
@@ -386,7 +375,7 @@
 
   <button
     class="ghost add-button add-button--below"
-    style={`grid-column: 1 / span ${GRID_COLS}; grid-row: ${addBelowRow};`}
+    style={`grid-column: 1 / span ${GRID_COLS}; grid-row: ${maxRowUsed + 1};`}
     onclick={addBelow}
   >
     Add analysis below
