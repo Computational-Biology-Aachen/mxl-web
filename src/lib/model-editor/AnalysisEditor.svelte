@@ -18,8 +18,8 @@
   } = $props();
 
   let tEnd = $derived(parent.tEnd);
-  let yMax: number | undefined = $derived(parent.yMax);
-  let yMaxAuto: boolean = $derived(untrack(() => yMax) ? true : false);
+  let yMax: number = $derived(parent.yMax || 10);
+  let yMaxAuto: boolean = $derived(untrack(() => yMax) ? false : true);
 </script>
 
 <section>

@@ -9,13 +9,18 @@
   import ModelEditorPopover from "$lib/model-editor/ModelEditorPopover.svelte";
   import Simulator from "$lib/Simulator.svelte";
   import Slider from "$lib/Slider.svelte";
+  import type { Snippet } from "svelte";
 
   let {
+    children,
+    name,
     initModel,
     analyses,
   }: {
+    name: string;
     initModel: () => ModelBuilder;
     analyses: Analyses;
+    children?: Snippet;
   } = $props();
 
   let model = $derived(initModel());
@@ -72,7 +77,7 @@
   <div class="breadcrumbs">
     <a class="light" href="{base}/">Models</a>
     <span class="light">/</span>
-    <span class="bold">Lotka-Volterra</span>
+    <span class="bold">{name}</span>
   </div>
   <div class="row">
     <button
@@ -85,6 +90,14 @@
   </div>
 </div>
 
+{#if children}
+  {@render children()}
+{/if}
+
+<div class="heading">
+  <Icon>function</Icon>
+  <h3>Model Equations</h3>
+</div>
 <Math tex={model.buildTex()} display />
 
 {#if parSliders.length > 0}
