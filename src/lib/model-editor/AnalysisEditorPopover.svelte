@@ -3,24 +3,21 @@
 
   type Analysis = {
     tEnd: number;
+    yMax: number | undefined;
   };
 
   let {
-    idx,
     parent,
     onSave,
     popovertarget,
   }: {
-    idx: number;
     parent: Analysis;
     onSave: (options: Analysis) => void;
     popovertarget: string;
   } = $props();
-
-  let tEnd = $derived(parent.tEnd);
 </script>
 
-<div popover id="analysis-editor-{idx}">
+<div popover id={popovertarget}>
   <AnalysisEditor {parent} {onSave} {popovertarget} />
 </div>
 

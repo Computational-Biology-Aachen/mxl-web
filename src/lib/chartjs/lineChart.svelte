@@ -4,7 +4,7 @@
   let {
     data,
     yMin = 0,
-    yMax = undefined,
+    yMax,
     xScale = "linear",
     yScale = "linear",
     xLabel = "Time / unit",
@@ -13,7 +13,7 @@
     loadingDelay = 500,
   }: {
     data: ChartData;
-    yMax?: number;
+    yMax: number | undefined;
     yMin?: number;
     xScale?: "linear" | "logarithmic" | "category" | "time" | "timeseries";
     yScale?: "linear" | "logarithmic" | "category" | "time" | "timeseries";

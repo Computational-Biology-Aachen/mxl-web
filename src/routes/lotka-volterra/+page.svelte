@@ -95,6 +95,7 @@
     title: string;
     span: number;
     tEnd: number;
+    yMax: number | undefined;
   };
 
   let analyses: Analysis[] = $state([
@@ -105,6 +106,7 @@
       col: 1,
       span: 3,
       tEnd: 100,
+      yMax: undefined,
     },
     {
       id: 1,
@@ -113,6 +115,7 @@
       col: 4,
       span: 3,
       tEnd: 200,
+      yMax: 20,
     },
   ]);
 
@@ -251,6 +254,7 @@
       span: box.span,
       simulator: undefined,
       tEnd: 10,
+      yMax: undefined,
     };
     analyses = [...analyses, newAnalysis];
     return analyses.length - 1;
@@ -283,10 +287,10 @@
 
 {#each analyses as analysis, idx}
   <AnalysisEditorPopover
-    {idx}
     parent={analysis}
-    onSave={({ tEnd }) => {
-      analyses[idx] = { ...analysis, tEnd: tEnd };
+    onSave={({ tEnd, yMax }) => {
+      console.log(`New simulation options: tEnd:${tEnd}, yMax: ${yMax}`);
+      analyses[idx] = { ...analysis, tEnd: tEnd, yMax: yMax };
       analyses = analyses.slice();
       simulatorRefs[analysis.id]?.runSimulation(model);
     }}

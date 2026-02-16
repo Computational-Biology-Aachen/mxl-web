@@ -8,11 +8,11 @@
   let {
     model,
     tEnd,
-    yLim = 100,
+    yMax,
   }: {
     model: ModelBuilder;
     tEnd: number;
-    yLim?: number;
+    yMax?: number | undefined;
   } = $props();
 
   const pyWorker = pyWorkerManager;
@@ -80,7 +80,7 @@
 </script>
 
 <div>
-  <LineChart data={lineData} {loading} />
+  <LineChart data={lineData} {loading} {yMax} />
 </div>
 
 <style>

@@ -1,8 +1,10 @@
 <script lang="ts">
   import Icon from "$lib/Icon.svelte";
+  import { untrack } from "svelte";
 
   type Analysis = {
     tEnd: number;
+    yMax: number | undefined;
   };
 
   let {
@@ -16,13 +18,15 @@
   } = $props();
 
   let tEnd = $derived(parent.tEnd);
+  let yMax: number | undefined = $derived(parent.yMax);
+  let yMaxAuto: boolean = $derived(untrack(() => yMax) ? true : false);
 </script>
 
-<form>
+<section>
   <div class="apart">
     <h2>Edit analysis</h2>
     <button
-      onclick={() => onSave({ tEnd })}
+      onclick={() => onSave({ tEnd, yMax: yMaxAuto ? undefined : yMax })}
       popovertargetaction="hide"
       {popovertarget}
     >
@@ -34,10 +38,19 @@
     <label for="final-time">Simulate until:</label>
     <input id="final-time" type="number" bind:value={tEnd} />
   </div>
-</form>
+  <h3>Plot options</h3>
+  <div>
+    <label for="ymax-val">yMax:</label>
+    {#if !yMaxAuto}
+      <input id="ymax-val" type="number" bind:value={yMax} />
+    {/if}
+    <label for="ymax-auto">Auto?</label>
+    <input id="ymax-auto" type="checkbox" bind:checked={yMaxAuto} />
+  </div>
+</section>
 
 <style>
-  form {
+  section {
     display: flex;
     flex-direction: column;
     gap: 1rem;
