@@ -1,7 +1,12 @@
 <script lang="ts">
   import { Add, Divide, Mul, Name, type Base } from "$lib/mathml";
   import EqEditor from "$lib/model-editor/EqEditor.svelte";
-  import type { AssView, ParView, VarView } from "$lib/model-editor/model";
+  import type {
+    AssView,
+    ParView,
+    RxnView,
+    VarView,
+  } from "$lib/model-editor/model";
 
   function initEq(): Base {
     return new Mul([
@@ -43,8 +48,17 @@
   ];
   const parameters: ParView = [];
   const assignments: AssView = [];
+  const reactions: RxnView = [];
   let root = $state(initEq());
   $inspect(root);
 </script>
 
-<EqEditor {variables} {parameters} {assignments} bind:root></EqEditor>
+<EqEditor
+  {variables}
+  {parameters}
+  {assignments}
+  {reactions}
+  bind:root
+  popovertarget="/"
+  onSave={() => null}
+></EqEditor>

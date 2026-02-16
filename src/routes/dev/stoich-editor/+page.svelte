@@ -1,6 +1,11 @@
 <script lang="ts">
   import { Num } from "$lib/mathml";
-  import type { AssView, ParView, VarView } from "$lib/model-editor/model";
+  import type {
+    AssView,
+    ParView,
+    RxnView,
+    VarView,
+  } from "$lib/model-editor/model";
   import StoichEditor from "$lib/model-editor/StoichEditor.svelte";
 
   const variables: VarView = [
@@ -10,6 +15,7 @@
   ];
   const parameters: ParView = [];
   const assignments: AssView = [];
+  const reactions: RxnView = [];
 
   let stoichs = $state([
     { name: "x", value: new Num(-1.0) },
@@ -17,4 +23,12 @@
   ]);
 </script>
 
-<StoichEditor stoichiometry={stoichs} {variables} {parameters} {assignments} />
+<StoichEditor
+  stoichiometry={stoichs}
+  {variables}
+  {parameters}
+  {assignments}
+  {reactions}
+  popovertarget="/"
+  onSave={() => null}
+/>

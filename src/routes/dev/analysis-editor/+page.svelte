@@ -1,10 +1,13 @@
 <script>
   import Icon from "$lib/Icon.svelte";
-  import AnalysisEditorPopover from "$lib/model-editor/AnalysisEditorPopover.svelte";
+  import AnalysisEditor from "$lib/model-editor/AnalysisEditor.svelte";
 
-  let parent = "";
+  let analysis = {
+    tEnd: 1.0,
+    yMax: 20.0,
+  };
 </script>
 
 <button popovertarget="analysis-editor"><Icon>edit</Icon></button>
 
-<AnalysisEditorPopover onSave={() => null} />
+<AnalysisEditor parent={analysis} onSave={() => null} popovertarget="/" />
