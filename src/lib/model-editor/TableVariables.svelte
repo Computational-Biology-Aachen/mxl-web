@@ -1,8 +1,10 @@
 <script lang="ts">
-  import Icon from "$lib/Icon.svelte";
   import Popover from "../Popover.svelte";
   import type { AssView, ParView, RxnView, Variable, VarView } from "./model";
   import SliderEditor from "./SliderEditor.svelte";
+  import TableAddButton from "./TableAddButton.svelte";
+  import TableButtonClose from "./TableButtonClose.svelte";
+  import TableButtonEdit from "./TableButtonEdit.svelte";
 
   let {
     variables = $bindable(),
@@ -58,30 +60,25 @@
           />
         </td>
         <td class="actions">
-          <button class="close" popovertarget="var-editor-{idx}"
-            ><Icon>edit</Icon></button
-          >
-          <button
-            class="close"
+          <TableButtonEdit popovertarget="var-editor-{idx}" />
+          <TableButtonClose
             onclick={() => {
               variables = variables.filter((i) => {
                 return i[0] !== name;
               });
-            }}><Icon>close</Icon></button
-          >
+            }}
+          />
         </td>
       </tr>
     {/each}
   </tbody>
 </table>
 <div class="padding">
-  <button
-    class="add"
+  <TableAddButton
     onclick={() => {
       variables = [...variables, [`x${variables.length}`, { value: 1.0 }]];
     }}
-    >+ add new item
-  </button>
+  />
 </div>
 
 {#each variables as [name, variable], idx}
@@ -162,49 +159,5 @@
     display: flex;
     gap: 0 10px;
     width: 7rem;
-  }
-
-  /* Close button */
-  button.close {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    border: none;
-    border-radius: var(--round);
-    background-color: var(--bg-l1);
-    width: 1.5rem;
-    height: 1.5rem;
-    color: black;
-    font-size: 0.75rem;
-  }
-  button.close:hover {
-    background-color: lch(from var(--primary) calc(l - 10) c h);
-    color: white;
-  }
-
-  /* Add button */
-  button.add {
-    margin: 0rem;
-    padding: 0.3rem;
-    width: 8rem;
-    font-size: 0.75rem;
-  }
-  button.add {
-    cursor: pointer;
-    border: none;
-    border-radius: var(--border-radius);
-    background-color: var(--primary);
-    padding: 0 1rem;
-    width: 10rem;
-    height: 2rem;
-    color: white;
-    font-weight: var(--weight-bold);
-    font-size: 0.875rem;
-    line-height: 1.25rem;
-    letter-spacing: 0.025em;
-  }
-  button.add:hover {
-    background-color: lch(from var(--primary) calc(l - 10) c h);
   }
 </style>

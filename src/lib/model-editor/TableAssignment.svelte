@@ -19,11 +19,13 @@
     reactions: RxnView;
   } = $props();
 
-  import Icon from "$lib/Icon.svelte";
   import Math from "$lib/Math.svelte";
   import { Base, Num } from "$lib/mathml";
   import Popover from "../Popover.svelte";
   import EqEditor from "./EqEditor.svelte";
+  import TableAddButton from "./TableAddButton.svelte";
+  import TableButtonClose from "./TableButtonClose.svelte";
+  import TableButtonEdit from "./TableButtonEdit.svelte";
 
   function onSaveEq(idx: number, fn: Base) {
     assignments[idx][1].fn = fn;
@@ -65,37 +67,31 @@
               display={true}
               fontSize={"0.75rem"}
             />
-
-            <button class="edit" popovertarget="eq-editor-{idx}"
-              ><Icon>edit</Icon></button
-            >
+            <TableButtonEdit popovertarget="eq-editor-{idx}" />
           </div>
         </td>
         <td>
-          <button
-            class="close"
+          <TableButtonClose
             onclick={() => {
               assignments = assignments.filter((i) => {
                 return i[0] !== name;
               });
-            }}><Icon>close</Icon></button
-          >
+            }}
+          />
         </td>
       </tr>
     {/each}
   </tbody>
 </table>
 <div class="padding">
-  <button
-    class="add"
+  <TableAddButton
     onclick={() => {
       assignments = [
         ...assignments,
         [`a${assignments.length}`, { fn: new Num(1.0) }],
       ];
     }}
-    >+ add new item
-  </button>
+  />
 </div>
 
 {#each assignments as [name, { fn }], idx}
@@ -182,63 +178,5 @@
 
   table input:hover {
     border: var(--border-primary);
-  }
-
-  /* Close button */
-  button.close {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    border: none;
-    border-radius: var(--round);
-    background-color: var(--bg-l1);
-    width: 1.5rem;
-    height: 1.5rem;
-    color: black;
-    font-size: 0.75rem;
-  }
-  button.close:hover {
-    background-color: lch(from var(--primary) calc(l - 10) c h);
-    color: white;
-  }
-
-  /* Add button */
-  button.add {
-    cursor: pointer;
-    margin: 0rem;
-    border: none;
-    border-radius: var(--border-radius);
-    background-color: var(--primary);
-    padding: 0 1rem;
-    width: 10rem;
-    height: 2rem;
-    color: white;
-    font-weight: var(--weight-bold);
-    font-size: 0.875rem;
-    line-height: 1.25rem;
-    letter-spacing: 0.025em;
-  }
-  button.add:hover {
-    background-color: lch(from var(--primary) calc(l - 10) c h);
-  }
-
-  /* Edit button */
-  button.edit {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    border: none;
-    border-radius: var(--round);
-    background-color: var(--bg-l1);
-    width: 1.5rem;
-    height: 1.5rem;
-    color: black;
-    font-size: 0.75rem;
-  }
-  button.edit:hover {
-    background-color: lch(from var(--primary) calc(l - 10) c h);
-    color: white;
   }
 </style>

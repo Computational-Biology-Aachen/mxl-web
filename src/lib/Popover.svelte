@@ -22,6 +22,7 @@
   [popover] {
     position: fixed;
     inset: unset;
+    box-shadow: var(--shadow);
     border: var(--border-heavy);
     border-radius: var(--border-radius);
   }
