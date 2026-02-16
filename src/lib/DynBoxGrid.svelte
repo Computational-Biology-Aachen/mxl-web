@@ -316,13 +316,14 @@
         class="box"
         style={`grid-column: ${box.col} / span ${box.colSpan}; grid-row: ${box.row} / span ${box.rowSpan};`}
       >
-        <div
+        <button
           class="box-header"
           onpointerdown={(event) => startMove(event, box.id)}
+          aria-label="Drag to move"
         >
           <div class="title">{box.title}</div>
           <div class="subtitle">Placeholder</div>
-        </div>
+        </button>
         <button
           class="resize-handle resize-handle--right"
           onpointerdown={(event) => startResize(event, box.id, "width")}

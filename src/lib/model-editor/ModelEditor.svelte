@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Tab from "$lib/buttons/Tab.svelte";
   import Icon from "$lib/Icon.svelte";
   import {
     ModelBuilder,
@@ -102,14 +103,10 @@
 
 <ul>
   {#each tabs as tab}
-    <button
-      class:selected={cur.name === tab.name}
-      class="tab"
-      onclick={() => (cur = tab)}
-    >
+    <Tab selected={cur.name === tab.name} onclick={() => (cur = tab)}>
       <Icon>{tab.icon}</Icon>
       {tab.name}
-    </button>
+    </Tab>
   {/each}
 </ul>
 
@@ -151,26 +148,6 @@
     justify-content: space-between;
     padding: 0;
     list-style: none;
-  }
-  button.tab {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    margin: 0 1rem;
-    border: none;
-    background-color: transparent;
-    padding: 0.3rem 0.2rem;
-    color: var(--slate-500);
-    font-weight: 700;
-    font-size: 0.84rem;
-  }
-  button.tab:hover {
-    color: var(--slate);
-  }
-  button.selected {
-    border-bottom: 2px solid var(--primary);
-    color: var(--primary);
   }
   pre {
     font-size: 0.825rem;
