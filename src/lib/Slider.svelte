@@ -48,15 +48,15 @@
   </div>
   <input
     type="range"
-    {min}
-    {max}
-    {step}
+    min={min}
+    max={max}
+    step={step}
     bind:value={liveVal}
     onmousedown={startDrag}
     onmouseup={stopDrag}
     ontouchstart={startDrag}
     ontouchend={stopDrag}
-    {disabled}
+    disabled={disabled}
   />
 </label>
 

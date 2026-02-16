@@ -26,7 +26,7 @@
 <RowApart>
   <h2>Edit Options</h2>
   <PopoverSaveButton
-    {popovertarget}
+    popovertarget={popovertarget}
     onclick={() =>
       onSave(
         enabled
@@ -39,7 +39,11 @@
   />
 </RowApart>
 
-<InputText id="tex-name" label="LaTeX name: " bind:value={texName} />
+<InputText
+  id="tex-name"
+  label="LaTeX name: "
+  bind:value={texName}
+/>
 <InputCheckbox
   id="slider-enabeld"
   label="Display slider?"
@@ -47,7 +51,19 @@
 />
 
 {#if enabled}
-  <InputNumberStr id="min-slider" label="Min: " bind:value={minVal} />
-  <InputNumberStr id="max-slider" label="Max: " bind:value={maxVal} />
-  <InputNumberStr id="step-slider" label="Step: " bind:value={stepVal} />
+  <InputNumberStr
+    id="min-slider"
+    label="Min: "
+    bind:value={minVal}
+  />
+  <InputNumberStr
+    id="max-slider"
+    label="Max: "
+    bind:value={maxVal}
+  />
+  <InputNumberStr
+    id="step-slider"
+    label="Step: "
+    bind:value={stepVal}
+  />
 {/if}

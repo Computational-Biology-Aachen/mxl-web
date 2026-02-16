@@ -6,7 +6,7 @@
   } = $props();
 </script>
 
-<button {popovertarget}>Edit model</button>
+<button popovertarget={popovertarget}>Edit model</button>
 
 <style>
   button {

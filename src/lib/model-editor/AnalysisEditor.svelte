@@ -33,12 +33,20 @@
   <PopoverSaveButton
     onclick={() =>
       onSave({ tEnd, yMax: yMaxAuto ? undefined : yMax, title: title })}
-    {popovertarget}
+    popovertarget={popovertarget}
   />
 </RowApart>
 
-<InputText id="name" label="Name: " bind:value={title} />
-<InputNumber id="final-time" label="Simulate until: " bind:value={tEnd} />
+<InputText
+  id="name"
+  label="Name: "
+  bind:value={title}
+/>
+<InputNumber
+  id="final-time"
+  label="Simulate until: "
+  bind:value={tEnd}
+/>
 
 <h3>Plot options</h3>
 <InputNumberOptional

@@ -14,7 +14,12 @@
   {#if label}
     <label for={id}>{label}</label>
   {/if}
-  <input {id} class={border} type="number" bind:value />
+  <input
+    id={id}
+    class={border}
+    type="number"
+    bind:value={value}
+  />
 </InlineGrid2>
 
 <style>

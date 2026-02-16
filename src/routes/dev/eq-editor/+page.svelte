@@ -54,11 +54,11 @@
 </script>
 
 <EqEditor
-  {variables}
-  {parameters}
-  {assignments}
-  {reactions}
-  bind:root
+  variables={variables}
+  parameters={parameters}
+  assignments={assignments}
+  reactions={reactions}
+  bind:root={root}
   popovertarget="/"
   onSave={() => null}
 ></EqEditor>

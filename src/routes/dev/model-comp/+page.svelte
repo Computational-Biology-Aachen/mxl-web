@@ -36,4 +36,10 @@
 
 <h1>Model comparison</h1>
 
-<SimulatorComp {modelPy1} {modelPy2} {pars} {tEnd} {variables} />
+<SimulatorComp
+  modelPy1={modelPy1}
+  modelPy2={modelPy2}
+  pars={pars}
+  tEnd={tEnd}
+  variables={variables}
+/>

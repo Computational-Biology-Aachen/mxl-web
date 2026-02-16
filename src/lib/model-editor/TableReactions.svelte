@@ -121,25 +121,31 @@
 </div>
 
 {#each reactions as [_, { fn, stoichiometry }], idx}
-  <Popover size="md" popovertarget={`eq-editor-${idx}`}>
+  <Popover
+    size="md"
+    popovertarget={`eq-editor-${idx}`}
+  >
     <EqEditor
       root={fn}
-      {variables}
-      {parameters}
-      {assignments}
-      {reactions}
+      variables={variables}
+      parameters={parameters}
+      assignments={assignments}
+      reactions={reactions}
       onSave={(root) => onSaveEq(idx, root)}
       popovertarget={`eq-editor-${idx}`}
     />
   </Popover>
 
-  <Popover size="md" popovertarget={`stoich-editor-${idx}`}>
+  <Popover
+    size="md"
+    popovertarget={`stoich-editor-${idx}`}
+  >
     <StoichEditor
-      {stoichiometry}
-      {variables}
-      {parameters}
-      {assignments}
-      {reactions}
+      stoichiometry={stoichiometry}
+      variables={variables}
+      parameters={parameters}
+      assignments={assignments}
+      reactions={reactions}
       onSave={(stoichs) => onSaveStoichs(idx, stoichs)}
       popovertarget={`stoich-editor-${idx}`}
     />

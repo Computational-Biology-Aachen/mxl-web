@@ -41,8 +41,8 @@
       <div class="child">
         <EquationNode
           node={(node as Divide).children[0]}
-          {selectedId}
-          {onSelect}
+          selectedId={selectedId}
+          onSelect={onSelect}
         />
       </div>
       <button
@@ -58,8 +58,8 @@
       <div class="child">
         <EquationNode
           node={(node as Divide).children[1]}
-          {selectedId}
-          {onSelect}
+          selectedId={selectedId}
+          onSelect={onSelect}
         />
       </div>
     </div>
@@ -68,8 +68,8 @@
       <div class="child">
         <EquationNode
           node={(node as Mul).children[0]}
-          {selectedId}
-          {onSelect}
+          selectedId={selectedId}
+          onSelect={onSelect}
         />
       </div>
       <button
@@ -85,8 +85,8 @@
       <div class="child">
         <EquationNode
           node={(node as Mul).children[1]}
-          {selectedId}
-          {onSelect}
+          selectedId={selectedId}
+          onSelect={onSelect}
         />
       </div>
     </div>
@@ -95,8 +95,8 @@
       <div class="child">
         <EquationNode
           node={(node as Add).children[0]}
-          {selectedId}
-          {onSelect}
+          selectedId={selectedId}
+          onSelect={onSelect}
         />
       </div>
       <button
@@ -112,8 +112,8 @@
       <div class="child">
         <EquationNode
           node={(node as Add).children[1]}
-          {selectedId}
-          {onSelect}
+          selectedId={selectedId}
+          onSelect={onSelect}
         />
       </div>
     </div>
@@ -122,8 +122,8 @@
       <div class="child">
         <EquationNode
           node={(node as Minus).children[0]}
-          {selectedId}
-          {onSelect}
+          selectedId={selectedId}
+          onSelect={onSelect}
         />
       </div>
       <button
@@ -139,8 +139,8 @@
       <div class="child">
         <EquationNode
           node={(node as Minus).children[1]}
-          {selectedId}
-          {onSelect}
+          selectedId={selectedId}
+          onSelect={onSelect}
         />
       </div>
     </div>

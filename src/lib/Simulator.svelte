@@ -80,7 +80,11 @@
 </script>
 
 <div>
-  <LineChart data={lineData} {loading} {yMax} />
+  <LineChart
+    data={lineData}
+    loading={loading}
+    yMax={yMax}
+  />
 </div>
 
 <style>

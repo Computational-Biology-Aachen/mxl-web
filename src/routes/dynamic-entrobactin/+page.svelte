@@ -221,4 +221,8 @@
   ]);
 </script>
 
-<AnalysesDashboard name={"Dynamic Entrobaction"} {initModel} {analyses} />
+<AnalysesDashboard
+  name={"Dynamic Entrobaction"}
+  initModel={initModel}
+  analyses={analyses}
+/>

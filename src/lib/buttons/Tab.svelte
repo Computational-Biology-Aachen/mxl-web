@@ -13,7 +13,10 @@
   } = $props();
 </script>
 
-<button class:selected {onclick}>
+<button
+  class:selected={selected}
+  onclick={onclick}
+>
   {@render children()}
 </button>
 

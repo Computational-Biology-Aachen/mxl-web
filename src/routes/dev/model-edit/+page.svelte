@@ -64,4 +64,8 @@
   let builder = $derived(modelView.toBuilder());
 </script>
 
-<ModelEditor parent={builder} onSave={() => {}} popovertarget="" />
+<ModelEditor
+  parent={builder}
+  onSave={() => {}}
+  popovertarget=""
+/>

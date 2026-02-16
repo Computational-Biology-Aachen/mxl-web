@@ -247,8 +247,6 @@ export class ModelBuilder {
       }),
     ];
 
-    // console.log("toSort", toSort);
-
     const maxIters = toSort.length * toSort.length;
 
     let lastName = "";
@@ -272,13 +270,11 @@ export class ModelBuilder {
         lastName = k;
       }
     }
-    // console.log("toSort", toSort);
     return order;
   }
 
   buildPython(userParameters: string[]): string {
     const order = this.sortDependencies();
-    // console.log("Order", order);
 
     const remove = new Set(userParameters);
     const parameters = this.parameters

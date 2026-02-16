@@ -32,7 +32,12 @@
     />
   </Row>
   {#if !condition}
-    <input {id} class={border} type="number" bind:value />
+    <input
+      id={id}
+      class={border}
+      type="number"
+      bind:value={value}
+    />
   {/if}
 </InlineGrid3>
 

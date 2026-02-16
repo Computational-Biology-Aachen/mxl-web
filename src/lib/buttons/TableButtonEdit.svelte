@@ -8,8 +8,11 @@
   } = $props();
 </script>
 
-<button {popovertarget}>
-  <Icon color="inherit" fontSize="inherit">edit</Icon>
+<button popovertarget={popovertarget}>
+  <Icon
+    color="inherit"
+    fontSize="inherit">edit</Icon
+  >
 </button>
 
 <style>

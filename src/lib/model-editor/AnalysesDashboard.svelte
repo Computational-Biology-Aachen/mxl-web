@@ -78,7 +78,10 @@
 
 <div class="topbar">
   <div class="breadcrumbs">
-    <a class="light" href="{base}/">Models</a>
+    <a
+      class="light"
+      href="{base}/">Models</a
+    >
     <span class="light">/</span>
     <span class="bold">{name}</span>
   </div>
@@ -101,7 +104,10 @@
   <Icon>function</Icon>
   <h3>Model Equations</h3>
 </div>
-<Math tex={model.buildTex()} display />
+<Math
+  tex={model.buildTex()}
+  display
+/>
 
 {#if parSliders.length > 0}
   <div class="heading">
@@ -142,7 +148,7 @@
   <div class="grid-row">
     {#each varSliders as { name, min, max, step }}
       <Slider
-        {name}
+        name={name}
         callback={runAllSimulations}
         bind:val={
           () => {
@@ -153,9 +159,9 @@
             model.variables = model.variables.set(name, { ...old, value: val });
           }
         }
-        {min}
-        {max}
-        {step}
+        min={min}
+        max={max}
+        step={step}
       />
     {/each}
   </div>
@@ -187,14 +193,17 @@
     {#if analysis}
       <Simulator
         bind:this={simulatorRefs[box.id]}
-        {model}
+        model={model}
         tEnd={analysis.tEnd}
       />
     {/if}
   {/snippet}
 </DynBoxRow>
 
-<Popover size="lg" popovertarget={`model-editor`}>
+<Popover
+  size="lg"
+  popovertarget={`model-editor`}
+>
   <ModelEditor
     parent={model}
     popovertarget={`model-editor`}
@@ -206,7 +215,10 @@
 </Popover>
 
 {#each analyses as analysis, idx}
-  <Popover size="sm" popovertarget={`analysis-editor-${idx}`}>
+  <Popover
+    size="sm"
+    popovertarget={`analysis-editor-${idx}`}
+  >
     <AnalysisEditor
       parent={analyses[idx]}
       onSave={({ tEnd, yMax, title }) => {

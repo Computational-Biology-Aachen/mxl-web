@@ -169,21 +169,34 @@
         element, then adjust symbols to the allowed variable names.
       </p>
     </hgroup>
-    <PopoverSaveButton onclick={() => onSave(root)} {popovertarget} />
+    <PopoverSaveButton
+      onclick={() => onSave(root)}
+      popovertarget={popovertarget}
+    />
   </RowApart>
 
   <div class="edit-row">
     <label for={`root`}>Template</label>
-    <select id={`root`} value="---" onchange={handleTemplateChoice}>
+    <select
+      id={`root`}
+      value="---"
+      onchange={handleTemplateChoice}
+    >
       {#each templates as template, idx}
-        <option selected={false} value={idx}>{template.name}</option>
+        <option
+          selected={false}
+          value={idx}>{template.name}</option
+        >
       {/each}
     </select>
   </div>
 
   <div class="palette">
     {#each palette as item}
-      <button class="palette-button" onclick={() => insertNode(item.default)}>
+      <button
+        class="palette-button"
+        onclick={() => insertNode(item.default)}
+      >
         <span class="label">{item.label}</span>
         <span class="hint">{item.hint}</span>
       </button>
@@ -238,7 +251,10 @@
     <div class="window">
       <div class="window-header">Preview</div>
       <div class="window-body preview">
-        <Math tex={latex} display={true} />
+        <Math
+          tex={latex}
+          display={true}
+        />
       </div>
     </div>
   </div>

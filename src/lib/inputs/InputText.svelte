@@ -17,7 +17,12 @@
 
 <InlineGrid2>
   <label for={id}>{name}</label>
-  <input {id} class={border} type="text" bind:value />
+  <input
+    id={id}
+    class={border}
+    type="text"
+    bind:value={value}
+  />
 </InlineGrid2>
 
 <style>

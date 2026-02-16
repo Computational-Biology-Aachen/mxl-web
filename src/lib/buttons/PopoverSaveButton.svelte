@@ -11,8 +11,15 @@
   } = $props();
 </script>
 
-<button {onclick} popovertargetaction="hide" {popovertarget}>
-  <Icon color="inherit" fontSize="lg">play_arrow</Icon>
+<button
+  onclick={onclick}
+  popovertargetaction="hide"
+  popovertarget={popovertarget}
+>
+  <Icon
+    color="inherit"
+    fontSize="lg">play_arrow</Icon
+  >
   Save
 </button>
 

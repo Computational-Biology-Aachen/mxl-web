@@ -95,13 +95,16 @@
 </div>
 
 {#each assignments as [name, { fn }], idx}
-  <Popover size="md" popovertarget={`eq-editor-${idx}`}>
+  <Popover
+    size="md"
+    popovertarget={`eq-editor-${idx}`}
+  >
     <EqEditor
       root={fn}
-      {variables}
-      {parameters}
-      {assignments}
-      {reactions}
+      variables={variables}
+      parameters={parameters}
+      assignments={assignments}
+      reactions={reactions}
       onSave={(root) => onSaveEq(idx, root)}
       popovertarget={`eq-editor-${idx}`}
     />

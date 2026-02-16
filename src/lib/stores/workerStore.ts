@@ -105,4 +105,3 @@ export class WorkerManager {
 // Create singleton instances
 export let pyWorkerManager: WorkerManager = new WorkerManager(pyWorkerUrl);
 export let pyWorkerManager2: WorkerManager = new WorkerManager(pyWorkerUrl);
-

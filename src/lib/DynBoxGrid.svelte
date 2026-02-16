@@ -310,7 +310,10 @@
 </script>
 
 <div class="page">
-  <div class="grid" bind:this={gridEl}>
+  <div
+    class="grid"
+    bind:this={gridEl}
+  >
     {#each boxes as box (box.id)}
       <div
         class="box"

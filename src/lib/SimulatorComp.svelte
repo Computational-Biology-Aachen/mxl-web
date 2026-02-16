@@ -181,12 +181,12 @@
     {#each variables as { name, min, max, step, fixed }, idx}
       {#if fixed === undefined || !fixed}
         <Slider
-          {name}
+          name={name}
           callback={runSimulation}
           bind:val={localVariables[idx]}
-          {min}
-          {max}
-          {step}
+          min={min}
+          max={max}
+          step={step}
         />
       {/if}
     {/each}
@@ -195,12 +195,26 @@
 
 <div class="row2">
   <div>
-    <Math tex={tex1} display={true} />
-    <LineChart data={lineData1} yMax={yLim} {loading} />
+    <Math
+      tex={tex1}
+      display={true}
+    />
+    <LineChart
+      data={lineData1}
+      yMax={yLim}
+      loading={loading}
+    />
   </div>
   <div>
-    <Math tex={tex2} display={true} />
-    <LineChart data={lineData2} yMax={yLim} {loading} />
+    <Math
+      tex={tex2}
+      display={true}
+    />
+    <LineChart
+      data={lineData2}
+      yMax={yLim}
+      loading={loading}
+    />
   </div>
 </div>
 

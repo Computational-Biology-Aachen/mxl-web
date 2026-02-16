@@ -75,7 +75,10 @@
 </div>
 
 {#each parameters as [_, parameter], idx}
-  <Popover size="sm" popovertarget={`var-editor-${idx}`}>
+  <Popover
+    size="sm"
+    popovertarget={`var-editor-${idx}`}
+  >
     <SliderEditor
       target={parameter}
       onSave={(root) => onSaveSlider(idx, root)}

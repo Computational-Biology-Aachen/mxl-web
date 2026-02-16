@@ -95,4 +95,8 @@
   ]);
 </script>
 
-<AnalysesDashboard name={"Population Dynamics"} {initModel} {analyses} />
+<AnalysesDashboard
+  name={"Population Dynamics"}
+  initModel={initModel}
+  analyses={analyses}
+/>

@@ -9,8 +9,11 @@
   } = $props();
 </script>
 
-<button {onclick}>
-  <Icon color="inherit" fontSize="inherit">close</Icon>
+<button onclick={onclick}>
+  <Icon
+    color="inherit"
+    fontSize="inherit">close</Icon
+  >
 </button>
 
 <style>

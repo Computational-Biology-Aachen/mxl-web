@@ -7,4 +7,8 @@
   };
 </script>
 
-<AnalysisEditor parent={analysis} onSave={() => null} popovertarget="/" />
+<AnalysisEditor
+  parent={analysis}
+  onSave={() => null}
+  popovertarget="/"
+/>

@@ -61,11 +61,17 @@
     lcl.reactions = reactions;
     return lcl;
   });
+
   let builder = $derived(modelView.toBuilder());
+
   let pycode = $derived.by(() => builder.buildPython(userParameters));
 
   let tabs = [
-    { name: "Variables", comp: TableVariables, icon: "variable_add" },
+    {
+      name: "Variables",
+      comp: TableVariables,
+      icon: "variable_add", //
+    },
     {
       name: "Parameters",
       comp: TableParameters,
@@ -97,13 +103,16 @@
 
   <PopoverSaveButton
     onclick={() => onSave(modelView.toBuilder())}
-    {popovertarget}
+    popovertarget={popovertarget}
   />
 </RowApart>
 
 <ul>
   {#each tabs as tab}
-    <Tab selected={cur.name === tab.name} onclick={() => (cur = tab)}>
+    <Tab
+      selected={cur.name === tab.name}
+      onclick={() => (cur = tab)}
+    >
       <Icon>{tab.icon}</Icon>
       {tab.name}
     </Tab>
@@ -111,7 +120,12 @@
 </ul>
 
 <div class="card">
-  <cur.comp bind:variables bind:parameters bind:assignments bind:reactions />
+  <cur.comp
+    bind:variables={variables}
+    bind:parameters={parameters}
+    bind:assignments={assignments}
+    bind:reactions={reactions}
+  />
 </div>
 
 <div class="heading">

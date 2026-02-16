@@ -61,7 +61,10 @@
 
 <RowApart>
   <h2>Stoichiometry Editor</h2>
-  <PopoverSaveButton {popovertarget} onclick={() => onSave(stoichiometry)} />
+  <PopoverSaveButton
+    popovertarget={popovertarget}
+    onclick={() => onSave(stoichiometry)}
+  />
 </RowApart>
 
 <div class="card">
@@ -140,7 +143,10 @@
 </div>
 
 <div class="card padding">
-  <Math tex={latex} display={true} />
+  <Math
+    tex={latex}
+    display={true}
+  />
 </div>
 
 <style>

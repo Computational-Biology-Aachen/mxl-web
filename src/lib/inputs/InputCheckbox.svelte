@@ -17,7 +17,12 @@
 
 <InlineGrid2>
   <label for={id}>{name}</label>
-  <input {id} class={border} type="checkbox" bind:checked />
+  <input
+    id={id}
+    class={border}
+    type="checkbox"
+    bind:checked={checked}
+  />
 </InlineGrid2>
 
 <style>

@@ -67,7 +67,12 @@
     {#each stoichs as stoich}
       <tr>
         <td>{str(stoich)}</td>
-        <td><Math tex={stoichToTex(stoich, texNames)} display /></td>
+        <td
+          ><Math
+            tex={stoichToTex(stoich, texNames)}
+            display
+          /></td
+        >
       </tr>
     {/each}
   </tbody>

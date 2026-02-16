@@ -8,7 +8,7 @@
   } = $props();
 </script>
 
-<button {onclick}> Reset </button>
+<button onclick={onclick}> Reset </button>
 
 <style>
   button {

@@ -157,7 +157,11 @@
   ]);
 </script>
 
-<AnalysesDashboard name={"Tripartite dynamics"} {initModel} {analyses}>
+<AnalysesDashboard
+  name={"Tripartite dynamics"}
+  initModel={initModel}
+  analyses={analyses}
+>
   <p>
     Dynamic model of a tripartite population of <b>P</b>ublic consumers,
     <b>C</b>heaters and private <b>m</b>etabolisers.

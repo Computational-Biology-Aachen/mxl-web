@@ -12,7 +12,11 @@
   } = $props();
 </script>
 
-<div popover id={popovertarget} class={size}>
+<div
+  popover
+  id={popovertarget}
+  class={size}
+>
   <section>
     {@render children()}
   </section>

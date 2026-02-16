@@ -77,4 +77,8 @@
   let model = new ModelBuilder();
 </script>
 
-<Simulator {model} {tEnd} {yLim} />
+<Simulator
+  model={model}
+  tEnd={tEnd}
+  yLim={yLim}
+/>

@@ -25,10 +25,10 @@
 
 <StoichEditor
   stoichiometry={stoichs}
-  {variables}
-  {parameters}
-  {assignments}
-  {reactions}
+  variables={variables}
+  parameters={parameters}
+  assignments={assignments}
+  reactions={reactions}
   popovertarget="/"
   onSave={() => null}
 />
