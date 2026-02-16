@@ -12,8 +12,8 @@
   div {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
     align-items: center;
+    gap: 0.5rem;
     width: 100%;
   }
 </style>

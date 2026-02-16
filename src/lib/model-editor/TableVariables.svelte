@@ -1,4 +1,5 @@
 <script lang="ts">
+  import InputNumber from "$lib/inputs/InputNumber.svelte";
   import TableAddButton from "../buttons/TableAddButton.svelte";
   import TableButtonClose from "../buttons/TableButtonClose.svelte";
   import TableButtonEdit from "../buttons/TableButtonEdit.svelte";
@@ -48,8 +49,9 @@
           />
         </td>
         <td>
-          <input
-            type="number"
+          <InputNumber
+            id="var-{idx}"
+            border="transparent"
             bind:value={
               () => variables[idx][1].value,
               (value) => {

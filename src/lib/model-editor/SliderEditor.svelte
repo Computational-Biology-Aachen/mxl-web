@@ -1,4 +1,7 @@
 <script lang="ts">
+  import InputCheckbox from "$lib/inputs/InputCheckbox.svelte";
+  import InputNumberStr from "$lib/inputs/InputNumberStr.svelte";
+  import InputText from "$lib/inputs/InputText.svelte";
   import RowApart from "$lib/RowApart.svelte";
   import PopoverSaveButton from "../buttons/PopoverSaveButton.svelte";
   import { type Parameter, type Variable } from "./model";
@@ -36,26 +39,15 @@
   />
 </RowApart>
 
-<label for="tex-name">LaTeX name</label>
-<input id="tex-name" type="text" bind:value={texName} />
+<InputText id="tex-name" label="LaTeX name: " bind:value={texName} />
+<InputCheckbox
+  id="slider-enabeld"
+  label="Display slider?"
+  bind:checked={enabled}
+/>
 
-<div class="row">
-  <label for="slider-enabled">Display slider?</label>
-  <input id="slider-enabled" type="checkbox" bind:checked={enabled} />
-</div>
 {#if enabled}
-  <label for="min-slider">Min</label>
-  <input id="min-slider" type="number" bind:value={minVal} />
-  <label for="max-slider">Max</label>
-  <input id="max-slider" type="number" bind:value={maxVal} />
-  <label for="step-slider">Step</label>
-  <input id="step-slider" type="number" bind:value={stepVal} />
+  <InputNumberStr id="min-slider" label="Min: " bind:value={minVal} />
+  <InputNumberStr id="max-slider" label="Max: " bind:value={maxVal} />
+  <InputNumberStr id="step-slider" label="Step: " bind:value={stepVal} />
 {/if}
-
-<style>
-  .row {
-    display: flex;
-    flex-direction: row;
-    gap: 0 0.5rem;
-  }
-</style>

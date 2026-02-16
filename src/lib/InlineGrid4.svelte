@@ -10,10 +10,10 @@
 
 <style>
   div {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+    display: inline-grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
     align-items: center;
+    gap: 0.5rem;
     width: 100%;
   }
 </style>

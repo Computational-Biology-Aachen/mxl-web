@@ -1,4 +1,7 @@
 <script lang="ts">
+  import InputNumber from "$lib/inputs/InputNumber.svelte";
+  import InputNumberOptional from "$lib/inputs/InputNumberOptional.svelte";
+  import InputText from "$lib/inputs/InputText.svelte";
   import RowApart from "$lib/RowApart.svelte";
   import { untrack } from "svelte";
   import PopoverSaveButton from "../buttons/PopoverSaveButton.svelte";
@@ -34,36 +37,14 @@
   />
 </RowApart>
 
-<div>
-  <label for="name">Name:</label>
-  <input id="name" type="text" bind:value={title} />
-</div>
+<InputText id="name" label="Name: " bind:value={title} />
+<InputNumber id="final-time" label="Simulate until: " bind:value={tEnd} />
 
-<div>
-  <label for="final-time">Simulate until:</label>
-  <input id="final-time" type="number" bind:value={tEnd} />
-</div>
 <h3>Plot options</h3>
-<div>
-  <label for="ymax-val">yMax:</label>
-  {#if !yMaxAuto}
-    <input id="ymax-val" type="number" bind:value={yMax} />
-  {/if}
-  <label for="ymax-auto">Auto?</label>
-  <input id="ymax-auto" type="checkbox" bind:checked={yMaxAuto} />
-</div>
-
-<style>
-  div {
-    display: flex;
-    flex-direction: row;
-    gap: 0.5rem;
-    width: 100%;
-  }
-
-  input {
-    border: var(--border);
-    border-radius: var(--border-radius);
-    padding: 0 0.5rem;
-  }
-</style>
+<InputNumberOptional
+  id="yMax"
+  valueLabel="yMax: "
+  condLabel="Auto?"
+  bind:value={yMax}
+  bind:condition={yMaxAuto}
+/>
