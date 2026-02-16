@@ -162,16 +162,17 @@
         Build an expression by selecting a node and replacing it with a MathML
         element, then adjust symbols to the allowed variable names.
       </p>
-      <div class="edit-row">
-        <label for={`root`}>Template</label>
-        <select id={`root`} value="---" onchange={handleTemplateChoice}>
-          {#each templates as template, idx}
-            <option selected={false} value={idx}>{template.name}</option>
-          {/each}
-        </select>
-      </div>
     </div>
   </header>
+
+  <div class="edit-row">
+    <label for={`root`}>Template</label>
+    <select id={`root`} value="---" onchange={handleTemplateChoice}>
+      {#each templates as template, idx}
+        <option selected={false} value={idx}>{template.name}</option>
+      {/each}
+    </select>
+  </div>
 
   <div class="palette">
     {#each palette as item}

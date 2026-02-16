@@ -12,6 +12,7 @@
   import TableParameters from "$lib/model-editor/TableParameters.svelte";
   import TableReactions from "$lib/model-editor/TableReactions.svelte";
   import TableVariables from "$lib/model-editor/TableVariables.svelte";
+  import PopoverSaveButton from "./PopoverSaveButton.svelte";
 
   let {
     parent,
@@ -83,23 +84,20 @@
   let cur = $state(tabs[0]);
 </script>
 
-<hgroup>
-  <h1>Model Details</h1>
-  <p>
-    Review and edit model structure, biological variables, and kinetic
-    parameters.
-  </p>
-</hgroup>
+<div class="row apart">
+  <hgroup>
+    <h1>Model Details</h1>
+    <p>
+      Review and edit model structure, biological variables, and kinetic
+      parameters.
+    </p>
+  </hgroup>
 
-<button
-  class="save"
-  onclick={() => onSave(modelView.toBuilder())}
-  popovertargetaction="hide"
-  {popovertarget}
->
-  <Icon fontSize="lg">play_arrow</Icon>
-  Save
-</button>
+  <PopoverSaveButton
+    onclick={() => onSave(modelView.toBuilder())}
+    {popovertarget}
+  />
+</div>
 
 <ul>
   {#each tabs as tab}
@@ -128,6 +126,13 @@
 </div>
 
 <style>
+  .row {
+    display: flex;
+    flex-direction: row;
+  }
+  .apart {
+    justify-content: space-between;
+  }
   .heading {
     display: flex;
     align-items: center;
@@ -143,28 +148,6 @@
   }
   .padding {
     padding: 1rem;
-  }
-  /* Save button */
-  button.save {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    box-shadow: var(--shadow-primary);
-    border: none;
-    border-radius: 0.5rem;
-    background-color: var(--primary);
-    width: 8rem;
-    height: 2rem;
-    color: white;
-    font-weight: var(--weight-bold);
-    font-size: 0.875rem;
-    line-height: 1.25rem;
-    letter-spacing: 0.025em;
-  }
-  button.save:hover {
-    background-color: lch(from var(--primary) calc(l - 20) c h);
   }
 
   /* Tabs */

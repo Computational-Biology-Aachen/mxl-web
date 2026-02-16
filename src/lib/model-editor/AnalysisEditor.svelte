@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Icon from "$lib/Icon.svelte";
   import { untrack } from "svelte";
+  import PopoverSaveButton from "./PopoverSaveButton.svelte";
 
   type Analysis = {
     tEnd: number;
@@ -25,14 +25,10 @@
 <section>
   <div class="apart">
     <h2>Edit analysis</h2>
-    <button
+    <PopoverSaveButton
       onclick={() => onSave({ tEnd, yMax: yMaxAuto ? undefined : yMax })}
-      popovertargetaction="hide"
       {popovertarget}
-    >
-      <Icon fontSize="lg" color="inherit">play_arrow</Icon>
-      Save
-    </button>
+    />
   </div>
   <div>
     <label for="final-time">Simulate until:</label>
@@ -71,27 +67,6 @@
       border: 1px solid rgba(120, 120, 120, 0.6);
       border-radius: 0.5rem;
       padding: 0 0.5rem;
-    }
-    button {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 0.5rem;
-      cursor: pointer;
-      box-shadow: var(--shadow-primary);
-      border: none;
-      border-radius: 0.5rem;
-      background-color: var(--primary);
-      width: 8rem;
-      height: 2rem;
-      color: white;
-      font-weight: var(--weight-bold);
-      font-size: 0.875rem;
-      line-height: 1.25rem;
-      letter-spacing: 0.025em;
-    }
-    button:hover {
-      background-color: lch(from var(--primary) calc(l - 20) c h);
     }
   }
 </style>
