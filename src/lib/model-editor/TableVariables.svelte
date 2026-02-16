@@ -33,10 +33,28 @@
     {#each variables as [name], idx}
       <tr>
         <td>
-          <input type="text" bind:value={variables[idx][0]} />
+          <input
+            type="text"
+            bind:value={
+              () => variables[idx][0],
+              (value) => {
+                variables[idx][0] = value;
+                variables = variables.slice();
+              }
+            }
+          />
         </td>
         <td>
-          <input type="number" bind:value={variables[idx][1].value} />
+          <input
+            type="number"
+            bind:value={
+              () => variables[idx][1].value,
+              (value) => {
+                variables[idx][1].value = value;
+                variables = variables.slice();
+              }
+            }
+          />
         </td>
         <td class="actions">
           <button class="close" popovertarget="var-editor-{idx}"

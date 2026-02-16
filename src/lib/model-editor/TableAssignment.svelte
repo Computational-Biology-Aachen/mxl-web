@@ -46,7 +46,13 @@
     {#each assignments as [name], idx}
       <tr>
         <td>
-          <input type="text" bind:value={assignments[idx][0]} />
+          <input
+            type="text"
+            bind:value={
+              () => assignments[idx][0],
+              (value) => (assignments[idx][0] = value)
+            }
+          />
         </td>
         <td>
           <div class="row">

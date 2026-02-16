@@ -53,7 +53,18 @@
   <tbody>
     {#each reactions as [name], idx}
       <tr>
-        <td> <input type="text" bind:value={reactions[idx][0]} /> </td>
+        <td>
+          <input
+            type="text"
+            bind:value={
+              () => reactions[idx][0],
+              (value) => {
+                reactions[idx][0] = value;
+                reactions = reactions.slice();
+              }
+            }
+          />
+        </td>
         <td>
           <div class="row">
             <Math

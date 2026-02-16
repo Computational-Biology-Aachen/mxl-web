@@ -33,10 +33,21 @@
     {#each parameters as [name], idx}
       <tr>
         <td>
-          <input type="text" bind:value={parameters[idx][0]} />
+          <input
+            type="text"
+            bind:value={
+              () => parameters[idx][0], (value) => (parameters[idx][0] = value)
+            }
+          />
         </td>
         <td>
-          <input type="number" bind:value={parameters[idx][1].value} />
+          <input
+            type="number"
+            bind:value={
+              () => parameters[idx][1].value,
+              (value) => (parameters[idx][1].value = value)
+            }
+          />
         </td>
         <td class="actions">
           <button class="close" popovertarget="var-editor-{idx}"
