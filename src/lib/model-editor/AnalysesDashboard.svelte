@@ -4,12 +4,13 @@
   import DynBoxRow from "$lib/DynBoxRow.svelte";
   import Icon from "$lib/Icon.svelte";
   import Math from "$lib/Math.svelte";
-  import AnalysisEditorPopover from "$lib/model-editor/AnalysisEditorPopover.svelte";
   import { ModelBuilder } from "$lib/model-editor/model";
-  import ModelEditorPopover from "$lib/model-editor/ModelEditorPopover.svelte";
   import Simulator from "$lib/Simulator.svelte";
   import Slider from "$lib/Slider.svelte";
   import type { Snippet } from "svelte";
+  import Popover from "../Popover.svelte";
+  import AnalysisEditor from "./AnalysisEditor.svelte";
+  import ModelEditor from "./ModelEditor.svelte";
 
   let {
     children,
@@ -191,25 +192,30 @@
   {/snippet}
 </DynBoxRow>
 
-<ModelEditorPopover
-  parent={model}
-  onSave={(edited) => {
-    model = edited;
-    runAllSimulations();
-  }}
-/>
+<Popover size="lg" popovertarget={`model-editor`}>
+  <ModelEditor
+    parent={model}
+    popovertarget={`model-editor`}
+    onSave={(edited) => {
+      model = edited;
+      runAllSimulations();
+    }}
+  />
+</Popover>
 
 {#each analyses as analysis, idx}
-  <AnalysisEditorPopover
-    parent={analysis}
-    onSave={({ tEnd, yMax }) => {
-      console.log(`New simulation options: tEnd:${tEnd}, yMax: ${yMax}`);
-      analyses[idx] = { ...analysis, tEnd: tEnd, yMax: yMax };
-      analyses = analyses.slice();
-      simulatorRefs[analysis.id]?.runSimulation(model);
-    }}
-    popovertarget={`analysis-editor-${idx}`}
-  />
+  <Popover size="sm" popovertarget={`analysis-editor-${idx}`}>
+    <AnalysisEditor
+      parent={analysis}
+      onSave={({ tEnd, yMax }) => {
+        console.log(`New simulation options: tEnd:${tEnd}, yMax: ${yMax}`);
+        analyses[idx] = { ...analysis, tEnd: tEnd, yMax: yMax };
+        analyses = analyses.slice();
+        simulatorRefs[analysis.id]?.runSimulation(model);
+      }}
+      popovertarget={`analysis-editor-${idx}`}
+    />
+  </Popover>
 {/each}
 
 <style>

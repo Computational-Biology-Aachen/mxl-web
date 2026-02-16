@@ -2,6 +2,8 @@
   import Math from "$lib/Math.svelte";
   import { Add, Divide, Minus, Mul, Name, Num, type Base } from "$lib/mathml";
   import EquationNode from "$lib/model-editor/EqNode.svelte";
+  import RowApart from "$lib/RowApart.svelte";
+  import PopoverSaveButton from "../PopoverSaveButton.svelte";
   import {
     getTexNames,
     type AssView,
@@ -16,12 +18,16 @@
     parameters,
     assignments,
     reactions,
+    onSave,
+    popovertarget,
   }: {
     root: Base;
     variables: VarView;
     parameters: ParView;
     assignments: AssView;
     reactions: RxnView;
+    popovertarget: string;
+    onSave: (fn: Base) => void;
   } = $props();
 
   let argNames = $derived.by(() => {
@@ -155,15 +161,16 @@
 </script>
 
 <section class="page">
-  <header class="header">
-    <div>
-      <h1>Eq Editor</h1>
+  <RowApart>
+    <hgroup>
+      <h2>Eq Editor</h2>
       <p class="comment">
         Build an expression by selecting a node and replacing it with a MathML
         element, then adjust symbols to the allowed variable names.
       </p>
-    </div>
-  </header>
+    </hgroup>
+    <PopoverSaveButton onclick={() => onSave(root)} {popovertarget} />
+  </RowApart>
 
   <div class="edit-row">
     <label for={`root`}>Template</label>
@@ -243,10 +250,6 @@
     flex-direction: column;
     gap: 1rem;
     padding: 1.5rem;
-  }
-
-  .header h1 {
-    margin: 0 0 0.35rem;
   }
 
   .comment {

@@ -22,7 +22,8 @@
   import Icon from "$lib/Icon.svelte";
   import Math from "$lib/Math.svelte";
   import { Base, Num } from "$lib/mathml";
-  import EqEditorPopover from "$lib/model-editor/EqEditorPopover.svelte";
+  import Popover from "../Popover.svelte";
+  import EqEditor from "./EqEditor.svelte";
 
   function onSaveEq(idx: number, fn: Base) {
     assignments[idx][1].fn = fn;
@@ -98,8 +99,8 @@
 </div>
 
 {#each assignments as [name, { fn }], idx}
-  <div popover id="eq-editor-{idx}">
-    <EqEditorPopover
+  <Popover size="md" popovertarget={`eq-editor-${idx}`}>
+    <EqEditor
       root={fn}
       {variables}
       {parameters}
@@ -108,7 +109,7 @@
       onSave={(root) => onSaveEq(idx, root)}
       popovertarget={`eq-editor-${idx}`}
     />
-  </div>
+  </Popover>
 {/each}
 
 <style>
@@ -123,17 +124,6 @@
     justify-content: space-between;
     align-items: center;
     padding: 0 0.5rem;
-  }
-
-  [popover] {
-    position: absolute;
-    inset: unset;
-    top: 4rem;
-    left: 4rem;
-    width: calc(100% - 8rem);
-  }
-  [popover]::backdrop {
-    background-color: rgba(0, 0, 0, 0.5);
   }
 
   /* Table */

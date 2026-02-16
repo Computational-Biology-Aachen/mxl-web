@@ -12,7 +12,8 @@
   import TableParameters from "$lib/model-editor/TableParameters.svelte";
   import TableReactions from "$lib/model-editor/TableReactions.svelte";
   import TableVariables from "$lib/model-editor/TableVariables.svelte";
-  import PopoverSaveButton from "./PopoverSaveButton.svelte";
+  import RowApart from "$lib/RowApart.svelte";
+  import PopoverSaveButton from "../PopoverSaveButton.svelte";
 
   let {
     parent,
@@ -84,9 +85,9 @@
   let cur = $state(tabs[0]);
 </script>
 
-<div class="row apart">
+<RowApart>
   <hgroup>
-    <h1>Model Details</h1>
+    <h2>Model Details</h2>
     <p>
       Review and edit model structure, biological variables, and kinetic
       parameters.
@@ -97,7 +98,7 @@
     onclick={() => onSave(modelView.toBuilder())}
     {popovertarget}
   />
-</div>
+</RowApart>
 
 <ul>
   {#each tabs as tab}
@@ -126,13 +127,6 @@
 </div>
 
 <style>
-  .row {
-    display: flex;
-    flex-direction: row;
-  }
-  .apart {
-    justify-content: space-between;
-  }
   .heading {
     display: flex;
     align-items: center;

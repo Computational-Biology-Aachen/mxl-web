@@ -2,6 +2,8 @@
   import Icon from "$lib/Icon.svelte";
   import Math from "$lib/Math.svelte";
   import { Num } from "$lib/mathml";
+  import RowApart from "$lib/RowApart.svelte";
+  import PopoverSaveButton from "../PopoverSaveButton.svelte";
   import {
     getTexNames,
     stoichToTex,
@@ -18,12 +20,16 @@
     parameters,
     assignments,
     reactions,
+    onSave,
+    popovertarget,
   }: {
     stoichiometry: Stoichiometry;
     variables: VarView;
     parameters: ParView;
     assignments: AssView;
     reactions: RxnView;
+    onSave: (fn: Stoichiometry) => void;
+    popovertarget: string;
   } = $props();
 
   let texNames: Map<string, string> = $derived(
@@ -51,13 +57,10 @@
   }
 </script>
 
-<hgroup class="header">
-  <h1>Stoich Editor</h1>
-  <p>
-    Build an expression by selecting a node and replacing it with a MathML
-    element, then adjust symbols to the allowed variable names.
-  </p>
-</hgroup>
+<RowApart>
+  <h2>Stoichiometry Editor</h2>
+  <PopoverSaveButton {popovertarget} onclick={() => onSave(stoichiometry)} />
+</RowApart>
 
 <div class="card">
   <table>
@@ -157,10 +160,6 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-  }
-  hgroup p {
-    margin: 0;
-    color: #4b5563;
   }
 
   /* Table */

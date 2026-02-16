@@ -2,16 +2,20 @@
   import type { Snippet } from "svelte";
 
   let {
+    size,
     children,
     popovertarget,
   }: {
+    size: "sm" | "md" | "lg";
     popovertarget: string;
     children: Snippet;
   } = $props();
 </script>
 
-<div popover id={popovertarget}>
-  {@render children()}
+<div popover id={popovertarget} class={size}>
+  <section>
+    {@render children()}
+  </section>
 </div>
 
 <style>
@@ -40,5 +44,11 @@
     top: var(--dist);
     left: var(--dist);
     width: calc(100% - 2 * var(--dist));
+  }
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 2rem;
   }
 </style>

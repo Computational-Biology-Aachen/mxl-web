@@ -24,8 +24,9 @@
   import Icon from "$lib/Icon.svelte";
   import Math from "$lib/Math.svelte";
   import { Base, Name, Num } from "$lib/mathml";
-  import EqEditorPopover from "$lib/model-editor/EqEditorPopover.svelte";
-  import StoichEditorPopover from "./StoichEditorPopover.svelte";
+  import Popover from "../Popover.svelte";
+  import EqEditor from "./EqEditor.svelte";
+  import StoichEditor from "./StoichEditor.svelte";
 
   function onSaveEq(idx: number, fn: Base) {
     reactions[idx][1].fn = fn;
@@ -123,9 +124,9 @@
   </button>
 </div>
 
-{#each reactions as [name, { fn, stoichiometry }], idx}
-  <div popover id="eq-editor-{idx}">
-    <EqEditorPopover
+{#each reactions as [_, { fn, stoichiometry }], idx}
+  <Popover size="md" popovertarget={`eq-editor-${idx}`}>
+    <EqEditor
       root={fn}
       {variables}
       {parameters}
@@ -134,9 +135,10 @@
       onSave={(root) => onSaveEq(idx, root)}
       popovertarget={`eq-editor-${idx}`}
     />
-  </div>
-  <div popover id="stoich-editor-{idx}">
-    <StoichEditorPopover
+  </Popover>
+
+  <Popover size="md" popovertarget={`stoich-editor-${idx}`}>
+    <StoichEditor
       {stoichiometry}
       {variables}
       {parameters}
@@ -145,7 +147,7 @@
       onSave={(stoichs) => onSaveStoichs(idx, stoichs)}
       popovertarget={`stoich-editor-${idx}`}
     />
-  </div>
+  </Popover>
 {/each}
 
 <style>
@@ -160,17 +162,6 @@
     justify-content: space-between;
     align-items: center;
     padding: 0 0.5rem;
-  }
-
-  [popover] {
-    position: absolute;
-    inset: unset;
-    top: 4rem;
-    left: 4rem;
-    width: calc(100% - 8rem);
-  }
-  [popover]::backdrop {
-    background-color: rgba(0, 0, 0, 0.5);
   }
 
   /* Table */

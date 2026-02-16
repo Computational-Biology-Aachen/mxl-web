@@ -1,6 +1,7 @@
 <script lang="ts">
+  import RowApart from "$lib/RowApart.svelte";
   import { untrack } from "svelte";
-  import PopoverSaveButton from "./PopoverSaveButton.svelte";
+  import PopoverSaveButton from "../PopoverSaveButton.svelte";
 
   type Analysis = {
     tEnd: number;
@@ -22,51 +23,39 @@
   let yMaxAuto: boolean = $derived(untrack(() => yMax) ? false : true);
 </script>
 
-<section>
-  <div class="apart">
-    <h2>Edit analysis</h2>
-    <PopoverSaveButton
-      onclick={() => onSave({ tEnd, yMax: yMaxAuto ? undefined : yMax })}
-      {popovertarget}
-    />
-  </div>
-  <div>
-    <label for="final-time">Simulate until:</label>
-    <input id="final-time" type="number" bind:value={tEnd} />
-  </div>
-  <h3>Plot options</h3>
-  <div>
-    <label for="ymax-val">yMax:</label>
-    {#if !yMaxAuto}
-      <input id="ymax-val" type="number" bind:value={yMax} />
-    {/if}
-    <label for="ymax-auto">Auto?</label>
-    <input id="ymax-auto" type="checkbox" bind:checked={yMaxAuto} />
-  </div>
-</section>
+<RowApart>
+  <h2>Edit analysis</h2>
+  <PopoverSaveButton
+    onclick={() => onSave({ tEnd, yMax: yMaxAuto ? undefined : yMax })}
+    {popovertarget}
+  />
+</RowApart>
+
+<div>
+  <label for="final-time">Simulate until:</label>
+  <input id="final-time" type="number" bind:value={tEnd} />
+</div>
+<h3>Plot options</h3>
+<div>
+  <label for="ymax-val">yMax:</label>
+  {#if !yMaxAuto}
+    <input id="ymax-val" type="number" bind:value={yMax} />
+  {/if}
+  <label for="ymax-auto">Auto?</label>
+  <input id="ymax-auto" type="checkbox" bind:checked={yMaxAuto} />
+</div>
 
 <style>
-  section {
+  div {
     display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 1.5rem;
+    flex-direction: row;
+    gap: 0.5rem;
+    width: 100%;
+  }
 
-    div {
-      display: flex;
-      flex-direction: row;
-      gap: 0.5rem;
-      width: 100%;
-    }
-
-    .apart {
-      justify-content: space-between;
-    }
-
-    input {
-      border: 1px solid rgba(120, 120, 120, 0.6);
-      border-radius: 0.5rem;
-      padding: 0 0.5rem;
-    }
+  input {
+    border: 1px solid rgba(120, 120, 120, 0.6);
+    border-radius: 0.5rem;
+    padding: 0 0.5rem;
   }
 </style>

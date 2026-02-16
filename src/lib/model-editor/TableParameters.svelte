@@ -1,7 +1,8 @@
 <script lang="ts">
   import Icon from "$lib/Icon.svelte";
+  import Popover from "../Popover.svelte";
   import type { AssView, Parameter, ParView, RxnView, VarView } from "./model";
-  import SliderEditorPopover from "./SliderEditorPopover.svelte";
+  import SliderEditor from "./SliderEditor.svelte";
 
   let {
     variables = $bindable(),
@@ -76,28 +77,17 @@
   </button>
 </div>
 
-{#each parameters as [name, parameter], idx}
-  <div popover id="var-editor-{idx}">
-    <SliderEditorPopover
+{#each parameters as [_, parameter], idx}
+  <Popover size="sm" popovertarget={`var-editor-${idx}`}>
+    <SliderEditor
       target={parameter}
       onSave={(root) => onSaveSlider(idx, root)}
       popovertarget={`var-editor-${idx}`}
     />
-  </div>
+  </Popover>
 {/each}
 
 <style>
-  [popover] {
-    position: absolute;
-    inset: unset;
-    top: 4rem;
-    left: 4rem;
-    width: calc(100% - 8rem);
-  }
-  [popover]::backdrop {
-    background-color: rgba(0, 0, 0, 0.5);
-  }
-
   /* General */
   .padding {
     padding: 1rem;

@@ -1,6 +1,7 @@
 <script lang="ts">
+  import RowApart from "$lib/RowApart.svelte";
+  import PopoverSaveButton from "../PopoverSaveButton.svelte";
   import { type Parameter, type Variable } from "./model";
-  import PopoverSaveButton from "./PopoverSaveButton.svelte";
 
   let {
     target,
@@ -19,23 +20,8 @@
   let texName: string | undefined = $derived(target.slider?.texName);
 </script>
 
-<section class="page">
-  <label for="tex-name">LaTeX name</label>
-  <input id="tex-name" type="text" bind:value={texName} />
-
-  <div class="row">
-    <label for="slider-enabled">Display slider?</label>
-    <input id="slider-enabled" type="checkbox" bind:checked={enabled} />
-  </div>
-  {#if enabled}
-    <label for="min-slider">Min</label>
-    <input id="min-slider" type="number" bind:value={minVal} />
-    <label for="max-slider">Max</label>
-    <input id="max-slider" type="number" bind:value={maxVal} />
-    <label for="step-slider">Step</label>
-    <input id="step-slider" type="number" bind:value={stepVal} />
-  {/if}
-
+<RowApart>
+  <h2>Edit Options</h2>
   <PopoverSaveButton
     {popovertarget}
     onclick={() =>
@@ -48,16 +34,25 @@
           : { value: target.value },
       )}
   />
-</section>
+</RowApart>
+
+<label for="tex-name">LaTeX name</label>
+<input id="tex-name" type="text" bind:value={texName} />
+
+<div class="row">
+  <label for="slider-enabled">Display slider?</label>
+  <input id="slider-enabled" type="checkbox" bind:checked={enabled} />
+</div>
+{#if enabled}
+  <label for="min-slider">Min</label>
+  <input id="min-slider" type="number" bind:value={minVal} />
+  <label for="max-slider">Max</label>
+  <input id="max-slider" type="number" bind:value={maxVal} />
+  <label for="step-slider">Step</label>
+  <input id="step-slider" type="number" bind:value={stepVal} />
+{/if}
 
 <style>
-  .page {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 1.5rem;
-  }
-
   .row {
     display: flex;
     flex-direction: row;
