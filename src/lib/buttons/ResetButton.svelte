@@ -15,7 +15,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 0.5rem;
     cursor: pointer;
     box-shadow: var(--shadow-primary);
     border: none;

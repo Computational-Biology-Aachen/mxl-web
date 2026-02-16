@@ -11,6 +11,7 @@
 <style>
   button {
     cursor: pointer;
+    box-shadow: var(--shadow-primary);
     border: none;
     border-radius: var(--border-radius);
     background-color: var(--primary);
