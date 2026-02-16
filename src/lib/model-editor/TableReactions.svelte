@@ -37,7 +37,7 @@
   }
 
   let texNames: Map<string, string> = $derived(
-    getTexNames(variables, parameters),
+    getTexNames(variables, parameters, assignments, reactions),
   );
 </script>
 
@@ -130,6 +130,7 @@
       {variables}
       {parameters}
       {assignments}
+      {reactions}
       onSave={(root) => onSaveEq(idx, root)}
       popovertarget={`eq-editor-${idx}`}
     />
@@ -140,6 +141,7 @@
       {variables}
       {parameters}
       {assignments}
+      {reactions}
       onSave={(stoichs) => onSaveStoichs(idx, stoichs)}
       popovertarget={`stoich-editor-${idx}`}
     />

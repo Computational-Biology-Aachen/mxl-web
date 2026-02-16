@@ -7,6 +7,7 @@
     stoichToTex,
     type AssView,
     type ParView,
+    type RxnView,
     type Stoichiometry,
     type VarView,
   } from "./model";
@@ -16,16 +17,18 @@
     variables,
     parameters,
     assignments,
+    reactions,
   }: {
     stoichiometry: Stoichiometry;
     variables: VarView;
     parameters: ParView;
     assignments: AssView;
+    reactions: RxnView;
   } = $props();
 
-  // We don't want these to react
-
-  let texNames = $derived(getTexNames(variables, parameters));
+  let texNames: Map<string, string> = $derived(
+    getTexNames(variables, parameters, assignments, reactions),
+  );
 
   let variableNames = $derived.by(() => {
     return [...variables.map((el) => el[0])];

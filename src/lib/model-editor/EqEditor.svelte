@@ -6,6 +6,7 @@
     getTexNames,
     type AssView,
     type ParView,
+    type RxnView,
     type VarView,
   } from "./model";
 
@@ -14,11 +15,13 @@
     variables,
     parameters,
     assignments,
+    reactions,
   }: {
     root: Base;
     variables: VarView;
     parameters: ParView;
     assignments: AssView;
+    reactions: RxnView;
   } = $props();
 
   let argNames = $derived.by(() => {
@@ -29,7 +32,9 @@
     ];
   });
 
-  let texNames = $derived(getTexNames(variables, parameters));
+  let texNames: Map<string, string> = $derived(
+    getTexNames(variables, parameters, assignments, reactions),
+  );
 
   const templates = [
     {

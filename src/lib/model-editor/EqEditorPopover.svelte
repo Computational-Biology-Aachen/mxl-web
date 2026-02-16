@@ -1,13 +1,14 @@
 <script lang="ts">
   import { Base } from "$lib/mathml";
   import EqEditor from "$lib/model-editor/EqEditor.svelte";
-  import type { AssView, ParView, VarView } from "./model";
+  import type { AssView, ParView, RxnView, VarView } from "./model";
 
   let {
     root,
     variables,
     parameters,
     assignments,
+    reactions,
     onSave,
     popovertarget,
   }: {
@@ -15,13 +16,14 @@
     variables: VarView;
     parameters: ParView;
     assignments: AssView;
+    reactions: RxnView;
     onSave: (fn: Base) => void;
     popovertarget: string;
   } = $props();
 </script>
 
 <section class="page">
-  <EqEditor bind:root {variables} {parameters} {assignments} />
+  <EqEditor bind:root {variables} {parameters} {assignments} {reactions} />
 
   <button
     class="save"

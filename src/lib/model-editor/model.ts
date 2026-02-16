@@ -17,11 +17,13 @@ export type Stoichiometry = Array<Stoich>;
 
 export type Assign = {
   fn: Base;
+  texName?: string;
 };
 
 export type Reaction = {
   fn: Base;
   stoichiometry: Stoichiometry;
+  texName?: string;
 };
 
 // Views
@@ -49,6 +51,8 @@ export class ModelView {
 export function getTexNames(
   variables: Iterable<[string, Variable]>,
   parameters: Iterable<[string, Parameter]>,
+  assignments: Iterable<[string, Assign]>,
+  reactions: Iterable<[string, Reaction]>,
 ): Map<string, string> {
   // Get all tex names
   const texNames: Map<string, string> = new Map();
@@ -61,6 +65,16 @@ export function getTexNames(
   for (const [name, parameter] of parameters) {
     if (parameter.slider?.texName) {
       texNames.set(name, parameter.slider.texName);
+    }
+  }
+  for (const [name, ass] of assignments) {
+    if (ass.texName) {
+      texNames.set(name, ass.texName);
+    }
+  }
+  for (const [name, rxn] of reactions) {
+    if (rxn.texName) {
+      texNames.set(name, rxn.texName);
     }
   }
   return texNames;
@@ -372,6 +386,8 @@ y0 = {${y0}}
     const texNames: Map<string, string> = getTexNames(
       this.variables.entries(),
       this.parameters.entries(),
+      this.assignments.entries(),
+      this.reactions.entries(),
     );
 
     // Collect rhs
@@ -396,7 +412,7 @@ y0 = {${y0}}
       .map(([name, stoich]) => {
         let stoichFixed = stoich;
         if (stoich.startsWith("+")) stoichFixed = stoich.slice(1);
-        return `\\frac{d ${name}}{dt} &= ${stoich.length > 0 ? stoichFixed : "0"}`;
+        return `\\frac{d ${texNames.get(name) || name}}{dt} &= ${stoich.length > 0 ? stoichFixed : "0"}`;
       })
       .join("\\\\ \n");
 

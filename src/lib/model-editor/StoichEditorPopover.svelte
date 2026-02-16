@@ -3,6 +3,7 @@
   import {
     type AssView,
     type ParView,
+    type RxnView,
     type Stoichiometry,
     type VarView,
   } from "./model";
@@ -12,6 +13,7 @@
     variables,
     parameters,
     assignments,
+    reactions,
     onSave,
     popovertarget,
   }: {
@@ -19,13 +21,20 @@
     variables: VarView;
     parameters: ParView;
     assignments: AssView;
+    reactions: RxnView;
     onSave: (fn: Stoichiometry) => void;
     popovertarget: string;
   } = $props();
 </script>
 
 <section class="page">
-  <StoichEditor bind:stoichiometry {variables} {parameters} {assignments} />
+  <StoichEditor
+    bind:stoichiometry
+    {variables}
+    {parameters}
+    {assignments}
+    {reactions}
+  />
 
   <button
     class="save"

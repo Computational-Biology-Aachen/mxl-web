@@ -30,7 +30,7 @@
   }
 
   let texNames: Map<string, string> = $derived(
-    getTexNames(variables, parameters),
+    getTexNames(variables, parameters, assignments, reactions),
   );
 </script>
 
@@ -50,7 +50,10 @@
             type="text"
             bind:value={
               () => assignments[idx][0],
-              (value) => (assignments[idx][0] = value)
+              (value) => {
+                assignments[idx][0] = value;
+                assignments = assignments.slice();
+              }
             }
           />
         </td>
@@ -101,6 +104,7 @@
       {variables}
       {parameters}
       {assignments}
+      {reactions}
       onSave={(root) => onSaveEq(idx, root)}
       popovertarget={`eq-editor-${idx}`}
     />
