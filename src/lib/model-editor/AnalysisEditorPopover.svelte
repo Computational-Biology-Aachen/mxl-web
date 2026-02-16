@@ -1,15 +1,17 @@
 <script lang="ts">
-  import Icon from "$lib/Icon.svelte";
+  import AnalysisEditor from "./AnalysisEditor.svelte";
 
   type Analysis = {
     tEnd: number;
   };
 
   let {
+    idx,
     parent,
     onSave,
     popovertarget,
   }: {
+    idx: number;
     parent: Analysis;
     onSave: (options: Analysis) => void;
     popovertarget: string;
@@ -18,26 +20,21 @@
   let tEnd = $derived(parent.tEnd);
 </script>
 
-<section class="page">
-  <label for="min-slider">tEnd</label>
-  <input id="min-slider" type="number" bind:value={tEnd} />
-
-  <button
-    class="save"
-    onclick={() => onSave({ tEnd })}
-    popovertargetaction="hide"
-    {popovertarget}
-  >
-    <Icon fontSize="lg">play_arrow</Icon>
-    Save
-  </button>
-</section>
+<div popover id="analysis-editor-{idx}">
+  <AnalysisEditor {parent} {onSave} {popovertarget} />
+</div>
 
 <style>
-  .page {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 1.5rem;
+  [popover] {
+    --width: 60rem;
+    --dist: max(0px, (100vw - var(--width)) / 2);
+    position: fixed;
+    inset: unset;
+    top: clamp(1rem, var(--dist), 10rem);
+    left: var(--dist);
+    width: calc(100% - 2 * var(--dist));
+  }
+  [popover]::backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
   }
 </style>

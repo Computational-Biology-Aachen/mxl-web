@@ -282,17 +282,16 @@
 />
 
 {#each analyses as analysis, idx}
-  <div popover id="analysis-editor-{idx}">
-    <AnalysisEditorPopover
-      parent={analysis}
-      onSave={({ tEnd }) => {
-        analyses[idx] = { ...analysis, tEnd: tEnd };
-        analyses = analyses.slice();
-        simulatorRefs[analysis.id]?.runSimulation(model);
-      }}
-      popovertarget={`analysis-editor-${idx}`}
-    />
-  </div>
+  <AnalysisEditorPopover
+    {idx}
+    parent={analysis}
+    onSave={({ tEnd }) => {
+      analyses[idx] = { ...analysis, tEnd: tEnd };
+      analyses = analyses.slice();
+      simulatorRefs[analysis.id]?.runSimulation(model);
+    }}
+    popovertarget={`analysis-editor-${idx}`}
+  />
 {/each}
 
 <style>
@@ -354,15 +353,5 @@
   }
   button:hover {
     background-color: lch(from var(--primary) calc(l - 20) c h);
-  }
-  [popover] {
-    position: fixed;
-    inset: unset;
-    top: 2rem;
-    left: 2rem;
-    width: calc(100% - 4rem);
-  }
-  [popover]::backdrop {
-    background-color: rgba(0, 0, 0, 0.5);
   }
 </style>
