@@ -3,7 +3,7 @@
   import { Add, Divide, Minus, Mul, Name, Num, type Base } from "$lib/mathml";
   import EquationNode from "$lib/model-editor/EqNode.svelte";
   import RowApart from "$lib/RowApart.svelte";
-  import PopoverSaveButton from "../PopoverSaveButton.svelte";
+  import PopoverSaveButton from "../buttons/PopoverSaveButton.svelte";
   import {
     getTexNames,
     type AssView,

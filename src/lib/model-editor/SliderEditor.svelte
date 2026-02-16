@@ -1,6 +1,6 @@
 <script lang="ts">
   import RowApart from "$lib/RowApart.svelte";
-  import PopoverSaveButton from "../PopoverSaveButton.svelte";
+  import PopoverSaveButton from "../buttons/PopoverSaveButton.svelte";
   import { type Parameter, type Variable } from "./model";
 
   let {

@@ -21,11 +21,11 @@
 
   import Math from "$lib/Math.svelte";
   import { Base, Num } from "$lib/mathml";
+  import TableButtonClose from "../buttons/TableButtonClose.svelte";
+  import TableButtonEdit from "../buttons/TableButtonEdit.svelte";
   import Popover from "../Popover.svelte";
   import EqEditor from "./EqEditor.svelte";
   import TableAddButton from "./TableAddButton.svelte";
-  import TableButtonClose from "./TableButtonClose.svelte";
-  import TableButtonEdit from "./TableButtonEdit.svelte";
 
   function onSaveEq(idx: number, fn: Base) {
     assignments[idx][1].fn = fn;

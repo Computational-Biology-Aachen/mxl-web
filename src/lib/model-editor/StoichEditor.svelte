@@ -3,7 +3,7 @@
   import Math from "$lib/Math.svelte";
   import { Num } from "$lib/mathml";
   import RowApart from "$lib/RowApart.svelte";
-  import PopoverSaveButton from "../PopoverSaveButton.svelte";
+  import PopoverSaveButton from "../buttons/PopoverSaveButton.svelte";
   import {
     getTexNames,
     stoichToTex,

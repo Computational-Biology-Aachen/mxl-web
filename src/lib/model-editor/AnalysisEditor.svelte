@@ -1,7 +1,7 @@
 <script lang="ts">
   import RowApart from "$lib/RowApart.svelte";
   import { untrack } from "svelte";
-  import PopoverSaveButton from "../PopoverSaveButton.svelte";
+  import PopoverSaveButton from "../buttons/PopoverSaveButton.svelte";
 
   type Analysis = {
     tEnd: number;

@@ -13,7 +13,7 @@
   import TableReactions from "$lib/model-editor/TableReactions.svelte";
   import TableVariables from "$lib/model-editor/TableVariables.svelte";
   import RowApart from "$lib/RowApart.svelte";
-  import PopoverSaveButton from "../PopoverSaveButton.svelte";
+  import PopoverSaveButton from "../buttons/PopoverSaveButton.svelte";
 
   let {
     parent,

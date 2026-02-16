@@ -11,14 +11,14 @@
   } = $props();
 </script>
 
-<button class="save" {onclick} popovertargetaction="hide" {popovertarget}>
+<button {onclick} popovertargetaction="hide" {popovertarget}>
   <Icon color="inherit" fontSize="lg">play_arrow</Icon>
   Save
 </button>
 
 <style>
   /* Save button */
-  button.save {
+  button {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -36,7 +36,7 @@
     line-height: 1.25rem;
     letter-spacing: 0.025em;
   }
-  button.save:hover {
+  button:hover {
     background-color: lch(from var(--primary) calc(l - 20) c h);
   }
 </style>

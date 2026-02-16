@@ -1,6 +1,8 @@
 <script lang="ts">
   import { base } from "$app/paths";
   import type { Analyses, Analysis } from "$lib";
+  import ModelEditButton from "$lib/buttons/ModelEditButton.svelte";
+  import ResetButton from "$lib/buttons/ResetButton.svelte";
   import DynBoxRow from "$lib/DynBoxRow.svelte";
   import Icon from "$lib/Icon.svelte";
   import Math from "$lib/Math.svelte";
@@ -81,13 +83,13 @@
     <span class="bold">{name}</span>
   </div>
   <div class="row">
-    <button
+    <ResetButton
       onclick={() => {
         model = initModel();
         runAllSimulations();
-      }}>Reset</button
-    >
-    <button popovertarget="model-editor">Edit model</button>
+      }}
+    />
+    <ModelEditButton popovertarget="model-editor" />
   </div>
 </div>
 

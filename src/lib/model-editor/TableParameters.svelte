@@ -1,10 +1,10 @@
 <script lang="ts">
+  import TableButtonClose from "../buttons/TableButtonClose.svelte";
+  import TableButtonEdit from "../buttons/TableButtonEdit.svelte";
   import Popover from "../Popover.svelte";
   import type { AssView, Parameter, ParView, RxnView, VarView } from "./model";
   import SliderEditor from "./SliderEditor.svelte";
   import TableAddButton from "./TableAddButton.svelte";
-  import TableButtonClose from "./TableButtonClose.svelte";
-  import TableButtonEdit from "./TableButtonEdit.svelte";
 
   let {
     variables = $bindable(),
