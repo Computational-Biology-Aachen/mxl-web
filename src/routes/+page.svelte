@@ -33,21 +33,6 @@
   </ul>
 </div>
 
-<!-- <div class="heading">
-  <Icon>settings</Icon>
-  <h2>Development pages</h2>
-</div>
-
-<div class="card">
-  <p>Quick access to important components</p>
-  <ul>
-    <li><a href="{base}/dev/eq-editor">Eq editor</a></li>
-    <li><a href="{base}/dev/stoich-editor">Stoich editor</a></li>
-    <li><a href="{base}/dev/model-edit">Model edit</a></li>
-    <li><a href="{base}/dev/model-comp">Model comparison</a></li>
-  </ul>
-</div> -->
-
 <style>
   .heading {
     display: flex;

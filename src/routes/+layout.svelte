@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { base } from "$app/paths";
   import * as config from "$lib/config";
   import "../app.css";
 
@@ -18,15 +17,7 @@
   <meta name="twitter:card" content="summary" />
 </svelte:head>
 
-<Navbar>
-  <li><a href="{base}/">Home</a></li>
-  <li><a href="{base}/lotka-volterra">Lotka Volterra</a></li>
-  <li><a href="{base}/population-dynamics">Population dynamics</a></li>
-  <li><a href="{base}/tripartite">Tripartite dynamics</a></li>
-  <li><a href="{base}/dynamic-entrobactin">Entrobactin</a></li>
-  <!-- <li><a href="{base}/npq">NPQ</a></li> -->
-  <li><a href="{base}/fvcb">FvCB</a></li>
-</Navbar>
+<Navbar />
 
 <main>
   {@render children()}
