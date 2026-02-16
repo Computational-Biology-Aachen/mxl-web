@@ -102,7 +102,7 @@
   ]);
 </script>
 
-<AnalysesDashboard name={"Lotka-Volterra"} {initModel} {analyses}>
+<AnalysesDashboard name={"Lotka-Volterra"} {initModel} bind:analyses>
   <p>
     The Lotka-Volterra equations, developed in the 1920s by Alfred Lotka and
     Vito Volterra representing the cyclic, phase-shifted population dynamics

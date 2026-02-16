@@ -5,6 +5,7 @@
 
   type Analysis = {
     tEnd: number;
+    title: string;
     yMax: number | undefined;
   };
 
@@ -20,16 +21,23 @@
 
   let tEnd = $derived(parent.tEnd);
   let yMax: number = $derived(parent.yMax || 10);
+  let title = $derived(parent.title);
   let yMaxAuto: boolean = $derived(untrack(() => yMax) ? false : true);
 </script>
 
 <RowApart>
   <h2>Edit analysis</h2>
   <PopoverSaveButton
-    onclick={() => onSave({ tEnd, yMax: yMaxAuto ? undefined : yMax })}
+    onclick={() =>
+      onSave({ tEnd, yMax: yMaxAuto ? undefined : yMax, title: title })}
     {popovertarget}
   />
 </RowApart>
+
+<div>
+  <label for="name">Name:</label>
+  <input id="name" type="text" bind:value={title} />
+</div>
 
 <div>
   <label for="final-time">Simulate until:</label>

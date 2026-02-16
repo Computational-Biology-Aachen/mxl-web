@@ -18,7 +18,7 @@
     children,
     name,
     initModel,
-    analyses,
+    analyses = $bindable(),
   }: {
     name: string;
     initModel: () => ModelBuilder;
@@ -208,10 +208,12 @@
 {#each analyses as analysis, idx}
   <Popover size="sm" popovertarget={`analysis-editor-${idx}`}>
     <AnalysisEditor
-      parent={analysis}
-      onSave={({ tEnd, yMax }) => {
-        console.log(`New simulation options: tEnd:${tEnd}, yMax: ${yMax}`);
-        analyses[idx] = { ...analysis, tEnd: tEnd, yMax: yMax };
+      parent={analyses[idx]}
+      onSave={({ tEnd, yMax, title }) => {
+        console.log(
+          `New simulation options: tEnd:${tEnd}, yMax: ${yMax}, title: ${title}`,
+        );
+        analyses[idx] = { ...analysis, tEnd: tEnd, yMax: yMax, title: title };
         analyses = analyses.slice();
         simulatorRefs[analysis.id]?.runSimulation(model);
       }}

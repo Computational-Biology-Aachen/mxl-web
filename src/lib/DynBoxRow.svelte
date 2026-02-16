@@ -106,7 +106,7 @@
     return rows;
   }
 
-  let boxes: Box[][] = $state(initBoxes());
+  let boxes: Box[][] = $derived.by(() => initBoxes());
   let maxRowUsed = $derived(boxes.length);
   let nextId = $derived(getNextId(boxes));
 
@@ -147,15 +147,6 @@
     }
   }
 
-  function tryResize(row: number, boxId: number, span: number) {
-    boxes[row] = boxes[row].map((box) => {
-      if (box.id !== boxId) return box;
-      if (!canPlace(row, box.col, span, box.id)) return box;
-      return { ...box, span };
-    });
-    boxes = boxes.slice();
-  }
-
   function splitByCond(boxes: Box[], boxId: number): [Box[], Box] {
     let boxesFalse = [];
     let boxesTrue = [];
@@ -177,18 +168,6 @@
     onRemove(box);
   }
 
-  /** Move box to another row.
-   * We don't need to check whether we can place the box here, as this is checked
-   * by the dragPreview
-   */
-  function moveBox(boxId: number, fromRow: number, toRow: number, col: number) {
-    const [row, box] = splitByCond(boxes[fromRow], boxId);
-    box.col = col;
-    boxes[fromRow] = row;
-    boxes[toRow] = [...boxes[toRow], box];
-    clearEmptyRow(fromRow);
-  }
-
   function findSpotInRow(row: number, span: number): number | null {
     for (let col = 1; col <= GRID_COLS - span + 1; col += 1) {
       if (canPlace(row, col, span)) return col;
@@ -208,8 +187,8 @@
     };
     newBox.idx = onAdd(newBox);
 
-    boxes[row] = [...boxes[row], newBox];
-    boxes = boxes.slice();
+    // boxes[row] = [...boxes[row], newBox];
+    // boxes = boxes.slice();
   }
 
   function addBelow() {
@@ -221,7 +200,7 @@
       title: `Analysis ${nextId}`,
     };
     newBox.idx = onAdd(newBox);
-    boxes = [...boxes, [newBox]];
+    // boxes = [...boxes, [newBox]];
   }
 
   function getGridMetrics() {
@@ -282,7 +261,7 @@
 
     const handleUp = () => {
       if (DRAG_PREVIEW?.boxId === boxId) {
-        tryResize(row, boxId, DRAG_PREVIEW.span);
+        resizeBox(row, boxId, DRAG_PREVIEW.span);
       }
       DRAG_PREVIEW = null;
       window.removeEventListener("pointermove", handleMove);
@@ -352,6 +331,34 @@
 
   function rowNotFull(row: number): boolean {
     return findSpotInRow(row, 1) !== null;
+  }
+
+  // Functions actually moving objects
+
+  /** Move box to another row.
+   * We don't need to check whether we can place the box here, as this is checked
+   * by the dragPreview
+   */
+  function resizeBox(row: number, boxId: number, span: number) {
+    boxes[row] = boxes[row].map((box) => {
+      if (box.id !== boxId) return box;
+      if (!canPlace(row, box.col, span, box.id)) return box;
+      return { ...box, span };
+    });
+    boxes = boxes.slice();
+  }
+
+  /** Move box to another row.
+   * We don't need to check whether we can place the box here, as this is checked
+   * by the dragPreview
+   */
+  function moveBox(boxId: number, fromRow: number, toRow: number, col: number) {
+    const [row, box] = splitByCond(boxes[fromRow], boxId);
+    box.col = col;
+    boxes[fromRow] = row;
+    boxes[toRow] = [...boxes[toRow], box];
+    boxes = boxes.slice();
+    clearEmptyRow(fromRow);
   }
 </script>
 
