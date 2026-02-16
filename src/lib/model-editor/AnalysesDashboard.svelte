@@ -247,7 +247,7 @@
     grid-template-columns: 1fr 1fr 1fr 1fr;
     align-items: center;
     box-shadow: var(--shadow);
-    border-radius: 0.75rem;
+    border-radius: var(--border-radius);
     background-color: var(--bg-l1);
     padding: 1.5rem;
   }
@@ -264,7 +264,7 @@
   button {
     cursor: pointer;
     border: none;
-    border-radius: 0.5rem;
+    border-radius: var(--border-radius);
     background-color: var(--primary);
     padding: 0 1rem;
     min-width: 1rem;

@@ -22,6 +22,8 @@
   [popover] {
     position: fixed;
     inset: unset;
+    border: var(--border-heavy);
+    border-radius: var(--border-radius);
   }
   [popover]::backdrop {
     background-color: rgba(0, 0, 0, 0.5);

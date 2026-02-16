@@ -137,7 +137,7 @@
     flex-direction: column;
     gap: 0.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-    border-radius: 0.5rem;
+    border-radius: var(--border-radius);
     background-color: var(--bg-l1);
   }
   .padding {

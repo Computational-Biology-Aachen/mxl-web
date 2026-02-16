@@ -54,8 +54,8 @@
   }
 
   input {
-    border: 1px solid rgba(120, 120, 120, 0.6);
-    border-radius: 0.5rem;
+    border: var(--border);
+    border-radius: var(--border-radius);
     padding: 0 0.5rem;
   }
 </style>

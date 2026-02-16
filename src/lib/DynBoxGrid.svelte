@@ -377,8 +377,8 @@
       background 0.2s ease,
       border-color 0.2s ease;
     cursor: pointer;
-    border: 1px solid rgba(120, 120, 120, 0.5);
-    border-radius: 10px;
+    border: var(--border);
+    border-radius: var(--border-radius);
     background: rgba(120, 120, 120, 0.3);
     padding: 10px 16px;
     color: #1f1f1f;
@@ -414,7 +414,7 @@
     gap: 12px;
     z-index: 2;
     border: 1px solid #d0d0d0;
-    border-radius: 14px;
+    border-radius: var(--border-radius);
     background: #f2f2f2;
     padding: 12px;
   }
@@ -445,8 +445,8 @@
     opacity: 0;
     transition: opacity 0.2s ease;
     cursor: pointer;
-    border: 1px solid rgba(120, 120, 120, 0.6);
-    border-radius: 6px;
+    border: var(--border);
+    border-radius: var(--border-radius);
     background: rgba(120, 120, 120, 0.35);
     width: 18px;
     height: 18px;
@@ -472,8 +472,8 @@
 
   .preview-box {
     z-index: 3;
-    border: 2px dashed rgba(90, 90, 90, 0.8);
-    border-radius: 12px;
+    border: var(--border-dashed);
+    border-radius: var(--border-radius);
     background: rgba(160, 160, 160, 0.15);
     pointer-events: none;
   }

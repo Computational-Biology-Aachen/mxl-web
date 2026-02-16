@@ -437,7 +437,7 @@
     z-index: 2;
     box-shadow: var(--shadow);
     border: 1px solid #d0d0d0;
-    border-radius: 0.75rem;
+    border-radius: var(--border-radius);
     background-color: var(--bg-l1);
     padding: 2rem;
     width: 100%;
@@ -469,7 +469,7 @@
     align-items: center;
     cursor: pointer;
     border: none;
-    border-radius: 5rem;
+    border-radius: var(--round);
     background-color: var(--bg-l1);
     width: 1.5rem;
     height: 1.5rem;
@@ -490,8 +490,8 @@
     transition: opacity 0.2s ease;
     cursor: pointer;
     cursor: ew-resize;
-    border: 1px solid rgba(120, 120, 120, 0.6);
-    border-radius: 6px;
+    border: var(--border);
+    border-radius: var(--border-radius);
     background: rgba(120, 120, 120, 0.35);
     width: 18px;
     height: 18px;
@@ -509,8 +509,8 @@
 
   .preview-box {
     z-index: 3;
-    border: 2px dashed rgba(90, 90, 90, 0.8);
-    border-radius: 12px;
+    border: var(--border-dashed);
+    border-radius: var(--border-radius);
     background: rgba(160, 160, 160, 0.1);
     pointer-events: none;
   }
@@ -523,8 +523,8 @@
       background 0.2s ease,
       border-color 0.2s ease;
     cursor: pointer;
-    border: 1px solid rgba(120, 120, 120, 0.5);
-    border-radius: 10px;
+    border: var(--border);
+    border-radius: var(--border-radius);
     background: var(--bg-l1);
     padding: 10px 16px;
     color: #1f1f1f;

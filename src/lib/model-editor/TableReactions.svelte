@@ -210,8 +210,8 @@
     background-color: lch(from var(--bg-l1) calc(l - 5) c h);
   }
   table input {
-    border: 1px solid transparent;
-    border-radius: 0.5rem;
+    border: var(--border-transparent);
+    border-radius: var(--border-radius);
     background-color: transparent;
     padding: 0.35rem 0.5rem;
     width: 100%;
@@ -219,7 +219,7 @@
   }
 
   table input:hover {
-    border: 1px solid var(--primary);
+    border: var(--border-primary);
   }
 
   /* Close button */
@@ -229,7 +229,7 @@
     align-items: center;
     cursor: pointer;
     border: none;
-    border-radius: 5rem;
+    border-radius: var(--round);
     background-color: var(--bg-l1);
     width: 1.5rem;
     height: 1.5rem;
@@ -246,7 +246,7 @@
     cursor: pointer;
     margin: 0rem;
     border: none;
-    border-radius: 0.5rem;
+    border-radius: var(--border-radius);
     background-color: var(--primary);
     padding: 0 1rem;
     width: 10rem;
@@ -268,7 +268,7 @@
     align-items: center;
     cursor: pointer;
     border: none;
-    border-radius: 5rem;
+    border-radius: var(--round);
     background-color: var(--bg-l1);
     width: 1.5rem;
     height: 1.5rem;

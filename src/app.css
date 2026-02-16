@@ -1,5 +1,19 @@
 :root {
   font-size: 16px;
+
+  /* Colors */
+  --bg-l0: rgb(246 246 248);
+  --bg-l1: rgb(255, 255, 255);
+  --slate-50: rgb(226 232 240);
+  --slate-400: rgb(148 163 184);
+  --slate-500: rgb(100 116 139);
+  --slate: rgb(15 23 42);
+  --primary: rgb(19 91 236);
+
+  /* Text */
+  --text-sm: 0.875rem;
+  --weight-medium: 500;
+  --weight-bold: 700;
   --text-title-large: calc(26 * 0.0625) rem;
   --text-h1: calc(22 * 0.0625) rem;
   --text-h2: calc(17 * 0.0625) rem;
@@ -11,19 +25,18 @@
   --text-footnote: calc(10 * 0.0625) rem;
   --text-caption: calc(10 * 0.0625) rem;
 
-  /* Colors */
-  --bg-l0: rgb(246 246 248);
-  --bg-l1: rgb(255, 255, 255);
-  --slate-50: rgb(226 232 240);
-  --slate-400: rgb(148 163 184);
-  --slate-500: rgb(100 116 139);
-  --slate: rgb(15 23 42);
-  --primary: rgb(19 91 236);
-  --text-sm: 0.875rem;
-  --weight-medium: 500;
-  --weight-bold: 700;
+  /* Shadows */
   --shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.1);
   --shadow-primary: 2px 2px 6px 0 rgb(from var(--primary) r g b / 50%);
+
+  /* Borders */
+  --border: 1px solid rgba(120, 120, 120, 0.6);
+  --border-transparent: 1px solid transparent;
+  --border-primary: 1px solid var(--primary);
+  --border-dashed: 2px dashed rgba(90, 90, 90, 0.8);
+  --border-heavy: 2px solid var(--slate);
+  --border-radius: 1rem;
+  --round: 5rem;
 }
 
 * {

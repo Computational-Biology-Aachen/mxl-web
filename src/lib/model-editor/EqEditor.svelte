@@ -269,8 +269,8 @@
       box-shadow 120ms ease,
       border-color 120ms ease;
     cursor: pointer;
-    border: 1px solid #d1d5db;
-    border-radius: 10px;
+    border: var(--border);
+    border-radius: var(--border-radius);
     background: #f9fafb;
     padding: 0.75rem 0.9rem;
     text-align: left;
@@ -302,8 +302,8 @@
 
   .window {
     box-shadow: var(--shadow);
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
+    border: var(--border);
+    border-radius: var(--border-radius);
     background: #fff;
     overflow: hidden;
   }
@@ -351,8 +351,8 @@
 
   select,
   input[type="number"] {
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
+    border: var(--border);
+    border-radius: var(--border-radius);
     padding: 0.35rem 0.5rem;
     width: 100%;
     font-size: 0.95rem;
