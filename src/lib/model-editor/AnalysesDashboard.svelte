@@ -201,6 +201,7 @@
         bind:this={simulatorRefs[box.id]}
         model={model}
         tEnd={analysis.tEnd}
+        yMax={analysis.yMax}
       />
     {/if}
   {/snippet}

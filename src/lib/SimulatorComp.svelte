@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import LineChart from "./chartjs/lineChart.svelte";
+  import LineChart from "./chartjs/LineChart.svelte";
   import Slider from "./Slider.svelte";
   import {
     pyWorkerManager,

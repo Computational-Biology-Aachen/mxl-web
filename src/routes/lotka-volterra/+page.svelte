@@ -97,7 +97,7 @@
       col: 4,
       span: 3,
       tEnd: 200,
-      yMax: 20,
+      yMax: undefined,
     },
   ]);
 </script>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import LineChart from "$lib/chartjs/lineChart.svelte";
+  import LineChart from "$lib/chartjs/LineChart.svelte";
   import Slider from "$lib/Slider.svelte";
   import { onMount } from "svelte";
 

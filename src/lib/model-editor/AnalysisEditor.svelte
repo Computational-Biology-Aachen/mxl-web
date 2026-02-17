@@ -23,9 +23,9 @@
   } = $props();
 
   let tEnd = $derived(parent.tEnd);
+  let yMaxAuto: boolean = $derived(untrack(() => parent.yMax) ? false : true);
   let yMax: number = $derived(parent.yMax || 10);
   let title = $derived(parent.title);
-  let yMaxAuto: boolean = $derived(untrack(() => yMax) ? false : true);
 </script>
 
 <RowApart>

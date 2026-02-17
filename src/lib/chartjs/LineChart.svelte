@@ -1,5 +1,6 @@
 <script lang="ts">
   import Chart, { type ChartData } from "chart.js/auto";
+  import type { Attachment } from "svelte/attachments";
 
   let {
     data,
@@ -40,8 +41,8 @@
     }
   });
 
-  function makeChart(canvas: HTMLCanvasElement, data: any) {
-    const chart = new Chart(canvas, {
+  const myChart: Attachment = (canvas) => {
+    let chart = new Chart(canvas as HTMLCanvasElement, {
       type: "line",
       data: data,
       options: {
@@ -51,6 +52,7 @@
           // @ts-ignore
           x: {
             type: xScale,
+            min: 0,
             title: {
               display: true,
               text: xLabel,
@@ -86,18 +88,10 @@
       },
     });
 
-    return {
-      update(data: any) {
-        chart.data = data;
-        chart.update("resize");
-      },
-      destroy() {
-        if (chart) {
-          chart.destroy();
-        }
-      },
+    return () => {
+      if (chart) chart.destroy();
     };
-  }
+  };
 </script>
 
 <div class="chart-container">
@@ -107,7 +101,7 @@
       <p>Loading chart...</p>
     </div>
   {:else}
-    <canvas use:makeChart={data}></canvas>
+    <canvas {@attach myChart}></canvas>
   {/if}
 </div>
 
