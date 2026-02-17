@@ -89,6 +89,7 @@
       span: 3,
       tEnd: 100,
       yMax: undefined,
+      timeoutInSeconds: 20,
     },
     {
       id: 1,
@@ -98,6 +99,7 @@
       span: 3,
       tEnd: 200,
       yMax: undefined,
+      timeoutInSeconds: 20,
     },
   ]);
 </script>

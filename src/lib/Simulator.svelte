@@ -9,26 +9,42 @@
     model,
     tEnd,
     yMax,
+    timeoutInSeconds,
   }: {
     model: ModelBuilder;
     tEnd: number;
     yMax?: number | undefined;
+    timeoutInSeconds: number;
   } = $props();
 
   const pyWorker = pyWorkerManager;
 
   let loading = $state(true);
+  let err: string | undefined = $state(undefined);
   let result = $state<{ time: number[]; values: number[][] }>({
     time: [],
     values: [],
   });
 
   let currentRequestId = $state<string | null>(null);
+  let timeoutInSecondsId = $state<ReturnType<typeof setTimeout> | null>(null);
 
   export function runSimulation(model: ModelBuilder) {
     loading = true;
     const requestId = WorkerManager.generateRequestId();
     currentRequestId = requestId;
+
+    // Clear any existing timeoutInSeconds
+    if (timeoutInSecondsId) clearTimeout(timeoutInSecondsId);
+    err = undefined;
+
+    // Set a timeoutInSeconds for the request
+    timeoutInSecondsId = setTimeout(() => {
+      if (currentRequestId === requestId) {
+        err = "Simulation timed out";
+        loading = false;
+      }
+    }, timeoutInSeconds * 1000);
 
     pyWorker.postMessage({
       model: `${model.buildPython([])}\nmodel`,
@@ -64,8 +80,18 @@
   onMount(() => {
     const unsubscribePy = pyWorker.onMessage((data) => {
       if (data.requestId === currentRequestId) {
-        result = data;
-        loading = false;
+        // Clear the timeoutInSeconds since we got a response
+        if (timeoutInSecondsId) {
+          clearTimeout(timeoutInSecondsId);
+          timeoutInSecondsId = null;
+        }
+
+        if (data.message !== undefined) {
+          err = data.message;
+        } else {
+          result = { time: data.time, values: data.values };
+          loading = false;
+        }
       }
     });
 
@@ -75,16 +101,24 @@
     // Cleanup handlers (workers are shared so don't terminate them)
     return () => {
       unsubscribePy();
+      // Clean up any pending timeoutInSeconds
+      if (timeoutInSecondsId) {
+        clearTimeout(timeoutInSecondsId);
+      }
     };
   });
 </script>
 
 <div>
-  <LineChart
-    data={lineData}
-    loading={loading}
-    yMax={yMax}
-  />
+  {#if err}
+    <span>{err}</span>
+  {:else}
+    <LineChart
+      data={lineData}
+      loading={loading}
+      yMax={yMax}
+    />
+  {/if}
 </div>
 
 <style>

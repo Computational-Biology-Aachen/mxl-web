@@ -184,6 +184,7 @@
       simulator: undefined,
       tEnd: 10,
       yMax: undefined,
+      timeoutInSeconds: 20,
     };
     analyses = [...analyses, newAnalysis];
     return analyses.length - 1;
@@ -202,6 +203,7 @@
         model={model}
         tEnd={analysis.tEnd}
         yMax={analysis.yMax}
+        timeoutInSeconds={analysis.timeoutInSeconds}
       />
     {/if}
   {/snippet}
@@ -228,11 +230,17 @@
   >
     <AnalysisEditor
       parent={analyses[idx]}
-      onSave={({ tEnd, yMax, title }) => {
+      onSave={({ tEnd, yMax, title, timeoutInSeconds }) => {
         console.log(
           `New simulation options: tEnd:${tEnd}, yMax: ${yMax}, title: ${title}`,
         );
-        analyses[idx] = { ...analysis, tEnd: tEnd, yMax: yMax, title: title };
+        analyses[idx] = {
+          ...analysis,
+          tEnd: tEnd,
+          yMax: yMax,
+          title: title,
+          timeoutInSeconds: timeoutInSeconds,
+        };
         analyses = analyses.slice();
         simulatorRefs[analysis.id]?.runSimulation(model);
       }}

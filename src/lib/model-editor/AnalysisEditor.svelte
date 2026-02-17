@@ -10,6 +10,7 @@
     tEnd: number;
     title: string;
     yMax: number | undefined;
+    timeoutInSeconds: number;
   };
 
   let {
@@ -26,13 +27,19 @@
   let yMaxAuto: boolean = $derived(untrack(() => parent.yMax) ? false : true);
   let yMax: number = $derived(parent.yMax || 10);
   let title = $derived(parent.title);
+  let timeoutInSeconds = $derived(parent.timeoutInSeconds);
 </script>
 
 <RowApart>
   <h2>Edit analysis</h2>
   <PopoverSaveButton
     onclick={() =>
-      onSave({ tEnd, yMax: yMaxAuto ? undefined : yMax, title: title })}
+      onSave({
+        tEnd,
+        yMax: yMaxAuto ? undefined : yMax,
+        title: title,
+        timeoutInSeconds: timeoutInSeconds,
+      })}
     popovertarget={popovertarget}
   />
 </RowApart>
@@ -46,6 +53,11 @@
   id="final-time"
   label="Simulate until: "
   bind:value={tEnd}
+/>
+<InputNumber
+  id="timeoutInSeconds"
+  label="Simulation timeout in seconds: "
+  bind:value={timeoutInSeconds}
 />
 
 <h3>Plot options</h3>

@@ -7,6 +7,7 @@ export type Analysis = {
   span: number;
   tEnd: number;
   yMax: number | undefined;
+  timeoutInSeconds: number;
 };
 
 export type Analyses = Analysis[];

@@ -1,3 +1,4 @@
+import type { WorkerMessage } from "$lib/stores/workerStore";
 import { loadPyodide, version } from "pyodide";
 export {}; // make it a module
 
@@ -28,15 +29,11 @@ async function setupPyodide() {
 }
 
 onmessage = async function (event: MessageEvent) {
-  // Handle initialization message
   if (event.data.type === "__INIT__") {
-    // console.log("Setting up Python");
     basePath = event.data.basePath || "";
     pyodidePromise = setupPyodide();
     return;
   }
-
-  let tStart = Date.now();
   const pyodide = await pyodidePromise;
 
   if (!pyodideReady || !pyodide) {
@@ -49,19 +46,26 @@ onmessage = async function (event: MessageEvent) {
   const tEnd = event.data.tEnd;
   const pars = event.data.pars;
   const requestId = event.data.requestId;
+  const nTimePoints = 500;
+  const method = "LSODA";
 
-  // console.log("Starting py integration");
-  // console.log(`Pars: ${pars}`);
-
-  const [tPy, yPy] = pyFuncs.integrate(
+  const [tPy, yPy, errPy] = pyFuncs.integrate(
     pyodide.runPython(model),
     y0,
     tEnd,
     pars,
+    nTimePoints,
+    method,
   );
-  const time = tPy.toJs();
-  const values = yPy.toJs();
+  const err: string | undefined = errPy?.toJs();
+  const time: number[] = tPy.toJs();
+  const values: number[][] = yPy.toJs();
 
-  // console.log(`Python integration took ${Date.now() - tStart} ms`);
-  postMessage({ time: time, values: values, requestId: requestId });
+  const message: WorkerMessage = {
+    time: time,
+    values: values,
+    requestId: requestId,
+    message: err,
+  };
+  postMessage(message);
 };

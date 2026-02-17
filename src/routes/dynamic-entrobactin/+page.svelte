@@ -217,6 +217,7 @@
       span: 6,
       tEnd: 100,
       yMax: undefined,
+      timeoutInSeconds: 20,
     },
   ]);
 </script>

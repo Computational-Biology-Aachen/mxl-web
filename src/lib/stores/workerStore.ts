@@ -1,10 +1,11 @@
 import { browser } from "$app/environment";
 import { base } from "$app/paths";
 
-interface WorkerMessage {
+export interface WorkerMessage {
   time: number[];
   values: number[][];
   requestId?: string;
+  message: string | undefined;
 }
 
 interface SimulationRequest {

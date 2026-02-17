@@ -92,6 +92,7 @@
       span: 6,
       tEnd: 5,
       yMax: undefined,
+      timeoutInSeconds: 20,
     },
   ]);
 </script>
