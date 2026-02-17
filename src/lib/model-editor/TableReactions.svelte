@@ -1,5 +1,6 @@
 <script lang="ts">
   import {
+    defaultValue,
     getTexNames,
     stoichToTex,
     type AssView,
@@ -60,9 +61,10 @@
           <input
             type="text"
             bind:value={
-              () => reactions[idx][0],
+              () =>
+                defaultValue(reactions[idx][1].displayName, reactions[idx][0]),
               (value) => {
-                reactions[idx][0] = value;
+                reactions[idx][1].displayName = value;
                 reactions = reactions.slice();
               }
             }

@@ -4,7 +4,7 @@ let idCounter = 0;
 export abstract class Base {
   id: number;
   abstract toJs(): string;
-  abstract toPy(): string;
+  abstract toPy(displayNames: Map<string, string>): string;
   abstract toTex(texNames: Map<string, string>): string;
   abstract getSymbols(symbols: Set<string>): Set<string>;
   // abstract default(): Base;
@@ -159,8 +159,8 @@ export class Name extends Nullary {
   toJs(): string {
     return this.name;
   }
-  toPy(): string {
-    return this.name;
+  toPy(displayNames: Map<string, string>): string {
+    return displayNames.get(this.name) || this.name;
   }
   toTex(texNames: Map<string, string>): string {
     return texNames.get(this.name) || this.name;
@@ -184,7 +184,7 @@ export class Num extends Nullary {
   toJs(): string {
     return `${this.value}`;
   }
-  toPy(): string {
+  toPy(displayNames: Map<string, string>): string {
     return `${this.value}`;
   }
   toTex(texNames: Map<string, string>): string {

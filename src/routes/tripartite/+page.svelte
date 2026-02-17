@@ -8,99 +8,99 @@
     return new ModelBuilder()
       .addVariable("Public", {
         value: 1.0,
+        texName: String.raw`P`,
         slider: {
           min: "0.0",
           max: "10000.0",
           step: "1",
-          texName: String.raw`P`,
         },
       })
       .addVariable("Cheater", {
         value: 1.0,
+        texName: String.raw`C`,
         slider: {
           min: "0.0",
           max: "10000.0",
           step: "1",
-          texName: String.raw`C`,
         },
       })
       .addVariable("Private", {
         value: 1.0,
+        texName: String.raw`M`,
         slider: {
           min: "0.0",
           max: "10000.0",
           step: "1",
-          texName: String.raw`M`,
         },
       })
       .addParameter("r_p", {
         value: 0.4,
+        texName: String.raw`r_P`,
         slider: {
           desc: "(growth rate)",
           min: "0.0",
           max: "1.0",
           step: "0.00001",
-          texName: String.raw`r_P`,
         },
       })
       .addParameter("eta", {
         value: 0.0001,
+        texName: String.raw`\eta`,
         slider: {
           desc: "(density)",
           min: "0.0",
           max: "1.0",
           step: "0.00001",
-          texName: String.raw`\eta`,
         },
       })
       .addParameter("nu", {
         value: 0.00001,
+        texName: String.raw`\nu`,
         slider: {
           desc: "(density)",
           min: "0.0",
           max: "1.0",
           step: "0.00001",
-          texName: String.raw`\nu`,
         },
       })
       .addParameter("r_m", {
         value: 0.2,
+        texName: String.raw`r_M`,
         slider: {
           desc: "(growth rate)",
           min: "0.0",
           max: "5.0",
           step: "0.0001",
-          texName: String.raw`r_M`,
         },
       })
       .addParameter("gamma", {
         value: 0.0001,
+        texName: String.raw`\gamma`,
         slider: {
           desc: "(density)",
           min: "0.0",
           max: "5.0",
           step: "0.0001",
-          texName: String.raw`\gamma`,
         },
       })
       .addParameter("alpha", {
         value: 0.0002,
+        texName: String.raw`\alpha`,
         slider: {
           desc: "(P→C cooperation)",
           min: "0.0",
           max: "1.0",
           step: "0.0001",
-          texName: String.raw`\alpha`,
         },
       })
       .addParameter("beta", {
         value: 0.0001,
+        texName: String.raw`\beta`,
         slider: {
           desc: "(P↔M competition)",
           min: "0.0",
           max: "1.0",
           step: "0.0001",
-          texName: String.raw`\beta`,
         },
       })
       .addReaction("dPdt", {

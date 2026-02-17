@@ -3,7 +3,14 @@
   import TableButtonClose from "../buttons/TableButtonClose.svelte";
   import TableButtonEdit from "../buttons/TableButtonEdit.svelte";
   import Popover from "../Popover.svelte";
-  import type { AssView, Parameter, ParView, RxnView, VarView } from "./model";
+  import {
+    defaultValue,
+    type AssView,
+    type Parameter,
+    type ParView,
+    type RxnView,
+    type VarView,
+  } from "./model";
   import SliderEditor from "./SliderEditor.svelte";
 
   let {
@@ -39,7 +46,15 @@
           <input
             type="text"
             bind:value={
-              () => parameters[idx][0], (value) => (parameters[idx][0] = value)
+              () =>
+                defaultValue(
+                  parameters[idx][1].displayName,
+                  parameters[idx][0],
+                ),
+              (value) => {
+                parameters[idx][1].displayName = value;
+                parameters = parameters.slice();
+              }
             }
           />
         </td>

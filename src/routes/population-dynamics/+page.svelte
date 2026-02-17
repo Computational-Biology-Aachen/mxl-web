@@ -8,60 +8,61 @@
     return new ModelBuilder()
       .addVariable("e_coli", {
         value: 5.0,
-        slider: { min: "0.0", max: "1000.0", step: "1.0", texName: "E.\ coli" },
+        texName: "E.\ coli",
+        slider: { min: "0.0", max: "1000.0", step: "1.0" },
       })
       .addVariable("c_gluta", {
         value: 5.0,
+        texName: "C.\ gluta",
         slider: {
           min: "0.0",
           max: "1000.0",
           step: "1.0",
-          texName: "C.\ gluta",
         },
       })
       .addParameter("mu_e", {
         value: 0.4,
+        texName: String.raw`\mu_e`,
         slider: {
           min: "0.0",
           max: "1.0",
           step: "0.05",
-          texName: String.raw`\mu_e`,
         },
       })
       .addParameter("mu_c", {
         value: 0.3,
+        texName: String.raw`\mu_c`,
         slider: {
           min: "0.0",
           max: "1.0",
           step: "0.05",
-          texName: String.raw`\mu_c`,
         },
       })
       .addParameter("a_e", {
         value: 6.0,
+        texName: String.raw`a_e`,
         slider: {
           min: "0.0",
           max: "10.0",
           step: "0.5",
-          texName: String.raw`a_e`,
         },
       })
       .addParameter("a_c", {
         value: 4.0,
+        texName: String.raw`a_c`,
         slider: {
           min: "0.0",
           max: "10.0",
           step: "0.5",
-          texName: String.raw`a_c`,
         },
       })
       .addParameter("theta", {
         value: 0.001,
+        texName: String.raw`\theta`,
         slider: {
           min: "0.0",
           max: "1.0",
           step: "0.05",
-          texName: String.raw`\theta`,
         },
       })
       .addReaction("dEdt", {

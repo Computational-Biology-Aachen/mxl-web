@@ -7,24 +7,40 @@ export type SliderArgs = {
   max: string;
   step: string;
   desc?: string;
-  texName?: string;
 };
-export type Variable = { value: number; slider?: SliderArgs };
-export type Parameter = { value: number; slider?: SliderArgs };
+export type Variable = {
+  value: number;
+  displayName?: string;
+  texName?: string;
+  slider?: SliderArgs;
+};
+export type Parameter = {
+  value: number;
+  displayName?: string;
+  texName?: string;
+  slider?: SliderArgs;
+};
 
 export type Stoich = { name: string; value: Num };
 export type Stoichiometry = Array<Stoich>;
 
 export type Assign = {
   fn: Base;
+  displayName?: string;
   texName?: string;
 };
 
 export type Reaction = {
   fn: Base;
   stoichiometry: Stoichiometry;
+  displayName?: string;
   texName?: string;
 };
+
+export function defaultValue(a: string | undefined, b: string): string {
+  if (a === undefined) return b;
+  return a;
+}
 
 // Views
 export type VarView = Array<[string, Variable]>;
@@ -58,13 +74,13 @@ export function getTexNames(
   const texNames: Map<string, string> = new Map();
 
   for (const [name, variable] of variables) {
-    if (variable.slider?.texName) {
-      texNames.set(name, variable.slider.texName);
+    if (variable.texName) {
+      texNames.set(name, variable.texName);
     }
   }
   for (const [name, parameter] of parameters) {
-    if (parameter.slider?.texName) {
-      texNames.set(name, parameter.slider.texName);
+    if (parameter.texName) {
+      texNames.set(name, parameter.texName);
     }
   }
   for (const [name, ass] of assignments) {
@@ -273,8 +289,33 @@ export class ModelBuilder {
     return order;
   }
 
+  displayNames(): Map<string, string> {
+    const names: Map<string, string> = new Map();
+
+    for (const [name, variable] of this.variables) {
+      names.set(name, variable.displayName || name);
+    }
+
+    for (const [name, parameter] of this.parameters) {
+      names.set(name, parameter.displayName || name);
+    }
+
+    for (const [name, ass] of this.assignments) {
+      names.set(name, ass.displayName || name);
+    }
+
+    for (const [name, rxn] of this.reactions) {
+      names.set(name, rxn.displayName || name);
+    }
+
+    return names;
+  }
+
   buildPython(userParameters: string[]): string {
     const order = this.sortDependencies();
+    const displayNames = this.displayNames();
+
+    const Name = (x: string) => defaultValue(displayNames.get(x), x);
 
     const remove = new Set(userParameters);
     const parameters = this.parameters
@@ -284,23 +325,23 @@ export class ModelBuilder {
       })
       .map((entry) => {
         let [name, value] = entry;
-        return `${name} = ${value.value}`;
+        return `${Name(name)} = ${value.value}`;
       })
       .toArray()
       .join("\n    ");
 
     const variables = this.variables
       .entries()
-      .map((entry) => {
-        return entry[0];
+      .map(([name, _]) => {
+        return Name(name);
       })
       .toArray()
       .join(", ");
 
     const dxdt = this.variables
       .entries()
-      .map((entry) => {
-        return `d${entry[0]}dt`;
+      .map(([name, _]) => {
+        return `d${Name(name)}dt`;
       })
       .toArray()
       .join(", ");
@@ -310,18 +351,18 @@ export class ModelBuilder {
       .map((name) => {
         if (this.assignments.has(name)) {
           const el = this.assignments.get(name)!.fn;
-          return `${name} = ${el.toPy()}`;
+          return `${Name(name)} = ${el.toPy(displayNames)}`;
         } else {
           // Name in this.reaction
           const el = this.reactions.get(name)!.fn;
-          return `${name} = ${el.toPy()}`;
+          return `${Name(name)} = ${el.toPy(displayNames)}`;
         }
       })
       .join("\n    ");
 
     // Build rhs
     let rhs: Record<string, string> = Object.fromEntries(
-      this.variables.entries().map((entry) => [entry[0], ""]),
+      this.variables.entries().map(([name, _]) => [name, ""]),
     );
     this.reactions.entries().forEach((element) => {
       const [rxnName, rxn] = element;
@@ -329,9 +370,9 @@ export class ModelBuilder {
       rxn.stoichiometry.forEach(({ name: varName, value: num }) => {
         const prefix = num.value < 0 ? "-" : "+";
         if (num.value === -1 || num.value === 1) {
-          rhs[varName] += `${prefix}${rxnName}`;
+          rhs[varName] += `${prefix}${Name(rxnName)}`;
         } else {
-          rhs[varName] += `${prefix}${Math.abs(num.value)}*${rxnName}`;
+          rhs[varName] += `${prefix}${Math.abs(num.value)}*${Name(rxnName)}`;
         }
       });
     });
@@ -339,7 +380,7 @@ export class ModelBuilder {
     const rhsString = Object.entries(rhs)
       .map((el) => {
         let [name, stoich] = el;
-        return `d${name}dt = ${stoich.length > 0 ? stoich : "0"}`;
+        return `d${Name(name)}dt = ${stoich.length > 0 ? stoich : "0"}`;
       })
       .join("\n    ");
 
@@ -347,7 +388,7 @@ export class ModelBuilder {
 
     const y0 = this.variables
       .entries()
-      .map(([name, value]) => `"${name}": ${value.value}`)
+      .map(([name, value]) => `"${Name(name)}": ${value.value}`)
       .toArray()
       .join(", ");
 

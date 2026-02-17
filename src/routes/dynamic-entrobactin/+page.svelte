@@ -12,120 +12,120 @@
     return new ModelBuilder()
       .addVariable("e_coli", {
         value: 5.0,
+        texName: String.raw`E`,
         slider: {
           min: "0.0",
           max: "1000.0",
           step: "1",
-          texName: String.raw`E`,
         },
       })
       .addVariable("c_gluta", {
         value: 5.0,
+        texName: String.raw`C`,
         slider: {
           min: "0.0",
           max: "1000.0",
           step: "1",
-          texName: String.raw`C`,
         },
       })
       .addVariable("enterobactin", {
         value: 1.0,
+        texName: String.raw`B`,
         slider: {
           desc: "B₀",
           min: "0.0",
           max: "1000.0",
           step: "0.5",
-          texName: String.raw`B`,
         },
       })
       .addParameter("mu_e", {
         value: 0.4,
+        texName: String.raw`\mu_e`,
         slider: {
           desc: "E. coli growth rate",
           min: "0.0",
           max: "2.0",
           step: "0.01",
-          texName: String.raw`\mu_e`,
         },
       })
       .addParameter("mu_c", {
         value: 0.3,
+        texName: String.raw`\mu_c`,
         slider: {
           desc: "C. glut growth rate",
           min: "0.0",
           max: "2.0",
           step: "0.01",
-          texName: String.raw`\mu_c`,
         },
       })
       .addParameter("a_e", {
         value: 6.0,
+        texName: String.raw`a_e`,
         slider: {
           desc: "E. coli affinity",
           min: "0.0",
           max: "10.0",
           step: "0.1",
-          texName: String.raw`a_e`,
         },
       })
       .addParameter("K_e", {
         value: 0.5,
+        texName: String.raw`K_e`,
         slider: {
           desc: "(half-sat E. coli)",
           min: "0.00000001",
           max: "1.0",
           step: "0.000001",
-          texName: String.raw`K_e`,
         },
       })
       .addParameter("K_c", {
         value: 0.5,
+        texName: String.raw`K_c`,
         slider: {
           desc: "(half-sat C)",
           min: "0.00000001",
           max: "1.0",
           step: "0.000001",
-          texName: String.raw`K_c`,
         },
       })
       .addParameter("theta", {
         value: 0.001,
+        texName: String.raw`\theta`,
         slider: {
           desc: "C density loss",
           min: "0.0",
           max: "1.0",
           step: "0.0001",
-          texName: String.raw`\theta`,
         },
       })
       .addParameter("r_prod", {
         value: 0.2,
+        texName: String.raw`r_{prod}`,
         slider: {
           desc: "B production by E",
           min: "0.0",
           max: "5.0",
           step: "0.0001",
-          texName: String.raw`r_{prod}`,
         },
       })
       .addParameter("r_cons_e", {
         value: 1.0,
+        texName: String.raw`r_{cons,E}`,
         slider: {
           desc: "B consumption weight E",
           min: "0.0",
           max: "5.0",
           step: "0.0001",
-          texName: String.raw`r_{cons,E}`,
         },
       })
       .addParameter("r_cons_c", {
         value: 1.0,
+        texName: String.raw`r_{cons,C}`,
         slider: {
           desc: "B consumption weight C",
           min: "0.0",
           max: "5.0",
           step: "0.0001",
-          texName: String.raw`r_{cons,C}`,
         },
       })
       .addAssignment("a_c", {

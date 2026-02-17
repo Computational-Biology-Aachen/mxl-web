@@ -1,5 +1,6 @@
 <script lang="ts">
   import {
+    defaultValue,
     getTexNames,
     type AssView,
     type ParView,
@@ -52,9 +53,13 @@
           <input
             type="text"
             bind:value={
-              () => assignments[idx][0],
+              () =>
+                defaultValue(
+                  assignments[idx][1].displayName,
+                  assignments[idx][0],
+                ),
               (value) => {
-                assignments[idx][0] = value;
+                assignments[idx][1].displayName = value;
                 assignments = assignments.slice();
               }
             }

@@ -21,28 +21,48 @@
       "kcat",
       {
         value: 1.0,
-        slider: { min: "0", max: "1.0", step: "0.1", texName: "k_{cat}" },
+        texName: "k_{cat}", //
+        slider: {
+          min: "0",
+          max: "1.0",
+          step: "0.1",
+        },
       },
     ],
     [
       "km",
       {
         value: 1.0,
-        slider: { min: "0", max: "1.0", step: "0.1", texName: "k_{M}" },
+        texName: "k_{M}", //
+        slider: {
+          min: "0",
+          max: "1.0",
+          step: "0.1",
+        },
       },
     ],
     [
       "e0",
       {
         value: 1.0,
-        slider: { min: "0", max: "1.0", step: "0.1", texName: "e_{0}" },
+        texName: "e_{0}", //
+        slider: {
+          min: "0",
+          max: "1.0",
+          step: "0.1",
+        },
       },
     ],
     [
       "vmax",
       {
         value: 1.0,
-        slider: { min: "0", max: "1.0", step: "0.1", texName: "V_{max}" },
+        texName: "V_{max}", //
+        slider: {
+          min: "0",
+          max: "1.0",
+          step: "0.1",
+        },
       },
     ],
   ];

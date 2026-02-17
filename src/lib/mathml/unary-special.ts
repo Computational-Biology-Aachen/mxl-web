@@ -39,8 +39,8 @@ export class Log extends Base {
     return `(Math.log(${this.child.toJs()}) / Math.log(${this.base.toJs()}))`;
   }
 
-  toPy(): string {
-    return `math.log(${this.child.toPy()}, ${this.base.toPy()})`;
+  toPy(displayNames: Map<string, string>): string {
+    return `math.log(${this.child.toPy(displayNames)}, ${this.base.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -89,8 +89,8 @@ export class Sqrt extends Base {
     return `Math.pow(${this.child.toJs()}, 1 / ${this.base.toJs()})`;
   }
 
-  toPy(): string {
-    return `math.pow(${this.child.toPy()}, 1 / ${this.base.toPy()})`;
+  toPy(displayNames: Map<string, string>): string {
+    return `math.pow(${this.child.toPy(displayNames)}, 1 / ${this.base.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {

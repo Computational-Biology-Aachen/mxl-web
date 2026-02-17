@@ -6,7 +6,7 @@
   import DynBoxRow from "$lib/DynBoxRow.svelte";
   import Icon from "$lib/Icon.svelte";
   import Math from "$lib/Math.svelte";
-  import { ModelBuilder } from "$lib/model-editor/model";
+  import { defaultValue, ModelBuilder } from "$lib/model-editor/model";
   import Simulator from "$lib/Simulator.svelte";
   import Slider from "$lib/Slider.svelte";
   import type { Snippet } from "svelte";
@@ -47,9 +47,10 @@
     return model.parameters
       .entries()
       .filter((k) => k[1].slider !== undefined)
-      .map(([name, par]) => {
+      .map(([id, par]) => {
         return {
-          name: name,
+          id: id,
+          name: par.displayName,
           init: par.value,
           min: par.slider!.min,
           max: par.slider!.max,
@@ -63,9 +64,10 @@
     return model.variables
       .entries()
       .filter((k) => k[1].slider !== undefined)
-      .map(([name, par]) => {
+      .map(([id, par]) => {
         return {
-          name: name,
+          id: id,
+          name: par.displayName,
           init: par.value,
           min: par.slider!.min,
           max: par.slider!.max,
@@ -115,18 +117,18 @@
     <h3>Simulation parameters</h3>
   </div>
   <div class="grid-row">
-    {#each parSliders as par (par.name)}
+    {#each parSliders as par (par.id)}
       <Slider
-        name={par.name}
+        name={defaultValue(par.name, par.id)}
         callback={runAllSimulations}
         bind:val={
           () => {
-            return model.parameters.get(par.name)!.value;
+            return model.parameters.get(par.id)!.value;
           },
           (val) => {
-            let old = model.parameters.get(par.name)!;
+            let old = model.parameters.get(par.id)!;
 
-            model.parameters = model.parameters.set(par.name, {
+            model.parameters = model.parameters.set(par.id, {
               ...old,
               value: val,
             });
@@ -146,22 +148,25 @@
     <h3>Initial conditions</h3>
   </div>
   <div class="grid-row">
-    {#each varSliders as { name, min, max, step }}
+    {#each varSliders as vari (vari.id)}
       <Slider
-        name={name}
+        name={defaultValue(vari.name, vari.id)}
         callback={runAllSimulations}
         bind:val={
           () => {
-            return model.variables.get(name)!.value;
+            return model.variables.get(vari.id)!.value;
           },
           (val) => {
-            let old = model.variables.get(name)!;
-            model.variables = model.variables.set(name, { ...old, value: val });
+            let old = model.variables.get(vari.id)!;
+            model.variables = model.variables.set(vari.id, {
+              ...old,
+              value: val,
+            });
           }
         }
-        min={min}
-        max={max}
-        step={step}
+        min={vari.min}
+        max={vari.max}
+        step={vari.step}
       />
     {/each}
   </div>

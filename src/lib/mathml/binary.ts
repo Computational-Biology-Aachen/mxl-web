@@ -19,8 +19,8 @@ export class Pow extends Binary {
     return `(${this.left.toJs()}) ** (${this.right.toJs()})`;
   }
 
-  toPy(): string {
-    return `(${this.left.toPy()}) ** (${this.right.toPy()})`;
+  toPy(displayNames: Map<string, string>): string {
+    return `(${this.left.toPy(displayNames)}) ** (${this.right.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -43,8 +43,8 @@ export class Implies extends Binary {
     return `(!(${this.left.toJs()}) || (${this.right.toJs()}))`;
   }
 
-  toPy(): string {
-    return `((not ${this.left.toPy()}) or (${this.right.toPy()}))`;
+  toPy(displayNames: Map<string, string>): string {
+    return `((not ${this.left.toPy(displayNames)}) or (${this.right.toPy(displayNames)}))`;
   }
 
   toTex(texNames: Map<string, string>): string {

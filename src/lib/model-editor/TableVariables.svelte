@@ -5,6 +5,7 @@
   import TableButtonEdit from "../buttons/TableButtonEdit.svelte";
   import Popover from "../Popover.svelte";
   import type { AssView, ParView, RxnView, Variable, VarView } from "./model";
+  import { defaultValue } from "./model";
   import SliderEditor from "./SliderEditor.svelte";
 
   let {
@@ -40,9 +41,10 @@
           <input
             type="text"
             bind:value={
-              () => variables[idx][0],
+              () =>
+                defaultValue(variables[idx][1].displayName, variables[idx][0]),
               (value) => {
-                variables[idx][0] = value;
+                variables[idx][1].displayName = value;
                 variables = variables.slice();
               }
             }

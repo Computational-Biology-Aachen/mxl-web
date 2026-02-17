@@ -8,38 +8,38 @@
     return new ModelBuilder()
       .addParameter("Alpha", {
         value: 0.1,
+        texName: String.raw`\alpha`,
         slider: {
           min: "0.01",
           max: "1.0",
           step: "0.05",
-          texName: String.raw`\alpha`,
         },
       })
       .addParameter("Beta", {
         value: 0.02,
+        texName: String.raw`\beta`,
         slider: {
           min: "0.01",
           max: "1.0",
           step: "0.05",
-          texName: String.raw`\beta`,
         },
       })
       .addParameter("Gamma", {
         value: 0.4,
+        texName: String.raw`\gamma`,
         slider: {
           min: "0.01",
           max: "1.0",
           step: "0.05",
-          texName: String.raw`\gamma`,
         },
       })
       .addParameter("Delta", {
         value: 0.02,
+        texName: String.raw`\delta`,
         slider: {
           min: "0.01",
           max: "1.0",
           step: "0.001",
-          texName: String.raw`\delta`,
         },
       })
       .addVariable("Prey", {
