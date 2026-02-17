@@ -18,14 +18,14 @@ export type Variable = {
   id: string;
   value: number;
   displayName?: string;
-  texName?: string;
+  texName: string;
   slider?: SliderArgs;
 };
 export type Parameter = {
   id: string;
   value: number;
   displayName?: string;
-  texName?: string;
+  texName: string;
   slider?: SliderArgs;
 };
 

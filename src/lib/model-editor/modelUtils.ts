@@ -28,6 +28,10 @@ export function defaultValue(a: string | undefined, b: string): string {
   return a;
 }
 
+export function defaultTexName(name: string): string {
+  return `\\text\{${name}\}`;
+}
+
 // export function stoichToTex(
 //   stoich: Stoichiometry,
 //   texNames: Map<string, string>,

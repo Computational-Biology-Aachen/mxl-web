@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { defaultValue } from "./modelUtils";
+  import { defaultTexName, defaultValue } from "./modelUtils";
   import {
     idToTex,
     type AssView,
@@ -42,6 +42,7 @@
   <thead>
     <tr>
       <th>Name</th>
+      <th>Tex name</th>
       <th>Function</th>
       <th>Actions</th>
     </tr>
@@ -57,6 +58,19 @@
                 defaultValue(assignments[idx].displayName, assignments[idx].id),
               (value) => {
                 assignments[idx].displayName = value;
+                assignments[idx].texName = defaultTexName(value);
+                assignments = assignments.slice();
+              }
+            }
+          />
+        </td>
+        <td>
+          <input
+            type="text"
+            bind:value={
+              () => assignments[idx].texName || "",
+              (value) => {
+                assignments[idx].texName = value;
                 assignments = assignments.slice();
               }
             }
@@ -90,7 +104,11 @@
     onclick={() => {
       assignments = [
         ...assignments,
-        { id: `a${assignments.length}`, fn: new Num(1.0) },
+        {
+          id: `a${assignments.length}`,
+          fn: new Num(1.0),
+          texName: `a_${assignments.length}`,
+        },
       ];
     }}
   />

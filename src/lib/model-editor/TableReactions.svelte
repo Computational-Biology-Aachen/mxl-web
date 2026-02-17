@@ -8,7 +8,7 @@
     type VarView,
   } from "./modelView";
 
-  import { defaultValue } from "./modelUtils";
+  import { defaultTexName, defaultValue } from "./modelUtils";
 
   let {
     variables = $bindable(),
@@ -50,6 +50,7 @@
   <thead>
     <tr>
       <th>Name</th>
+      <th>Tex name</th>
       <th>Rate law</th>
       <th>Stoichiometry</th>
       <th>Actions</th>
@@ -65,6 +66,19 @@
               () => defaultValue(reactions[idx].displayName, reactions[idx].id),
               (value) => {
                 reactions[idx].displayName = value;
+                reactions[idx].texName = defaultTexName(value);
+                reactions = reactions.slice();
+              }
+            }
+          />
+        </td>
+        <td>
+          <input
+            type="text"
+            bind:value={
+              () => reactions[idx].texName || "",
+              (value) => {
+                reactions[idx].texName = value;
                 reactions = reactions.slice();
               }
             }
@@ -112,6 +126,7 @@
         ...reactions,
         {
           id: `v${reactions.length}`,
+          texName: `v_${reactions.length}`,
           fn: new Name("Default"),
           stoichiometry: [{ name: "Default", value: new Num(1.0) }],
         },

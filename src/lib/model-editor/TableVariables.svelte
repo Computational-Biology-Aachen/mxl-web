@@ -4,7 +4,7 @@
   import TableButtonClose from "../buttons/TableButtonClose.svelte";
   import TableButtonEdit from "../buttons/TableButtonEdit.svelte";
   import Popover from "../Popover.svelte";
-  import { defaultValue } from "./modelUtils";
+  import { defaultTexName, defaultValue } from "./modelUtils";
   import {
     type AssView,
     type ParView,
@@ -36,6 +36,7 @@
   <thead>
     <tr>
       <th>Name</th>
+      <th>Tex name</th>
       <th>Initial value</th>
       <th>Actions</th>
     </tr>
@@ -50,6 +51,19 @@
               () => defaultValue(variables[idx].displayName, variables[idx].id),
               (value) => {
                 variables[idx].displayName = value;
+                variables[idx].texName = defaultTexName(value);
+                variables = variables.slice();
+              }
+            }
+          />
+        </td>
+        <td>
+          <input
+            type="text"
+            bind:value={
+              () => variables[idx].texName,
+              (value) => {
+                variables[idx].texName = value;
                 variables = variables.slice();
               }
             }
@@ -85,7 +99,14 @@
 <div class="padding">
   <TableAddButton
     onclick={() => {
-      variables = [...variables, { id: `x${variables.length}`, value: 1.0 }];
+      variables = [
+        ...variables,
+        {
+          id: `x${variables.length}`,
+          value: 1.0,
+          texName: `x${variables.length}`,
+        },
+      ];
     }}
   />
 </div>

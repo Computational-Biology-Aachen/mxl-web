@@ -3,7 +3,7 @@
   import TableButtonClose from "../buttons/TableButtonClose.svelte";
   import TableButtonEdit from "../buttons/TableButtonEdit.svelte";
   import Popover from "../Popover.svelte";
-  import { defaultValue } from "./modelUtils";
+  import { defaultTexName, defaultValue } from "./modelUtils";
   import {
     type AssView,
     type Parameter,
@@ -35,6 +35,7 @@
   <thead>
     <tr>
       <th>Name</th>
+      <th>Tex name</th>
       <th>Initial value</th>
       <th>Actions</th>
     </tr>
@@ -50,6 +51,19 @@
                 defaultValue(parameters[idx].displayName, parameters[idx].id),
               (value) => {
                 parameters[idx].displayName = value;
+                parameters[idx].texName = defaultTexName(value);
+                parameters = parameters.slice();
+              }
+            }
+          />
+        </td>
+        <td>
+          <input
+            type="text"
+            bind:value={
+              () => parameters[idx].texName,
+              (value) => {
+                parameters[idx].texName = value;
                 parameters = parameters.slice();
               }
             }
@@ -81,7 +95,14 @@
 <div class="padding">
   <TableAddButton
     onclick={() => {
-      parameters = [...parameters, { id: `p${parameters.length}`, value: 1.0 }];
+      parameters = [
+        ...parameters,
+        {
+          id: `p${parameters.length}`,
+          value: 1.0,
+          texName: `p_${parameters.length}`,
+        },
+      ];
     }}
   />
 </div>

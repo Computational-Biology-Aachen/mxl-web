@@ -8,6 +8,7 @@
   import TableVariables from "$lib/model-editor/TableVariables.svelte";
   import RowApart from "$lib/RowApart.svelte";
   import PopoverSaveButton from "../buttons/PopoverSaveButton.svelte";
+  import { defaultTexName, defaultValue } from "./modelUtils";
   import { ModelView } from "./modelView";
 
   let {
@@ -24,16 +25,27 @@
   let parameters = $derived(
     parent.parameters
       .entries()
-      .map(([name, value]) => {
-        return { ...value, id: name };
+      .map(([name, par]) => {
+        return {
+          ...par,
+          id: name,
+          texName: defaultValue(
+            par.texName,
+            defaultTexName(par.displayName || name),
+          ),
+        };
       })
       .toArray(),
   );
   let variables = $derived(
     parent.variables
       .entries()
-      .map(([name, value]) => {
-        return { ...value, id: name };
+      .map(([name, vari]) => {
+        return {
+          ...vari,
+          id: name,
+          texName: vari.texName || defaultTexName(vari.displayName || name),
+        };
       })
       .toArray(),
   );
@@ -41,7 +53,11 @@
     parent.assignments
       .entries()
       .map(([name, assign]) => {
-        return { ...assign, id: name };
+        return {
+          ...assign,
+          id: name,
+          texName: assign.texName || defaultTexName(assign.displayName || name),
+        };
       })
       .toArray(),
   );
@@ -49,7 +65,11 @@
     parent.reactions
       .entries()
       .map(([name, rxn]) => {
-        return { ...rxn, id: name };
+        return {
+          ...rxn,
+          id: name,
+          texName: rxn.texName || defaultTexName(rxn.displayName || name),
+        };
       })
       .toArray(),
   );

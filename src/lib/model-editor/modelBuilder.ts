@@ -1,7 +1,7 @@
 import { Base, Num } from "$lib/mathml";
 import { SvelteMap } from "svelte/reactivity";
-import { defaultValue } from "./modelUtils";
-import { ModelView, type SliderArgs } from "./modelView";
+import { defaultTexName, defaultValue } from "./modelUtils";
+import { type SliderArgs } from "./modelView";
 
 export type Stoich = {
   name: string;
@@ -46,22 +46,22 @@ export function getTexNames(
 
   for (const [name, variable] of variables) {
     if (variable.texName) {
-      texNames.set(name, variable.texName);
+      texNames.set(name, variable.texName || defaultTexName(name));
     }
   }
   for (const [name, parameter] of parameters) {
     if (parameter.texName) {
-      texNames.set(name, parameter.texName);
+      texNames.set(name, parameter.texName || defaultTexName(name));
     }
   }
   for (const [name, ass] of assignments) {
     if (ass.texName) {
-      texNames.set(name, ass.texName);
+      texNames.set(name, ass.texName || defaultTexName(name));
     }
   }
   for (const [name, rxn] of reactions) {
     if (rxn.texName) {
-      texNames.set(name, rxn.texName);
+      texNames.set(name, rxn.texName || defaultTexName(name));
     }
   }
   return texNames;
@@ -212,34 +212,34 @@ export class ModelBuilder {
     return names;
   }
 
-  toView(): ModelView {
-    return new ModelView(
-      this.parameters
-        .entries()
-        .map(([name, value]) => {
-          return { ...value, id: name };
-        })
-        .toArray(),
-      this.variables
-        .entries()
-        .map(([name, value]) => {
-          return { ...value, id: name };
-        })
-        .toArray(),
-      this.assignments
-        .entries()
-        .map(([name, assign]) => {
-          return { ...assign, id: name };
-        })
-        .toArray(),
-      this.reactions
-        .entries()
-        .map(([name, rxn]) => {
-          return { ...rxn, id: name };
-        })
-        .toArray(),
-    );
-  }
+  // toView(): ModelView {
+  //   return new ModelView(
+  //     this.parameters
+  //       .entries()
+  //       .map(([name, value]) => {
+  //         return { ...value, id: name };
+  //       })
+  //       .toArray(),
+  //     this.variables
+  //       .entries()
+  //       .map(([name, value]) => {
+  //         return { ...value, id: name };
+  //       })
+  //       .toArray(),
+  //     this.assignments
+  //       .entries()
+  //       .map(([name, assign]) => {
+  //         return { ...assign, id: name };
+  //       })
+  //       .toArray(),
+  //     this.reactions
+  //       .entries()
+  //       .map(([name, rxn]) => {
+  //         return { ...rxn, id: name };
+  //       })
+  //       .toArray(),
+  //   );
+  // }
 
   buildPython(userParameters: string[]): string {
     const order = this.sortDependencies();
