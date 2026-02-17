@@ -1,16 +1,19 @@
 <script lang="ts">
   import Math from "$lib/Math.svelte";
   import { Add, Divide, Minus, Mul, Name, Num, type Base } from "$lib/mathml";
-  import EquationNode from "$lib/model-editor/EqNode.svelte";
+  import EqNode from "$lib/model-editor/EqNode.svelte";
   import RowApart from "$lib/RowApart.svelte";
   import PopoverSaveButton from "../buttons/PopoverSaveButton.svelte";
+  import { defaultValue } from "./modelUtils";
+
   import {
-    getTexNames,
+    idToDisplay,
+    idToTex,
     type AssView,
     type ParView,
     type RxnView,
     type VarView,
-  } from "./model";
+  } from "./modelView";
 
   let {
     root = $bindable(),
@@ -32,15 +35,25 @@
 
   let argNames = $derived.by(() => {
     return [
-      ...variables.map((el) => el[0]),
-      ...parameters.map((el) => el[0]),
-      ...assignments.map((el) => el[0]),
+      ...variables.map((el) => [el.id, defaultValue(el.displayName, el.id)]),
+      ...parameters.map((el) => [el.id, defaultValue(el.displayName, el.id)]),
+      ...assignments.map((el) => [el.id, defaultValue(el.displayName, el.id)]),
     ];
   });
 
-  let texNames: Map<string, string> = $derived(
-    getTexNames(variables, parameters, assignments, reactions),
+  let displayNames = $derived(
+    idToDisplay(variables, parameters, assignments, reactions),
   );
+
+  let texNames: Map<string, string> = $derived(
+    idToTex(variables, parameters, assignments, reactions),
+  );
+
+  let latex = $derived.by(() => {
+    return root.toTex(texNames);
+  });
+
+  let currentNode: Base = $derived(root);
 
   const templates = [
     {
@@ -125,11 +138,6 @@
     },
   ];
 
-  let currentNode: Base = $derived(root);
-  let latex = $derived.by(() => {
-    return root.toTex(texNames);
-  });
-
   function insertNode(fn: () => Base) {
     const toInsert = fn();
     root = root.replace(currentNode.id, toInsert).node;
@@ -207,15 +215,26 @@
     <div class="window">
       <div class="window-header">Equation builder</div>
       <div class="window-body">
-        <EquationNode
-          node={root}
-          selectedId={currentNode.id}
-          onSelect={selectNode}
-        />
+        {#if currentNode instanceof Name}
+          <EqNode
+            node={root}
+            displayName={displayNames.get(currentNode.name)}
+            selectedId={currentNode.id}
+            onSelect={selectNode}
+          />
+        {:else}
+          <EqNode
+            node={root}
+            selectedId={currentNode.id}
+            onSelect={selectNode}
+          />
+        {/if}
         <p class="hint-line">
           Tip: click any element to select it, then choose a MathML element
           above or adjust its value.
         </p>
+
+        <!-- Edit rows -->
         {#if currentNode instanceof Name}
           <div class="edit-row">
             <label for={`symbol-${currentNode.id}`}>Name</label>
@@ -224,11 +243,10 @@
               value={(currentNode as Name).name}
               onchange={handleSymbolChange}
             >
-              {#each argNames as variable}
+              {#each argNames as [id, name]}
                 <option
-                  value={variable}
-                  selected={variable === (currentNode as Name).name}
-                  >{variable}</option
+                  value={id}
+                  selected={id === (currentNode as Name).name}>{name}</option
                 >
               {/each}
             </select>

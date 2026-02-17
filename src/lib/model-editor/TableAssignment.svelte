@@ -1,12 +1,12 @@
 <script lang="ts">
+  import { defaultValue } from "./modelUtils";
   import {
-    defaultValue,
-    getTexNames,
+    idToTex,
     type AssView,
     type ParView,
     type RxnView,
     type VarView,
-  } from "./model";
+  } from "./modelView";
 
   let {
     variables = $bindable(),
@@ -29,12 +29,12 @@
   import EqEditor from "./EqEditor.svelte";
 
   function onSaveEq(idx: number, fn: Base) {
-    assignments[idx][1].fn = fn;
+    assignments[idx].fn = fn;
     assignments = assignments.slice();
   }
 
   let texNames: Map<string, string> = $derived(
-    getTexNames(variables, parameters, assignments, reactions),
+    idToTex(variables, parameters, assignments, reactions),
   );
 </script>
 
@@ -47,19 +47,16 @@
     </tr>
   </thead>
   <tbody>
-    {#each assignments as [name], idx}
+    {#each assignments as ass, idx}
       <tr>
         <td>
           <input
             type="text"
             bind:value={
               () =>
-                defaultValue(
-                  assignments[idx][1].displayName,
-                  assignments[idx][0],
-                ),
+                defaultValue(assignments[idx].displayName, assignments[idx].id),
               (value) => {
-                assignments[idx][1].displayName = value;
+                assignments[idx].displayName = value;
                 assignments = assignments.slice();
               }
             }
@@ -68,7 +65,7 @@
         <td>
           <div class="row">
             <Math
-              tex={assignments[idx][1].fn.toTex(texNames)}
+              tex={assignments[idx].fn.toTex(texNames)}
               display={true}
               fontSize={"0.75rem"}
             />
@@ -79,7 +76,7 @@
           <TableButtonClose
             onclick={() => {
               assignments = assignments.filter((i) => {
-                return i[0] !== name;
+                return i.id !== ass.id;
               });
             }}
           />
@@ -93,19 +90,19 @@
     onclick={() => {
       assignments = [
         ...assignments,
-        [`a${assignments.length}`, { fn: new Num(1.0) }],
+        { id: `a${assignments.length}`, fn: new Num(1.0) },
       ];
     }}
   />
 </div>
 
-{#each assignments as [name, { fn }], idx}
+{#each assignments as ass, idx}
   <Popover
     size="md"
     popovertarget={`eq-editor-${idx}`}
   >
     <EqEditor
-      root={fn}
+      root={ass.fn}
       variables={variables}
       parameters={parameters}
       assignments={assignments}

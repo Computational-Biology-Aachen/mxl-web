@@ -4,8 +4,14 @@
   import TableButtonClose from "../buttons/TableButtonClose.svelte";
   import TableButtonEdit from "../buttons/TableButtonEdit.svelte";
   import Popover from "../Popover.svelte";
-  import type { AssView, ParView, RxnView, Variable, VarView } from "./model";
-  import { defaultValue } from "./model";
+  import { defaultValue } from "./modelUtils";
+  import {
+    type AssView,
+    type ParView,
+    type RxnView,
+    type Variable,
+    type VarView,
+  } from "./modelView";
   import SliderEditor from "./SliderEditor.svelte";
 
   let {
@@ -21,7 +27,7 @@
   } = $props();
 
   function onSaveSlider(idx: number, update: Variable) {
-    variables[idx][1] = update;
+    variables[idx] = update;
     variables = variables.slice();
   }
 </script>
@@ -35,16 +41,15 @@
     </tr>
   </thead>
   <tbody>
-    {#each variables as [name], idx}
+    {#each variables as vari, idx}
       <tr>
         <td>
           <input
             type="text"
             bind:value={
-              () =>
-                defaultValue(variables[idx][1].displayName, variables[idx][0]),
+              () => defaultValue(variables[idx].displayName, variables[idx].id),
               (value) => {
-                variables[idx][1].displayName = value;
+                variables[idx].displayName = value;
                 variables = variables.slice();
               }
             }
@@ -55,9 +60,9 @@
             id="var-{idx}"
             border="transparent"
             bind:value={
-              () => variables[idx][1].value,
+              () => variables[idx].value,
               (value) => {
-                variables[idx][1].value = value;
+                variables[idx].value = value;
                 variables = variables.slice();
               }
             }
@@ -68,7 +73,7 @@
           <TableButtonClose
             onclick={() => {
               variables = variables.filter((i) => {
-                return i[0] !== name;
+                return i.id !== vari.id;
               });
             }}
           />
@@ -80,18 +85,18 @@
 <div class="padding">
   <TableAddButton
     onclick={() => {
-      variables = [...variables, [`x${variables.length}`, { value: 1.0 }]];
+      variables = [...variables, { id: `x${variables.length}`, value: 1.0 }];
     }}
   />
 </div>
 
-{#each variables as [name, variable], idx}
+{#each variables as vari, idx}
   <Popover
     size="sm"
     popovertarget={`var-editor-${idx}`}
   >
     <SliderEditor
-      target={variable}
+      target={vari}
       onSave={(root) => onSaveSlider(idx, root)}
       popovertarget={`var-editor-${idx}`}
     />

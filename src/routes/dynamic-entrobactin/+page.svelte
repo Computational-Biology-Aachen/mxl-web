@@ -2,7 +2,7 @@
   import type { Analyses } from "$lib";
   import { Add, Divide, Minus, Mul, Name, Num } from "$lib/mathml";
   import AnalysesDashboard from "$lib/model-editor/AnalysesDashboard.svelte";
-  import { ModelBuilder } from "$lib/model-editor/model";
+  import { ModelBuilder } from "$lib/model-editor/modelBuilder";
 
   // FIXME @ Tanvir: you wrote
   // \frac{dE}{dt}&=\mu_E\,\frac{a_E\,B}{K_E+B}\,E-\delta_E\,E \\

@@ -6,15 +6,16 @@
   import { Num } from "$lib/mathml";
   import RowApart from "$lib/RowApart.svelte";
   import PopoverSaveButton from "../buttons/PopoverSaveButton.svelte";
+  import { defaultValue, stoichToTex } from "./modelUtils";
   import {
-    getTexNames,
-    stoichToTex,
+    idToDisplay,
+    idToTex,
     type AssView,
     type ParView,
     type RxnView,
     type Stoichiometry,
     type VarView,
-  } from "./model";
+  } from "./modelView";
 
   let {
     stoichiometry = $bindable(),
@@ -34,14 +35,17 @@
     popovertarget: string;
   } = $props();
 
-  let texNames: Map<string, string> = $derived(
-    getTexNames(variables, parameters, assignments, reactions),
-  );
-
-  let variableNames = $derived.by(() => {
-    return [...variables.map((el) => el[0])];
+  let argNames = $derived.by(() => {
+    return variables.map((el) => [el.id, defaultValue(el.displayName, el.id)]);
   });
 
+  let displayNames = $derived(
+    idToDisplay(variables, parameters, assignments, reactions),
+  );
+
+  let texNames: Map<string, string> = $derived(
+    idToTex(variables, parameters, assignments, reactions),
+  );
   let latex = $derived.by(() => {
     return stoichToTex(stoichiometry, texNames);
   });
@@ -49,9 +53,9 @@
   function firstVarNotInUse(): string {
     const inUse = new Set(stoichiometry.map(({ name }) => name));
 
-    for (const val of variableNames) {
-      if (!inUse.has(val)) {
-        return val;
+    for (const [id, name] of argNames) {
+      if (!inUse.has(id)) {
+        return id;
       }
     }
 
@@ -91,8 +95,11 @@
                 }
               }
             >
-              {#each variableNames as variable}
-                <option selected={variable === name}>{variable}</option>
+              {#each argNames as [id, name]}
+                <option
+                  value={id}
+                  selected={id === name}>{name}</option
+                >
               {/each}
             </select>
           </td>

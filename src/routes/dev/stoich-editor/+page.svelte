@@ -5,7 +5,7 @@
     ParView,
     RxnView,
     VarView,
-  } from "$lib/model-editor/model";
+  } from "$lib/model-editor/modelView";
   import StoichEditor from "$lib/model-editor/StoichEditor.svelte";
 
   const variables: VarView = [

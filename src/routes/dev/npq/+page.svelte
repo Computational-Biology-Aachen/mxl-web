@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ModelBuilder } from "$lib/model-editor/model";
+  import { ModelBuilder } from "$lib/model-editor/modelBuilder";
   import Simulator from "$lib/Simulator.svelte";
 
   const pars = [

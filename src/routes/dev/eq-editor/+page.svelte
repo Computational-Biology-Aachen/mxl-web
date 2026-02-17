@@ -6,7 +6,7 @@
     ParView,
     RxnView,
     VarView,
-  } from "$lib/model-editor/model";
+  } from "$lib/model-editor/modelView";
 
   function initEq(): Base {
     return new Mul([

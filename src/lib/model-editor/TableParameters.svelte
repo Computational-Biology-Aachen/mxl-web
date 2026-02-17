@@ -3,14 +3,14 @@
   import TableButtonClose from "../buttons/TableButtonClose.svelte";
   import TableButtonEdit from "../buttons/TableButtonEdit.svelte";
   import Popover from "../Popover.svelte";
+  import { defaultValue } from "./modelUtils";
   import {
-    defaultValue,
     type AssView,
     type Parameter,
     type ParView,
     type RxnView,
     type VarView,
-  } from "./model";
+  } from "./modelView";
   import SliderEditor from "./SliderEditor.svelte";
 
   let {
@@ -26,7 +26,7 @@
   } = $props();
 
   function onSaveSlider(idx: number, update: Parameter) {
-    parameters[idx][1] = update;
+    parameters[idx] = update;
     parameters = parameters.slice();
   }
 </script>
@@ -40,19 +40,16 @@
     </tr>
   </thead>
   <tbody>
-    {#each parameters as [name], idx}
+    {#each parameters as par, idx}
       <tr>
         <td>
           <input
             type="text"
             bind:value={
               () =>
-                defaultValue(
-                  parameters[idx][1].displayName,
-                  parameters[idx][0],
-                ),
+                defaultValue(parameters[idx].displayName, parameters[idx].id),
               (value) => {
-                parameters[idx][1].displayName = value;
+                parameters[idx].displayName = value;
                 parameters = parameters.slice();
               }
             }
@@ -62,8 +59,8 @@
           <input
             type="number"
             bind:value={
-              () => parameters[idx][1].value,
-              (value) => (parameters[idx][1].value = value)
+              () => parameters[idx].value,
+              (value) => (parameters[idx].value = value)
             }
           />
         </td>
@@ -72,7 +69,7 @@
           <TableButtonClose
             onclick={() => {
               parameters = parameters.filter((i) => {
-                return i[0] !== name;
+                return i.id !== par.id;
               });
             }}
           />
@@ -84,18 +81,18 @@
 <div class="padding">
   <TableAddButton
     onclick={() => {
-      parameters = [...parameters, [`p${parameters.length}`, { value: 1.0 }]];
+      parameters = [...parameters, { id: `p${parameters.length}`, value: 1.0 }];
     }}
   />
 </div>
 
-{#each parameters as [_, parameter], idx}
+{#each parameters as par, idx}
   <Popover
     size="sm"
     popovertarget={`var-editor-${idx}`}
   >
     <SliderEditor
-      target={parameter}
+      target={par}
       onSave={(root) => onSaveSlider(idx, root)}
       popovertarget={`var-editor-${idx}`}
     />

@@ -1,20 +1,14 @@
 <script lang="ts">
   import Tab from "$lib/buttons/Tab.svelte";
   import Icon from "$lib/Icon.svelte";
-  import {
-    ModelBuilder,
-    ModelView,
-    type AssView,
-    type ParView,
-    type RxnView,
-    type VarView,
-  } from "$lib/model-editor/model";
+  import { ModelBuilder } from "$lib/model-editor/modelBuilder";
   import TableAssignments from "$lib/model-editor/TableAssignment.svelte";
   import TableParameters from "$lib/model-editor/TableParameters.svelte";
   import TableReactions from "$lib/model-editor/TableReactions.svelte";
   import TableVariables from "$lib/model-editor/TableVariables.svelte";
   import RowApart from "$lib/RowApart.svelte";
   import PopoverSaveButton from "../buttons/PopoverSaveButton.svelte";
+  import { ModelView } from "./modelView";
 
   let {
     parent,
@@ -27,45 +21,44 @@
   } = $props();
 
   let userParameters: string[] = [];
-
-  let variables = $derived(
-    parent.variables
-      .entries()
-      .map(([name, value]) => [name, value])
-      .toArray(),
-  ) as VarView;
   let parameters = $derived(
     parent.parameters
       .entries()
-      .map(([name, value]) => [name, value])
+      .map(([name, value]) => {
+        return { ...value, id: name };
+      })
       .toArray(),
-  ) as ParView;
+  );
+  let variables = $derived(
+    parent.variables
+      .entries()
+      .map(([name, value]) => {
+        return { ...value, id: name };
+      })
+      .toArray(),
+  );
   let assignments = $derived(
     parent.assignments
       .entries()
-      .map(([name, assign]) => [name, assign])
+      .map(([name, assign]) => {
+        return { ...assign, id: name };
+      })
       .toArray(),
-  ) as AssView;
+  );
   let reactions = $derived(
     parent.reactions
       .entries()
-      .map(([name, assign]) => [name, assign])
+      .map(([name, rxn]) => {
+        return { ...rxn, id: name };
+      })
       .toArray(),
-  ) as RxnView;
+  );
 
-  let modelView = $derived.by(() => {
-    let lcl = new ModelView();
-    lcl.variables = variables;
-    lcl.parameters = parameters;
-    lcl.assignments = assignments;
-    lcl.reactions = reactions;
-    return lcl;
-  });
-
+  let modelView = $derived(
+    new ModelView(parameters, variables, assignments, reactions),
+  );
   let builder = $derived(modelView.toBuilder());
-
-  let pycode = $derived.by(() => builder.buildPython(userParameters));
-
+  let pycode = $derived(builder.buildPython(userParameters));
   let tabs = [
     {
       name: "Variables",

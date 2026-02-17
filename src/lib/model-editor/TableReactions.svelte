@@ -1,14 +1,14 @@
 <script lang="ts">
   import {
-    defaultValue,
-    getTexNames,
-    stoichToTex,
+    idToTex,
     type AssView,
     type ParView,
     type RxnView,
     type Stoichiometry,
     type VarView,
-  } from "./model";
+  } from "./modelView";
+
+  import { defaultValue } from "./modelUtils";
 
   let {
     variables = $bindable(),
@@ -29,19 +29,20 @@
   import TableButtonEdit from "../buttons/TableButtonEdit.svelte";
   import Popover from "../Popover.svelte";
   import EqEditor from "./EqEditor.svelte";
+  import { stoichToTex } from "./modelUtils";
   import StoichEditor from "./StoichEditor.svelte";
 
   function onSaveEq(idx: number, fn: Base) {
-    reactions[idx][1].fn = fn;
+    reactions[idx].fn = fn;
     reactions = reactions.slice();
   }
   function onSaveStoichs(idx: number, stoichiometry: Stoichiometry) {
-    reactions[idx][1].stoichiometry = stoichiometry;
+    reactions[idx].stoichiometry = stoichiometry;
     reactions = reactions.slice();
   }
 
   let texNames: Map<string, string> = $derived(
-    getTexNames(variables, parameters, assignments, reactions),
+    idToTex(variables, parameters, assignments, reactions),
   );
 </script>
 
@@ -55,16 +56,15 @@
     </tr>
   </thead>
   <tbody>
-    {#each reactions as [name], idx}
+    {#each reactions as rxn, idx}
       <tr>
         <td>
           <input
             type="text"
             bind:value={
-              () =>
-                defaultValue(reactions[idx][1].displayName, reactions[idx][0]),
+              () => defaultValue(reactions[idx].displayName, reactions[idx].id),
               (value) => {
-                reactions[idx][1].displayName = value;
+                reactions[idx].displayName = value;
                 reactions = reactions.slice();
               }
             }
@@ -73,7 +73,7 @@
         <td>
           <div class="row">
             <Math
-              tex={reactions[idx][1].fn.toTex(texNames)}
+              tex={reactions[idx].fn.toTex(texNames)}
               display={true}
               fontSize={"0.75rem"}
             />
@@ -84,7 +84,7 @@
         <td>
           <div class="row">
             <Math
-              tex={stoichToTex(reactions[idx][1].stoichiometry, texNames)}
+              tex={stoichToTex(reactions[idx].stoichiometry, texNames)}
               display={true}
               fontSize={"0.75rem"}
             />
@@ -95,7 +95,7 @@
           <TableButtonClose
             onclick={() => {
               reactions = reactions.filter((i) => {
-                return i[0] !== name;
+                return i.id !== rxn.id;
               });
             }}
           />
@@ -110,25 +110,23 @@
     onclick={() => {
       reactions = [
         ...reactions,
-        [
-          `v${reactions.length}`,
-          {
-            fn: new Name("Default"),
-            stoichiometry: [{ name: "Default", value: new Num(1.0) }],
-          },
-        ],
+        {
+          id: `v${reactions.length}`,
+          fn: new Name("Default"),
+          stoichiometry: [{ name: "Default", value: new Num(1.0) }],
+        },
       ];
     }}
   />
 </div>
 
-{#each reactions as [_, { fn, stoichiometry }], idx}
+{#each reactions as rxn, idx}
   <Popover
     size="md"
     popovertarget={`eq-editor-${idx}`}
   >
     <EqEditor
-      root={fn}
+      root={rxn.fn}
       variables={variables}
       parameters={parameters}
       assignments={assignments}
@@ -143,7 +141,7 @@
     popovertarget={`stoich-editor-${idx}`}
   >
     <StoichEditor
-      stoichiometry={stoichiometry}
+      stoichiometry={rxn.stoichiometry}
       variables={variables}
       parameters={parameters}
       assignments={assignments}

@@ -2,13 +2,16 @@
   import type { Base } from "$lib/mathml";
   import { Add, Divide, Minus, Mul, Name, Num } from "$lib/mathml";
   import EquationNode from "$lib/model-editor/EqNode.svelte";
+  import { defaultValue } from "./modelUtils";
 
   let {
     node,
+    displayName,
     selectedId,
     onSelect,
   }: {
     node: Base;
+    displayName?: string;
     selectedId: number;
     onSelect: (node: Base) => void;
   } = $props();
@@ -24,6 +27,8 @@
     if (node instanceof Num) return "Num";
     return "";
   }
+
+  $inspect(displayName);
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -42,6 +47,7 @@
         <EquationNode
           node={(node as Divide).children[0]}
           selectedId={selectedId}
+          displayName={displayName}
           onSelect={onSelect}
         />
       </div>
@@ -59,6 +65,7 @@
         <EquationNode
           node={(node as Divide).children[1]}
           selectedId={selectedId}
+          displayName={displayName}
           onSelect={onSelect}
         />
       </div>
@@ -69,6 +76,7 @@
         <EquationNode
           node={(node as Mul).children[0]}
           selectedId={selectedId}
+          displayName={displayName}
           onSelect={onSelect}
         />
       </div>
@@ -86,6 +94,7 @@
         <EquationNode
           node={(node as Mul).children[1]}
           selectedId={selectedId}
+          displayName={displayName}
           onSelect={onSelect}
         />
       </div>
@@ -96,6 +105,7 @@
         <EquationNode
           node={(node as Add).children[0]}
           selectedId={selectedId}
+          displayName={displayName}
           onSelect={onSelect}
         />
       </div>
@@ -113,6 +123,7 @@
         <EquationNode
           node={(node as Add).children[1]}
           selectedId={selectedId}
+          displayName={displayName}
           onSelect={onSelect}
         />
       </div>
@@ -123,6 +134,7 @@
         <EquationNode
           node={(node as Minus).children[0]}
           selectedId={selectedId}
+          displayName={displayName}
           onSelect={onSelect}
         />
       </div>
@@ -140,17 +152,18 @@
         <EquationNode
           node={(node as Minus).children[1]}
           selectedId={selectedId}
+          displayName={displayName}
           onSelect={onSelect}
         />
       </div>
     </div>
   {:else if node instanceof Name}
     <div class="leaf">
-      <span class="value">{(node as Name).name}</span>
+      <span class="value">{defaultValue(displayName, node.name)}</span>
     </div>
   {:else if node instanceof Num}
     <div class="leaf">
-      <span class="value">{(node as Num).value}</span>
+      <span class="value">{node.value}</span>
     </div>
   {/if}
 </div>

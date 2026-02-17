@@ -1,13 +1,14 @@
-import { Add, Minus, Mul, Name, Num } from "$lib/mathml";
+import { Base, Num } from "$lib/mathml";
 import { SvelteMap } from "svelte/reactivity";
-import type { Base } from "../mathml";
+import { defaultValue } from "./modelUtils";
+import { ModelView, type SliderArgs } from "./modelView";
 
-export type SliderArgs = {
-  min: string;
-  max: string;
-  step: string;
-  desc?: string;
+export type Stoich = {
+  name: string;
+  value: Num; //
 };
+export type Stoichiometry = Array<Stoich>;
+
 export type Variable = {
   value: number;
   displayName?: string;
@@ -21,9 +22,6 @@ export type Parameter = {
   slider?: SliderArgs;
 };
 
-export type Stoich = { name: string; value: Num };
-export type Stoichiometry = Array<Stoich>;
-
 export type Assign = {
   fn: Base;
   displayName?: string;
@@ -36,33 +34,6 @@ export type Reaction = {
   displayName?: string;
   texName?: string;
 };
-
-export function defaultValue(a: string | undefined, b: string): string {
-  if (a === undefined) return b;
-  return a;
-}
-
-// Views
-export type VarView = Array<[string, Variable]>;
-export type ParView = Array<[string, Parameter]>;
-export type AssView = Array<[string, Assign]>;
-export type RxnView = Array<[string, Reaction]>;
-export class ModelView {
-  parameters: Array<[string, Parameter]> = [];
-  variables: Array<[string, Variable]> = [];
-  assignments: Array<[string, Assign]> = [];
-  reactions: Array<[string, Reaction]> = [];
-  constructor() {}
-
-  toBuilder(): ModelBuilder {
-    let builder = new ModelBuilder();
-    this.parameters.forEach(([name, val]) => builder.addParameter(name, val));
-    this.variables.forEach(([name, val]) => builder.addVariable(name, val));
-    this.assignments.forEach(([name, val]) => builder.addAssignment(name, val));
-    this.reactions.forEach(([name, val]) => builder.addReaction(name, val));
-    return builder;
-  }
-}
 
 export function getTexNames(
   variables: Iterable<[string, Variable]>,
@@ -94,76 +65,6 @@ export function getTexNames(
     }
   }
   return texNames;
-}
-
-// export function stoichToTex(
-//   stoich: Stoichiometry,
-//   texNames: Map<string, string>,
-// ): string {
-//   const filtered = stoich.filter(({ value }) => value.value !== 0);
-//   console.log(filtered.length);
-
-//   if (filtered.length === 0) return "0";
-
-//   return filtered
-//     .map(({ name, value }: { name: string; value: Num }) => {
-//       const newName = new Name(name);
-//       // Turn 1x and -1x into x and -x
-//       if (value.value === 1.0) {
-//         return newName;
-//       }
-//       if (value.value === -1.0) {
-//         return new Minus([newName]);
-//       }
-//       return new Mul([value, newName]);
-//     })
-//     .reduce((previous, current) => {
-//       // a + b
-//       if (current instanceof Name) {
-//         return new Add([previous, current]);
-//       }
-//       // a - b
-//       if (current instanceof Minus) {
-//         return new Minus([previous, ...(current as Minus).children]);
-//       }
-
-//       // in all other cases has to be Mul(Num, Name)
-//       const mul = current as Mul;
-//       const val = mul.children[0];
-//       const value: number = (val as Num).value;
-
-//       if (value < 0) {
-//         return new Minus([
-//           previous,
-//           new Mul([new Num(-value), mul.children[1]]),
-//         ]);
-//       }
-//       return new Add([previous, current]);
-//     })
-//     .toTex(texNames);
-// }
-
-export function stoichToTex(
-  stoich: Stoichiometry,
-  texNames: Map<string, string>,
-): string {
-  const filtered = stoich.filter(({ value }) => value.value !== 0);
-
-  if (filtered.length === 0) return "0";
-
-  return filtered
-    .map(({ name, value }: { name: string; value: Num }) => {
-      return new Mul([value, new Name(name)]);
-    })
-    .reduce((previous, current) => {
-      const [value, name] = current.children as [Num, Name];
-
-      if (value.value < 0) {
-        return new Minus([previous, new Mul([new Num(-value.value), name])]);
-      }
-      return new Add([previous, current]);
-    })
-    .toTex(texNames);
 }
 
 export class ModelBuilder {
@@ -289,42 +190,69 @@ export class ModelBuilder {
     return order;
   }
 
-  displayNames(): Map<string, string> {
+  getDisplayNames(): Map<string, string> {
     const names: Map<string, string> = new Map();
 
-    for (const [name, variable] of this.variables) {
-      names.set(name, variable.displayName || name);
+    for (const [id, variable] of this.variables) {
+      names.set(id, variable.displayName || id);
     }
 
-    for (const [name, parameter] of this.parameters) {
-      names.set(name, parameter.displayName || name);
+    for (const [id, parameter] of this.parameters) {
+      names.set(id, parameter.displayName || id);
     }
 
-    for (const [name, ass] of this.assignments) {
-      names.set(name, ass.displayName || name);
+    for (const [id, ass] of this.assignments) {
+      names.set(id, ass.displayName || id);
     }
 
-    for (const [name, rxn] of this.reactions) {
-      names.set(name, rxn.displayName || name);
+    for (const [id, rxn] of this.reactions) {
+      names.set(id, rxn.displayName || id);
     }
 
     return names;
   }
 
+  toView(): ModelView {
+    return new ModelView(
+      this.parameters
+        .entries()
+        .map(([name, value]) => {
+          return { ...value, id: name };
+        })
+        .toArray(),
+      this.variables
+        .entries()
+        .map(([name, value]) => {
+          return { ...value, id: name };
+        })
+        .toArray(),
+      this.assignments
+        .entries()
+        .map(([name, assign]) => {
+          return { ...assign, id: name };
+        })
+        .toArray(),
+      this.reactions
+        .entries()
+        .map(([name, rxn]) => {
+          return { ...rxn, id: name };
+        })
+        .toArray(),
+    );
+  }
+
   buildPython(userParameters: string[]): string {
     const order = this.sortDependencies();
-    const displayNames = this.displayNames();
-
+    const displayNames = this.getDisplayNames();
     const Name = (x: string) => defaultValue(displayNames.get(x), x);
 
     const remove = new Set(userParameters);
     const parameters = this.parameters
       .entries()
-      .filter((entry) => {
-        return !remove.has(entry[0]);
+      .filter(([name, _]) => {
+        return !remove.has(name);
       })
-      .map((entry) => {
-        let [name, value] = entry;
+      .map(([name, value]) => {
         return `${Name(name)} = ${value.value}`;
       })
       .toArray()

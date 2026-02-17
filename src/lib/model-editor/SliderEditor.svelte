@@ -4,7 +4,7 @@
   import InputText from "$lib/inputs/InputText.svelte";
   import RowApart from "$lib/RowApart.svelte";
   import PopoverSaveButton from "../buttons/PopoverSaveButton.svelte";
-  import { type Parameter, type Variable } from "./model";
+  import { type Parameter, type Variable } from "./modelView";
 
   let {
     target,
@@ -20,7 +20,7 @@
   let minVal: string = $derived(target.slider?.min || "0.0");
   let maxVal: string = $derived(target.slider?.max || "1.0");
   let stepVal: string = $derived(target.slider?.step || "0.1");
-  let texName: string | undefined = $derived(target.slider?.texName);
+  let texName: string | undefined = $derived(target.texName);
 </script>
 
 <RowApart>
@@ -31,10 +31,11 @@
       onSave(
         enabled
           ? {
+              id: target.id,
               value: target.value,
               slider: { min: minVal, max: maxVal, step: stepVal },
             }
-          : { value: target.value },
+          : { id: target.id, value: target.value },
       )}
   />
 </RowApart>

@@ -6,13 +6,14 @@
   import DynBoxRow from "$lib/DynBoxRow.svelte";
   import Icon from "$lib/Icon.svelte";
   import Math from "$lib/Math.svelte";
-  import { defaultValue, ModelBuilder } from "$lib/model-editor/model";
+  import { ModelBuilder } from "$lib/model-editor/modelBuilder";
   import Simulator from "$lib/Simulator.svelte";
   import Slider from "$lib/Slider.svelte";
   import type { Snippet } from "svelte";
   import Popover from "../Popover.svelte";
   import AnalysisEditor from "./AnalysisEditor.svelte";
   import ModelEditor from "./ModelEditor.svelte";
+  import { defaultValue } from "./modelUtils";
 
   let {
     children,

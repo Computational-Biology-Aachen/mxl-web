@@ -2,7 +2,7 @@
   import type { Analyses } from "$lib";
   import { Mul, Name, Num } from "$lib/mathml";
   import AnalysesDashboard from "$lib/model-editor/AnalysesDashboard.svelte";
-  import { ModelBuilder } from "$lib/model-editor/model";
+  import { ModelBuilder } from "$lib/model-editor/modelBuilder";
 
   function initModel(): ModelBuilder {
     return new ModelBuilder()

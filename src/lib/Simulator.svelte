@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import LineChart from "./chartjs/lineChart.svelte";
-  import type { ModelBuilder } from "./model-editor/model";
+  import type { ModelBuilder } from "./model-editor/modelBuilder";
   import { pyWorkerManager, WorkerManager } from "./stores/workerStore";
   import { arrayColumn } from "./utils";
 
