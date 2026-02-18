@@ -24,7 +24,7 @@
 
 <style>
   [popover] {
-    position: fixed;
+    position: absolute;
     inset: unset;
     box-shadow: var(--shadow);
     border: var(--border-heavy);
@@ -47,10 +47,15 @@
     width: calc(100% - 2 * var(--dist));
   }
   .lg {
-    --dist: 2rem;
+    --dist: 0;
     top: var(--dist);
     left: var(--dist);
-    width: calc(100% - 2 * var(--dist));
+    width: 100%;
+
+    @media (min-width: 768px) {
+      --dist: 2rem;
+      width: calc(100% - 2 * var(--dist));
+    }
   }
   section {
     display: flex;
