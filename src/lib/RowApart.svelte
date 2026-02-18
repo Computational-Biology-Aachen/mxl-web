@@ -11,9 +11,15 @@
 <style>
   div {
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    align-items: start;
+    gap: 0.5rem;
     width: 100%;
+
+    @media (min-width: 768px) {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
   }
 </style>

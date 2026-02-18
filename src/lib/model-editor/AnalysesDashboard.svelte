@@ -7,6 +7,8 @@
   import Icon from "$lib/Icon.svelte";
   import Math from "$lib/Math.svelte";
   import { ModelBuilder } from "$lib/model-editor/modelBuilder";
+  import Pair from "$lib/Pair.svelte";
+  import RowApart from "$lib/RowApart.svelte";
   import Simulator from "$lib/Simulator.svelte";
   import Slider from "$lib/Slider.svelte";
   import type { Snippet } from "svelte";
@@ -79,16 +81,23 @@
   });
 </script>
 
-<div class="topbar">
-  <div class="breadcrumbs">
+<RowApart>
+  <Pair>
     <a
       class="light"
+      style="font-size: var(--text-sm);"
       href="{base}/">Models</a
     >
-    <span class="light">/</span>
-    <span class="bold">{name}</span>
-  </div>
-  <div class="row">
+    <span
+      class="light"
+      style="font-size: var(--text-sm);">/</span
+    >
+    <span
+      class="bold"
+      style="font-size: var(--text-sm);">{name}</span
+    >
+  </Pair>
+  <Pair justify="end">
     <ResetButton
       onclick={() => {
         model = initModel();
@@ -96,27 +105,28 @@
       }}
     />
     <ModelEditButton popovertarget="model-editor" />
-  </div>
-</div>
+  </Pair>
+</RowApart>
 
 {#if children}
   {@render children()}
 {/if}
 
-<div class="heading">
+<Pair>
   <Icon>function</Icon>
   <h3>Model Equations</h3>
-</div>
+</Pair>
+
 <Math
   tex={model.buildTex()}
   display
 />
 
 {#if parSliders.length > 0}
-  <div class="heading">
+  <Pair>
     <Icon>tune</Icon>
     <h3>Simulation parameters</h3>
-  </div>
+  </Pair>
   <div class="grid-row">
     {#each parSliders as par (par.id)}
       <Slider
@@ -144,10 +154,10 @@
 {/if}
 
 {#if varSliders.length > 0}
-  <div class="heading">
+  <Pair>
     <Icon>tune</Icon>
     <h3>Initial conditions</h3>
-  </div>
+  </Pair>
   <div class="grid-row">
     {#each varSliders as vari (vari.id)}
       <Slider
@@ -250,37 +260,20 @@
 {/each}
 
 <style>
-  .topbar {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-  }
-  .breadcrumbs {
-    display: flex;
-    gap: 0.5rem;
-    font-size: var(--text-sm);
-  }
-  .row {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  .heading {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
   .grid-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-    align-items: center;
+    display: flex;
+    flex-direction: column;
+    align-items: inherit;
     box-shadow: var(--shadow);
     border-radius: var(--border-radius);
     background-color: var(--bg-l1);
     padding: 1.5rem;
+
+    @media (min-width: 768px) {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      align-items: center;
+    }
   }
   .bold {
     font-weight: 600;

@@ -171,10 +171,15 @@
   /* Tabs */
   ul {
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    padding: 0;
+    flex-direction: column;
+    width: 100%;
     list-style: none;
+
+    @media (min-width: 768px) {
+      flex-direction: row;
+      justify-content: space-between;
+      padding: 0;
+    }
   }
   pre {
     font-size: 0.825rem;

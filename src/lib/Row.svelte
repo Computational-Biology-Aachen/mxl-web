@@ -11,9 +11,13 @@
 <style>
   div {
     display: flex;
-    flex-direction: row;
-    align-items: center;
+    flex-direction: column;
     gap: 0.5rem;
     width: 100%;
+
+    @media (min-width: 768px) {
+      flex-direction: row;
+      align-items: center;
+    }
   }
 </style>

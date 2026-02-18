@@ -1,6 +1,9 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import { MediaQuery } from "svelte/reactivity";
   import Icon from "./Icon.svelte";
+
+  const md = new MediaQuery("min-width: 768px");
 
   type Box = {
     id: number;
@@ -401,11 +404,13 @@
           {@render children({ box })}
         </div>
 
-        <button
-          class="resize-handle"
-          onpointerdown={(event) => startResize(event, row, box.id, "width")}
-          aria-label="Resize width"
-        ></button>
+        {#if md.current}
+          <button
+            class="resize-handle"
+            onpointerdown={(event) => startResize(event, row, box.id, "width")}
+            aria-label="Resize width"
+          ></button>
+        {/if}
       </div>
     {/each}
     {#if rowNotFull(row)}
@@ -441,9 +446,14 @@
 <style>
   .grid {
     --gap: 1rem;
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    display: flex;
+    flex-direction: column;
     gap: var(--gap);
+
+    @media (min-width: 768px) {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+    }
   }
   .box {
     display: flex;
