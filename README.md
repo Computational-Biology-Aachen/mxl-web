@@ -1,5 +1,7 @@
 # mxl-web
 
+![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)
+
 MxlWeb is an experimental toolbox to run ODE models in the browser.
 
 All code execution is client-side which means no giant servers required ❤️.
