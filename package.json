@@ -40,7 +40,7 @@
     "vite-plugin-top-level-await": "^1.6.0",
     "vite-plugin-wasm": "^3.3.0",
     "vitest": "^3.2.3",
-    "vitest-browser-svelte": "^0.1.0"
+    "vitest-browser-svelte": "^2.0.2"
   },
   "dependencies": {
     "@fortawesome/free-brands-svg-icons": "^6.7.2",
