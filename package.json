@@ -50,7 +50,7 @@
     "chart.js": ">=4.5.0",
     "katex": ">=0.16.11",
     "pyodide": ">=0.29.1",
-    "shiki": ">=3.8.0",
+    "shiki": ">=3.23.0",
     "svelte-fa": ">=4.0.4",
     "svelte-media-queries": ">=1.6.2"
   },
