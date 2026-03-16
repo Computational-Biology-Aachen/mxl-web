@@ -15,13 +15,15 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24.13
+          node-version: 25
           cache: npm
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: build
+        env:
+          BASE_PATH: "/${{ github.event.repository.name }}"
         run: npm run build
 
       - name: Upload Artifacts
