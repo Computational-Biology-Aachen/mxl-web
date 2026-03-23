@@ -2,7 +2,8 @@
   import { onMount } from "svelte";
   import LineChart from "./chartjs/LineChart.svelte";
   import type { ModelBuilder } from "./model-editor/modelBuilder";
-  import { pyWorkerManager, WorkerManager } from "./stores/workerStore";
+  import { WorkerManager } from "./stores/workerStore";
+  import { pyWorkerPool } from "./stores/workerPool";
   import { arrayColumn } from "./utils";
 
   let {
@@ -17,7 +18,7 @@
     timeoutInSeconds: number;
   } = $props();
 
-  const pyWorker = pyWorkerManager;
+  const pyWorker = pyWorkerPool;
 
   let loading = $state(true);
   let err: string | undefined = $state(undefined);

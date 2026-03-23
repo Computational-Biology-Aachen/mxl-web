@@ -103,6 +103,8 @@ export class WorkerManager {
   }
 }
 
-// Create singleton instances
+// Singleton instances (kept for backward compatibility)
 export let pyWorkerManager: WorkerManager = new WorkerManager(pyWorkerUrl);
 export let pyWorkerManager2: WorkerManager = new WorkerManager(pyWorkerUrl);
+
+export { WorkerPool, pyWorkerPool } from "./workerPool";
