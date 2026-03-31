@@ -146,6 +146,7 @@
 
   let analyses: Analyses = $state([
     {
+      type: "simulation" as const,
       id: 0,
       idx: 0,
       title: "Time course",
@@ -155,13 +156,26 @@
       yMax: undefined,
       timeoutInSeconds: 20,
     },
+    {
+      type: "parameterScan" as const,
+      id: 1,
+      idx: 1,
+      title: "α scan",
+      span: 6,
+      parameter: "alpha",
+      min: 0.0,
+      max: 0.001,
+      steps: 20,
+      yMax: undefined,
+      timeoutInSeconds: 120,
+    },
   ]);
 </script>
 
 <AnalysesDashboard
   name={"Tripartite dynamics"}
   initModel={initModel}
-  analyses={analyses}
+  bind:analyses={analyses}
 >
   <p>
     Dynamic model of a tripartite population of <b>P</b>ublic consumers,
