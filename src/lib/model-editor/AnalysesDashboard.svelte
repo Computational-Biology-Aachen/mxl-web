@@ -1,12 +1,13 @@
 <script lang="ts">
   import { base } from "$app/paths";
-  import type { Analyses, Analysis } from "$lib";
+  import type { Analyses, ParameterScanAnalysis, SimulationAnalysis } from "$lib";
   import ModelEditButton from "$lib/buttons/ModelEditButton.svelte";
   import ResetButton from "$lib/buttons/ResetButton.svelte";
   import DynBoxRow from "$lib/DynBoxRow.svelte";
   import Icon from "$lib/Icon.svelte";
   import Math from "$lib/Math.svelte";
   import { ModelBuilder } from "$lib/model-editor/modelBuilder";
+  import ParameterScanSimulator from "$lib/ParameterScanSimulator.svelte";
   import Pair from "$lib/Pair.svelte";
   import RowApart from "$lib/RowApart.svelte";
   import Simulator from "$lib/Simulator.svelte";
@@ -15,6 +16,7 @@
   import Popover from "../Popover.svelte";
   import AnalysisEditor from "./AnalysisEditor.svelte";
   import ModelEditor from "./ModelEditor.svelte";
+  import ParameterScanEditor from "./ParameterScanEditor.svelte";
   import { defaultValue } from "./modelUtils";
 
   let {
@@ -32,8 +34,10 @@
   let model = $derived(initModel());
 
   let simulatorRefs = $state<Record<number, Simulator | undefined>>({});
+  let scannerRefs = $state<Record<number, ParameterScanSimulator | undefined>>({});
+
   let analysisById = $derived.by(() => {
-    const map = new Map<number, Analysis>();
+    const map = new Map<number, Analyses[number]>();
     for (const analysis of analyses) {
       map.set(analysis.id, analysis);
     }
@@ -41,8 +45,11 @@
   });
 
   function runAllSimulations() {
-    for (const [id, simulator] of Object.entries(simulatorRefs)) {
+    for (const simulator of Object.values(simulatorRefs)) {
       simulator?.runSimulation(model);
+    }
+    for (const scanner of Object.values(scannerRefs)) {
+      scanner?.runScan(model);
     }
   }
 
@@ -79,6 +86,25 @@
       })
       .toArray();
   });
+
+  function addParameterScan() {
+    const newId = analyses.length;
+    const firstParam = [...model.parameters.keys()][0] ?? "";
+    const newScan: ParameterScanAnalysis = {
+      type: "parameterScan",
+      id: newId,
+      idx: analyses.length,
+      title: `Parameter Scan`,
+      span: 3,
+      parameter: firstParam,
+      min: 0,
+      max: 1,
+      steps: 20,
+      yMax: undefined,
+      timeoutInSeconds: 120,
+    };
+    analyses = [...analyses, newScan];
+  }
 </script>
 
 <RowApart>
@@ -183,15 +209,26 @@
   </div>
 {/if}
 
+<RowApart>
+  <Pair>
+    <Icon>analytics</Icon>
+    <h3>Analyses</h3>
+  </Pair>
+  <button class="add-scan-btn" onclick={addParameterScan}>
+    <Icon color="inherit">add</Icon>
+    Parameter Scan
+  </button>
+</RowApart>
+
 <DynBoxRow
   items={analyses}
   onAdd={(box) => {
-    const newAnalysis = {
+    const newAnalysis: SimulationAnalysis = {
+      type: "simulation",
       id: box.id,
       idx: analyses.length,
       title: "New",
       span: box.span,
-      simulator: undefined,
       tEnd: 10,
       yMax: undefined,
       timeoutInSeconds: 20,
@@ -203,18 +240,28 @@
     analyses = analyses.filter((a) => a.id !== box.id);
     delete simulatorRefs[box.id];
     simulatorRefs = { ...simulatorRefs };
+    delete scannerRefs[box.id];
+    scannerRefs = { ...scannerRefs };
   }}
 >
   {#snippet children({ box })}
     {@const analysis = analysisById.get(box.id)}
     {#if analysis}
-      <Simulator
-        bind:this={simulatorRefs[box.id]}
-        model={model}
-        tEnd={analysis.tEnd}
-        yMax={analysis.yMax}
-        timeoutInSeconds={analysis.timeoutInSeconds}
-      />
+      {#if analysis.type === "simulation"}
+        <Simulator
+          bind:this={simulatorRefs[box.id]}
+          model={model}
+          tEnd={analysis.tEnd}
+          yMax={analysis.yMax}
+          timeoutInSeconds={analysis.timeoutInSeconds}
+        />
+      {:else if analysis.type === "parameterScan"}
+        <ParameterScanSimulator
+          bind:this={scannerRefs[box.id]}
+          model={model}
+          analysis={analysis}
+        />
+      {/if}
     {/if}
   {/snippet}
 </DynBoxRow>
@@ -233,29 +280,37 @@
   />
 </Popover>
 
-{#each analyses as analysis, idx}
+{#each analyses as analysis}
   <Popover
     size="sm"
-    popovertarget={`analysis-editor-${idx}`}
+    popovertarget={`analysis-editor-${analysis.id}`}
   >
-    <AnalysisEditor
-      parent={analyses[idx]}
-      onSave={({ tEnd, yMax, title, timeoutInSeconds }) => {
-        console.log(
-          `New simulation options: tEnd:${tEnd}, yMax: ${yMax}, title: ${title}`,
-        );
-        analyses[idx] = {
-          ...analysis,
-          tEnd: tEnd,
-          yMax: yMax,
-          title: title,
-          timeoutInSeconds: timeoutInSeconds,
-        };
-        analyses = analyses.slice();
-        simulatorRefs[analysis.id]?.runSimulation(model);
-      }}
-      popovertarget={`analysis-editor-${idx}`}
-    />
+    {#if analysis.type === "simulation"}
+      <AnalysisEditor
+        parent={analysis}
+        onSave={({ tEnd, yMax, title, timeoutInSeconds }) => {
+          analyses = analyses.map((a) =>
+            a.id === analysis.id
+              ? { ...a, tEnd, yMax, title, timeoutInSeconds }
+              : a,
+          ) as Analyses;
+          simulatorRefs[analysis.id]?.runSimulation(model);
+        }}
+        popovertarget={`analysis-editor-${analysis.id}`}
+      />
+    {:else if analysis.type === "parameterScan"}
+      <ParameterScanEditor
+        parent={analysis}
+        model={model}
+        onSave={(updated) => {
+          analyses = analyses.map((a) =>
+            a.id === analysis.id ? updated : a,
+          ) as Analyses;
+          scannerRefs[analysis.id]?.runScan(model);
+        }}
+        popovertarget={`analysis-editor-${analysis.id}`}
+      />
+    {/if}
   </Popover>
 {/each}
 
@@ -283,6 +338,22 @@
     font-weight: 400;
   }
   a.light:hover {
+    color: var(--primary);
+  }
+  .add-scan-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    cursor: pointer;
+    border: var(--border);
+    border-radius: var(--border-radius);
+    background: var(--bg-l1);
+    padding: 0.35rem 0.75rem;
+    font-size: var(--text-sm);
+    color: inherit;
+  }
+  .add-scan-btn:hover {
+    border-color: var(--primary);
     color: var(--primary);
   }
 </style>

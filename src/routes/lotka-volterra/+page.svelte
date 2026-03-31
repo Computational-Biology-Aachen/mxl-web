@@ -82,6 +82,7 @@
 
   let analyses: Analyses = $state([
     {
+      type: "simulation" as const,
       id: 0,
       idx: 0,
       title: "Short Simulation",
@@ -92,6 +93,7 @@
       timeoutInSeconds: 20,
     },
     {
+      type: "simulation" as const,
       id: 1,
       idx: 1,
       title: "Long Simulation",
