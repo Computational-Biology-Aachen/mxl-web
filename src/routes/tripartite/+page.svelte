@@ -165,7 +165,7 @@
       parameter: "alpha",
       min: 0.0,
       max: 0.001,
-      steps: 20,
+      steps: 5,
       yMax: undefined,
       timeoutInSeconds: 120,
     },

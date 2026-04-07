@@ -104,7 +104,7 @@
       parameter: "mu_e",
       min: 0.01,
       max: 1.0,
-      steps: 20,
+      steps: 5,
       yMax: undefined,
       timeoutInSeconds: 120,
     },
