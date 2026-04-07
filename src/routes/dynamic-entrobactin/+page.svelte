@@ -229,7 +229,7 @@
       parameter: "a_e",
       min: 0.1,
       max: 10.0,
-      steps: 20,
+      steps: 5,
       yMax: undefined,
       timeoutInSeconds: 120,
     },
