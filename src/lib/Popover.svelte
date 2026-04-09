@@ -5,7 +5,7 @@
     size,
     children,
     popovertarget,
-    el = $bindable<HTMLDivElement | null>(null),
+    el = $bindable<HTMLDivElement | null | undefined>(),
   }: {
     size: "xs" | "sm" | "md" | "lg";
     popovertarget: string;
