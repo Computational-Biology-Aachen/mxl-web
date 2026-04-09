@@ -15,7 +15,7 @@ export class Abs extends Unary {
     return `abs(${this.child.toPy(displayNames)})`;
   }
   toTex(texNames: Map<string, string>): string {
-    return `abs(${this.child.toPy(displayNames)})`;
+    return `abs(${this.child.toTex(texNames)})`;
   }
   toSBML(): string {
     return `<apply><abs/>${this.child.toSBML()}</apply>`;

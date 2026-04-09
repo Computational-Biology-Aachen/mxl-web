@@ -9,9 +9,9 @@
   import StoichEditor from "$lib/model-editor/StoichEditor.svelte";
 
   const variables: VarView = [
-    ["x", { value: 1.0 }],
-    ["y", { value: 1.0 }],
-    ["z", { value: 1.0 }],
+    { id: "x", value: 1.0, texName: "x" },
+    { id: "y", value: 1.0, texName: "y" },
+    { id: "z", value: 1.0, texName: "z" },
   ];
   const parameters: ParView = [];
   const assignments: AssView = [];

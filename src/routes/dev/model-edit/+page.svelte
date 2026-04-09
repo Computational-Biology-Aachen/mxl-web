@@ -12,12 +12,12 @@
   let userParameters: string[] = [];
 
   let variables: VarView = $state([
-    { id: "x0", value: 1.0 },
-    { id: "x1", value: 1.0 },
+    { id: "x0", value: 1.0, texName: "x_0" },
+    { id: "x1", value: 1.0, texName: "x_1" },
   ]);
   let parameters: ParView = $state([
-    { id: "kf", value: 1.0 },
-    { id: "keq", value: 1.0 },
+    { id: "kf", value: 1.0, texName: "k_f" },
+    { id: "keq", value: 1.0, texName: "k_{eq}" },
   ]);
   let assignments: AssView = $state([
     {
