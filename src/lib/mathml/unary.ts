@@ -17,6 +17,9 @@ export class Abs extends Unary {
   toTex(texNames: Map<string, string>): string {
     return `abs(${this.child.toPy(displayNames)})`;
   }
+  toSBML(): string {
+    return `<apply><abs/>${this.child.toSBML()}</apply>`;
+  }
 }
 
 export class Ceiling extends Unary {
@@ -32,6 +35,9 @@ export class Ceiling extends Unary {
   toTex(texNames: Map<string, string>): string {
     return `\\lceil ${this.child.toTex(texNames)} \\rceil`;
   }
+  toSBML(): string {
+    return `<apply><ceiling/>${this.child.toSBML()}</apply>`;
+  }
 }
 
 export class Exp extends Unary {
@@ -46,6 +52,9 @@ export class Exp extends Unary {
   }
   toTex(texNames: Map<string, string>): string {
     return `e^{${this.child.toTex(texNames)}}`;
+  }
+  toSBML(): string {
+    return `<apply><exp/>${this.child.toSBML()}</apply>`;
   }
 }
 
@@ -64,6 +73,10 @@ export class Factorial extends Unary {
   toTex(texNames: Map<string, string>): string {
     return `${this.child.toTex(texNames)}!`;
   }
+
+  toSBML(): string {
+    return `<apply><factorial/>${this.child.toSBML()}</apply>`;
+  }
 }
 
 export class Floor extends Unary {
@@ -80,6 +93,10 @@ export class Floor extends Unary {
 
   toTex(texNames: Map<string, string>): string {
     return `\\lfloor ${this.child.toTex(texNames)} \\rfloor`;
+  }
+
+  toSBML(): string {
+    return `<apply><floor/>${this.child.toSBML()}</apply>`;
   }
 }
 
@@ -99,6 +116,10 @@ export class Ln extends Unary {
   toTex(texNames: Map<string, string>): string {
     return `\\ln(${this.child.toTex(texNames)})`;
   }
+
+  toSBML(): string {
+    return `<apply><ln/>${this.child.toSBML()}</apply>`;
+  }
 }
 
 export class Sin extends Unary {
@@ -116,6 +137,10 @@ export class Sin extends Unary {
 
   toTex(texNames: Map<string, string>): string {
     return `\\sin(${this.child.toTex(texNames)})`;
+  }
+
+  toSBML(): string {
+    return `<apply><sin/>${this.child.toSBML()}</apply>`;
   }
 }
 
@@ -135,6 +160,10 @@ export class Cos extends Unary {
   toTex(texNames: Map<string, string>): string {
     return `\\cos(${this.child.toTex(texNames)})`;
   }
+
+  toSBML(): string {
+    return `<apply><cos/>${this.child.toSBML()}</apply>`;
+  }
 }
 
 export class Tan extends Unary {
@@ -152,6 +181,10 @@ export class Tan extends Unary {
 
   toTex(texNames: Map<string, string>): string {
     return `\\tan(${this.child.toTex(texNames)})`;
+  }
+
+  toSBML(): string {
+    return `<apply><tan/>${this.child.toSBML()}</apply>`;
   }
 }
 
@@ -171,6 +204,10 @@ export class Sec extends Unary {
   toTex(texNames: Map<string, string>): string {
     return `\\sec(${this.child.toTex(texNames)})`;
   }
+
+  toSBML(): string {
+    return `<apply><sec/>${this.child.toSBML()}</apply>`;
+  }
 }
 
 export class Csc extends Unary {
@@ -188,6 +225,10 @@ export class Csc extends Unary {
 
   toTex(texNames: Map<string, string>): string {
     return `\\csc(${this.child.toTex(texNames)})`;
+  }
+
+  toSBML(): string {
+    return `<apply><csc/>${this.child.toSBML()}</apply>`;
   }
 }
 
@@ -207,6 +248,10 @@ export class Cot extends Unary {
   toTex(texNames: Map<string, string>): string {
     return `\\cot(${this.child.toTex(texNames)})`;
   }
+
+  toSBML(): string {
+    return `<apply><cot/>${this.child.toSBML()}</apply>`;
+  }
 }
 
 export class Asin extends Unary {
@@ -224,6 +269,10 @@ export class Asin extends Unary {
 
   toTex(texNames: Map<string, string>): string {
     return `\\arcsin(${this.child.toTex(texNames)})`;
+  }
+
+  toSBML(): string {
+    return `<apply><arcsin/>${this.child.toSBML()}</apply>`;
   }
 }
 
@@ -243,6 +292,10 @@ export class Acos extends Unary {
   toTex(texNames: Map<string, string>): string {
     return `\\arccos(${this.child.toTex(texNames)})`;
   }
+
+  toSBML(): string {
+    return `<apply><arccos/>${this.child.toSBML()}</apply>`;
+  }
 }
 
 export class Atan extends Unary {
@@ -260,6 +313,10 @@ export class Atan extends Unary {
 
   toTex(texNames: Map<string, string>): string {
     return `\\arctan(${this.child.toTex(texNames)})`;
+  }
+
+  toSBML(): string {
+    return `<apply><arctan/>${this.child.toSBML()}</apply>`;
   }
 }
 
@@ -279,6 +336,10 @@ export class Acot extends Unary {
   toTex(texNames: Map<string, string>): string {
     return `\\text{arccot}(${this.child.toTex(texNames)})`;
   }
+
+  toSBML(): string {
+    return `<apply><arccot/>${this.child.toSBML()}</apply>`;
+  }
 }
 
 export class ArcSec extends Unary {
@@ -296,6 +357,10 @@ export class ArcSec extends Unary {
 
   toTex(texNames: Map<string, string>): string {
     return `\\text{arcsec}(${this.child.toTex(texNames)})`;
+  }
+
+  toSBML(): string {
+    return `<apply><arcsec/>${this.child.toSBML()}</apply>`;
   }
 }
 
@@ -315,6 +380,10 @@ export class ArcCsc extends Unary {
   toTex(texNames: Map<string, string>): string {
     return `\\text{arccsc}(${this.child.toTex(texNames)})`;
   }
+
+  toSBML(): string {
+    return `<apply><arccsc/>${this.child.toSBML()}</apply>`;
+  }
 }
 
 export class Sinh extends Unary {
@@ -332,6 +401,10 @@ export class Sinh extends Unary {
 
   toTex(texNames: Map<string, string>): string {
     return `\\sinh(${this.child.toTex(texNames)})`;
+  }
+
+  toSBML(): string {
+    return `<apply><sinh/>${this.child.toSBML()}</apply>`;
   }
 }
 
@@ -351,6 +424,10 @@ export class Cosh extends Unary {
   toTex(texNames: Map<string, string>): string {
     return `\\cosh(${this.child.toTex(texNames)})`;
   }
+
+  toSBML(): string {
+    return `<apply><cosh/>${this.child.toSBML()}</apply>`;
+  }
 }
 
 export class Tanh extends Unary {
@@ -368,6 +445,10 @@ export class Tanh extends Unary {
 
   toTex(texNames: Map<string, string>): string {
     return `\\tanh(${this.child.toTex(texNames)})`;
+  }
+
+  toSBML(): string {
+    return `<apply><tanh/>${this.child.toSBML()}</apply>`;
   }
 }
 
@@ -387,6 +468,10 @@ export class Sech extends Unary {
   toTex(texNames: Map<string, string>): string {
     return `\\text{sech}(${this.child.toTex(texNames)})`;
   }
+
+  toSBML(): string {
+    return `<apply><sech/>${this.child.toSBML()}</apply>`;
+  }
 }
 
 export class Csch extends Unary {
@@ -404,6 +489,10 @@ export class Csch extends Unary {
 
   toTex(texNames: Map<string, string>): string {
     return `\\text{csch}(${this.child.toTex(texNames)})`;
+  }
+
+  toSBML(): string {
+    return `<apply><csch/>${this.child.toSBML()}</apply>`;
   }
 }
 
@@ -423,6 +512,10 @@ export class Coth extends Unary {
   toTex(texNames: Map<string, string>): string {
     return `\\coth(${this.child.toTex(texNames)})`;
   }
+
+  toSBML(): string {
+    return `<apply><coth/>${this.child.toSBML()}</apply>`;
+  }
 }
 
 export class ArcSinh extends Unary {
@@ -440,6 +533,10 @@ export class ArcSinh extends Unary {
 
   toTex(texNames: Map<string, string>): string {
     return `\\text{arcsinh}(${this.child.toTex(texNames)})`;
+  }
+
+  toSBML(): string {
+    return `<apply><arcsinh/>${this.child.toSBML()}</apply>`;
   }
 }
 
@@ -459,6 +556,10 @@ export class ArcCosh extends Unary {
   toTex(texNames: Map<string, string>): string {
     return `\\text{arccosh}(${this.child.toTex(texNames)})`;
   }
+
+  toSBML(): string {
+    return `<apply><arccosh/>${this.child.toSBML()}</apply>`;
+  }
 }
 
 export class ArcTanh extends Unary {
@@ -476,6 +577,10 @@ export class ArcTanh extends Unary {
 
   toTex(texNames: Map<string, string>): string {
     return `\\text{arctanh}(${this.child.toTex(texNames)})`;
+  }
+
+  toSBML(): string {
+    return `<apply><arctanh/>${this.child.toSBML()}</apply>`;
   }
 }
 
@@ -495,6 +600,10 @@ export class ArcCsch extends Unary {
   toTex(texNames: Map<string, string>): string {
     return `\\text{arccsch}(${this.child.toTex(texNames)})`;
   }
+
+  toSBML(): string {
+    return `<apply><arccsch/>${this.child.toSBML()}</apply>`;
+  }
 }
 
 export class ArcSech extends Unary {
@@ -512,6 +621,10 @@ export class ArcSech extends Unary {
 
   toTex(texNames: Map<string, string>): string {
     return `\\text{arcsech}(${this.child.toTex(texNames)})`;
+  }
+
+  toSBML(): string {
+    return `<apply><arcsech/>${this.child.toSBML()}</apply>`;
   }
 }
 
@@ -531,6 +644,10 @@ export class ArcCoth extends Unary {
   toTex(texNames: Map<string, string>): string {
     return `\\text{arccoth}(${this.child.toTex(texNames)})`;
   }
+
+  toSBML(): string {
+    return `<apply><arccoth/>${this.child.toSBML()}</apply>`;
+  }
 }
 
 export class RateOf extends Unary {
@@ -548,5 +665,9 @@ export class RateOf extends Unary {
 
   toTex(texNames: Map<string, string>): string {
     return `\\frac{d}{dt}(${this.child.toTex(texNames)})`;
+  }
+
+  toSBML(): string {
+    return `<apply><csymbol definitionURL="http://www.sbml.org/sbml/symbols/rateOf">rateOf</csymbol>${this.child.toSBML()}</apply>`;
   }
 }

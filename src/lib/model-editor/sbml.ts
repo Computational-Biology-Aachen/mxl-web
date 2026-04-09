@@ -1,4 +1,6 @@
 import {
+  type Base,
+  Add,
   Abs,
   Acos,
   Acot,
@@ -12,7 +14,6 @@ import {
   ArcTanh,
   Asin,
   Atan,
-  type Base,
   Ceiling,
   Cos,
   Cosh,
@@ -37,7 +38,6 @@ import {
   Min,
   Minus,
   Mul,
-  Add,
   Name,
   NotEqual,
   Not,
@@ -77,121 +77,11 @@ function mathBlock(inner: string): string {
   return `<math xmlns="${MATHML_NS}">${inner}</math>`;
 }
 
-function apply(op: string, args: string[]): string {
-  return `<apply><${op}/>${args.join("")}</apply>`;
-}
-
 function parseFloatAttr(el: Element, attr: string): number {
   const val = el.getAttribute(attr);
   if (val === null) return NaN;
   const n = parseFloat(val);
   return isNaN(n) ? NaN : n;
-}
-
-// ─── AST → MathML ───────────────────────────────────────────────────────────
-
-export function astToMathML(node: Base): string {
-  if (node instanceof Name) {
-    return `<ci>${escapeXml(node.name)}</ci>`;
-  }
-  if (node instanceof Num) {
-    return `<cn>${node.value}</cn>`;
-  }
-  if (node instanceof Add) {
-    return apply("plus", node.children.map(astToMathML));
-  }
-  if (node instanceof Minus) {
-    return apply("minus", node.children.map(astToMathML));
-  }
-  if (node instanceof Mul) {
-    return apply("times", node.children.map(astToMathML));
-  }
-  if (node instanceof Divide) {
-    if (node.children.length === 0) return "<cn>0</cn>";
-    return node.children
-      .map(astToMathML)
-      .reduce((acc, cur) => `<apply><divide/>${acc}${cur}</apply>`);
-  }
-  if (node instanceof IntDivide) {
-    if (node.children.length === 0) return "<cn>0</cn>";
-    const divided = node.children
-      .map(astToMathML)
-      .reduce((acc, cur) => `<apply><divide/>${acc}${cur}</apply>`);
-    return `<apply><floor/>${divided}</apply>`;
-  }
-  if (node instanceof Pow) {
-    return `<apply><power/>${astToMathML(node.left)}${astToMathML(node.right)}</apply>`;
-  }
-  if (node instanceof Implies) {
-    return `<apply><implies/>${astToMathML(node.left)}${astToMathML(node.right)}</apply>`;
-  }
-  if (node instanceof Log) {
-    return `<apply><log/><logbase>${astToMathML(node.base)}</logbase>${astToMathML(node.child)}</apply>`;
-  }
-  if (node instanceof Sqrt) {
-    return `<apply><root/><degree>${astToMathML(node.base)}</degree>${astToMathML(node.child)}</apply>`;
-  }
-  if (node instanceof RateOf) {
-    return `<apply><csymbol definitionURL="http://www.sbml.org/sbml/symbols/rateOf">rateOf</csymbol>${astToMathML(node.child)}</apply>`;
-  }
-  if (node instanceof Abs) return apply("abs", [astToMathML(node.child)]);
-  if (node instanceof Ceiling) return apply("ceiling", [astToMathML(node.child)]);
-  if (node instanceof Floor) return apply("floor", [astToMathML(node.child)]);
-  if (node instanceof Exp) return apply("exp", [astToMathML(node.child)]);
-  if (node instanceof Ln) return apply("ln", [astToMathML(node.child)]);
-  if (node instanceof Factorial) return apply("factorial", [astToMathML(node.child)]);
-  if (node instanceof Sin) return apply("sin", [astToMathML(node.child)]);
-  if (node instanceof Cos) return apply("cos", [astToMathML(node.child)]);
-  if (node instanceof Tan) return apply("tan", [astToMathML(node.child)]);
-  if (node instanceof Sec) return apply("sec", [astToMathML(node.child)]);
-  if (node instanceof Csc) return apply("csc", [astToMathML(node.child)]);
-  if (node instanceof Cot) return apply("cot", [astToMathML(node.child)]);
-  if (node instanceof Asin) return apply("arcsin", [astToMathML(node.child)]);
-  if (node instanceof Acos) return apply("arccos", [astToMathML(node.child)]);
-  if (node instanceof Atan) return apply("arctan", [astToMathML(node.child)]);
-  if (node instanceof Acot) return apply("arccot", [astToMathML(node.child)]);
-  if (node instanceof ArcSec) return apply("arcsec", [astToMathML(node.child)]);
-  if (node instanceof ArcCsc) return apply("arccsc", [astToMathML(node.child)]);
-  if (node instanceof Sinh) return apply("sinh", [astToMathML(node.child)]);
-  if (node instanceof Cosh) return apply("cosh", [astToMathML(node.child)]);
-  if (node instanceof Tanh) return apply("tanh", [astToMathML(node.child)]);
-  if (node instanceof Sech) return apply("sech", [astToMathML(node.child)]);
-  if (node instanceof Csch) return apply("csch", [astToMathML(node.child)]);
-  if (node instanceof Coth) return apply("coth", [astToMathML(node.child)]);
-  if (node instanceof ArcSinh) return apply("arcsinh", [astToMathML(node.child)]);
-  if (node instanceof ArcCosh) return apply("arccosh", [astToMathML(node.child)]);
-  if (node instanceof ArcTanh) return apply("arctanh", [astToMathML(node.child)]);
-  if (node instanceof ArcCsch) return apply("arccsch", [astToMathML(node.child)]);
-  if (node instanceof ArcSech) return apply("arcsech", [astToMathML(node.child)]);
-  if (node instanceof ArcCoth) return apply("arccoth", [astToMathML(node.child)]);
-  if (node instanceof Max) return apply("max", node.children.map(astToMathML));
-  if (node instanceof Min) return apply("min", node.children.map(astToMathML));
-  if (node instanceof Rem) return apply("rem", node.children.map(astToMathML));
-  if (node instanceof And) return apply("and", node.children.map(astToMathML));
-  if (node instanceof Or) return apply("or", node.children.map(astToMathML));
-  if (node instanceof Xor) return apply("xor", node.children.map(astToMathML));
-  if (node instanceof Not) return apply("not", node.children.map(astToMathML));
-  if (node instanceof Eq) return apply("eq", node.children.map(astToMathML));
-  if (node instanceof GreaterEqual) return apply("geq", node.children.map(astToMathML));
-  if (node instanceof GreaterThan) return apply("gt", node.children.map(astToMathML));
-  if (node instanceof LessEqual) return apply("leq", node.children.map(astToMathML));
-  if (node instanceof LessThan) return apply("lt", node.children.map(astToMathML));
-  if (node instanceof NotEqual) return apply("neq", node.children.map(astToMathML));
-  if (node instanceof Piecewise) {
-    const parts: string[] = [];
-    for (let i = 0; i + 1 < node.children.length; i += 2) {
-      parts.push(
-        `<piece>${astToMathML(node.children[i])}${astToMathML(node.children[i + 1])}</piece>`,
-      );
-    }
-    if (node.children.length % 2 === 1) {
-      parts.push(
-        `<otherwise>${astToMathML(node.children[node.children.length - 1])}</otherwise>`,
-      );
-    }
-    return `<piecewise>${parts.join("")}</piecewise>`;
-  }
-  throw new Error(`Cannot serialize AST node type: ${node.constructor.name}`);
 }
 
 // ─── MathML → AST ───────────────────────────────────────────────────────────
@@ -412,7 +302,7 @@ export function modelToSbml(model: ModelBuilder, name: string): string {
     const items = [...model.assignments.entries()]
       .map(([id, a]) => {
         return `<assignmentRule variable="${escapeXml(id)}">
-        ${mathBlock(astToMathML(a.fn))}
+        ${mathBlock(a.fn.toSBML())}
       </assignmentRule>`;
       })
       .join("\n      ");
@@ -450,7 +340,7 @@ export function modelToSbml(model: ModelBuilder, name: string): string {
 
         return `<reaction id="${escapeXml(id)}" name="${escapeXml(displayName)}" reversible="false">${reactantsXml}${productsXml}
         <kineticLaw>
-          ${mathBlock(astToMathML(r.fn))}
+          ${mathBlock(r.fn.toSBML())}
         </kineticLaw>
       </reaction>`;
       })
