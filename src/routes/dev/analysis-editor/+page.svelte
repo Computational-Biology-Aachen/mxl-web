@@ -1,5 +1,5 @@
 <script>
-  import AnalysisEditor from "$lib/model-editor/AnalysisEditor.svelte";
+  import AnalysisEditor from "$lib/simulations/TimeCourseEditor.svelte";
 
   let analysis = {
     title: "",

@@ -3,7 +3,7 @@
   import LineChart from "../chartjs/LineChart.svelte";
   import type { ModelBuilder } from "../model-editor/modelBuilder";
   import { pyWorkerPool } from "../stores/workerPool";
-  import { WorkerManager } from "../stores/workerStore";
+  import { WorkerManager, type WorkerMessage } from "../stores/workerStore";
   import { arrayColumn } from "../utils";
 
   let {
@@ -78,30 +78,32 @@
     };
   });
 
-  onMount(() => {
-    const unsubscribePy = pyWorker.onMessage((data) => {
-      if (data.requestId === currentRequestId) {
-        // Clear the timeoutInSeconds since we got a response
-        if (timeoutInSecondsId) {
-          clearTimeout(timeoutInSecondsId);
-          timeoutInSecondsId = null;
-        }
-
-        if (data.message !== undefined) {
-          err = data.message;
-        } else {
-          result = { time: data.time, values: data.values };
-          loading = false;
-        }
+  function handleResults(data: WorkerMessage) {
+    if (data.requestId === currentRequestId) {
+      // Clear the timeoutInSeconds since we got a response
+      if (timeoutInSecondsId) {
+        clearTimeout(timeoutInSecondsId);
+        timeoutInSecondsId = null;
       }
-    });
+
+      if (data.message !== undefined) {
+        err = data.message;
+      } else {
+        result = { time: data.time, values: data.values };
+        loading = false;
+      }
+    }
+  }
+
+  onMount(() => {
+    const unsub = pyWorker.onMessage(handleResults);
 
     // Initial run
     runSimulation(model);
 
     // Cleanup handlers (workers are shared so don't terminate them)
     return () => {
-      unsubscribePy();
+      unsub();
       // Clean up any pending timeoutInSeconds
       if (timeoutInSecondsId) {
         clearTimeout(timeoutInSecondsId);
