@@ -22,6 +22,7 @@
   import AnalysisEditor from "../simulations/TimeCourseEditor.svelte";
   import ModelEditor from "./ModelEditor.svelte";
   import { defaultValue } from "./modelUtils";
+  import { modelToSbml, sbmlToModel } from "./sbml";
 
   let {
     children,
@@ -93,6 +94,36 @@
       .toArray();
   });
 
+  let fileInput = $state<HTMLInputElement | null>(null);
+  let loadError = $state<string | null>(null);
+
+  function saveModel() {
+    const xml = modelToSbml(model, name);
+    const blob = new Blob([xml], { type: "application/xml" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${name.replace(/[^A-Za-z0-9]/g, "_")}.sbml`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function handleFileLoad(event: Event) {
+    loadError = null;
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const loaded = sbmlToModel(text);
+      model = loaded;
+      runAllSimulations();
+    } catch (e) {
+      loadError = e instanceof Error ? e.message : "Failed to load model";
+    }
+    input.value = "";
+  }
+
   function addParameterScan() {
     const newId = analyses.length;
     const firstParam = [...model.parameters.keys()][0] ?? "";
@@ -135,6 +166,8 @@
     >
   </Pair>
   <Pair justify="end">
+    <button class="secondary" onclick={() => fileInput?.click()}>Load</button>
+    <button class="secondary" onclick={saveModel}>Save</button>
     <ResetButton
       onclick={() => {
         model = initModel();
@@ -144,6 +177,16 @@
     <ModelEditButton popovertarget="model-editor" />
   </Pair>
 </RowApart>
+<input
+  type="file"
+  accept=".sbml,.xml"
+  bind:this={fileInput}
+  onchange={handleFileLoad}
+  style="display:none"
+/>
+{#if loadError}
+  <p class="load-error">{loadError}</p>
+{/if}
 
 {#if children}
   {@render children()}
@@ -324,6 +367,27 @@
 {/each}
 
 <style>
+  button.secondary {
+    cursor: pointer;
+    border: 1px solid var(--primary);
+    border-radius: var(--border-radius);
+    background-color: transparent;
+    padding: 0 1rem;
+    height: 2rem;
+    color: var(--primary);
+    font-weight: var(--weight-bold);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    letter-spacing: 0.025em;
+  }
+  button.secondary:hover {
+    background-color: color-mix(in srgb, var(--primary) 10%, transparent);
+  }
+  .load-error {
+    color: var(--error, #dc2626);
+    font-size: 0.875rem;
+    margin: 0;
+  }
   .grid-row {
     display: flex;
     flex-direction: column;
