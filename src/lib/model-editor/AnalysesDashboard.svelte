@@ -7,7 +7,7 @@
   } from "$lib";
   import ModelEditButton from "$lib/buttons/ModelEditButton.svelte";
   import ResetButton from "$lib/buttons/ResetButton.svelte";
-  import DynBoxRow from "$lib/DynBoxRow.svelte";
+  import DynBoxRow, { type Box } from "$lib/DynBoxRow.svelte";
   import Icon from "$lib/Icon.svelte";
   import Math from "$lib/Math.svelte";
   import { ModelBuilder } from "$lib/model-editor/modelBuilder";
@@ -96,6 +96,7 @@
 
   let fileInput = $state<HTMLInputElement | null>(null);
   let loadError = $state<string | null>(null);
+  let pendingBox = $state<Box | null>(null);
 
   function saveModel() {
     const xml = modelToSbml(model, name);
@@ -124,18 +125,39 @@
     input.value = "";
   }
 
-  function addParameterScan() {
-    const newId = analyses.length;
-    const firstParam = [...model.parameters.keys()][0] ?? "";
+  function handleAdd(box: Box) {
+    pendingBox = box;
+    document.getElementById("add-analysis-picker")?.showPopover();
+  }
+
+  function addTimeCourse(box: Box) {
+    const newAnalysis: SimulationAnalysis = {
+      type: "simulation",
+      id: box.id,
+      idx: analyses.length,
+      title: "New",
+      span: box.span,
+      tEnd: 10,
+      yMin: undefined,
+      yMax: undefined,
+      xMin: undefined,
+      xMax: undefined,
+      timeoutInSeconds: 20,
+    };
+    analyses = [...analyses, newAnalysis];
+  }
+
+  function addParameterScan(box: Box) {
+    const firstParam = model.parameters.keys().next().value ?? "";
     const newScan: ParameterScanAnalysis = {
       type: "parameterScan",
-      id: newId,
+      id: box.id,
       idx: analyses.length,
       title: `Parameter Scan`,
       span: 3,
       parameter: firstParam,
       min: 0,
-      max: 1,
+      max: 10,
       steps: 20,
       tEnd: 10_000,
       tolerance: 1e-4,
@@ -166,8 +188,14 @@
     >
   </Pair>
   <Pair justify="end">
-    <button class="secondary" onclick={() => fileInput?.click()}>Load</button>
-    <button class="secondary" onclick={saveModel}>Save</button>
+    <button
+      class="secondary"
+      onclick={() => fileInput?.click()}>Load</button
+    >
+    <button
+      class="secondary"
+      onclick={saveModel}>Save</button
+    >
     <ResetButton
       onclick={() => {
         model = initModel();
@@ -187,6 +215,46 @@
 {#if loadError}
   <p class="load-error">{loadError}</p>
 {/if}
+
+<div
+  popover
+  id="add-analysis-picker"
+  class="picker-popover"
+>
+  <p class="picker-title">Add analysis</p>
+  <div class="picker-options">
+    <button
+      class="picker-option"
+      onclick={() => {
+        if (pendingBox) {
+          addTimeCourse(pendingBox);
+          pendingBox = null;
+        }
+        document.getElementById("add-analysis-picker")?.hidePopover();
+      }}
+    >
+      <Icon>show_chart</Icon>
+      Time Course
+    </button>
+    <button
+      class="picker-option"
+      onclick={() => {
+        if (pendingBox) {
+          addParameterScan(pendingBox);
+          const id = pendingBox.id;
+          pendingBox = null;
+          document.getElementById("add-analysis-picker")?.hidePopover();
+          setTimeout(() => {
+            document.getElementById(`analysis-editor-${id}`)?.showPopover();
+          }, 0);
+        }
+      }}
+    >
+      <Icon>stacked_line_chart</Icon>
+      Parameter Scan
+    </button>
+  </div>
+</div>
 
 {#if children}
   {@render children()}
@@ -270,23 +338,7 @@
 
 <DynBoxRow
   items={analyses}
-  onAdd={(box) => {
-    const newAnalysis: SimulationAnalysis = {
-      type: "simulation",
-      id: box.id,
-      idx: analyses.length,
-      title: "New",
-      span: box.span,
-      tEnd: 10,
-      yMin: undefined,
-      yMax: undefined,
-      xMin: undefined,
-      xMax: undefined,
-      timeoutInSeconds: 20,
-    };
-    analyses = [...analyses, newAnalysis];
-    return analyses.length - 1;
-  }}
+  onAdd={handleAdd}
   onRemove={(box) => {
     analyses = analyses.filter((a) => a.id !== box.id);
     delete simulatorRefs[box.id];
@@ -384,9 +436,9 @@
     background-color: color-mix(in srgb, var(--primary) 10%, transparent);
   }
   .load-error {
+    margin: 0;
     color: var(--error, #dc2626);
     font-size: 0.875rem;
-    margin: 0;
   }
   .grid-row {
     display: flex;
@@ -411,6 +463,49 @@
     font-weight: 400;
   }
   a.light:hover {
+    color: var(--primary);
+  }
+  .picker-popover {
+    position: fixed;
+    inset: 50% auto auto 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: var(--shadow);
+    border: var(--border-heavy);
+    border-radius: var(--border-radius);
+    background: var(--bg-l1);
+    padding: 1.5rem;
+    min-width: 18rem;
+  }
+  .picker-popover::backdrop {
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+  .picker-title {
+    margin: 0 0 1rem;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+  .picker-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .picker-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    border: var(--border);
+    border-radius: var(--border-radius);
+    background: transparent;
+    padding: 0.75rem 1rem;
+    width: 100%;
+    font-size: 0.9rem;
+    text-align: left;
+    transition: background 0.15s ease;
+  }
+  .picker-option:hover {
+    background: color-mix(in srgb, var(--primary) 10%, transparent);
+    border-color: var(--primary);
     color: var(--primary);
   }
 </style>
