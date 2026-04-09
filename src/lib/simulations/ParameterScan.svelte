@@ -22,7 +22,14 @@
     datasets: { label: string; data: number[] }[];
   };
 
-  let loading = $state(true);
+  function linspace(min: number, max: number, steps: number): number[] {
+    if (steps <= 1) return [min];
+    return Array.from(
+      { length: steps },
+      (_, i) => min + (i / (steps - 1)) * (max - min),
+    );
+  }
+
   let err = $state<string | undefined>(undefined);
   let scanResult = $state<ScanResult>({
     paramValues: [],
@@ -32,60 +39,35 @@
 
   // Batch tracking — plain (non-reactive) fields, safe to mutate in handlers
   let activeScanId = 0;
-  let pendingCount = 0;
-  let completedCount = 0;
-  let activeResults: (number[] | null)[] = [];
-  let activeParamValues: number[] = [];
-  let activeScanModel: ModelBuilder | null = null;
   const requestMap = new Map<string, { paramIdx: number; scanId: number }>();
 
-  function linspace(min: number, max: number, steps: number): number[] {
-    if (steps <= 1) return [min];
-    return Array.from(
-      { length: steps },
-      (_, i) => min + (i / (steps - 1)) * (max - min),
-    );
-  }
-
-  function finalizeScan(model: ModelBuilder) {
-    const paramValues = activeParamValues;
-    const varKeys = [...model.variables.keys()];
-    const varResults: number[][] = varKeys.map((_, varIdx) =>
-      activeResults.map((r) => (r ? r[varIdx] : NaN)),
-    );
-
-    scanResult = {
-      paramValues,
-      labels: varKeys.map((k) => model.variables.get(k)?.displayName ?? k),
-      datasets: [
-        ...varKeys.map((k, i) => ({
-          label: model.variables.get(k)?.displayName ?? k,
-          data: varResults[i],
-        })),
-      ],
-    };
-    loading = false;
-    console.log("Finishing finalizing");
-  }
+  let completedCount = $state(0);
+  let totalCount = $state(0);
 
   export function runScan(currentModel: ModelBuilder) {
-    loading = true;
     err = undefined;
 
     activeScanId++;
-    console.log(`Running scan with id ${activeScanId}`);
     const scanId = activeScanId;
     const paramValues = linspace(analysis.min, analysis.max, analysis.steps);
-    console.log(`paramValues`, paramValues);
-    activeParamValues = paramValues;
-    activeResults = new Array(analysis.steps).fill(null);
-    activeScanModel = currentModel;
-    pendingCount = analysis.steps;
+    const varKeys = [...currentModel.variables.keys()];
+
+    // Zero out results immediately so the chart reflects the new scan
+    scanResult = {
+      paramValues,
+      labels: varKeys.map(
+        (k) => currentModel.variables.get(k)?.displayName ?? k,
+      ),
+      datasets: varKeys.map((k) => ({
+        label: currentModel.variables.get(k)?.displayName ?? k,
+        data: new Array(analysis.steps).fill(NaN),
+      })),
+    };
     completedCount = 0;
+    totalCount = analysis.steps;
 
     paramValues.forEach((paramValue, idx) => {
       const requestId = WorkerManager.generateRequestId();
-      console.log("Running worker with id", requestId);
       requestMap.set(requestId, { paramIdx: idx, scanId });
 
       const clonedModel = currentModel.clone();
@@ -97,9 +79,7 @@
         model: `${clonedModel.buildPython([])}\nmodel`,
         initialValues: model.variables
           .values()
-          .map((val) => {
-            return val.value;
-          })
+          .map((val) => val.value)
           .toArray(),
         tEnd: tEnd,
         pars: [],
@@ -118,33 +98,24 @@
 
   onMount(() => {
     const unsub = pyWorkerPool.onMessage((data) => {
-      console.log("Message", data);
       if (!data.requestId) return;
       const entry = requestMap.get(data.requestId);
       if (!entry) return;
       requestMap.delete(data.requestId);
 
-      if (entry.scanId !== activeScanId) {
-        console.log("Stale batch with id", entry.scanId);
-        return; // stale batch
-      }
+      if (entry.scanId !== activeScanId) return; // stale batch
 
       if (data.message !== undefined) {
         err = data.message;
-        loading = false;
         return;
       }
 
-      // Last time point = steady-state approximation
-      const lastValues = data.values[data.values.length - 1];
-      activeResults[entry.paramIdx] = lastValues;
+      // Last time point = steady-state approximation; update this param index immediately
+      const lastValues: number[] = data.values[data.values.length - 1];
+      scanResult.datasets.forEach((dataset, varIdx) => {
+        dataset.data[entry.paramIdx] = lastValues[varIdx];
+      });
       completedCount++;
-      console.log(`completedCount`, completedCount / pendingCount);
-
-      if (completedCount === pendingCount && activeScanModel) {
-        console.log("Finalizing");
-        finalizeScan(activeScanModel);
-      }
     });
 
     runScan(model);
@@ -155,23 +126,60 @@
   });
 </script>
 
-<div>
+<div id="chart">
   {#if err}
     <span>{err}</span>
   {:else}
+    {#if completedCount < totalCount}
+      <div class="loading-container">
+        <div class="spinner"></div>
+        <span class="counter"
+          >{completedCount} / {totalCount} simulations finished</span
+        >
+      </div>
+    {/if}
     <LineChart
       data={lineData}
-      loading={loading}
+      loading={false}
       xMin={analysis.min}
       yMax={analysis.yMax}
-      // xLabel={analysis.parameter}
-      // yLabel="Steady-state value"
+      xLabel={analysis.parameter}
+      yLabel="Steady-state value"
     />
   {/if}
 </div>
 
 <style>
-  div {
+  #chart {
     width: 100%;
+  }
+
+  .counter {
+    color: var(--color-text-muted, #888);
+    font-size: 0.85rem;
+  }
+
+  .loading-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+    align-items: center;
+    gap: 1rem;
+    height: 40px;
+  }
+
+  .spinner {
+    animation: spin 1s linear infinite;
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-top-color: currentColor;
+    border-radius: var(--round);
+    width: 40px;
+    height: 40px;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
   }
 </style>
