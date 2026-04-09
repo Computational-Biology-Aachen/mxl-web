@@ -4,16 +4,18 @@
   import { onMount } from "svelte";
   import type { ModelBuilder } from "../model-editor/modelBuilder";
   import { pyWorkerPool } from "../stores/workerPool";
-  import { WorkerManager } from "../stores/workerStore";
+  import { WorkerManager, type WorkerMessage } from "../stores/workerStore";
 
   let {
     model,
     analysis,
     tEnd,
+    tolerance = 1e-6,
   }: {
     model: ModelBuilder;
     analysis: ParameterScanAnalysis;
     tEnd: number;
+    tolerance?: number;
   } = $props();
 
   type ScanResult = {
@@ -42,6 +44,7 @@
   const requestMap = new Map<string, { paramIdx: number; scanId: number }>();
 
   let completedCount = $state(0);
+  let failedCount = $state(0);
   let totalCount = $state(0);
 
   export function runScan(currentModel: ModelBuilder) {
@@ -64,6 +67,7 @@
       })),
     };
     completedCount = 0;
+    failedCount = 0;
     totalCount = analysis.steps;
 
     paramValues.forEach((paramValue, idx) => {
@@ -88,6 +92,34 @@
     });
   }
 
+  function handleResults(data: WorkerMessage) {
+    if (!data.requestId) return;
+    const entry = requestMap.get(data.requestId);
+    if (!entry) return;
+    requestMap.delete(data.requestId);
+
+    if (entry.scanId !== activeScanId) return; // stale batch
+
+    if (data.message !== undefined) {
+      err = data.message;
+      return;
+    }
+
+    // Last time point = steady-state approximation; update this param index immediately
+    const lastValues: number[] = data.values[data.values.length - 1];
+    const prevValues: number[] = data.values[data.values.length - 2];
+    const norm2 = Math.sqrt(
+      lastValues.reduce((sum, v, i) => sum + (v - prevValues[i]) ** 2, 0),
+    );
+    const converged = norm2 < tolerance;
+    const resultValues = converged ? lastValues : lastValues.map(() => NaN);
+    if (!converged) failedCount++;
+    scanResult.datasets.forEach((dataset, varIdx) => {
+      dataset.data[entry.paramIdx] = resultValues[varIdx];
+    });
+    completedCount++;
+  }
+
   let lineData = $derived.by(() => {
     if (!scanResult) return { labels: [], datasets: [] };
     return {
@@ -97,29 +129,12 @@
   });
 
   onMount(() => {
-    const unsub = pyWorkerPool.onMessage((data) => {
-      if (!data.requestId) return;
-      const entry = requestMap.get(data.requestId);
-      if (!entry) return;
-      requestMap.delete(data.requestId);
+    const unsub = pyWorkerPool.onMessage(handleResults);
 
-      if (entry.scanId !== activeScanId) return; // stale batch
-
-      if (data.message !== undefined) {
-        err = data.message;
-        return;
-      }
-
-      // Last time point = steady-state approximation; update this param index immediately
-      const lastValues: number[] = data.values[data.values.length - 1];
-      scanResult.datasets.forEach((dataset, varIdx) => {
-        dataset.data[entry.paramIdx] = lastValues[varIdx];
-      });
-      completedCount++;
-    });
-
+    // Initial run
     runScan(model);
 
+    // Cleanup handlers (workers are shared so don't terminate them)
     return () => {
       unsub();
     };
@@ -130,12 +145,17 @@
   {#if err}
     <span>{err}</span>
   {:else}
-    {#if completedCount < totalCount}
+    {#if completedCount < totalCount || failedCount > 0}
       <div class="loading-container">
-        <div class="spinner"></div>
-        <span class="counter"
-          >{completedCount} / {totalCount} simulations finished</span
-        >
+        {#if completedCount < totalCount}
+          <div class="spinner"></div>
+        {/if}
+        <span class="counter">
+          {completedCount} / {totalCount} finished
+          {#if failedCount > 0}
+            &nbsp;&middot;&nbsp;<span class="failed">{failedCount} did not converge</span>
+          {/if}
+        </span>
       </div>
     {/if}
     <LineChart
@@ -157,6 +177,10 @@
   .counter {
     color: var(--color-text-muted, #888);
     font-size: 0.85rem;
+  }
+
+  .failed {
+    color: var(--color-warning, #e07b00);
   }
 
   .loading-container {

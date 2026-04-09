@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { SimulationAnalysis } from "$lib";
   import InputNumber from "$lib/inputs/InputNumber.svelte";
   import InputNumberOptional from "$lib/inputs/InputNumberOptional.svelte";
   import InputText from "$lib/inputs/InputText.svelte";
@@ -6,26 +7,25 @@
   import { untrack } from "svelte";
   import PopoverSaveButton from "../buttons/PopoverSaveButton.svelte";
 
-  type Analysis = {
-    tEnd: number;
-    title: string;
-    yMax: number | undefined;
-    timeoutInSeconds: number;
-  };
-
   let {
     parent,
     onSave,
     popovertarget,
   }: {
-    parent: Analysis;
-    onSave: (options: Analysis) => void;
+    parent: SimulationAnalysis;
+    onSave: (options: SimulationAnalysis) => void;
     popovertarget: string;
   } = $props();
 
   let tEnd = $derived(parent.tEnd);
-  let yMaxAuto: boolean = $derived(untrack(() => parent.yMax) ? false : true);
+  let xMin: number = $derived(parent.xMin || 0);
+  let xMax: number = $derived(parent.xMax || 10);
+  let yMin: number = $derived(parent.yMin || 0);
   let yMax: number = $derived(parent.yMax || 10);
+  let xMinAuto: boolean = $derived(untrack(() => parent.xMin) ? false : true);
+  let xMaxAuto: boolean = $derived(untrack(() => parent.xMax) ? false : true);
+  let yMinAuto: boolean = $derived(untrack(() => parent.yMin) ? false : true);
+  let yMaxAuto: boolean = $derived(untrack(() => parent.yMax) ? false : true);
   let title = $derived(parent.title);
   let timeoutInSeconds = $derived(parent.timeoutInSeconds);
 </script>
@@ -35,7 +35,11 @@
   <PopoverSaveButton
     onclick={() =>
       onSave({
+        ...parent,
         tEnd,
+        xMin: yMaxAuto ? undefined : xMin,
+        xMax: yMaxAuto ? undefined : xMax,
+        yMin: yMaxAuto ? undefined : yMin,
         yMax: yMaxAuto ? undefined : yMax,
         title: title,
         timeoutInSeconds: timeoutInSeconds,
@@ -62,9 +66,30 @@
 
 <h3>Plot options</h3>
 <InputNumberOptional
+  id="yMin"
+  valueLabel="yMin: "
+  condLabel="Auto?"
+  bind:value={yMin}
+  bind:condition={yMinAuto}
+/>
+<InputNumberOptional
   id="yMax"
   valueLabel="yMax: "
   condLabel="Auto?"
   bind:value={yMax}
   bind:condition={yMaxAuto}
+/>
+<InputNumberOptional
+  id="xMax"
+  valueLabel="xMax: "
+  condLabel="Auto?"
+  bind:value={xMin}
+  bind:condition={xMinAuto}
+/>
+<InputNumberOptional
+  id="xMax"
+  valueLabel="xMax: "
+  condLabel="Auto?"
+  bind:value={xMax}
+  bind:condition={xMaxAuto}
 />

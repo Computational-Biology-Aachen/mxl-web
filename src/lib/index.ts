@@ -8,6 +8,8 @@ export type SimulationAnalysis = {
   span: number;
   tEnd: number;
   xMin: number | undefined;
+  xMax: number | undefined;
+  yMin: number | undefined;
   yMax: number | undefined;
   timeoutInSeconds: number;
 };
@@ -23,7 +25,10 @@ export type ParameterScanAnalysis = {
   max: number;
   steps: number;
   tEnd: number;
+  tolerance: number;
   xMin: number | undefined;
+  xMax: number | undefined;
+  yMin: number | undefined;
   yMax: number | undefined;
   timeoutInSeconds: number;
 };

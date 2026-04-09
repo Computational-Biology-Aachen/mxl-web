@@ -18,10 +18,10 @@
   import Slider from "$lib/Slider.svelte";
   import type { Snippet } from "svelte";
   import Popover from "../Popover.svelte";
-  import AnalysisEditor from "./AnalysisEditor.svelte";
+  import ParameterScanEditor from "../simulations/ParameterScanEditor.svelte";
+  import AnalysisEditor from "../simulations/TimeCourseEditor.svelte";
   import ModelEditor from "./ModelEditor.svelte";
   import { defaultValue } from "./modelUtils";
-  import ParameterScanEditor from "./ParameterScanEditor.svelte";
 
   let {
     children,
@@ -106,8 +106,11 @@
       min: 0,
       max: 1,
       steps: 20,
-      tEnd: 1000,
+      tEnd: 10_000,
+      tolerance: 1e-4,
       xMin: undefined,
+      xMax: undefined,
+      yMin: undefined,
       yMax: undefined,
       timeoutInSeconds: 120,
     };
@@ -232,8 +235,10 @@
       title: "New",
       span: box.span,
       tEnd: 10,
+      yMin: undefined,
       yMax: undefined,
       xMin: undefined,
+      xMax: undefined,
       timeoutInSeconds: 20,
     };
     analyses = [...analyses, newAnalysis];
