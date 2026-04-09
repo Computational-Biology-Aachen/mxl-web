@@ -26,6 +26,10 @@ export class Pow extends Binary {
   toTex(texNames: Map<string, string>): string {
     return `{${this.left.toTex(texNames)}}^{${this.right.toTex(texNames)}}`;
   }
+
+  toSBML(): string {
+    return `<apply><power/>${this.left.toSBML()}${this.right.toSBML()}</apply>`;
+  }
 }
 
 export class Implies extends Binary {
@@ -49,5 +53,9 @@ export class Implies extends Binary {
 
   toTex(texNames: Map<string, string>): string {
     return `${this.left.toTex(texNames)} \\Rightarrow ${this.right.toTex(texNames)}`;
+  }
+
+  toSBML(): string {
+    return `<apply><implies/>${this.left.toSBML()}${this.right.toSBML()}</apply>`;
   }
 }

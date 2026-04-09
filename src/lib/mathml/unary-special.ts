@@ -47,6 +47,10 @@ export class Log extends Base {
     return `\\log_{${this.base.toTex(texNames)}}(${this.child.toTex(texNames)})`;
   }
 
+  toSBML(): string {
+    return `<apply><log/><logbase>${this.base.toSBML()}</logbase>${this.child.toSBML()}</apply>`;
+  }
+
   getSymbols(symbols: Set<string>): Set<string> {
     this.child.getSymbols(symbols);
     this.base.getSymbols(symbols);
@@ -95,6 +99,10 @@ export class Sqrt extends Base {
 
   toTex(texNames: Map<string, string>): string {
     return `\\sqrt[${this.base.toTex(texNames)}]{${this.child.toTex(texNames)}}`;
+  }
+
+  toSBML(): string {
+    return `<apply><root/><degree>${this.base.toSBML()}</degree>${this.child.toSBML()}</apply>`;
   }
 
   getSymbols(symbols: Set<string>): Set<string> {
