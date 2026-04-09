@@ -5,7 +5,7 @@
 
   const md = new MediaQuery("min-width: 768px");
 
-  type Box = {
+  export type Box = {
     id: number;
     idx: number;
     col: number;
@@ -37,7 +37,7 @@
   }: {
     children: Snippet<[{ box: Box }]>;
     items: BoxSeed[];
-    onAdd: (box: Box) => number;
+    onAdd: (box: Box) => void;
     onRemove: (box: Box) => void;
   } = $props();
 
@@ -188,10 +188,7 @@
       span: GRID_COLS - col + 1,
       title: `Analysis ${nextId}`,
     };
-    newBox.idx = onAdd(newBox);
-
-    // boxes[row] = [...boxes[row], newBox];
-    // boxes = boxes.slice();
+    onAdd(newBox);
   }
 
   function addBelow() {
@@ -202,8 +199,7 @@
       span: DEFAULT_COL_SPAN,
       title: `Analysis ${nextId}`,
     };
-    newBox.idx = onAdd(newBox);
-    // boxes = [...boxes, [newBox]];
+    onAdd(newBox);
   }
 
   function getGridMetrics() {
