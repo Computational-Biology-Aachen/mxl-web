@@ -98,8 +98,8 @@
   let fileInput = $state<HTMLInputElement | null>(null);
   let loadError = $state<string | null>(null);
   let pendingBox = $state<Box | null>(null);
-  let pickerEl = $state<HTMLDivElement | null>(null);
-  let analysisEditorEls = $state<Record<number, HTMLDivElement | null>>({});
+  let pickerEl = $state<HTMLDivElement | null | undefined>(null);
+  let analysisEditorEls = $state<Record<number, HTMLDivElement | null | undefined>>({});
 
   function saveModel() {
     const xml = modelToSbml(model, name);
@@ -476,6 +476,7 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    transition: background 0.15s ease;
     cursor: pointer;
     border: var(--border);
     border-radius: var(--border-radius);
@@ -484,11 +485,10 @@
     width: 100%;
     font-size: 0.9rem;
     text-align: left;
-    transition: background 0.15s ease;
   }
   .picker-option:hover {
-    background: color-mix(in srgb, var(--primary) 10%, transparent);
     border-color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 10%, transparent);
     color: var(--primary);
   }
 </style>
