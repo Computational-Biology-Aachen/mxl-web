@@ -5,15 +5,18 @@
     size,
     children,
     popovertarget,
+    el = $bindable<HTMLDivElement | null>(null),
   }: {
-    size: "sm" | "md" | "lg";
+    size: "xs" | "sm" | "md" | "lg";
     popovertarget: string;
     children: Snippet;
+    el?: HTMLDivElement | null;
   } = $props();
 </script>
 
 <div
   popover
+  bind:this={el}
   id={popovertarget}
   class={size}
 >
@@ -33,6 +36,12 @@
   }
   [popover]::backdrop {
     background-color: rgba(0, 0, 0, 0.5);
+  }
+  .xs {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(22rem, calc(100vw - 2rem));
   }
   .sm {
     --width: 60rem;
