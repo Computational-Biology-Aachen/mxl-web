@@ -95,19 +95,6 @@
       yMax: undefined,
       timeoutInSeconds: 20,
     },
-    {
-      type: "parameterScan" as const,
-      id: 1,
-      idx: 1,
-      title: "μ_e scan",
-      span: 6,
-      parameter: "mu_e",
-      min: 0.01,
-      max: 1.0,
-      steps: 5,
-      yMax: undefined,
-      timeoutInSeconds: 120,
-    },
   ]);
 </script>
 

@@ -7,6 +7,7 @@ export type SimulationAnalysis = {
   title: string;
   span: number;
   tEnd: number;
+  xMin: number | undefined;
   yMax: number | undefined;
   timeoutInSeconds: number;
 };
@@ -21,6 +22,8 @@ export type ParameterScanAnalysis = {
   min: number;
   max: number;
   steps: number;
+  tEnd: number;
+  xMin: number | undefined;
   yMax: number | undefined;
   timeoutInSeconds: number;
 };

@@ -1,23 +1,27 @@
 <script lang="ts">
   import { base } from "$app/paths";
-  import type { Analyses, ParameterScanAnalysis, SimulationAnalysis } from "$lib";
+  import type {
+    Analyses,
+    ParameterScanAnalysis,
+    SimulationAnalysis,
+  } from "$lib";
   import ModelEditButton from "$lib/buttons/ModelEditButton.svelte";
   import ResetButton from "$lib/buttons/ResetButton.svelte";
   import DynBoxRow from "$lib/DynBoxRow.svelte";
   import Icon from "$lib/Icon.svelte";
   import Math from "$lib/Math.svelte";
   import { ModelBuilder } from "$lib/model-editor/modelBuilder";
-  import ParameterScanSimulator from "$lib/ParameterScanSimulator.svelte";
   import Pair from "$lib/Pair.svelte";
   import RowApart from "$lib/RowApart.svelte";
-  import Simulator from "$lib/Simulator.svelte";
+  import ParameterScanSimulator from "$lib/simulations/ParameterScan.svelte";
+  import Simulator from "$lib/simulations/TimeCourse.svelte";
   import Slider from "$lib/Slider.svelte";
   import type { Snippet } from "svelte";
   import Popover from "../Popover.svelte";
   import AnalysisEditor from "./AnalysisEditor.svelte";
   import ModelEditor from "./ModelEditor.svelte";
-  import ParameterScanEditor from "./ParameterScanEditor.svelte";
   import { defaultValue } from "./modelUtils";
+  import ParameterScanEditor from "./ParameterScanEditor.svelte";
 
   let {
     children,
@@ -34,7 +38,9 @@
   let model = $derived(initModel());
 
   let simulatorRefs = $state<Record<number, Simulator | undefined>>({});
-  let scannerRefs = $state<Record<number, ParameterScanSimulator | undefined>>({});
+  let scannerRefs = $state<Record<number, ParameterScanSimulator | undefined>>(
+    {},
+  );
 
   let analysisById = $derived.by(() => {
     const map = new Map<number, Analyses[number]>();
@@ -100,6 +106,8 @@
       min: 0,
       max: 1,
       steps: 20,
+      tEnd: 1000,
+      xMin: undefined,
       yMax: undefined,
       timeoutInSeconds: 120,
     };
@@ -209,16 +217,10 @@
   </div>
 {/if}
 
-<RowApart>
-  <Pair>
-    <Icon>analytics</Icon>
-    <h3>Analyses</h3>
-  </Pair>
-  <button class="add-scan-btn" onclick={addParameterScan}>
-    <Icon color="inherit">add</Icon>
-    Parameter Scan
-  </button>
-</RowApart>
+<Pair>
+  <Icon>analytics</Icon>
+  <h3>Analyses</h3>
+</Pair>
 
 <DynBoxRow
   items={analyses}
@@ -231,6 +233,7 @@
       span: box.span,
       tEnd: 10,
       yMax: undefined,
+      xMin: undefined,
       timeoutInSeconds: 20,
     };
     analyses = [...analyses, newAnalysis];
@@ -260,6 +263,7 @@
           bind:this={scannerRefs[box.id]}
           model={model}
           analysis={analysis}
+          tEnd={analysis.tEnd}
         />
       {/if}
     {/if}
@@ -338,22 +342,6 @@
     font-weight: 400;
   }
   a.light:hover {
-    color: var(--primary);
-  }
-  .add-scan-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    cursor: pointer;
-    border: var(--border);
-    border-radius: var(--border-radius);
-    background: var(--bg-l1);
-    padding: 0.35rem 0.75rem;
-    font-size: var(--text-sm);
-    color: inherit;
-  }
-  .add-scan-btn:hover {
-    border-color: var(--primary);
     color: var(--primary);
   }
 </style>

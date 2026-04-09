@@ -4,9 +4,8 @@
 
   let {
     data,
+    xMin = 0,
     yMin = 0,
-    xMin = undefined,
-    xMax = undefined,
     yMax,
     xScale = "linear",
     yScale = "linear",
@@ -16,10 +15,9 @@
     loadingDelay = 500,
   }: {
     data: ChartData;
+    xMin: number | undefined;
     yMax: number | undefined;
     yMin?: number;
-    xMin?: number;
-    xMax?: number;
     xScale?: "linear" | "logarithmic" | "category" | "time" | "timeseries";
     yScale?: "linear" | "logarithmic" | "category" | "time" | "timeseries";
     xLabel?: string;
@@ -47,7 +45,7 @@
 
   const myChart: Attachment = (canvas) => {
     let chart = new Chart(canvas as HTMLCanvasElement, {
-      type: "line",
+      type: "bar",
       data: $state.snapshot(data) as ChartData,
       options: {
         responsive: true,
@@ -57,7 +55,6 @@
           x: {
             type: xScale,
             min: xMin,
-            max: xMax,
             title: {
               display: true,
               text: xLabel,

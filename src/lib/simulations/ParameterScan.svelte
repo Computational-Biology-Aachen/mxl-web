@@ -1,17 +1,19 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import LineChart from "./chartjs/LineChart.svelte";
-  import type { ModelBuilder } from "./model-editor/modelBuilder";
   import type { ParameterScanAnalysis } from "$lib";
-  import { WorkerManager } from "./stores/workerStore";
-  import { pyWorkerPool } from "./stores/workerPool";
+  import LineChart from "$lib/chartjs/LineChart.svelte";
+  import { onMount } from "svelte";
+  import type { ModelBuilder } from "../model-editor/modelBuilder";
+  import { pyWorkerPool } from "../stores/workerPool";
+  import { WorkerManager } from "../stores/workerStore";
 
   let {
     model,
     analysis,
+    tEnd,
   }: {
     model: ModelBuilder;
     analysis: ParameterScanAnalysis;
+    tEnd: number;
   } = $props();
 
   type ScanResult = {
@@ -22,7 +24,11 @@
 
   let loading = $state(true);
   let err = $state<string | undefined>(undefined);
-  let scanResult = $state<ScanResult | null>(null);
+  let scanResult = $state<ScanResult>({
+    paramValues: [],
+    labels: [],
+    datasets: [],
+  });
 
   // Batch tracking — plain (non-reactive) fields, safe to mutate in handlers
   let activeScanId = 0;
@@ -31,7 +37,6 @@
   let activeResults: (number[] | null)[] = [];
   let activeParamValues: number[] = [];
   let activeScanModel: ModelBuilder | null = null;
-  // requestId → { paramIdx, scanId }
   const requestMap = new Map<string, { paramIdx: number; scanId: number }>();
 
   function linspace(min: number, max: number, steps: number): number[] {
@@ -42,73 +47,12 @@
     );
   }
 
-  function evaluateAssignments(
-    model: ModelBuilder,
-    finalVarValues: number[],
-    paramValue: number,
-  ): { name: string; value: number }[] {
-    const varKeys = [...model.variables.keys()];
-    const context: Record<string, number> = {};
-
-    varKeys.forEach((k, i) => {
-      context[k] = finalVarValues[i];
-    });
-    for (const [k, par] of model.parameters) {
-      context[k] = k === analysis.parameter ? paramValue : par.value;
-    }
-
-    const results: { name: string; value: number }[] = [];
-    const order = model.sortDependencies();
-
-    for (const name of order) {
-      if (model.assignments.has(name)) {
-        const assign = model.assignments.get(name)!;
-        const jsExpr = assign.fn.toJs();
-        const keys = Object.keys(context);
-        const vals = Object.values(context);
-        try {
-          // eslint-disable-next-line no-new-func
-          const fn = new Function(...keys, `return ${jsExpr};`);
-          const value = fn(...vals) as number;
-          context[name] = value;
-          results.push({ name, value });
-        } catch {
-          results.push({ name, value: NaN });
-        }
-      }
-    }
-    return results;
-  }
-
   function finalizeScan(model: ModelBuilder) {
     const paramValues = activeParamValues;
     const varKeys = [...model.variables.keys()];
-    const assignKeys = [...model.assignments.keys()];
-
-    // varResults[varIdx][paramIdx]
     const varResults: number[][] = varKeys.map((_, varIdx) =>
       activeResults.map((r) => (r ? r[varIdx] : NaN)),
     );
-
-    // assignResults[assignIdx][paramIdx]
-    const assignResults: number[][] = assignKeys.map(() =>
-      new Array(analysis.steps).fill(NaN),
-    );
-
-    activeResults.forEach((finalVarValues, paramIdx) => {
-      if (!finalVarValues) return;
-      const assigns = evaluateAssignments(
-        model,
-        finalVarValues,
-        paramValues[paramIdx],
-      );
-      assigns.forEach(({ name, value }) => {
-        const assignIdx = assignKeys.indexOf(name);
-        if (assignIdx >= 0) {
-          assignResults[assignIdx][paramIdx] = value;
-        }
-      });
-    });
 
     scanResult = {
       paramValues,
@@ -118,13 +62,10 @@
           label: model.variables.get(k)?.displayName ?? k,
           data: varResults[i],
         })),
-        ...assignKeys.map((k, i) => ({
-          label: model.assignments.get(k)?.displayName ?? k,
-          data: assignResults[i],
-        })),
       ],
     };
     loading = false;
+    console.log("Finishing finalizing");
   }
 
   export function runScan(currentModel: ModelBuilder) {
@@ -132,33 +73,35 @@
     err = undefined;
 
     activeScanId++;
+    console.log(`Running scan with id ${activeScanId}`);
     const scanId = activeScanId;
     const paramValues = linspace(analysis.min, analysis.max, analysis.steps);
+    console.log(`paramValues`, paramValues);
     activeParamValues = paramValues;
     activeResults = new Array(analysis.steps).fill(null);
     activeScanModel = currentModel;
     pendingCount = analysis.steps;
     completedCount = 0;
 
-    const varKeys = [...currentModel.variables.keys()];
-
     paramValues.forEach((paramValue, idx) => {
-      const clonedModel = currentModel.clone();
-      const existingParam = clonedModel.parameters.get(analysis.parameter);
-      if (existingParam) {
-        clonedModel.parameters = clonedModel.parameters.set(analysis.parameter, {
-          ...existingParam,
-          value: paramValue,
-        });
-      }
-
       const requestId = WorkerManager.generateRequestId();
+      console.log("Running worker with id", requestId);
       requestMap.set(requestId, { paramIdx: idx, scanId });
 
+      const clonedModel = currentModel.clone();
+      clonedModel.updateParameter(analysis.parameter, {
+        ...clonedModel.parameters.get(analysis.parameter),
+        value: paramValue,
+      });
       pyWorkerPool.postMessage({
         model: `${clonedModel.buildPython([])}\nmodel`,
-        initialValues: varKeys.map((k) => clonedModel.variables.get(k)!.value),
-        tEnd: 1000,
+        initialValues: model.variables
+          .values()
+          .map((val) => {
+            return val.value;
+          })
+          .toArray(),
+        tEnd: tEnd,
         pars: [],
         requestId,
       });
@@ -175,12 +118,16 @@
 
   onMount(() => {
     const unsub = pyWorkerPool.onMessage((data) => {
+      console.log("Message", data);
       if (!data.requestId) return;
       const entry = requestMap.get(data.requestId);
       if (!entry) return;
       requestMap.delete(data.requestId);
 
-      if (entry.scanId !== activeScanId) return; // stale batch
+      if (entry.scanId !== activeScanId) {
+        console.log("Stale batch with id", entry.scanId);
+        return; // stale batch
+      }
 
       if (data.message !== undefined) {
         err = data.message;
@@ -192,8 +139,10 @@
       const lastValues = data.values[data.values.length - 1];
       activeResults[entry.paramIdx] = lastValues;
       completedCount++;
+      console.log(`completedCount`, completedCount / pendingCount);
 
       if (completedCount === pendingCount && activeScanModel) {
+        console.log("Finalizing");
         finalizeScan(activeScanModel);
       }
     });
@@ -213,9 +162,10 @@
     <LineChart
       data={lineData}
       loading={loading}
+      xMin={analysis.min}
       yMax={analysis.yMax}
-      xLabel={analysis.parameter}
-      yLabel="Steady-state value"
+      // xLabel={analysis.parameter}
+      // yLabel="Steady-state value"
     />
   {/if}
 </div>
