@@ -17,6 +17,7 @@
   import Simulator from "$lib/simulations/TimeCourse.svelte";
   import Slider from "$lib/Slider.svelte";
   import type { Snippet } from "svelte";
+  import { tick } from "svelte";
   import Popover from "../Popover.svelte";
   import ParameterScanEditor from "../simulations/ParameterScanEditor.svelte";
   import AnalysisEditor from "../simulations/TimeCourseEditor.svelte";
@@ -97,6 +98,8 @@
   let fileInput = $state<HTMLInputElement | null>(null);
   let loadError = $state<string | null>(null);
   let pendingBox = $state<Box | null>(null);
+  let pickerEl = $state<HTMLDivElement | null>(null);
+  let analysisEditorEls = $state<Record<number, HTMLDivElement | null>>({});
 
   function saveModel() {
     const xml = modelToSbml(model, name);
@@ -127,7 +130,7 @@
 
   function handleAdd(box: Box) {
     pendingBox = box;
-    document.getElementById("add-analysis-picker")?.showPopover();
+    pickerEl?.showPopover();
   }
 
   function addTimeCourse(box: Box) {
@@ -216,45 +219,43 @@
   <p class="load-error">{loadError}</p>
 {/if}
 
-<div
-  popover
-  id="add-analysis-picker"
-  class="picker-popover"
+<Popover
+  size="xs"
+  popovertarget="add-analysis-picker"
+  bind:el={pickerEl}
 >
   <p class="picker-title">Add analysis</p>
-  <div class="picker-options">
-    <button
-      class="picker-option"
-      onclick={() => {
-        if (pendingBox) {
-          addTimeCourse(pendingBox);
-          pendingBox = null;
-        }
-        document.getElementById("add-analysis-picker")?.hidePopover();
-      }}
-    >
-      <Icon>show_chart</Icon>
-      Time Course
-    </button>
-    <button
-      class="picker-option"
-      onclick={() => {
-        if (pendingBox) {
-          addParameterScan(pendingBox);
-          const id = pendingBox.id;
-          pendingBox = null;
-          document.getElementById("add-analysis-picker")?.hidePopover();
-          setTimeout(() => {
-            document.getElementById(`analysis-editor-${id}`)?.showPopover();
-          }, 0);
-        }
-      }}
-    >
-      <Icon>stacked_line_chart</Icon>
-      Parameter Scan
-    </button>
-  </div>
-</div>
+  <button
+    class="picker-option"
+    onclick={async () => {
+      if (!pendingBox) return;
+      addTimeCourse(pendingBox);
+      const id = pendingBox.id;
+      pendingBox = null;
+      pickerEl?.hidePopover();
+      await tick();
+      analysisEditorEls[id]?.showPopover();
+    }}
+  >
+    <Icon>show_chart</Icon>
+    Time Course
+  </button>
+  <button
+    class="picker-option"
+    onclick={async () => {
+      if (!pendingBox) return;
+      addParameterScan(pendingBox);
+      const id = pendingBox.id;
+      pendingBox = null;
+      pickerEl?.hidePopover();
+      await tick();
+      analysisEditorEls[id]?.showPopover();
+    }}
+  >
+    <Icon>stacked_line_chart</Icon>
+    Parameter Scan
+  </button>
+</Popover>
 
 {#if children}
   {@render children()}
@@ -388,6 +389,7 @@
   <Popover
     size="sm"
     popovertarget={`analysis-editor-${analysis.id}`}
+    bind:el={analysisEditorEls[analysis.id]}
   >
     {#if analysis.type === "simulation"}
       <AnalysisEditor
@@ -465,29 +467,10 @@
   a.light:hover {
     color: var(--primary);
   }
-  .picker-popover {
-    position: fixed;
-    inset: 50% auto auto 50%;
-    transform: translate(-50%, -50%);
-    box-shadow: var(--shadow);
-    border: var(--border-heavy);
-    border-radius: var(--border-radius);
-    background: var(--bg-l1);
-    padding: 1.5rem;
-    min-width: 18rem;
-  }
-  .picker-popover::backdrop {
-    background-color: rgba(0, 0, 0, 0.3);
-  }
   .picker-title {
-    margin: 0 0 1rem;
+    margin: 0;
     font-weight: 600;
     font-size: 1rem;
-  }
-  .picker-options {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
   }
   .picker-option {
     display: flex;
