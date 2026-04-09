@@ -57,7 +57,7 @@ onmessage = async function (event: MessageEvent) {
     nTimePoints,
     method,
   );
-  const err: string | undefined = errPy?.toJs();
+  const err: string | undefined = errPy;
   const time: number[] = tPy.toJs();
   const values: number[][] = yPy.toJs();
 

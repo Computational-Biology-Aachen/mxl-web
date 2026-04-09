@@ -24,11 +24,12 @@
 
 <style>
   [popover] {
-    position: absolute;
+    position: fixed;
     inset: unset;
     box-shadow: var(--shadow);
     border: var(--border-heavy);
     border-radius: var(--border-radius);
+    overflow-y: scroll;
   }
   [popover]::backdrop {
     background-color: rgba(0, 0, 0, 0.5);
@@ -54,7 +55,8 @@
 
     @media (min-width: 768px) {
       --dist: 2rem;
-      width: calc(100% - 2 * var(--dist));
+      width: calc(100vw - 2 * var(--dist));
+      height: calc(100vh - 2 * var(--dist));
     }
   }
   section {

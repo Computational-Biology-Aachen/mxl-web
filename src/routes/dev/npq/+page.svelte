@@ -1,6 +1,6 @@
 <script lang="ts">
   import { ModelBuilder } from "$lib/model-editor/modelBuilder";
-  import Simulator from "$lib/Simulator.svelte";
+  import TimeCourse from "$lib/simulations/TimeCourse.svelte";
 
   const pars = [
     { name: "PPFD", init: 100.0, min: "50.0", max: "150", step: "10" },
@@ -77,8 +77,8 @@
   let model = new ModelBuilder();
 </script>
 
-<Simulator
+<TimeCourse
   model={model}
   tEnd={tEnd}
-  yLim={yLim}
+  timeoutInSeconds={60}
 />
