@@ -1,6 +1,6 @@
 <script lang="ts">
   import Math from "$lib/Math.svelte";
-  import { Num } from "$lib/mathml";
+  import { Divide, Minus, Name, Num } from "$lib/mathml";
   import { stoichToTex } from "$lib/model-editor/modelUtils";
   import { type Stoichiometry } from "$lib/model-editor/modelView";
 
@@ -42,6 +42,13 @@
       { name: "a", value: new Num(2.0) },
       { name: "b", value: new Num(-2.0) },
     ],
+    [
+      { name: "a", value: new Num(2.0) },
+      {
+        name: "b",
+        value: new Minus([new Divide([new Num(1.0), new Name("a")])]),
+      },
+    ],
   ];
 
   const texNames = new Map();
@@ -49,7 +56,7 @@
   function str(stoich: Stoichiometry): string {
     return stoich
       .map(({ name, value }) => {
-        return `${value.value}*${name}`;
+        return `${value.toTex(texNames)}*${name}`;
       })
       .reduce((previous, next) => {
         return `${previous} + ${next}`;

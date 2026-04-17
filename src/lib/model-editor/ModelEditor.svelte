@@ -79,6 +79,7 @@
   );
   let builder = $derived(modelView.toBuilder());
   let pycode = $derived(builder.buildPython(userParameters));
+  let latex = $derived(builder.buildTex());
   let tabs = [
     {
       name: "Variables",
@@ -148,6 +149,15 @@
 
 <div class="card padding">
   <pre>{pycode}</pre>
+</div>
+
+<div class="heading">
+  <Icon>preview</Icon>
+  <h3>Generated LaTeX Code</h3>
+</div>
+
+<div class="card padding">
+  <pre>{latex}</pre>
 </div>
 
 <style>

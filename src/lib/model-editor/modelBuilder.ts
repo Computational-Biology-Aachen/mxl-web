@@ -1,11 +1,11 @@
 import { Base, Num } from "$lib/mathml";
 import { SvelteMap } from "svelte/reactivity";
-import { defaultTexName, defaultValue } from "./modelUtils";
+import { defaultTexName, defaultValue, renderTerms } from "./modelUtils";
 import { type SliderArgs } from "./modelView";
 
 export type Stoich = {
   name: string;
-  value: Num; //
+  value: Base;
 };
 export type Stoichiometry = Array<Stoich>;
 
@@ -295,12 +295,17 @@ export class ModelBuilder {
     this.reactions.entries().forEach((element) => {
       const [rxnName, rxn] = element;
 
-      rxn.stoichiometry.forEach(({ name: varName, value: num }) => {
-        const prefix = num.value < 0 ? "-" : "+";
-        if (num.value === -1 || num.value === 1) {
-          rhs[varName] += `${prefix}${Name(rxnName)}`;
+      rxn.stoichiometry.forEach(({ name: varName, value: stoich }) => {
+        if (stoich instanceof Num) {
+          const prefix = stoich.value < 0 ? "-" : "+";
+          if (stoich.value === -1 || stoich.value === 1) {
+            rhs[varName] += `${prefix}${Name(rxnName)}`;
+          } else {
+            rhs[varName] +=
+              `${prefix}${Math.abs(stoich.value)}*${Name(rxnName)}`;
+          }
         } else {
-          rhs[varName] += `${prefix}${Math.abs(num.value)}*${Name(rxnName)}`;
+          rhs[varName] += `+(${stoich.toPy(displayNames)})*${Name(rxnName)}`;
         }
       });
     });
@@ -320,9 +325,12 @@ export class ModelBuilder {
       .toArray()
       .join(", ");
 
-    return `def model(
+    return `import math
+import numpy as np
+
+def model(
     time: float,
-    variables: float, ${extraArgs.length > 0 ? "\n      " + extraArgs : ""}
+    variables: list[float], ${extraArgs.length > 0 ? "\n      " + extraArgs : ""}
 ):
     ${variables} = variables
     ${parameters}
@@ -355,29 +363,24 @@ y0 = {${y0}}
       this.reactions.entries(),
     );
 
-    // Collect rhs
-    let rhs: Record<string, string> = Object.fromEntries(
-      this.variables.entries().map((entry) => [entry[0], ""]),
-    );
+    // Collect rhs terms per variable
+    const rhs: Record<string, { tex: string; value: Base }[]> =
+      Object.fromEntries(
+        this.variables.entries().map((entry) => [entry[0], []]),
+      );
     this.reactions.entries().forEach(([_, rxn]) => {
-      rxn.stoichiometry.forEach(({ name: varName, value: num }) => {
-        const prefix = num.value < 0 ? "-" : "+";
-        const rxnTex = rxn.fn.toTex(texNames);
-
-        if (num.value === -1 || num.value === 1) {
-          rhs[varName] += `${prefix}${rxnTex}`;
-        } else {
-          rhs[varName] += `${prefix}${Math.abs(num.value)}*${rxnTex}`;
-        }
+      const rxnTex = rxn.fn.toTex(texNames);
+      rxn.stoichiometry.forEach(({ name: varName, value: stoich }) => {
+        rhs[varName].push({ tex: rxnTex, value: stoich });
       });
     });
 
     // Finalize rhs
     const rhsString = Object.entries(rhs)
-      .map(([name, stoich]) => {
-        let stoichFixed = stoich;
-        if (stoich.startsWith("+")) stoichFixed = stoich.slice(1);
-        return `\\frac{d ${texNames.get(name) || name}}{dt} &= ${stoich.length > 0 ? stoichFixed : "0"}`;
+      .map(([name, terms]) => {
+        const lines = renderTerms(terms, texNames);
+        const rhs = lines.join(" \\\\\n  & ");
+        return `\\frac{d ${texNames.get(name) || name}}{dt} &= ${rhs}`;
       })
       .join("\\\\ \n");
 

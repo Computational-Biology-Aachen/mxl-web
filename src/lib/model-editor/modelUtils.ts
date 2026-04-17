@@ -1,28 +1,74 @@
-import { Add, Minus, Mul, Name, Num } from "$lib/mathml";
+import type { Base } from "$lib/mathml";
+import { Minus, Num } from "$lib/mathml";
 import type { Stoichiometry } from "./modelBuilder";
+
+const LINE_LIMIT = 60;
+
+export function renderTerms(
+  terms: { tex: string; value: Base }[],
+  texNames: Map<string, string>,
+): string[] {
+  if (terms.length === 0) return ["0"];
+
+  type SignedTerm = { sign: "+" | "-"; tex: string };
+  const signed: SignedTerm[] = terms.map(({ tex, value }) => {
+    let sign: "+" | "-" = "+";
+    let coeff: Base = value;
+
+    if (value instanceof Num && value.value < 0) {
+      sign = "-";
+      coeff = new Num(-value.value);
+    } else if (value instanceof Minus && value.children.length === 1) {
+      sign = "-";
+      coeff = value.children[0];
+    }
+
+    const isOne = coeff instanceof Num && coeff.value === 1;
+    const rendered = isOne ? tex : `${coeff.toTex(texNames)} \\cdot ${tex}`;
+    return { sign, tex: rendered };
+  });
+
+  const lines: string[] = [];
+  let currentLine = "";
+
+  for (let i = 0; i < signed.length; i++) {
+    const { sign, tex } = signed[i];
+    if (i === 0) {
+      currentLine = sign === "-" ? `- ${tex}` : tex;
+    } else {
+      const addition = ` ${sign} ${tex}`;
+      if (currentLine.length + addition.length > LINE_LIMIT) {
+        lines.push(currentLine);
+        currentLine = `${sign} ${tex}`;
+      } else {
+        currentLine += addition;
+      }
+    }
+  }
+  if (currentLine) lines.push(currentLine);
+
+  return lines;
+}
 
 export function stoichToTex(
   stoich: Stoichiometry,
   texNames: Map<string, string>,
 ): string {
-  const filtered = stoich.filter(({ value }) => value.value !== 0);
-
+  const filtered = stoich.filter(({ value }) =>
+    value instanceof Num ? value.value !== 0 : true,
+  );
   if (filtered.length === 0) return "0";
 
-  return filtered
-    .map(({ name, value }: { name: string; value: Num }) => {
-      return new Mul([value, new Name(name)]);
-    })
-    .reduce((previous, current) => {
-      const [value, name] = current.children as [Num, Name];
+  const terms = filtered.map(({ name, value }: { name: string; value: Base }) => ({
+    tex: texNames.get(name) || name,
+    value,
+  }));
 
-      if (value.value < 0) {
-        return new Minus([previous, new Mul([new Num(-value.value), name])]);
-      }
-      return new Add([previous, current]);
-    })
-    .toTex(texNames);
+  const lines = renderTerms(terms, texNames);
+  if (lines.length === 1) return lines[0];
+  return `\\begin{aligned}& ${lines.join(" \\\\ & ")}\\end{aligned}`;
 }
+
 export function defaultValue(a: string | undefined, b: string): string {
   if (a === undefined) return b;
   return a;
@@ -31,46 +77,3 @@ export function defaultValue(a: string | undefined, b: string): string {
 export function defaultTexName(name: string): string {
   return `\\text\{${name}\}`;
 }
-
-// export function stoichToTex(
-//   stoich: Stoichiometry,
-//   texNames: Map<string, string>,
-// ): string {
-//   const filtered = stoich.filter(({ value }) => value.value !== 0);
-//   console.log(filtered.length);
-//   if (filtered.length === 0) return "0";
-//   return filtered
-//     .map(({ name, value }: { name: string; value: Num }) => {
-//       const newName = new Name(name);
-//       // Turn 1x and -1x into x and -x
-//       if (value.value === 1.0) {
-//         return newName;
-//       }
-//       if (value.value === -1.0) {
-//         return new Minus([newName]);
-//       }
-//       return new Mul([value, newName]);
-//     })
-//     .reduce((previous, current) => {
-//       // a + b
-//       if (current instanceof Name) {
-//         return new Add([previous, current]);
-//       }
-//       // a - b
-//       if (current instanceof Minus) {
-//         return new Minus([previous, ...(current as Minus).children]);
-//       }
-//       // in all other cases has to be Mul(Num, Name)
-//       const mul = current as Mul;
-//       const val = mul.children[0];
-//       const value: number = (val as Num).value;
-//       if (value < 0) {
-//         return new Minus([
-//           previous,
-//           new Mul([new Num(-value), mul.children[1]]),
-//         ]);
-//       }
-//       return new Add([previous, current]);
-//     })
-//     .toTex(texNames);
-// }

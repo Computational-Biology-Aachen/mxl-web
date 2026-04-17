@@ -1,4 +1,4 @@
-import type { Base, Num } from "$lib/mathml";
+import type { Base } from "$lib/mathml";
 import { ModelBuilder } from "./modelBuilder";
 
 export type SliderArgs = {
@@ -10,7 +10,7 @@ export type SliderArgs = {
 
 export type Stoich = {
   name: string;
-  value: Num; //
+  value: Base;
 };
 export type Stoichiometry = Array<Stoich>;
 

@@ -104,19 +104,25 @@
             </select>
           </td>
           <td>
-            <input
-              type="number"
-              bind:value={
-                () => {
-                  return stoichiometry[idx].value.value;
-                },
-                (v: number) => {
-                  stoichiometry[idx].value.value = v;
-                  stoichiometry = stoichiometry.slice();
+            {#if stoichiometry[idx].value instanceof Num}
+              <input
+                type="number"
+                bind:value={
+                  () => {
+                    return (stoichiometry[idx].value as Num).value;
+                  },
+                  (v: number) => {
+                    (stoichiometry[idx].value as Num).value = v;
+                    stoichiometry = stoichiometry.slice();
+                  }
                 }
-              }
-              step="1.0"
-            />
+                step="1.0"
+              />
+            {:else}
+              <span class="expr-display"
+                >{stoichiometry[idx].value.toPy(displayNames)}</span
+              >
+            {/if}
           </td>
           <td>
             <TableButtonClose
@@ -219,6 +225,11 @@
     transition-duration: 150ms;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     background-color: lch(from var(--bg-l1) calc(l - 5) c h);
+  }
+  .expr-display {
+    color: var(--slate-500, #64748b);
+    font-size: 0.875rem;
+    font-family: monospace;
   }
   table input,
   select {

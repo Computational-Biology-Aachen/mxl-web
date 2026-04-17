@@ -58,11 +58,35 @@ export class Piecewise extends Nary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `piecewise(${this.children.map((c) => c.toPy(displayNames)).join(", ")})`;
+    const parts: string[] = [];
+    for (let i = 0; i + 1 < this.children.length; i += 2) {
+      parts.push(
+        `${this.children[i].toPy(displayNames)} if ${this.children[i + 1].toPy(displayNames)}`,
+      );
+    }
+    const otherwise =
+      this.children.length % 2 === 1
+        ? this.children[this.children.length - 1].toPy(displayNames)
+        : "float('nan')";
+    return (
+      parts.join(" else ") +
+      (parts.length > 0 ? ` else ${otherwise}` : otherwise)
+    );
   }
 
   toTex(texNames: Map<string, string>): string {
-    return `\\begin{cases}${this.children.map((c) => c.toTex(texNames)).join(" \\\\ ")}\\end{cases}`;
+    const parts: string[] = [];
+    for (let i = 0; i + 1 < this.children.length; i += 2) {
+      parts.push(
+        `${this.children[i].toTex(texNames)} & ${this.children[i + 1].toTex(texNames)}`,
+      );
+    }
+    if (this.children.length % 2 === 1) {
+      parts.push(
+        `${this.children[this.children.length - 1].toTex(texNames)} & \\text{else}`,
+      );
+    }
+    return `\\begin{cases}${parts.join(" \\\\ ")}\\end{cases}`;
   }
 
   toSBML(): string {
@@ -417,7 +441,14 @@ export class Add extends Nary {
   }
 
   toTex(texNames: Map<string, string>): string {
-    return this.children.map((c) => c.toTex(texNames)).join(" + ");
+    return this.children
+      .map((c, i) => {
+        if (i === 0) return c.toTex(texNames);
+        if (c instanceof Minus && c.children.length === 1)
+          return `- ${c.children[0].toTex(texNames)}`;
+        return `+ ${c.toTex(texNames)}`;
+      })
+      .join(" ");
   }
 
   toSBML(): string {
@@ -465,13 +496,28 @@ export class Mul extends Nary {
     super();
   }
   toJs(): string {
-    return this.children.map((child) => child.toJs()).join(" * ");
+    return this.children
+      .map((c) => {
+        const s = c.toJs();
+        return c instanceof Add || c instanceof Minus ? `(${s})` : s;
+      })
+      .join(" * ");
   }
   toPy(displayNames: Map<string, string>): string {
-    return this.children.map((child) => child.toPy(displayNames)).join(" * ");
+    return this.children
+      .map((c) => {
+        const s = c.toPy(displayNames);
+        return c instanceof Add || c instanceof Minus ? `(${s})` : s;
+      })
+      .join(" * ");
   }
   toTex(texNames: Map<string, string>): string {
-    return this.children.map((child) => child.toTex(texNames)).join(" \\cdot ");
+    return this.children
+      .map((c) => {
+        const s = c.toTex(texNames);
+        return c instanceof Add || c instanceof Minus ? `(${s})` : s;
+      })
+      .join(" \\cdot ");
   }
   toSBML(): string {
     return `<apply><times/>${this.children.map((c) => c.toSBML()).join("")}</apply>`;

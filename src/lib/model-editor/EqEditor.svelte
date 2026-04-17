@@ -1,6 +1,64 @@
 <script lang="ts">
   import Math from "$lib/Math.svelte";
-  import { Add, Divide, Minus, Mul, Name, Num, type Base } from "$lib/mathml";
+  import {
+    type Base,
+    Add,
+    Divide,
+    Minus,
+    Mul,
+    Name,
+    Num,
+    Pow,
+    Implies,
+    IntDivide,
+    Rem,
+    And,
+    Or,
+    Xor,
+    Not,
+    Eq,
+    NotEqual,
+    GreaterEqual,
+    GreaterThan,
+    LessEqual,
+    LessThan,
+    Max,
+    Min,
+    Piecewise,
+    Abs,
+    Ceiling,
+    Exp,
+    Factorial,
+    Floor,
+    Ln,
+    Sin,
+    Cos,
+    Tan,
+    Sec,
+    Csc,
+    Cot,
+    Asin,
+    Acos,
+    Atan,
+    Acot,
+    ArcSec,
+    ArcCsc,
+    Sinh,
+    Cosh,
+    Tanh,
+    Sech,
+    Csch,
+    Coth,
+    ArcSinh,
+    ArcCosh,
+    ArcTanh,
+    ArcCsch,
+    ArcSech,
+    ArcCoth,
+    RateOf,
+    Log,
+    Sqrt,
+  } from "$lib/mathml";
   import EqNode from "$lib/model-editor/EqNode.svelte";
   import RowApart from "$lib/RowApart.svelte";
   import PopoverSaveButton from "../buttons/PopoverSaveButton.svelte";
@@ -93,48 +151,185 @@
       },
     },
   ];
-  const palette: {
-    label: string;
-    default: () => Base;
-    hint: string;
+
+  const paletteGroups: {
+    name: string;
+    items: { label: string; default: () => Base; hint: string }[];
   }[] = [
     {
-      label: "Symbol",
-      default: Name.prototype.default,
-      hint: "Variable placeholder",
+      name: "Leaves",
+      items: [
+        {
+          label: "Symbol",
+          default: Name.prototype.default,
+          hint: "Variable placeholder",
+        },
+        {
+          label: "Number",
+          default: Num.prototype.default,
+          hint: "Constant value",
+        },
+      ],
     },
     {
-      label: "Number",
-      default: Num.prototype.default,
-      hint: "Constant value",
+      name: "Arithmetic",
+      items: [
+        {
+          label: "Add",
+          default: () => new Add([Name.prototype.default(), Name.prototype.default()]),
+          hint: "a + b",
+        },
+        {
+          label: "Sub",
+          default: () => new Minus([Name.prototype.default(), Name.prototype.default()]),
+          hint: "a − b",
+        },
+        {
+          label: "Multiply",
+          default: () => new Mul([Name.prototype.default(), Name.prototype.default()]),
+          hint: "a × b",
+        },
+        {
+          label: "Divide",
+          default: () => new Divide([Name.prototype.default(), Name.prototype.default()]),
+          hint: "a / b",
+        },
+        {
+          label: "Power",
+          default: () => new Pow(Name.prototype.default(), new Num(2)),
+          hint: "aⁿ",
+        },
+        {
+          label: "Int Divide",
+          default: () => new IntDivide([Name.prototype.default(), Name.prototype.default()]),
+          hint: "⌊a/b⌋",
+        },
+        {
+          label: "Remainder",
+          default: () => new Rem([Name.prototype.default(), Name.prototype.default()]),
+          hint: "a mod b",
+        },
+      ],
     },
     {
-      label: "Divide",
-      default: () => {
-        return new Divide([Name.prototype.default(), Name.prototype.default()]);
-      },
-      hint: "Two-part fraction",
+      name: "Functions",
+      items: [
+        {
+          label: "Exp",
+          default: () => new Exp(Name.prototype.default()),
+          hint: "eˣ",
+        },
+        {
+          label: "Ln",
+          default: () => new Ln(Name.prototype.default()),
+          hint: "Natural log",
+        },
+        {
+          label: "Log",
+          default: () => new Log(Name.prototype.default(), new Num(10)),
+          hint: "Log base b",
+        },
+        {
+          label: "Sqrt",
+          default: () => new Sqrt(Name.prototype.default(), new Num(2)),
+          hint: "nth root",
+        },
+        {
+          label: "Abs",
+          default: () => new Abs(Name.prototype.default()),
+          hint: "|x|",
+        },
+        {
+          label: "Floor",
+          default: () => new Floor(Name.prototype.default()),
+          hint: "⌊x⌋",
+        },
+        {
+          label: "Ceil",
+          default: () => new Ceiling(Name.prototype.default()),
+          hint: "⌈x⌉",
+        },
+        {
+          label: "Factorial",
+          default: () => new Factorial(Name.prototype.default()),
+          hint: "n!",
+        },
+        {
+          label: "d/dt",
+          default: () => new RateOf(Name.prototype.default()),
+          hint: "Rate of change",
+        },
+        {
+          label: "Max",
+          default: () => new Max([Name.prototype.default(), Name.prototype.default()]),
+          hint: "Maximum",
+        },
+        {
+          label: "Min",
+          default: () => new Min([Name.prototype.default(), Name.prototype.default()]),
+          hint: "Minimum",
+        },
+        {
+          label: "Piecewise",
+          default: () => new Piecewise([Name.prototype.default(), Name.prototype.default()]),
+          hint: "Piecewise",
+        },
+      ],
     },
     {
-      label: "Multiply",
-      default: () => {
-        return new Mul([Name.prototype.default(), Name.prototype.default()]);
-      }, //
-      hint: "Multiply",
+      name: "Trigonometry",
+      items: [
+        { label: "Sin", default: () => new Sin(Name.prototype.default()), hint: "sin(x)" },
+        { label: "Cos", default: () => new Cos(Name.prototype.default()), hint: "cos(x)" },
+        { label: "Tan", default: () => new Tan(Name.prototype.default()), hint: "tan(x)" },
+        { label: "Sec", default: () => new Sec(Name.prototype.default()), hint: "sec(x)" },
+        { label: "Csc", default: () => new Csc(Name.prototype.default()), hint: "csc(x)" },
+        { label: "Cot", default: () => new Cot(Name.prototype.default()), hint: "cot(x)" },
+        { label: "Arcsin", default: () => new Asin(Name.prototype.default()), hint: "arcsin(x)" },
+        { label: "Arccos", default: () => new Acos(Name.prototype.default()), hint: "arccos(x)" },
+        { label: "Arctan", default: () => new Atan(Name.prototype.default()), hint: "arctan(x)" },
+        { label: "Arccot", default: () => new Acot(Name.prototype.default()), hint: "arccot(x)" },
+        { label: "Arcsec", default: () => new ArcSec(Name.prototype.default()), hint: "arcsec(x)" },
+        { label: "Arccsc", default: () => new ArcCsc(Name.prototype.default()), hint: "arccsc(x)" },
+      ],
     },
     {
-      label: "Add",
-      default: () => {
-        return new Add([Name.prototype.default(), Name.prototype.default()]);
-      }, //
-      hint: "Add",
+      name: "Hyperbolic",
+      items: [
+        { label: "Sinh", default: () => new Sinh(Name.prototype.default()), hint: "sinh(x)" },
+        { label: "Cosh", default: () => new Cosh(Name.prototype.default()), hint: "cosh(x)" },
+        { label: "Tanh", default: () => new Tanh(Name.prototype.default()), hint: "tanh(x)" },
+        { label: "Sech", default: () => new Sech(Name.prototype.default()), hint: "sech(x)" },
+        { label: "Csch", default: () => new Csch(Name.prototype.default()), hint: "csch(x)" },
+        { label: "Coth", default: () => new Coth(Name.prototype.default()), hint: "coth(x)" },
+        { label: "Arcsinh", default: () => new ArcSinh(Name.prototype.default()), hint: "arcsinh(x)" },
+        { label: "Arccosh", default: () => new ArcCosh(Name.prototype.default()), hint: "arccosh(x)" },
+        { label: "Arctanh", default: () => new ArcTanh(Name.prototype.default()), hint: "arctanh(x)" },
+        { label: "Arccsch", default: () => new ArcCsch(Name.prototype.default()), hint: "arccsch(x)" },
+        { label: "Arcsech", default: () => new ArcSech(Name.prototype.default()), hint: "arcsech(x)" },
+        { label: "Arccoth", default: () => new ArcCoth(Name.prototype.default()), hint: "arccoth(x)" },
+      ],
     },
     {
-      label: "Sub",
-      default: () => {
-        return new Minus([Name.prototype.default(), Name.prototype.default()]);
-      }, //
-      hint: "Sub",
+      name: "Comparison",
+      items: [
+        { label: "Equal", default: () => new Eq([Name.prototype.default(), Name.prototype.default()]), hint: "a = b" },
+        { label: "Not Equal", default: () => new NotEqual([Name.prototype.default(), Name.prototype.default()]), hint: "a ≠ b" },
+        { label: "Greater", default: () => new GreaterThan([Name.prototype.default(), Name.prototype.default()]), hint: "a > b" },
+        { label: "Geq", default: () => new GreaterEqual([Name.prototype.default(), Name.prototype.default()]), hint: "a ≥ b" },
+        { label: "Less", default: () => new LessThan([Name.prototype.default(), Name.prototype.default()]), hint: "a < b" },
+        { label: "Leq", default: () => new LessEqual([Name.prototype.default(), Name.prototype.default()]), hint: "a ≤ b" },
+      ],
+    },
+    {
+      name: "Logic",
+      items: [
+        { label: "And", default: () => new And([Name.prototype.default(), Name.prototype.default()]), hint: "a ∧ b" },
+        { label: "Or", default: () => new Or([Name.prototype.default(), Name.prototype.default()]), hint: "a ∨ b" },
+        { label: "Xor", default: () => new Xor([Name.prototype.default(), Name.prototype.default()]), hint: "a ⊕ b" },
+        { label: "Not", default: () => new Not([Name.prototype.default()]), hint: "¬a" },
+        { label: "Implies", default: () => new Implies(Name.prototype.default(), Name.prototype.default()), hint: "a ⇒ b" },
+      ],
     },
   ];
 
@@ -199,15 +394,22 @@
     </select>
   </div>
 
-  <div class="palette">
-    {#each palette as item}
-      <button
-        class="palette-button"
-        onclick={() => insertNode(item.default)}
-      >
-        <span class="label">{item.label}</span>
-        <span class="hint">{item.hint}</span>
-      </button>
+  <div class="palette-groups">
+    {#each paletteGroups as group}
+      <div class="palette-group">
+        <span class="group-label">{group.name}</span>
+        <div class="palette">
+          {#each group.items as item}
+            <button
+              class="palette-button"
+              onclick={() => insertNode(item.default)}
+            >
+              <span class="label">{item.label}</span>
+              <span class="hint">{item.hint}</span>
+            </button>
+          {/each}
+        </div>
+      </div>
     {/each}
   </div>
 
@@ -291,10 +493,30 @@
     color: #4b5563;
   }
 
+  .palette-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .palette-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .group-label {
+    color: #6b7280;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
   .palette {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.5rem;
   }
 
   .palette-button {
@@ -306,7 +528,7 @@
     border: var(--border);
     border-radius: var(--border-radius);
     background: #f9fafb;
-    padding: 0.75rem 0.9rem;
+    padding: 0.5rem 0.75rem;
     text-align: left;
   }
 
@@ -325,7 +547,7 @@
   .palette-button .hint {
     display: block;
     color: #4b5563;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
 
   .editor-grid {

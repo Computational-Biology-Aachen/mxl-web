@@ -315,15 +315,15 @@ export function modelToSbml(model: ModelBuilder, name: string): string {
       .map(([id, r]) => {
         const displayName = r.displayName ?? id;
 
-        const reactants = r.stoichiometry.filter((s) => s.value.value < 0);
-        const products = r.stoichiometry.filter((s) => s.value.value > 0);
+        const reactants = r.stoichiometry.filter((s) => s.value instanceof Num && s.value.value < 0);
+        const products = r.stoichiometry.filter((s) => !(s.value instanceof Num) || s.value.value > 0);
 
         const reactantsXml =
           reactants.length > 0
             ? `\n        <listOfReactants>\n          ${reactants
                 .map(
                   (s) =>
-                    `<speciesReference species="${escapeXml(s.name)}" stoichiometry="${Math.abs(s.value.value)}" constant="true"/>`,
+                    `<speciesReference species="${escapeXml(s.name)}" stoichiometry="${s.value instanceof Num ? Math.abs(s.value.value) : 1}" constant="true"/>`,
                 )
                 .join("\n          ")}\n        </listOfReactants>`
             : "";
@@ -333,7 +333,7 @@ export function modelToSbml(model: ModelBuilder, name: string): string {
             ? `\n        <listOfProducts>\n          ${products
                 .map(
                   (s) =>
-                    `<speciesReference species="${escapeXml(s.name)}" stoichiometry="${s.value.value}" constant="true"/>`,
+                    `<speciesReference species="${escapeXml(s.name)}" stoichiometry="${s.value instanceof Num ? s.value.value : 1}" constant="true"/>`,
                 )
                 .join("\n          ")}\n        </listOfProducts>`
             : "";
