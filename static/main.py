@@ -44,6 +44,7 @@ def integrate(
     n: int = 500,
     method: Literal["RK45", "LSODA", "BDF"] = "LSODA",
 ) -> tuple[np.ndarray, np.ndarray, str | None]:
+
     try:
         res = solve_ivp(
             model,
@@ -52,7 +53,9 @@ def integrate(
             method=method,
             **ts(t_end, n),
         )
-        return res.t, res.y.T, None
+        if res.success:
+            return res.t, res.y.T, None
+        return np.array([]), np.array([]), "Integration failure"
     except Exception as e:
         return np.array([]), np.array([]), str(e)
 
