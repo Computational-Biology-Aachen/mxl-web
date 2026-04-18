@@ -62,7 +62,12 @@
 
     const protocol = expandProtocol(pamProtocol);
 
-    const built = model.buildPython(["PPFD"]);
+    const allDerived = new Set(model.sortDependencies());
+    const derivedSelection =
+      showDerived && selectedKeys
+        ? selectedKeys.filter((k) => allDerived.has(k))
+        : undefined;
+    const built = model.buildPython(["PPFD"], derivedSelection);
 
     pyWorker.postMessage({
       model: `${built}\nmodel`,
@@ -132,17 +137,18 @@
     if (!showDerived)
       return { labels: result.time as number[], datasets: varDatasets };
 
-    const derivedDatasets = model
-      .sortDependencies()
-      .map((name, i) => ({ name, i }))
-      .filter(({ name }) => visible(name))
-      .map(({ name, i }) => ({
-        label:
-          model.assignments.get(name)?.displayName ??
-          model.reactions.get(name)?.displayName ??
-          name,
-        data: arrayColumn(result.values, nVars + i) as number[],
-      }));
+    const allDerived = model.sortDependencies();
+    const activeDerived = selectedKeys
+      ? allDerived.filter((k) => selectedKeys.includes(k))
+      : allDerived;
+
+    const derivedDatasets = activeDerived.map((name, i) => ({
+      label:
+        model.assignments.get(name)?.displayName ??
+        model.reactions.get(name)?.displayName ??
+        name,
+      data: arrayColumn(result.values, nVars + i) as number[],
+    }));
 
     return {
       labels: result.time as number[],

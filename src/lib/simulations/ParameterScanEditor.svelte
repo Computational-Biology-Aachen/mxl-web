@@ -45,7 +45,9 @@
     ...(showDerived ? model.sortDependencies() : []),
   ]);
 
-  let selectedKeys = $state<string[] | undefined>(untrack(() => parent.selectedKeys));
+  let selectedKeys = $state<string[] | undefined>(
+    untrack(() => parent.selectedKeys),
+  );
 
   function keyLabel(key: string): string {
     return (
@@ -191,10 +193,7 @@
     <InputCheckbox
       id="sel-{key}"
       label={keyLabel(key)}
-      bind:checked={
-        () => isSelected(key),
-        (v) => toggle(key, v)
-      }
+      bind:checked={() => isSelected(key), (v) => toggle(key, v)}
     />
   {/each}
 </details>
@@ -234,9 +233,9 @@
   }
 
   .section-summary::before {
+    vertical-align: middle;
     content: "▶ ";
     font-size: 0.6rem;
-    vertical-align: middle;
   }
 
   details[open] .section-summary::before {

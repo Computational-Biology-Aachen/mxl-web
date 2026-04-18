@@ -1,6 +1,6 @@
 <script lang="ts">
-  import AnalysisEditor from "$lib/simulations/TimeCourseEditor.svelte";
   import { ModelBuilder } from "$lib/model-editor/modelBuilder";
+  import AnalysisEditor from "$lib/simulations/TimeCourseEditor.svelte";
 
   const model = new ModelBuilder();
 
@@ -17,6 +17,7 @@
     yMax: 20.0,
     timeoutInSeconds: 10,
     method: "RK45",
+    nTimePoints: 100,
   };
 </script>
 

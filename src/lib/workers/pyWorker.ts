@@ -9,6 +9,22 @@ let pyodidePromise: Promise<any> | null = null;
 
 const indexURL = `https://cdn.jsdelivr.net/pyodide/v${version}/full/`;
 
+export interface SimulationRequest {
+  // Required; don't change!
+  requestId: string;
+  model: string;
+  derived: string;
+  initialValues: number[];
+  tEnd: number;
+  nTimePoints: number;
+  pars: number[];
+  method: string;
+  calculateDerived: boolean;
+  // Optional
+  type?: string;
+  protocol?: { t_end: number; PFD: number }[];
+}
+
 async function setupPyodide() {
   try {
     const pyodide = await loadPyodide({
@@ -41,16 +57,18 @@ onmessage = async function (event: MessageEvent) {
     return;
   }
 
-  const model = event.data.model;
-  const derived = event.data.derived;
-  const y0 = event.data.initialValues;
-  const tEnd = event.data.tEnd;
-  const pars = event.data.pars;
-  const requestId = event.data.requestId;
-  const nTimePoints = 100;
-  const method = event.data.method;
-  const protocol = event.data.protocol;
-  const calculateDerived = event.data.calculateDerived;
+  const {
+    model,
+    derived,
+    initialValues: y0,
+    tEnd,
+    pars,
+    requestId,
+    nTimePoints,
+    method,
+    protocol,
+    calculateDerived,
+  } = event.data as SimulationRequest;
 
   let tPy: any, yPy: any, errPy: any;
   if (protocol) {

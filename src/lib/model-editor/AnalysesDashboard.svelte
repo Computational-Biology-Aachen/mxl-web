@@ -156,6 +156,7 @@
       xMax: undefined,
       timeoutInSeconds: 20,
       method: "Radau",
+      nTimePoints: 100,
     };
     analyses = [...analyses, newAnalysis];
   }
@@ -170,6 +171,7 @@
       yMax: undefined,
       timeoutInSeconds: 60,
       method: "Radau",
+      nTimePoints: 100,
       pamProtocol: [
         {
           backgroundPFD: 0,

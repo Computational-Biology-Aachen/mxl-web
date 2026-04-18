@@ -212,7 +212,25 @@ export class ModelBuilder {
     return names;
   }
 
-  buildPython(userParameters: string[]): string {
+  private transitiveDerivedDeps(
+    selectedKeys: string[],
+    order: string[],
+  ): Set<string> {
+    const orderSet = new Set(order);
+    const needed = new Set<string>();
+    const visit = (key: string) => {
+      if (needed.has(key) || !orderSet.has(key)) return;
+      needed.add(key);
+      const entity = this.assignments.get(key) ?? this.reactions.get(key);
+      if (entity) {
+        for (const sym of entity.fn.getSymbols(new Set())) visit(sym);
+      }
+    };
+    for (const key of selectedKeys) visit(key);
+    return needed;
+  }
+
+  buildPython(userParameters: string[], selectedDerived?: string[]): string {
     const order = this.sortDependencies();
     const displayNames = this.getDisplayNames();
     const Name = (x: string) => defaultValue(displayNames.get(x), x);
@@ -252,12 +270,39 @@ export class ModelBuilder {
           const el = this.assignments.get(name)!.fn;
           return `${Name(name)} = ${el.toPy(displayNames)}`;
         } else {
-          // Name in this.reaction
           const el = this.reactions.get(name)!.fn;
           return `${Name(name)} = ${el.toPy(displayNames)}`;
         }
       })
       .join("\n    ");
+
+    const selectedFns = selectedDerived
+      ? (() => {
+          const needed = this.transitiveDerivedDeps(selectedDerived, order);
+          return order
+            .filter((name) => needed.has(name))
+            .map((name) => {
+              if (this.assignments.has(name)) {
+                const el = this.assignments.get(name)!.fn;
+                return `${Name(name)} = ${el.toPy(displayNames)}`;
+              } else {
+                const el = this.reactions.get(name)!.fn;
+                return `${Name(name)} = ${el.toPy(displayNames)}`;
+              }
+            })
+            .join("\n    ");
+        })()
+      : null;
+
+    const selectedDerivedSet = selectedDerived
+      ? new Set(selectedDerived)
+      : null;
+    const selectedReturn = selectedDerived
+      ? order
+          .filter((name) => selectedDerivedSet!.has(name))
+          .map(Name)
+          .join(", ")
+      : null;
 
     // Build rhs
     let rhs: Record<string, string> = Object.fromEntries(
@@ -296,12 +341,28 @@ export class ModelBuilder {
       .toArray()
       .join(", ");
 
+    const args = extraArgs.length > 0 ? "\n      " + extraArgs : "";
+    const selectedDerivedBlock =
+      selectedFns !== null
+        ? `
+def selected_derived(
+    time: float,
+    variables: list[float], ${args}
+):
+    ${variables} = variables
+    ${parameters}
+    ${selectedFns}
+    return [${selectedReturn}]
+
+derived = selected_derived`
+        : `
+derived = all_derived`;
+
     return `import numpy as np
-import numpy as np
 
 def model(
     time: float,
-    variables: list[float], ${extraArgs.length > 0 ? "\n      " + extraArgs : ""}
+    variables: list[float], ${args}
 ):
     ${variables} = variables
     ${parameters}
@@ -309,15 +370,15 @@ def model(
     ${rhsString}
     return [${dxdt}]
 
-def derived(
+def all_derived(
     time: float,
-    variables: list[float], ${extraArgs.length > 0 ? "\n      " + extraArgs : ""}
+    variables: list[float], ${args}
 ):
     ${variables} = variables
     ${parameters}
     ${fns}
-    return [${order}]
-
+    return [${order.map(Name).join(", ")}]
+${selectedDerivedBlock}
 y0 = {${y0}}
     `;
   }

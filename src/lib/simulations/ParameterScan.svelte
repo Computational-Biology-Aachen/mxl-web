@@ -64,9 +64,14 @@
     const scanId = activeScanId;
     const paramValues = linspace(analysis.min, analysis.max, analysis.steps);
     const varKeys = [...currentModel.variables.keys()];
-    const derivedKeys = showDerived ? currentModel.sortDependencies() : [];
+    const allDerivedKeys = showDerived ? currentModel.sortDependencies() : [];
+    const derivedSelection =
+      showDerived && selectedKeys
+        ? allDerivedKeys.filter((k) => selectedKeys.includes(k))
+        : undefined;
+    const activeDerivedKeys = derivedSelection ?? allDerivedKeys;
 
-    const allKeys = [...varKeys, ...derivedKeys];
+    const allKeys = [...varKeys, ...activeDerivedKeys];
     const allLabels = allKeys.map((k) => {
       return (
         currentModel.variables.get(k)?.displayName ??
@@ -99,7 +104,7 @@
         ...clonedModel.parameters.get(analysis.parameter),
         value: paramValue,
       });
-      const built = clonedModel.buildPython([]);
+      const built = clonedModel.buildPython([], derivedSelection);
       pyWorkerPool.postMessage({
         model: `${built}\nmodel`,
         derived: `${built}\nderived`,

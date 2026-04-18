@@ -1,24 +1,12 @@
 import { browser } from "$app/environment";
 import { base } from "$app/paths";
+import type { SimulationRequest } from "$lib/workers/pyWorker";
 
 export interface WorkerMessage {
   time: number[];
   values: number[][];
   requestId?: string;
   message: string | undefined;
-}
-
-interface SimulationRequest {
-  model: string;
-  derived?: string;
-  initialValues: number[];
-  tEnd: number;
-  nTimePoints?: number;
-  pars: number[];
-  method?: string;
-  requestId?: string;
-  protocol?: { t_end: number; PFD: number }[];
-  calculateDerived?: boolean;
 }
 
 type MessageHandler = (data: WorkerMessage) => void;

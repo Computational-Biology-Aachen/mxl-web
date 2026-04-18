@@ -72,20 +72,26 @@
 
     backend1.worker.postMessage({
       model: backend1.model,
+      derived: "",
       initialValues: localVariables.slice(0, localVariables.length),
       tEnd: tEnd,
       pars: localPars.slice(0, localPars.length),
       method: method,
       requestId: requestId,
+      nTimePoints: 100,
+      calculateDerived: false,
     });
 
     backend2.worker.postMessage({
       model: backend2.model,
+      derived: "",
       initialValues: localVariables.slice(0, localVariables.length),
       tEnd: tEnd,
       pars: localPars.slice(0, localPars.length),
       method: method,
       requestId: requestId,
+      nTimePoints: 100,
+      calculateDerived: false,
     });
   }
 

@@ -2,22 +2,10 @@ import { browser } from "$app/environment";
 import type { WorkerMessage } from "./workerStore";
 import { WorkerManager } from "./workerStore";
 
+import type { SimulationRequest } from "$lib/workers/pyWorker";
 import pyWorkerUrlString from "../workers/pyWorker.ts?worker&url";
 
 const pyWorkerUrl = new URL(pyWorkerUrlString, import.meta.url);
-
-interface SimulationRequest {
-  model: string;
-  derived: string;
-  initialValues: number[];
-  tEnd: number;
-  pars: number[];
-  method?: string;
-  requestId?: string;
-  protocol?: { t_end: number; PFD: number }[];
-  calculateDerived?: boolean;
-  nTimePoints?: number;
-}
 
 type MessageHandler = (data: WorkerMessage) => void;
 type ErrorHandler = (error: ErrorEvent) => void;

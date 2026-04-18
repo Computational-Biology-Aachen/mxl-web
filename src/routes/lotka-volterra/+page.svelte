@@ -113,7 +113,7 @@
       timeoutInSeconds: 20,
       method: "LSODA",
       showDerived: true,
-      nTimePoints: 100,
+      nTimePoints: 500,
     },
   ]);
 </script>
