@@ -14,6 +14,7 @@
     method,
     showDerived = false,
     selectedKeys = undefined,
+    nTimePoints,
   }: {
     model: ModelBuilder;
     analysis: ParameterScanAnalysis;
@@ -22,6 +23,7 @@
     method: string;
     showDerived?: boolean;
     selectedKeys?: string[];
+    nTimePoints: number;
   } = $props();
 
   type ScanResult = {
@@ -110,6 +112,7 @@
         requestId,
         method: method,
         calculateDerived: showDerived,
+        nTimePoints: 2,
       });
     });
   }
@@ -148,10 +151,13 @@
 
   let lineData = $derived.by(() => {
     if (!scanResult) return { labels: [], datasets: [] };
-    const visible = (key: string) => !selectedKeys || selectedKeys.includes(key);
+    const visible = (key: string) =>
+      !selectedKeys || selectedKeys.includes(key);
     return {
       labels: scanResult.paramValues as number[],
-      datasets: scanResult.datasets.filter((_, i) => visible(scanResult.keys[i])),
+      datasets: scanResult.datasets.filter((_, i) =>
+        visible(scanResult.keys[i]),
+      ),
     };
   });
 

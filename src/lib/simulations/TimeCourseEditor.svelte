@@ -35,6 +35,7 @@
   let timeoutInSeconds = $derived(parent.timeoutInSeconds);
   let method = $derived(parent.method);
   let showDerived = $state(untrack(() => parent.showDerived ?? false));
+  let nTimePoints = $state(untrack(() => parent.nTimePoints ?? 100));
 
   let allAvailableKeys = $derived([
     ...model.variables.keys(),
@@ -84,6 +85,7 @@
         method: method,
         showDerived,
         selectedKeys,
+        nTimePoints,
       })}
     popovertarget={popovertarget}
   />
@@ -103,6 +105,11 @@
   id="timeoutInSeconds"
   label="Simulation timeout in seconds: "
   bind:value={timeoutInSeconds}
+/>
+<InputNumber
+  id="nTimePoints"
+  label="Time points: "
+  bind:value={nTimePoints}
 />
 
 <h3>Plot options</h3>

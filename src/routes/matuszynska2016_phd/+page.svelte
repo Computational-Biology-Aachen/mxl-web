@@ -1731,6 +1731,7 @@
       timeoutInSeconds: 20,
       method: "Radau",
       showDerived: false,
+      nTimePoints: 500,
     },
     {
       type: "pam" as const,
@@ -1745,6 +1746,7 @@
       pamProtocol: defaultPamProtocol,
       showDerived: true,
       selectedKeys: ["Fluo"],
+      nTimePoints: 100,
     },
   ]);
 </script>

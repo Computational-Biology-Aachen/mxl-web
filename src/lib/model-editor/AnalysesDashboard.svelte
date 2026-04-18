@@ -433,6 +433,7 @@
           method={analysis.method}
           showDerived={analysis.showDerived ?? false}
           selectedKeys={analysis.selectedKeys}
+          nTimePoints={analysis.nTimePoints ?? 100}
         />
       {:else if analysis.type === "parameterScan"}
         <ParameterScanSimulator
@@ -443,6 +444,7 @@
           method={analysis.method}
           showDerived={analysis.showDerived ?? false}
           selectedKeys={analysis.selectedKeys}
+          nTimePoints={2}
         />
       {:else if analysis.type === "pam"}
         <PamSimulator
@@ -454,6 +456,7 @@
           method={analysis.method}
           showDerived={analysis.showDerived ?? false}
           selectedKeys={analysis.selectedKeys}
+          nTimePoints={analysis.nTimePoints ?? 100}
         />
       {/if}
     {/if}

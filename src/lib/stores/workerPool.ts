@@ -16,6 +16,7 @@ interface SimulationRequest {
   requestId?: string;
   protocol?: { t_end: number; PFD: number }[];
   calculateDerived?: boolean;
+  nTimePoints?: number;
 }
 
 type MessageHandler = (data: WorkerMessage) => void;

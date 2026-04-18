@@ -96,6 +96,7 @@
       timeoutInSeconds: 20,
       method: "LSODA",
       showDerived: false,
+      nTimePoints: 100,
     },
     {
       type: "simulation" as const,
@@ -112,6 +113,7 @@
       timeoutInSeconds: 20,
       method: "LSODA",
       showDerived: true,
+      nTimePoints: 100,
     },
   ]);
 </script>

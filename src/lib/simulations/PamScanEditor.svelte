@@ -30,6 +30,7 @@
     untrack(() => $state.snapshot(parent.pamProtocol)) as PamPhase[],
   );
   let showDerived = $state(untrack(() => parent.showDerived ?? false));
+  let nTimePoints = $state(untrack(() => parent.nTimePoints ?? 100));
 
   let allAvailableKeys = $derived([
     ...model.variables.keys(),
@@ -92,6 +93,7 @@
         pamProtocol: phases,
         showDerived,
         selectedKeys,
+        nTimePoints,
       })}
     popovertarget={popovertarget}
   />
@@ -106,6 +108,11 @@
   id="pam-timeout"
   label="Simulation timeout in seconds: "
   bind:value={timeoutInSeconds}
+/>
+<InputNumber
+  id="pam-nTimePoints"
+  label="Time points per step: "
+  bind:value={nTimePoints}
 />
 <InputChoice
   id="pam-method"

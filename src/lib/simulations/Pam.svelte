@@ -21,6 +21,7 @@
     method,
     showDerived = false,
     selectedKeys = undefined,
+    nTimePoints,
   }: {
     model: ModelBuilder;
     pamProtocol: PamPhase[];
@@ -29,6 +30,7 @@
     method: string;
     showDerived?: boolean;
     selectedKeys?: string[];
+    nTimePoints: number;
   } = $props();
 
   const pyWorker = pyWorkerPool;
@@ -75,6 +77,7 @@
       requestId: requestId,
       protocol: protocol,
       calculateDerived: showDerived,
+      nTimePoints: nTimePoints,
     });
   }
 
@@ -115,7 +118,8 @@
 
   let lineData = $derived.by(() => {
     const nVars = model.variables.size;
-    const visible = (key: string) => !selectedKeys || selectedKeys.includes(key);
+    const visible = (key: string) =>
+      !selectedKeys || selectedKeys.includes(key);
 
     const varDatasets = [...model.variables.keys()]
       .map((name, idx) => ({ name, idx }))
@@ -125,9 +129,11 @@
         data: arrayColumn(result.values, idx) as number[],
       }));
 
-    if (!showDerived) return { labels: result.time as number[], datasets: varDatasets };
+    if (!showDerived)
+      return { labels: result.time as number[], datasets: varDatasets };
 
-    const derivedDatasets = model.sortDependencies()
+    const derivedDatasets = model
+      .sortDependencies()
       .map((name, i) => ({ name, i }))
       .filter(({ name }) => visible(name))
       .map(({ name, i }) => ({

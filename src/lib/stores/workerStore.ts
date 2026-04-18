@@ -13,6 +13,7 @@ interface SimulationRequest {
   derived?: string;
   initialValues: number[];
   tEnd: number;
+  nTimePoints?: number;
   pars: number[];
   method?: string;
   requestId?: string;

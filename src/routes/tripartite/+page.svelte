@@ -159,6 +159,7 @@
       yMax: undefined,
       timeoutInSeconds: 20,
       method: "Radau",
+      nTimePoints: 100,
     },
     {
       type: "parameterScan" as const,

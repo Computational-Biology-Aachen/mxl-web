@@ -223,6 +223,7 @@
       yMax: undefined,
       timeoutInSeconds: 20,
       method: "LSODA",
+      nTimePoints: 100,
     },
   ]);
 </script>
