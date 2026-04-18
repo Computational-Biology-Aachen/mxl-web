@@ -176,22 +176,26 @@
       items: [
         {
           label: "Add",
-          default: () => new Add([Name.prototype.default(), Name.prototype.default()]),
+          default: () =>
+            new Add([Name.prototype.default(), Name.prototype.default()]),
           hint: "a + b",
         },
         {
           label: "Sub",
-          default: () => new Minus([Name.prototype.default(), Name.prototype.default()]),
+          default: () =>
+            new Minus([Name.prototype.default(), Name.prototype.default()]),
           hint: "a − b",
         },
         {
           label: "Multiply",
-          default: () => new Mul([Name.prototype.default(), Name.prototype.default()]),
+          default: () =>
+            new Mul([Name.prototype.default(), Name.prototype.default()]),
           hint: "a × b",
         },
         {
           label: "Divide",
-          default: () => new Divide([Name.prototype.default(), Name.prototype.default()]),
+          default: () =>
+            new Divide([Name.prototype.default(), Name.prototype.default()]),
           hint: "a / b",
         },
         {
@@ -201,12 +205,14 @@
         },
         {
           label: "Int Divide",
-          default: () => new IntDivide([Name.prototype.default(), Name.prototype.default()]),
+          default: () =>
+            new IntDivide([Name.prototype.default(), Name.prototype.default()]),
           hint: "⌊a/b⌋",
         },
         {
           label: "Remainder",
-          default: () => new Rem([Name.prototype.default(), Name.prototype.default()]),
+          default: () =>
+            new Rem([Name.prototype.default(), Name.prototype.default()]),
           hint: "a mod b",
         },
       ],
@@ -261,17 +267,20 @@
         },
         {
           label: "Max",
-          default: () => new Max([Name.prototype.default(), Name.prototype.default()]),
+          default: () =>
+            new Max([Name.prototype.default(), Name.prototype.default()]),
           hint: "Maximum",
         },
         {
           label: "Min",
-          default: () => new Min([Name.prototype.default(), Name.prototype.default()]),
+          default: () =>
+            new Min([Name.prototype.default(), Name.prototype.default()]),
           hint: "Minimum",
         },
         {
           label: "Piecewise",
-          default: () => new Piecewise([Name.prototype.default(), Name.prototype.default()]),
+          default: () =>
+            new Piecewise([Name.prototype.default(), Name.prototype.default()]),
           hint: "Piecewise",
         },
       ],
@@ -279,56 +288,212 @@
     {
       name: "Trigonometry",
       items: [
-        { label: "Sin", default: () => new Sin(Name.prototype.default()), hint: "sin(x)" },
-        { label: "Cos", default: () => new Cos(Name.prototype.default()), hint: "cos(x)" },
-        { label: "Tan", default: () => new Tan(Name.prototype.default()), hint: "tan(x)" },
-        { label: "Sec", default: () => new Sec(Name.prototype.default()), hint: "sec(x)" },
-        { label: "Csc", default: () => new Csc(Name.prototype.default()), hint: "csc(x)" },
-        { label: "Cot", default: () => new Cot(Name.prototype.default()), hint: "cot(x)" },
-        { label: "Arcsin", default: () => new Asin(Name.prototype.default()), hint: "arcsin(x)" },
-        { label: "Arccos", default: () => new Acos(Name.prototype.default()), hint: "arccos(x)" },
-        { label: "Arctan", default: () => new Atan(Name.prototype.default()), hint: "arctan(x)" },
-        { label: "Arccot", default: () => new Acot(Name.prototype.default()), hint: "arccot(x)" },
-        { label: "Arcsec", default: () => new ArcSec(Name.prototype.default()), hint: "arcsec(x)" },
-        { label: "Arccsc", default: () => new ArcCsc(Name.prototype.default()), hint: "arccsc(x)" },
+        {
+          label: "Sin",
+          default: () => new Sin(Name.prototype.default()),
+          hint: "sin(x)",
+        },
+        {
+          label: "Cos",
+          default: () => new Cos(Name.prototype.default()),
+          hint: "cos(x)",
+        },
+        {
+          label: "Tan",
+          default: () => new Tan(Name.prototype.default()),
+          hint: "tan(x)",
+        },
+        {
+          label: "Sec",
+          default: () => new Sec(Name.prototype.default()),
+          hint: "sec(x)",
+        },
+        {
+          label: "Csc",
+          default: () => new Csc(Name.prototype.default()),
+          hint: "csc(x)",
+        },
+        {
+          label: "Cot",
+          default: () => new Cot(Name.prototype.default()),
+          hint: "cot(x)",
+        },
+        {
+          label: "Arcsin",
+          default: () => new Asin(Name.prototype.default()),
+          hint: "arcsin(x)",
+        },
+        {
+          label: "Arccos",
+          default: () => new Acos(Name.prototype.default()),
+          hint: "arccos(x)",
+        },
+        {
+          label: "Arctan",
+          default: () => new Atan(Name.prototype.default()),
+          hint: "arctan(x)",
+        },
+        {
+          label: "Arccot",
+          default: () => new Acot(Name.prototype.default()),
+          hint: "arccot(x)",
+        },
+        {
+          label: "Arcsec",
+          default: () => new ArcSec(Name.prototype.default()),
+          hint: "arcsec(x)",
+        },
+        {
+          label: "Arccsc",
+          default: () => new ArcCsc(Name.prototype.default()),
+          hint: "arccsc(x)",
+        },
       ],
     },
     {
       name: "Hyperbolic",
       items: [
-        { label: "Sinh", default: () => new Sinh(Name.prototype.default()), hint: "sinh(x)" },
-        { label: "Cosh", default: () => new Cosh(Name.prototype.default()), hint: "cosh(x)" },
-        { label: "Tanh", default: () => new Tanh(Name.prototype.default()), hint: "tanh(x)" },
-        { label: "Sech", default: () => new Sech(Name.prototype.default()), hint: "sech(x)" },
-        { label: "Csch", default: () => new Csch(Name.prototype.default()), hint: "csch(x)" },
-        { label: "Coth", default: () => new Coth(Name.prototype.default()), hint: "coth(x)" },
-        { label: "Arcsinh", default: () => new ArcSinh(Name.prototype.default()), hint: "arcsinh(x)" },
-        { label: "Arccosh", default: () => new ArcCosh(Name.prototype.default()), hint: "arccosh(x)" },
-        { label: "Arctanh", default: () => new ArcTanh(Name.prototype.default()), hint: "arctanh(x)" },
-        { label: "Arccsch", default: () => new ArcCsch(Name.prototype.default()), hint: "arccsch(x)" },
-        { label: "Arcsech", default: () => new ArcSech(Name.prototype.default()), hint: "arcsech(x)" },
-        { label: "Arccoth", default: () => new ArcCoth(Name.prototype.default()), hint: "arccoth(x)" },
+        {
+          label: "Sinh",
+          default: () => new Sinh(Name.prototype.default()),
+          hint: "sinh(x)",
+        },
+        {
+          label: "Cosh",
+          default: () => new Cosh(Name.prototype.default()),
+          hint: "cosh(x)",
+        },
+        {
+          label: "Tanh",
+          default: () => new Tanh(Name.prototype.default()),
+          hint: "tanh(x)",
+        },
+        {
+          label: "Sech",
+          default: () => new Sech(Name.prototype.default()),
+          hint: "sech(x)",
+        },
+        {
+          label: "Csch",
+          default: () => new Csch(Name.prototype.default()),
+          hint: "csch(x)",
+        },
+        {
+          label: "Coth",
+          default: () => new Coth(Name.prototype.default()),
+          hint: "coth(x)",
+        },
+        {
+          label: "Arcsinh",
+          default: () => new ArcSinh(Name.prototype.default()),
+          hint: "arcsinh(x)",
+        },
+        {
+          label: "Arccosh",
+          default: () => new ArcCosh(Name.prototype.default()),
+          hint: "arccosh(x)",
+        },
+        {
+          label: "Arctanh",
+          default: () => new ArcTanh(Name.prototype.default()),
+          hint: "arctanh(x)",
+        },
+        {
+          label: "Arccsch",
+          default: () => new ArcCsch(Name.prototype.default()),
+          hint: "arccsch(x)",
+        },
+        {
+          label: "Arcsech",
+          default: () => new ArcSech(Name.prototype.default()),
+          hint: "arcsech(x)",
+        },
+        {
+          label: "Arccoth",
+          default: () => new ArcCoth(Name.prototype.default()),
+          hint: "arccoth(x)",
+        },
       ],
     },
     {
       name: "Comparison",
       items: [
-        { label: "Equal", default: () => new Eq([Name.prototype.default(), Name.prototype.default()]), hint: "a = b" },
-        { label: "Not Equal", default: () => new NotEqual([Name.prototype.default(), Name.prototype.default()]), hint: "a ≠ b" },
-        { label: "Greater", default: () => new GreaterThan([Name.prototype.default(), Name.prototype.default()]), hint: "a > b" },
-        { label: "Geq", default: () => new GreaterEqual([Name.prototype.default(), Name.prototype.default()]), hint: "a ≥ b" },
-        { label: "Less", default: () => new LessThan([Name.prototype.default(), Name.prototype.default()]), hint: "a < b" },
-        { label: "Leq", default: () => new LessEqual([Name.prototype.default(), Name.prototype.default()]), hint: "a ≤ b" },
+        {
+          label: "Equal",
+          default: () =>
+            new Eq([Name.prototype.default(), Name.prototype.default()]),
+          hint: "a = b",
+        },
+        {
+          label: "Not Equal",
+          default: () =>
+            new NotEqual([Name.prototype.default(), Name.prototype.default()]),
+          hint: "a ≠ b",
+        },
+        {
+          label: "Greater",
+          default: () =>
+            new GreaterThan([
+              Name.prototype.default(),
+              Name.prototype.default(),
+            ]),
+          hint: "a > b",
+        },
+        {
+          label: "Geq",
+          default: () =>
+            new GreaterEqual([
+              Name.prototype.default(),
+              Name.prototype.default(),
+            ]),
+          hint: "a ≥ b",
+        },
+        {
+          label: "Less",
+          default: () =>
+            new LessThan([Name.prototype.default(), Name.prototype.default()]),
+          hint: "a < b",
+        },
+        {
+          label: "Leq",
+          default: () =>
+            new LessEqual([Name.prototype.default(), Name.prototype.default()]),
+          hint: "a ≤ b",
+        },
       ],
     },
     {
       name: "Logic",
       items: [
-        { label: "And", default: () => new And([Name.prototype.default(), Name.prototype.default()]), hint: "a ∧ b" },
-        { label: "Or", default: () => new Or([Name.prototype.default(), Name.prototype.default()]), hint: "a ∨ b" },
-        { label: "Xor", default: () => new Xor([Name.prototype.default(), Name.prototype.default()]), hint: "a ⊕ b" },
-        { label: "Not", default: () => new Not([Name.prototype.default()]), hint: "¬a" },
-        { label: "Implies", default: () => new Implies(Name.prototype.default(), Name.prototype.default()), hint: "a ⇒ b" },
+        {
+          label: "And",
+          default: () =>
+            new And([Name.prototype.default(), Name.prototype.default()]),
+          hint: "a ∧ b",
+        },
+        {
+          label: "Or",
+          default: () =>
+            new Or([Name.prototype.default(), Name.prototype.default()]),
+          hint: "a ∨ b",
+        },
+        {
+          label: "Xor",
+          default: () =>
+            new Xor([Name.prototype.default(), Name.prototype.default()]),
+          hint: "a ⊕ b",
+        },
+        {
+          label: "Not",
+          default: () => new Not([Name.prototype.default()]),
+          hint: "¬a",
+        },
+        {
+          label: "Implies",
+          default: () =>
+            new Implies(Name.prototype.default(), Name.prototype.default()),
+          hint: "a ⇒ b",
+        },
       ],
     },
   ];
@@ -507,8 +672,8 @@
 
   .group-label {
     color: #6b7280;
-    font-size: 0.75rem;
     font-weight: 600;
+    font-size: 0.75rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
   }

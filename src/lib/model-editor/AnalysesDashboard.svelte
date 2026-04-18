@@ -99,7 +99,9 @@
   let loadError = $state<string | null>(null);
   let pendingBox = $state<Box | null>(null);
   let pickerEl = $state<HTMLDivElement | null | undefined>(null);
-  let analysisEditorEls = $state<Record<number, HTMLDivElement | null | undefined>>({});
+  let analysisEditorEls = $state<
+    Record<number, HTMLDivElement | null | undefined>
+  >({});
 
   function saveModel() {
     const xml = modelToSbml(model, name);
@@ -146,6 +148,7 @@
       xMin: undefined,
       xMax: undefined,
       timeoutInSeconds: 20,
+      method: "Radau",
     };
     analyses = [...analyses, newAnalysis];
   }
@@ -169,6 +172,7 @@
       yMin: undefined,
       yMax: undefined,
       timeoutInSeconds: 120,
+      method: "Radau",
     };
     analyses = [...analyses, newScan];
   }
@@ -358,6 +362,7 @@
           tEnd={analysis.tEnd}
           yMax={analysis.yMax}
           timeoutInSeconds={analysis.timeoutInSeconds}
+          method={analysis.method}
         />
       {:else if analysis.type === "parameterScan"}
         <ParameterScanSimulator
@@ -365,6 +370,7 @@
           model={model}
           analysis={analysis}
           tEnd={analysis.tEnd}
+          method={analysis.method}
         />
       {/if}
     {/if}

@@ -126,13 +126,19 @@ export function mathMLToAst(el: Element): Base {
         return new Pow(mathMLToAst(args[0]), mathMLToAst(args[1]));
       case "root": {
         if (args[0]?.localName === "degree") {
-          return new Sqrt(mathMLToAst(args[1]), mathMLToAst(args[0].children[0]));
+          return new Sqrt(
+            mathMLToAst(args[1]),
+            mathMLToAst(args[0].children[0]),
+          );
         }
         return new Sqrt(mathMLToAst(args[0]), new Num(2));
       }
       case "log": {
         if (args[0]?.localName === "logbase") {
-          return new Log(mathMLToAst(args[1]), mathMLToAst(args[0].children[0]));
+          return new Log(
+            mathMLToAst(args[1]),
+            mathMLToAst(args[0].children[0]),
+          );
         }
         return new Log(mathMLToAst(args[0]), new Num(10));
       }
@@ -142,7 +148,9 @@ export function mathMLToAst(el: Element): Base {
           args[0]?.localName === "apply" &&
           args[0].children[0]?.localName === "divide"
         ) {
-          return new IntDivide(Array.from(args[0].children).slice(1).map(mathMLToAst));
+          return new IntDivide(
+            Array.from(args[0].children).slice(1).map(mathMLToAst),
+          );
         }
         return new Floor(mathMLToAst(args[0]));
       }
@@ -315,8 +323,12 @@ export function modelToSbml(model: ModelBuilder, name: string): string {
       .map(([id, r]) => {
         const displayName = r.displayName ?? id;
 
-        const reactants = r.stoichiometry.filter((s) => s.value instanceof Num && s.value.value < 0);
-        const products = r.stoichiometry.filter((s) => !(s.value instanceof Num) || s.value.value > 0);
+        const reactants = r.stoichiometry.filter(
+          (s) => s.value instanceof Num && s.value.value < 0,
+        );
+        const products = r.stoichiometry.filter(
+          (s) => !(s.value instanceof Num) || s.value.value > 0,
+        );
 
         const reactantsXml =
           reactants.length > 0
@@ -348,7 +360,13 @@ export function modelToSbml(model: ModelBuilder, name: string): string {
     reactionsXml = `<listOfReactions>\n      ${items}\n    </listOfReactions>`;
   }
 
-  const sections = [compartmentXml, speciesXml, parametersXml, rulesXml, reactionsXml]
+  const sections = [
+    compartmentXml,
+    speciesXml,
+    parametersXml,
+    rulesXml,
+    reactionsXml,
+  ]
     .filter(Boolean)
     .join("\n    ");
 
@@ -454,9 +472,15 @@ export function sbmlToModel(xmlString: string): ModelBuilder {
       const val = parseFloat(firstChild.textContent!.trim());
       if (!isNaN(val)) {
         if (builder.variables.has(symbol)) {
-          builder.updateVariable(symbol, { ...builder.variables.get(symbol)!, value: val });
+          builder.updateVariable(symbol, {
+            ...builder.variables.get(symbol)!,
+            value: val,
+          });
         } else if (builder.parameters.has(symbol)) {
-          builder.updateParameter(symbol, { ...builder.parameters.get(symbol)!, value: val });
+          builder.updateParameter(symbol, {
+            ...builder.parameters.get(symbol)!,
+            value: val,
+          });
         }
       }
     } else {
@@ -509,7 +533,12 @@ export function sbmlToModel(xmlString: string): ModelBuilder {
       )) {
         const lpId = lp.getAttribute("id");
         const lpVal = parseFloatAttr(lp, "value");
-        if (lpId && !isNaN(lpVal) && !builder.parameters.has(lpId) && !builder.variables.has(lpId)) {
+        if (
+          lpId &&
+          !isNaN(lpVal) &&
+          !builder.parameters.has(lpId) &&
+          !builder.variables.has(lpId)
+        ) {
           builder.addParameter(lpId, { value: lpVal });
         }
       }
@@ -518,7 +547,9 @@ export function sbmlToModel(xmlString: string): ModelBuilder {
     // Build net stoichiometry (combine reactants + products, skip boundary species)
     const stoichMap = new Map<string, number>();
 
-    for (const ref of reaction.querySelectorAll("listOfReactants > speciesReference")) {
+    for (const ref of reaction.querySelectorAll(
+      "listOfReactants > speciesReference",
+    )) {
       const species = ref.getAttribute("species");
       if (!species || boundarySpecies.has(species)) continue;
       const refId = ref.getAttribute("id");
@@ -527,10 +558,15 @@ export function sbmlToModel(xmlString: string): ModelBuilder {
           ? builder.parameters.get(refId)!.value
           : parseFloatAttr(ref, "stoichiometry");
       if (isNaN(stoichVal)) stoichVal = 1;
-      stoichMap.set(species, (stoichMap.get(species) ?? 0) - Math.abs(stoichVal));
+      stoichMap.set(
+        species,
+        (stoichMap.get(species) ?? 0) - Math.abs(stoichVal),
+      );
     }
 
-    for (const ref of reaction.querySelectorAll("listOfProducts > speciesReference")) {
+    for (const ref of reaction.querySelectorAll(
+      "listOfProducts > speciesReference",
+    )) {
       const species = ref.getAttribute("species");
       if (!species || boundarySpecies.has(species)) continue;
       const refId = ref.getAttribute("id");
@@ -539,7 +575,10 @@ export function sbmlToModel(xmlString: string): ModelBuilder {
           ? builder.parameters.get(refId)!.value
           : parseFloatAttr(ref, "stoichiometry");
       if (isNaN(stoichVal)) stoichVal = 1;
-      stoichMap.set(species, (stoichMap.get(species) ?? 0) + Math.abs(stoichVal));
+      stoichMap.set(
+        species,
+        (stoichMap.get(species) ?? 0) + Math.abs(stoichVal),
+      );
     }
 
     const stoichiometry: Stoichiometry = [...stoichMap.entries()]
@@ -554,7 +593,8 @@ export function sbmlToModel(xmlString: string): ModelBuilder {
       builder.addReaction(id, {
         fn: mathMLToAst(mathEl.children[0]),
         stoichiometry,
-        displayName: displayName && displayName !== id ? displayName : undefined,
+        displayName:
+          displayName && displayName !== id ? displayName : undefined,
       });
     } catch (e) {
       console.warn(`Failed to parse reaction ${id}:`, e);

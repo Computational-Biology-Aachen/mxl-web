@@ -97,6 +97,7 @@
       yMin: undefined,
       yMax: undefined,
       timeoutInSeconds: 20,
+      method: "Radau",
     },
   ]);
 </script>

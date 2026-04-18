@@ -11,11 +11,13 @@
     tEnd,
     yMax,
     timeoutInSeconds,
+    method,
   }: {
     model: ModelBuilder;
     tEnd: number;
     yMax?: number | undefined;
     timeoutInSeconds: number;
+    method: string;
   } = $props();
 
   const pyWorker = pyWorkerPool;
@@ -57,7 +59,7 @@
         .toArray(),
       tEnd: tEnd,
       pars: [],
-      method: "LSODA",
+      method: method,
       requestId: requestId,
     });
   }

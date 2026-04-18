@@ -11,11 +11,13 @@
     analysis,
     tEnd,
     tolerance = 1e-6,
+    method,
   }: {
     model: ModelBuilder;
     analysis: ParameterScanAnalysis;
     tEnd: number;
     tolerance?: number;
+    method: string;
   } = $props();
 
   type ScanResult = {
@@ -88,6 +90,7 @@
         tEnd: tEnd,
         pars: [],
         requestId,
+        method: method,
       });
     });
   }
@@ -153,7 +156,9 @@
         <span class="counter">
           {completedCount} / {totalCount} finished
           {#if failedCount > 0}
-            &nbsp;&middot;&nbsp;<span class="failed">{failedCount} did not converge</span>
+            &nbsp;&middot;&nbsp;<span class="failed"
+              >{failedCount} did not converge</span
+            >
           {/if}
         </span>
       </div>

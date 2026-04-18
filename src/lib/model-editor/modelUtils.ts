@@ -59,10 +59,12 @@ export function stoichToTex(
   );
   if (filtered.length === 0) return "0";
 
-  const terms = filtered.map(({ name, value }: { name: string; value: Base }) => ({
-    tex: texNames.get(name) || name,
-    value,
-  }));
+  const terms = filtered.map(
+    ({ name, value }: { name: string; value: Base }) => ({
+      tex: texNames.get(name) || name,
+      value,
+    }),
+  );
 
   const lines = renderTerms(terms, texNames);
   if (lines.length === 1) return lines[0];

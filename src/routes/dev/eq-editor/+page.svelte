@@ -17,10 +17,30 @@
 
   const variables: VarView = [
     { id: "S", value: 1.0, texName: "S" },
-    { id: "kcat", value: 1.0, texName: "k_{cat}", slider: { min: "0", max: "1.0", step: "0.1" } },
-    { id: "km", value: 1.0, texName: "k_{M}", slider: { min: "0", max: "1.0", step: "0.1" } },
-    { id: "e0", value: 1.0, texName: "e_{0}", slider: { min: "0", max: "1.0", step: "0.1" } },
-    { id: "vmax", value: 1.0, texName: "V_{max}", slider: { min: "0", max: "1.0", step: "0.1" } },
+    {
+      id: "kcat",
+      value: 1.0,
+      texName: "k_{cat}",
+      slider: { min: "0", max: "1.0", step: "0.1" },
+    },
+    {
+      id: "km",
+      value: 1.0,
+      texName: "k_{M}",
+      slider: { min: "0", max: "1.0", step: "0.1" },
+    },
+    {
+      id: "e0",
+      value: 1.0,
+      texName: "e_{0}",
+      slider: { min: "0", max: "1.0", step: "0.1" },
+    },
+    {
+      id: "vmax",
+      value: 1.0,
+      texName: "V_{max}",
+      slider: { min: "0", max: "1.0", step: "0.1" },
+    },
   ];
   const parameters: ParView = [];
   const assignments: AssView = [];

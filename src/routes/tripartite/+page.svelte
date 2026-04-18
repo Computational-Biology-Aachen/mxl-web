@@ -158,6 +158,7 @@
       yMin: undefined,
       yMax: undefined,
       timeoutInSeconds: 20,
+      method: "Radau",
     },
     {
       type: "parameterScan" as const,
@@ -176,6 +177,7 @@
       yMin: undefined,
       yMax: undefined,
       timeoutInSeconds: 120,
+      method: "Radau",
     },
   ]);
 </script>

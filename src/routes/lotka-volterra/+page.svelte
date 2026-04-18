@@ -94,6 +94,7 @@
       yMin: undefined,
       yMax: undefined,
       timeoutInSeconds: 20,
+      method: "LSODA",
     },
     {
       type: "simulation" as const,
@@ -108,6 +109,7 @@
       yMin: undefined,
       yMax: undefined,
       timeoutInSeconds: 20,
+      method: "LSODA",
     },
   ]);
 </script>

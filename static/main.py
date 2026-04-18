@@ -41,8 +41,8 @@ def integrate(
     y0: Iterable[float],
     t_end: float,
     pars: Iterable[float],
-    n: int = 500,
-    method: Literal["RK45", "LSODA", "BDF"] = "LSODA",
+    n: int,
+    method: Literal["RK45", "LSODA", "BDF", "Radau"],
 ) -> tuple[np.ndarray, np.ndarray, str | None]:
 
     try:
@@ -51,11 +51,13 @@ def integrate(
             y0=y0,
             args=pars,
             method=method,
+            atol=1e-6,
+            rtol=1e-6,
             **ts(t_end, n),
         )
         if res.success:
             return res.t, res.y.T, None
-        return np.array([]), np.array([]), "Integration failure"
+        return np.array([]), np.array([]), res.message
     except Exception as e:
         return np.array([]), np.array([]), str(e)
 

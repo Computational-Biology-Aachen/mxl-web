@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { SimulationAnalysis } from "$lib";
+  import InputChoice from "$lib/inputs/InputChoice.svelte";
   import InputNumber from "$lib/inputs/InputNumber.svelte";
   import InputNumberOptional from "$lib/inputs/InputNumberOptional.svelte";
   import InputText from "$lib/inputs/InputText.svelte";
@@ -28,6 +29,7 @@
   let yMaxAuto: boolean = $derived(untrack(() => parent.yMax) ? false : true);
   let title = $derived(parent.title);
   let timeoutInSeconds = $derived(parent.timeoutInSeconds);
+  let method = $derived(parent.method);
 </script>
 
 <RowApart>
@@ -43,6 +45,7 @@
         yMax: yMaxAuto ? undefined : yMax,
         title: title,
         timeoutInSeconds: timeoutInSeconds,
+        method: method,
       })}
     popovertarget={popovertarget}
   />
@@ -92,4 +95,10 @@
   condLabel="Auto?"
   bind:value={xMax}
   bind:condition={xMaxAuto}
+/>
+
+<InputChoice
+  id="integrationMethod"
+  label="Method"
+  bind:value={method}
 />

@@ -17,6 +17,7 @@
     pars,
     tEnd,
     variables,
+    method,
     yLim = 100,
   }: {
     modelPy1: string;
@@ -39,6 +40,7 @@
       fixed?: boolean;
     }[];
     yLim?: number;
+    method: string;
   } = $props();
 
   const pyWorker1 = pyWorkerManager;
@@ -73,7 +75,7 @@
       initialValues: localVariables.slice(0, localVariables.length),
       tEnd: tEnd,
       pars: localPars.slice(0, localPars.length),
-      method: "LSODA",
+      method: method,
       requestId: requestId,
     });
 
@@ -82,7 +84,7 @@
       initialValues: localVariables.slice(0, localVariables.length),
       tEnd: tEnd,
       pars: localPars.slice(0, localPars.length),
-      method: "LSODA",
+      method: method,
       requestId: requestId,
     });
   }

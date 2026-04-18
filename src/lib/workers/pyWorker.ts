@@ -47,7 +47,7 @@ onmessage = async function (event: MessageEvent) {
   const pars = event.data.pars;
   const requestId = event.data.requestId;
   const nTimePoints = 500;
-  const method = "LSODA";
+  const method = event.data.method;
 
   const [tPy, yPy, errPy] = pyFuncs.integrate(
     pyodide.runPython(model),

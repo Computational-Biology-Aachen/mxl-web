@@ -12,6 +12,7 @@ export type SimulationAnalysis = {
   yMin: number | undefined;
   yMax: number | undefined;
   timeoutInSeconds: number;
+  method: string;
 };
 
 export type ParameterScanAnalysis = {
@@ -31,6 +32,7 @@ export type ParameterScanAnalysis = {
   yMin: number | undefined;
   yMax: number | undefined;
   timeoutInSeconds: number;
+  method: string;
 };
 
 export type Analysis = SimulationAnalysis | ParameterScanAnalysis;
