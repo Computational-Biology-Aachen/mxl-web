@@ -14,6 +14,7 @@
   } from "$lib/mathml";
   import AnalysesDashboard from "$lib/model-editor/AnalysesDashboard.svelte";
   import { ModelBuilder } from "$lib/model-editor/modelBuilder";
+  import type { PamPhase } from "$lib/simulations/protocol";
 
   function initModel(): ModelBuilder {
     return new ModelBuilder()
@@ -1667,6 +1668,30 @@
       });
   }
 
+  const defaultPamProtocol: PamPhase[] = [
+    {
+      backgroundPFD: 100,
+      backgroundLength: 9.2,
+      pulsePFD: 5000,
+      pulseLength: 0.8,
+      repetitions: 3,
+    },
+    {
+      backgroundPFD: 500,
+      backgroundLength: 9.2,
+      pulsePFD: 5000,
+      pulseLength: 0.8,
+      repetitions: 3,
+    },
+    {
+      backgroundPFD: 100,
+      backgroundLength: 9.2,
+      pulsePFD: 5000,
+      pulseLength: 0.8,
+      repetitions: 3,
+    },
+  ];
+
   let analyses: Analyses = $state([
     {
       type: "simulation" as const,
@@ -1674,7 +1699,7 @@
       idx: 0,
       title: "Simulation",
       col: 1,
-      span: 6,
+      span: 3,
       tEnd: 100,
       xMin: undefined,
       xMax: undefined,
@@ -1682,6 +1707,18 @@
       yMax: undefined,
       timeoutInSeconds: 20,
       method: "Radau",
+    },
+    {
+      type: "pam" as const,
+      id: 1,
+      idx: 1,
+      title: "PAM Fluorescence",
+      col: 4,
+      span: 3,
+      yMax: undefined,
+      timeoutInSeconds: 60,
+      method: "Radau",
+      pamProtocol: defaultPamProtocol,
     },
   ]);
 </script>

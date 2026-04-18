@@ -13,6 +13,7 @@ interface SimulationRequest {
   pars: number[];
   method?: string;
   requestId?: string;
+  protocol?: { t_end: number; PFD: number }[];
 }
 
 type MessageHandler = (data: WorkerMessage) => void;

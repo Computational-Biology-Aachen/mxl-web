@@ -13,6 +13,7 @@
     yMin: undefined,
     yMax: 20.0,
     timeoutInSeconds: 10,
+    method: "RK45",
   };
 </script>
 

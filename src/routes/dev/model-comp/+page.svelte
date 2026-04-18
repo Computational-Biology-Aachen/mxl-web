@@ -42,4 +42,5 @@
   pars={pars}
   tEnd={tEnd}
   variables={variables}
+  method="RK45"
 />

@@ -2,6 +2,7 @@
   import { base } from "$app/paths";
   import type {
     Analyses,
+    PamAnalysis,
     ParameterScanAnalysis,
     SimulationAnalysis,
   } from "$lib";
@@ -13,12 +14,14 @@
   import { ModelBuilder } from "$lib/model-editor/modelBuilder";
   import Pair from "$lib/Pair.svelte";
   import RowApart from "$lib/RowApart.svelte";
+  import PamSimulator from "$lib/simulations/Pam.svelte";
   import ParameterScanSimulator from "$lib/simulations/ParameterScan.svelte";
   import Simulator from "$lib/simulations/TimeCourse.svelte";
   import Slider from "$lib/Slider.svelte";
   import type { Snippet } from "svelte";
   import { tick } from "svelte";
   import Popover from "../Popover.svelte";
+  import PamScanEditor from "../simulations/PamScanEditor.svelte";
   import ParameterScanEditor from "../simulations/ParameterScanEditor.svelte";
   import AnalysisEditor from "../simulations/TimeCourseEditor.svelte";
   import ModelEditor from "./ModelEditor.svelte";
@@ -43,6 +46,7 @@
   let scannerRefs = $state<Record<number, ParameterScanSimulator | undefined>>(
     {},
   );
+  let pamRefs = $state<Record<number, PamSimulator | undefined>>({});
 
   let analysisById = $derived.by(() => {
     const map = new Map<number, Analyses[number]>();
@@ -58,6 +62,9 @@
     }
     for (const scanner of Object.values(scannerRefs)) {
       scanner?.runScan(model);
+    }
+    for (const pam of Object.values(pamRefs)) {
+      pam?.runSimulation(model);
     }
   }
 
@@ -151,6 +158,26 @@
       method: "Radau",
     };
     analyses = [...analyses, newAnalysis];
+  }
+
+  function addPam(box: Box) {
+    const newPam: PamAnalysis = {
+      type: "pam",
+      id: box.id,
+      idx: analyses.length,
+      title: "PAM",
+      span: box.span,
+      yMax: undefined,
+      timeoutInSeconds: 60,
+      method: "Radau",
+      pamProtocol: [
+        { backgroundPFD: 0,   backgroundLength: 2,    pulsePFD: 5000, pulseLength: 0.8, repetitions: 1 },
+        { backgroundPFD: 0,   backgroundLength: 27.2, pulsePFD: 5000, pulseLength: 0.8, repetitions: 1 },
+        { backgroundPFD: 100, backgroundLength: 84.2, pulsePFD: 5000, pulseLength: 0.8, repetitions: 3 },
+        { backgroundPFD: 100, backgroundLength: 14.2, pulsePFD: 5000, pulseLength: 0,   repetitions: 1 },
+      ],
+    };
+    analyses = [...analyses, newPam];
   }
 
   function addParameterScan(box: Box) {
@@ -259,6 +286,21 @@
     <Icon>stacked_line_chart</Icon>
     Parameter Scan
   </button>
+  <button
+    class="picker-option"
+    onclick={async () => {
+      if (!pendingBox) return;
+      addPam(pendingBox);
+      const id = pendingBox.id;
+      pendingBox = null;
+      pickerEl?.hidePopover();
+      await tick();
+      analysisEditorEls[id]?.showPopover();
+    }}
+  >
+    <Icon>pulse_alert</Icon>
+    PAM Fluorescence
+  </button>
 </Popover>
 
 {#if children}
@@ -350,6 +392,8 @@
     simulatorRefs = { ...simulatorRefs };
     delete scannerRefs[box.id];
     scannerRefs = { ...scannerRefs };
+    delete pamRefs[box.id];
+    pamRefs = { ...pamRefs };
   }}
 >
   {#snippet children({ box })}
@@ -370,6 +414,15 @@
           model={model}
           analysis={analysis}
           tEnd={analysis.tEnd}
+          method={analysis.method}
+        />
+      {:else if analysis.type === "pam"}
+        <PamSimulator
+          bind:this={pamRefs[box.id]}
+          model={model}
+          pamProtocol={analysis.pamProtocol}
+          yMax={analysis.yMax}
+          timeoutInSeconds={analysis.timeoutInSeconds}
           method={analysis.method}
         />
       {/if}
@@ -419,6 +472,17 @@
             a.id === analysis.id ? updated : a,
           ) as Analyses;
           scannerRefs[analysis.id]?.runScan(model);
+        }}
+        popovertarget={`analysis-editor-${analysis.id}`}
+      />
+    {:else if analysis.type === "pam"}
+      <PamScanEditor
+        parent={analysis}
+        onSave={(updated) => {
+          analyses = analyses.map((a) =>
+            a.id === analysis.id ? updated : a,
+          ) as Analyses;
+          pamRefs[analysis.id]?.runSimulation(model);
         }}
         popovertarget={`analysis-editor-${analysis.id}`}
       />

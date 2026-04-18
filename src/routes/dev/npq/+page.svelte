@@ -81,4 +81,5 @@
   model={model}
   tEnd={tEnd}
   timeoutInSeconds={60}
+  method="RK45"
 />

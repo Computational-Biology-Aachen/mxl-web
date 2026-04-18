@@ -48,15 +48,28 @@ onmessage = async function (event: MessageEvent) {
   const requestId = event.data.requestId;
   const nTimePoints = 500;
   const method = event.data.method;
+  const protocol = event.data.protocol;
 
-  const [tPy, yPy, errPy] = pyFuncs.integrate(
-    pyodide.runPython(model),
-    y0,
-    tEnd,
-    pars,
-    nTimePoints,
-    method,
-  );
+  let tPy: any, yPy: any, errPy: any;
+  if (protocol) {
+    [tPy, yPy, errPy] = pyFuncs.integrate_protocol(
+      pyodide.runPython(model),
+      y0,
+      pars,
+      nTimePoints,
+      method,
+      pyodide.toPy(protocol),
+    );
+  } else {
+    [tPy, yPy, errPy] = pyFuncs.integrate(
+      pyodide.runPython(model),
+      y0,
+      tEnd,
+      pars,
+      nTimePoints,
+      method,
+    );
+  }
   const err: string | undefined = errPy;
   const time: number[] = tPy.toJs();
   const values: number[][] = yPy.toJs();
