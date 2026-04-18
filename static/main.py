@@ -32,17 +32,19 @@ class Simulation:
     ys: np.ndarray
 
 
-def ts(t_end: float, n: int) -> dict[str, Any]:
+def time_points(t_end: float, n: int) -> dict[str, Any]:
     return {"t_span": (0, t_end), "t_eval": np.linspace(0, t_end, n)}
 
 
 def integrate(
     model: Callable[[float, Iterable[float]], Iterable[float]],
+    derived: Callable[[float, Iterable[float]], Iterable[float]],
     y0: Iterable[float],
     t_end: float,
     pars: Iterable[float],
     n: int,
     method: Literal["RK45", "LSODA", "BDF", "Radau"],
+    calculate_derived: bool,
 ) -> tuple[np.ndarray, np.ndarray, str | None]:
 
     try:
@@ -53,10 +55,17 @@ def integrate(
             method=method,
             atol=1e-6,
             rtol=1e-6,
-            **ts(t_end, n),
+            **time_points(t_end, n),
         )
         if res.success:
-            return res.t, res.y.T, None
+            ts = res.t
+            ys = res.y
+
+            if calculate_derived:
+                der = np.array(derived(ts, ys, *pars), dtype=float)
+                return ts, np.concat((ys, der)).T, None
+            else:
+                return ts, ys.T, None
         return np.array([]), np.array([]), res.message
     except Exception as e:
         return np.array([]), np.array([]), str(e)
@@ -64,12 +73,13 @@ def integrate(
 
 def integrate_protocol(
     model: Callable[[float, Iterable[float]], Iterable[float]],
+    derived: Callable[[float, Iterable[float]], Iterable[float]],
     y0: Iterable[float],
     pars: Iterable[float],
     n: int,
     method: Literal["RK45", "LSODA", "BDF", "Radau"],
     protocol: list[dict[str, float]],  # (t_end, ppfd)
-    # Return structure given by pyWorker.ts
+    calculate_derived: bool,
 ) -> tuple[np.ndarray, np.ndarray, str | None]:
     ts_all = []
     ys_all = []
@@ -101,10 +111,15 @@ def integrate_protocol(
         y0 = y_sim[-1]
 
         if len(ts_all) > 0:
-            ts_all.append(t_sim[1:])
-            ys_all.append(y_sim[1:])
+            t_sim = t_sim[1:]
+            y_sim = y_sim[1:]
+
+        ts_all.append(t_sim)
+
+        if calculate_derived:
+            der = derived(t_sim, y_sim.T, ppfd, *pars)
+            ys_all.append(np.concat((y_sim, der.T)))
         else:
-            ts_all.append(t_sim)
             ys_all.append(y_sim)
 
     return np.concat(ts_all), np.concat(ys_all), None

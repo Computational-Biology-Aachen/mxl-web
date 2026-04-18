@@ -1665,6 +1665,29 @@
         fn: new Mul([new Name("atp"), new Name("kf_ex_atp")]),
         stoichiometry: [{ name: "atp", value: new Num(-1.0) }],
         texName: "ex\\_atp",
+      })
+      .addParameter("k_H", { value: 5000000000.0, texName: "k\\_H" })
+      .addParameter("k_F", { value: 625000000.0, texName: "k\\_F" })
+      .addParameter("k_P", { value: 5000000000.0, texName: "k\\_P" })
+      .addAssignment("Fluo", {
+        fn: new Add([
+          new Divide([
+            new Mul([new Name("B0"), new Name("k_F")]),
+            new Add([
+              new Name("k_F"),
+              new Name("k_P"),
+              new Mul([new Name("Q"), new Name("k_H")]),
+            ]),
+          ]),
+          new Divide([
+            new Mul([new Name("B2"), new Name("k_F")]),
+            new Add([
+              new Name("k_F"),
+              new Mul([new Name("Q"), new Name("k_H")]),
+            ]),
+          ]),
+        ]),
+        texName: "Fluo",
       });
   }
 

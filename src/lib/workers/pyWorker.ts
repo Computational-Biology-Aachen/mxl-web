@@ -42,6 +42,7 @@ onmessage = async function (event: MessageEvent) {
   }
 
   const model = event.data.model;
+  const derived = event.data.derived;
   const y0 = event.data.initialValues;
   const tEnd = event.data.tEnd;
   const pars = event.data.pars;
@@ -49,25 +50,30 @@ onmessage = async function (event: MessageEvent) {
   const nTimePoints = 500;
   const method = event.data.method;
   const protocol = event.data.protocol;
+  const calculateDerived = event.data.calculateDerived;
 
   let tPy: any, yPy: any, errPy: any;
   if (protocol) {
     [tPy, yPy, errPy] = pyFuncs.integrate_protocol(
       pyodide.runPython(model),
+      pyodide.runPython(derived),
       y0,
       pars,
       nTimePoints,
       method,
       pyodide.toPy(protocol),
+      calculateDerived,
     );
   } else {
     [tPy, yPy, errPy] = pyFuncs.integrate(
       pyodide.runPython(model),
+      pyodide.runPython(derived),
       y0,
       tEnd,
       pars,
       nTimePoints,
       method,
+      calculateDerived,
     );
   }
   const err: string | undefined = errPy;

@@ -1,5 +1,7 @@
 <script lang="ts">
+  import type { PamAnalysis } from "$lib";
   import Icon from "$lib/Icon.svelte";
+  import InputCheckbox from "$lib/inputs/InputCheckbox.svelte";
   import InputChoice from "$lib/inputs/InputChoice.svelte";
   import InputNumber from "$lib/inputs/InputNumber.svelte";
   import InputText from "$lib/inputs/InputText.svelte";
@@ -7,7 +9,6 @@
   import { untrack } from "svelte";
   import PopoverSaveButton from "../buttons/PopoverSaveButton.svelte";
   import type { PamPhase } from "./protocol";
-  import type { PamAnalysis } from "$lib";
 
   let {
     parent,
@@ -25,6 +26,7 @@
   let phases = $state<PamPhase[]>(
     untrack(() => $state.snapshot(parent.pamProtocol)) as PamPhase[],
   );
+  let showDerived = $state(untrack(() => parent.showDerived ?? false));
 
   function addPhase() {
     phases = [
@@ -54,6 +56,7 @@
         timeoutInSeconds,
         method,
         pamProtocol: phases,
+        showDerived,
       })}
     popovertarget={popovertarget}
   />
@@ -86,63 +89,96 @@
   <span></span>
 
   {#each phases as phase, i}
-    <InputNumber id="bg-pfd-{i}" bind:value={phase.backgroundPFD} />
-    <InputNumber id="bg-len-{i}" bind:value={phase.backgroundLength} />
-    <InputNumber id="pulse-pfd-{i}" bind:value={phase.pulsePFD} />
-    <InputNumber id="pulse-len-{i}" bind:value={phase.pulseLength} />
-    <InputNumber id="reps-{i}" bind:value={phase.repetitions} />
-    <button class="remove" onclick={() => removePhase(i)} aria-label="Remove phase">
-      <Icon fontSize="sm" color="inherit">close</Icon>
+    <InputNumber
+      id="bg-pfd-{i}"
+      bind:value={phase.backgroundPFD}
+    />
+    <InputNumber
+      id="bg-len-{i}"
+      bind:value={phase.backgroundLength}
+    />
+    <InputNumber
+      id="pulse-pfd-{i}"
+      bind:value={phase.pulsePFD}
+    />
+    <InputNumber
+      id="pulse-len-{i}"
+      bind:value={phase.pulseLength}
+    />
+    <InputNumber
+      id="reps-{i}"
+      bind:value={phase.repetitions}
+    />
+    <button
+      class="remove"
+      onclick={() => removePhase(i)}
+      aria-label="Remove phase"
+    >
+      <Icon
+        fontSize="sm"
+        color="inherit">close</Icon
+      >
     </button>
   {/each}
 </div>
 
-<button class="add" onclick={addPhase}>
-  <Icon fontSize="sm" color="inherit">add</Icon>
+<button
+  class="add"
+  onclick={addPhase}
+>
+  <Icon
+    fontSize="sm"
+    color="inherit">add</Icon
+  >
   Add phase
 </button>
+<InputCheckbox
+  id="showDerived"
+  label="Show assignments & reactions"
+  bind:checked={showDerived}
+/>
 
 <style>
   .phase-grid {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto;
-    gap: 0.25rem 0.5rem;
     align-items: center;
-    width: 100%;
+    gap: 0.25rem 0.5rem;
     margin-bottom: 0.5rem;
+    width: 100%;
   }
 
   .header {
-    font-size: 0.75rem;
-    font-weight: var(--weight-bold);
-    color: var(--text-secondary, #666);
     padding-bottom: 0.25rem;
+    color: var(--text-secondary, #666);
+    font-weight: var(--weight-bold);
+    font-size: 0.75rem;
   }
 
   .remove {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0.25rem;
-    border-radius: var(--border-radius);
-    color: var(--text-secondary, #888);
     display: flex;
     align-items: center;
+    cursor: pointer;
+    border: none;
+    border-radius: var(--border-radius);
+    background: none;
+    padding: 0.25rem;
+    color: var(--text-secondary, #888);
   }
 
   .remove:hover {
-    color: var(--error, #c00);
     background-color: color-mix(in srgb, var(--error, #c00) 10%, transparent);
+    color: var(--error, #c00);
   }
 
   .add {
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    background: none;
+    cursor: pointer;
     border: var(--border);
     border-radius: var(--border-radius);
-    cursor: pointer;
+    background: none;
     padding: 0.35rem 0.75rem;
     font-size: 0.875rem;
   }

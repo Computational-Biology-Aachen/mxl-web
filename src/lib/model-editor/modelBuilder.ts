@@ -212,35 +212,6 @@ export class ModelBuilder {
     return names;
   }
 
-  // toView(): ModelView {
-  //   return new ModelView(
-  //     this.parameters
-  //       .entries()
-  //       .map(([name, value]) => {
-  //         return { ...value, id: name };
-  //       })
-  //       .toArray(),
-  //     this.variables
-  //       .entries()
-  //       .map(([name, value]) => {
-  //         return { ...value, id: name };
-  //       })
-  //       .toArray(),
-  //     this.assignments
-  //       .entries()
-  //       .map(([name, assign]) => {
-  //         return { ...assign, id: name };
-  //       })
-  //       .toArray(),
-  //     this.reactions
-  //       .entries()
-  //       .map(([name, rxn]) => {
-  //         return { ...rxn, id: name };
-  //       })
-  //       .toArray(),
-  //   );
-  // }
-
   buildPython(userParameters: string[]): string {
     const order = this.sortDependencies();
     const displayNames = this.getDisplayNames();
@@ -325,7 +296,7 @@ export class ModelBuilder {
       .toArray()
       .join(", ");
 
-    return `import math
+    return `import numpy as np
 import numpy as np
 
 def model(
@@ -337,6 +308,15 @@ def model(
     ${fns}
     ${rhsString}
     return [${dxdt}]
+
+def derived(
+    time: float,
+    variables: list[float], ${extraArgs.length > 0 ? "\n      " + extraArgs : ""}
+):
+    ${variables} = variables
+    ${parameters}
+    ${fns}
+    return [${order}]
 
 y0 = {${y0}}
     `;

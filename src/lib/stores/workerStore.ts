@@ -10,12 +10,14 @@ export interface WorkerMessage {
 
 interface SimulationRequest {
   model: string;
+  derived?: string;
   initialValues: number[];
   tEnd: number;
   pars: number[];
   method?: string;
   requestId?: string;
   protocol?: { t_end: number; PFD: number }[];
+  calculateDerived: boolean;
 }
 
 type MessageHandler = (data: WorkerMessage) => void;

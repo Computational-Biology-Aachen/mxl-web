@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { ParameterScanAnalysis } from "$lib";
+  import InputCheckbox from "$lib/inputs/InputCheckbox.svelte";
   import InputNumber from "$lib/inputs/InputNumber.svelte";
   import InputNumberOptional from "$lib/inputs/InputNumberOptional.svelte";
   import InputText from "$lib/inputs/InputText.svelte";
@@ -37,6 +38,7 @@
   let xMaxAuto: boolean = $derived(untrack(() => parent.xMax) ? false : true);
   let yMinAuto: boolean = $derived(untrack(() => parent.yMin) ? false : true);
   let yMaxAuto: boolean = $derived(untrack(() => parent.yMax) ? false : true);
+  let showDerived = $state(untrack(() => parent.showDerived ?? false));
 
   let parameterKeys = $derived([...model.parameters.keys()]);
 </script>
@@ -59,6 +61,7 @@
         yMin: yMaxAuto ? undefined : yMin,
         yMax: yMaxAuto ? undefined : yMax,
         timeoutInSeconds,
+        showDerived,
       })}
     popovertarget={popovertarget}
   />
@@ -143,6 +146,11 @@
   condLabel="Auto?"
   bind:value={xMax}
   bind:condition={xMaxAuto}
+/>
+<InputCheckbox
+  id="showDerived"
+  label="Show assignments & reactions"
+  bind:checked={showDerived}
 />
 
 <style>

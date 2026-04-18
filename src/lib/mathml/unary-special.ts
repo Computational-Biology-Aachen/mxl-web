@@ -40,7 +40,7 @@ export class Log extends Base {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `math.log(${this.child.toPy(displayNames)}, ${this.base.toPy(displayNames)})`;
+    return `np.log(${this.child.toPy(displayNames)}, ${this.base.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -94,7 +94,7 @@ export class Sqrt extends Base {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `math.pow(${this.child.toPy(displayNames)}, 1 / ${this.base.toPy(displayNames)})`;
+    return `np.pow(${this.child.toPy(displayNames)}, 1 / ${this.base.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {

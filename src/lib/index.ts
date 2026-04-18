@@ -14,6 +14,7 @@ export type SimulationAnalysis = {
   yMax: number | undefined;
   timeoutInSeconds: number;
   method: string;
+  showDerived?: boolean;
 };
 
 export type ParameterScanAnalysis = {
@@ -34,6 +35,7 @@ export type ParameterScanAnalysis = {
   yMax: number | undefined;
   timeoutInSeconds: number;
   method: string;
+  showDerived?: boolean;
 };
 
 export type PamAnalysis = {
@@ -46,6 +48,7 @@ export type PamAnalysis = {
   timeoutInSeconds: number;
   method: string;
   pamProtocol: PamPhase[];
+  showDerived?: boolean;
 };
 
 export type Analysis = SimulationAnalysis | ParameterScanAnalysis | PamAnalysis;

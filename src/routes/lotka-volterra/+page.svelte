@@ -95,12 +95,13 @@
       yMax: undefined,
       timeoutInSeconds: 20,
       method: "LSODA",
+      showDerived: false,
     },
     {
       type: "simulation" as const,
       id: 1,
       idx: 1,
-      title: "Long Simulation",
+      title: "Extended Simulation",
       col: 4,
       span: 3,
       tEnd: 200,
@@ -110,6 +111,7 @@
       yMax: undefined,
       timeoutInSeconds: 20,
       method: "LSODA",
+      showDerived: true,
     },
   ]);
 </script>

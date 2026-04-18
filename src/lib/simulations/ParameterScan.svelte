@@ -12,12 +12,14 @@
     tEnd,
     tolerance = 1e-6,
     method,
+    showDerived = false,
   }: {
     model: ModelBuilder;
     analysis: ParameterScanAnalysis;
     tEnd: number;
     tolerance?: number;
     method: string;
+    showDerived?: boolean;
   } = $props();
 
   type ScanResult = {
@@ -56,15 +58,24 @@
     const scanId = activeScanId;
     const paramValues = linspace(analysis.min, analysis.max, analysis.steps);
     const varKeys = [...currentModel.variables.keys()];
+    const derivedKeys = showDerived ? currentModel.sortDependencies() : [];
+
+    const allKeys = [...varKeys, ...derivedKeys];
+    const allLabels = allKeys.map((k) => {
+      return (
+        currentModel.variables.get(k)?.displayName ??
+        currentModel.assignments.get(k)?.displayName ??
+        currentModel.reactions.get(k)?.displayName ??
+        k
+      );
+    });
 
     // Zero out results immediately so the chart reflects the new scan
     scanResult = {
       paramValues,
-      labels: varKeys.map(
-        (k) => currentModel.variables.get(k)?.displayName ?? k,
-      ),
-      datasets: varKeys.map((k) => ({
-        label: currentModel.variables.get(k)?.displayName ?? k,
+      labels: allLabels,
+      datasets: allLabels.map((label) => ({
+        label,
         data: new Array(analysis.steps).fill(NaN),
       })),
     };
@@ -81,8 +92,10 @@
         ...clonedModel.parameters.get(analysis.parameter),
         value: paramValue,
       });
+      const built = clonedModel.buildPython([]);
       pyWorkerPool.postMessage({
-        model: `${clonedModel.buildPython([])}\nmodel`,
+        model: `${built}\nmodel`,
+        derived: `${built}\nderived`,
         initialValues: model.variables
           .values()
           .map((val) => val.value)
@@ -91,6 +104,7 @@
         pars: [],
         requestId,
         method: method,
+        calculateDerived: showDerived,
       });
     });
   }
@@ -111,8 +125,12 @@
     // Last time point = steady-state approximation; update this param index immediately
     const lastValues: number[] = data.values[data.values.length - 1];
     const prevValues: number[] = data.values[data.values.length - 2];
+    const nVars = model.variables.size;
+    // Convergence check uses only state variables (not derived)
     const norm2 = Math.sqrt(
-      lastValues.reduce((sum, v, i) => sum + (v - prevValues[i]) ** 2, 0),
+      lastValues
+        .slice(0, nVars)
+        .reduce((sum, v, i) => sum + (v - prevValues[i]) ** 2, 0),
     );
     const converged = norm2 < tolerance;
     const resultValues = converged ? lastValues : lastValues.map(() => NaN);

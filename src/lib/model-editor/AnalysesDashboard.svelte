@@ -171,10 +171,34 @@
       timeoutInSeconds: 60,
       method: "Radau",
       pamProtocol: [
-        { backgroundPFD: 0,   backgroundLength: 2,    pulsePFD: 5000, pulseLength: 0.8, repetitions: 1 },
-        { backgroundPFD: 0,   backgroundLength: 27.2, pulsePFD: 5000, pulseLength: 0.8, repetitions: 1 },
-        { backgroundPFD: 100, backgroundLength: 84.2, pulsePFD: 5000, pulseLength: 0.8, repetitions: 3 },
-        { backgroundPFD: 100, backgroundLength: 14.2, pulsePFD: 5000, pulseLength: 0,   repetitions: 1 },
+        {
+          backgroundPFD: 0,
+          backgroundLength: 2,
+          pulsePFD: 5000,
+          pulseLength: 0.8,
+          repetitions: 1,
+        },
+        {
+          backgroundPFD: 0,
+          backgroundLength: 27.2,
+          pulsePFD: 5000,
+          pulseLength: 0.8,
+          repetitions: 1,
+        },
+        {
+          backgroundPFD: 100,
+          backgroundLength: 84.2,
+          pulsePFD: 5000,
+          pulseLength: 0.8,
+          repetitions: 3,
+        },
+        {
+          backgroundPFD: 100,
+          backgroundLength: 14.2,
+          pulsePFD: 5000,
+          pulseLength: 0,
+          repetitions: 1,
+        },
       ],
     };
     analyses = [...analyses, newPam];
@@ -407,6 +431,7 @@
           yMax={analysis.yMax}
           timeoutInSeconds={analysis.timeoutInSeconds}
           method={analysis.method}
+          showDerived={analysis.showDerived ?? false}
         />
       {:else if analysis.type === "parameterScan"}
         <ParameterScanSimulator
@@ -415,6 +440,7 @@
           analysis={analysis}
           tEnd={analysis.tEnd}
           method={analysis.method}
+          showDerived={analysis.showDerived ?? false}
         />
       {:else if analysis.type === "pam"}
         <PamSimulator
@@ -424,6 +450,7 @@
           yMax={analysis.yMax}
           timeoutInSeconds={analysis.timeoutInSeconds}
           method={analysis.method}
+          showDerived={analysis.showDerived ?? false}
         />
       {/if}
     {/if}
@@ -453,11 +480,9 @@
     {#if analysis.type === "simulation"}
       <AnalysisEditor
         parent={analysis}
-        onSave={({ tEnd, yMax, title, timeoutInSeconds }) => {
+        onSave={(updated) => {
           analyses = analyses.map((a) =>
-            a.id === analysis.id
-              ? { ...a, tEnd, yMax, title, timeoutInSeconds }
-              : a,
+            a.id === analysis.id ? updated : a,
           ) as Analyses;
           simulatorRefs[analysis.id]?.runSimulation(model);
         }}

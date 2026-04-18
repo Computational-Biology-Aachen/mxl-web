@@ -12,12 +12,14 @@
     yMax,
     timeoutInSeconds,
     method,
+    showDerived = false,
   }: {
     model: ModelBuilder;
     tEnd: number;
     yMax?: number | undefined;
     timeoutInSeconds: number;
     method: string;
+    showDerived?: boolean;
   } = $props();
 
   const pyWorker = pyWorkerPool;
@@ -49,8 +51,11 @@
       }
     }, timeoutInSeconds * 1000);
 
+    const built = model.buildPython([]);
+
     pyWorker.postMessage({
-      model: `${model.buildPython([])}\nmodel`,
+      model: `${built}\nmodel`,
+      derived: `${built}\nderived`,
       initialValues: model.variables
         .values()
         .map((val) => {
@@ -61,22 +66,34 @@
       pars: [],
       method: method,
       requestId: requestId,
+      calculateDerived: showDerived,
     });
   }
 
-  // Plot
   let lineData = $derived.by(() => {
+    const nVars = model.variables.size;
+    const varDatasets = model.variables
+      .keys()
+      .map((name, idx) => ({
+        label: model.variables.get(name)?.displayName ?? name,
+        data: arrayColumn(result.values, idx) as number[],
+      }))
+      .toArray();
+
+    if (!showDerived)
+      return { labels: result.time as number[], datasets: varDatasets };
+
+    const derivedDatasets = model.sortDependencies().map((name, i) => {
+      const label =
+        model.assignments.get(name)?.displayName ??
+        model.reactions.get(name)?.displayName ??
+        name;
+      return { label, data: arrayColumn(result.values, nVars + i) as number[] };
+    });
+
     return {
       labels: result.time as number[],
-      datasets: model.variables
-        .keys()
-        .map((name, idx) => {
-          return {
-            label: name,
-            data: arrayColumn(result.values, idx) as number[],
-          };
-        })
-        .toArray(),
+      datasets: [...varDatasets, ...derivedDatasets],
     };
   });
 

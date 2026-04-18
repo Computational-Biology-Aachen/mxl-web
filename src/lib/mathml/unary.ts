@@ -48,7 +48,7 @@ export class Exp extends Unary {
     return `Math.exp(${this.child.toJs()})`;
   }
   toPy(displayNames: Map<string, string>): string {
-    return `math.exp(${this.child.toPy(displayNames)})`;
+    return `np.exp(${this.child.toPy(displayNames)})`;
   }
   toTex(texNames: Map<string, string>): string {
     return `e^{${this.child.toTex(texNames)}}`;
@@ -67,7 +67,7 @@ export class Factorial extends Unary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `math.factorial(${this.child.toPy(displayNames)})`;
+    return `np.factorial(${this.child.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -88,7 +88,7 @@ export class Floor extends Unary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `math.floor(${this.child.toPy(displayNames)})`;
+    return `np.floor(${this.child.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -110,7 +110,7 @@ export class Ln extends Unary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `math.log(${this.child.toPy(displayNames)})`;
+    return `np.log(${this.child.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -132,7 +132,7 @@ export class Sin extends Unary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `math.sin(${this.child.toPy(displayNames)})`;
+    return `np.sin(${this.child.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -154,7 +154,7 @@ export class Cos extends Unary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `math.cos(${this.child.toPy(displayNames)})`;
+    return `np.cos(${this.child.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -176,7 +176,7 @@ export class Tan extends Unary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `math.tan(${this.child.toPy(displayNames)})`;
+    return `np.tan(${this.child.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -198,7 +198,7 @@ export class Sec extends Unary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `1 / math.cos(${this.child.toPy(displayNames)})`;
+    return `1 / np.cos(${this.child.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -220,7 +220,7 @@ export class Csc extends Unary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `1 / math.sin(${this.child.toPy(displayNames)})`;
+    return `1 / np.sin(${this.child.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -242,7 +242,7 @@ export class Cot extends Unary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `1 / math.tan(${this.child.toPy(displayNames)})`;
+    return `1 / np.tan(${this.child.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -264,7 +264,7 @@ export class Asin extends Unary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `math.asin(${this.child.toPy(displayNames)})`;
+    return `np.asin(${this.child.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -286,7 +286,7 @@ export class Acos extends Unary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `math.acos(${this.child.toPy(displayNames)})`;
+    return `np.acos(${this.child.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -308,7 +308,7 @@ export class Atan extends Unary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `math.atan(${this.child.toPy(displayNames)})`;
+    return `np.atan(${this.child.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -330,7 +330,7 @@ export class Acot extends Unary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `math.atan(1 / ${this.child.toPy(displayNames)})`;
+    return `np.atan(1 / ${this.child.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -352,7 +352,7 @@ export class ArcSec extends Unary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `math.acos(1 / ${this.child.toPy(displayNames)})`;
+    return `np.acos(1 / ${this.child.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -374,7 +374,7 @@ export class ArcCsc extends Unary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `math.asin(1 / ${this.child.toPy(displayNames)})`;
+    return `np.asin(1 / ${this.child.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -396,7 +396,7 @@ export class Sinh extends Unary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `math.sinh(${this.child.toPy(displayNames)})`;
+    return `np.sinh(${this.child.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -418,7 +418,7 @@ export class Cosh extends Unary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `math.cosh(${this.child.toPy(displayNames)})`;
+    return `np.cosh(${this.child.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -440,7 +440,7 @@ export class Tanh extends Unary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `math.tanh(${this.child.toPy(displayNames)})`;
+    return `np.tanh(${this.child.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -462,7 +462,7 @@ export class Sech extends Unary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `1 / math.cosh(${this.child.toPy(displayNames)})`;
+    return `1 / np.cosh(${this.child.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -484,7 +484,7 @@ export class Csch extends Unary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `1 / math.sinh(${this.child.toPy(displayNames)})`;
+    return `1 / np.sinh(${this.child.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -506,7 +506,7 @@ export class Coth extends Unary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `1 / math.tanh(${this.child.toPy(displayNames)})`;
+    return `1 / np.tanh(${this.child.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -528,7 +528,7 @@ export class ArcSinh extends Unary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `math.asinh(${this.child.toPy(displayNames)})`;
+    return `np.asinh(${this.child.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -550,7 +550,7 @@ export class ArcCosh extends Unary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `math.acosh(${this.child.toPy(displayNames)})`;
+    return `np.acosh(${this.child.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -572,7 +572,7 @@ export class ArcTanh extends Unary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `math.atanh(${this.child.toPy(displayNames)})`;
+    return `np.atanh(${this.child.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -594,7 +594,7 @@ export class ArcCsch extends Unary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `math.asinh(1 / ${this.child.toPy(displayNames)})`;
+    return `np.asinh(1 / ${this.child.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -616,7 +616,7 @@ export class ArcSech extends Unary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `math.acosh(1 / ${this.child.toPy(displayNames)})`;
+    return `np.acosh(1 / ${this.child.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -638,7 +638,7 @@ export class ArcCoth extends Unary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `math.atanh(1 / ${this.child.toPy(displayNames)})`;
+    return `np.atanh(1 / ${this.child.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {

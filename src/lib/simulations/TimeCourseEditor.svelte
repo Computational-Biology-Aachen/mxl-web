@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { SimulationAnalysis } from "$lib";
+  import InputCheckbox from "$lib/inputs/InputCheckbox.svelte";
   import InputChoice from "$lib/inputs/InputChoice.svelte";
   import InputNumber from "$lib/inputs/InputNumber.svelte";
   import InputNumberOptional from "$lib/inputs/InputNumberOptional.svelte";
@@ -30,6 +31,7 @@
   let title = $derived(parent.title);
   let timeoutInSeconds = $derived(parent.timeoutInSeconds);
   let method = $derived(parent.method);
+  let showDerived = $state(untrack(() => parent.showDerived ?? false));
 </script>
 
 <RowApart>
@@ -46,6 +48,7 @@
         title: title,
         timeoutInSeconds: timeoutInSeconds,
         method: method,
+        showDerived,
       })}
     popovertarget={popovertarget}
   />
@@ -101,4 +104,9 @@
   id="integrationMethod"
   label="Method"
   bind:value={method}
+/>
+<InputCheckbox
+  id="showDerived"
+  label="Show assignments & reactions"
+  bind:checked={showDerived}
 />
