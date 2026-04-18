@@ -15,6 +15,7 @@ export type SimulationAnalysis = {
   timeoutInSeconds: number;
   method: string;
   showDerived?: boolean;
+  selectedKeys?: string[];
 };
 
 export type ParameterScanAnalysis = {
@@ -36,6 +37,7 @@ export type ParameterScanAnalysis = {
   timeoutInSeconds: number;
   method: string;
   showDerived?: boolean;
+  selectedKeys?: string[];
 };
 
 export type PamAnalysis = {
@@ -49,6 +51,7 @@ export type PamAnalysis = {
   method: string;
   pamProtocol: PamPhase[];
   showDerived?: boolean;
+  selectedKeys?: string[];
 };
 
 export type Analysis = SimulationAnalysis | ParameterScanAnalysis | PamAnalysis;

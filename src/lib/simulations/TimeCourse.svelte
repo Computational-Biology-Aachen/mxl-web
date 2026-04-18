@@ -13,6 +13,7 @@
     timeoutInSeconds,
     method,
     showDerived = false,
+    selectedKeys = undefined,
   }: {
     model: ModelBuilder;
     tEnd: number;
@@ -20,6 +21,7 @@
     timeoutInSeconds: number;
     method: string;
     showDerived?: boolean;
+    selectedKeys?: string[];
   } = $props();
 
   const pyWorker = pyWorkerPool;
@@ -72,24 +74,28 @@
 
   let lineData = $derived.by(() => {
     const nVars = model.variables.size;
-    const varDatasets = model.variables
-      .keys()
-      .map((name, idx) => ({
+    const visible = (key: string) => !selectedKeys || selectedKeys.includes(key);
+
+    const varDatasets = [...model.variables.keys()]
+      .map((name, idx) => ({ name, idx }))
+      .filter(({ name }) => visible(name))
+      .map(({ name, idx }) => ({
         label: model.variables.get(name)?.displayName ?? name,
         data: arrayColumn(result.values, idx) as number[],
-      }))
-      .toArray();
+      }));
 
-    if (!showDerived)
-      return { labels: result.time as number[], datasets: varDatasets };
+    if (!showDerived) return { labels: result.time as number[], datasets: varDatasets };
 
-    const derivedDatasets = model.sortDependencies().map((name, i) => {
-      const label =
-        model.assignments.get(name)?.displayName ??
-        model.reactions.get(name)?.displayName ??
-        name;
-      return { label, data: arrayColumn(result.values, nVars + i) as number[] };
-    });
+    const derivedDatasets = model.sortDependencies()
+      .map((name, i) => ({ name, i }))
+      .filter(({ name }) => visible(name))
+      .map(({ name, i }) => ({
+        label:
+          model.assignments.get(name)?.displayName ??
+          model.reactions.get(name)?.displayName ??
+          name,
+        data: arrayColumn(result.values, nVars + i) as number[],
+      }));
 
     return {
       labels: result.time as number[],

@@ -432,6 +432,7 @@
           timeoutInSeconds={analysis.timeoutInSeconds}
           method={analysis.method}
           showDerived={analysis.showDerived ?? false}
+          selectedKeys={analysis.selectedKeys}
         />
       {:else if analysis.type === "parameterScan"}
         <ParameterScanSimulator
@@ -441,6 +442,7 @@
           tEnd={analysis.tEnd}
           method={analysis.method}
           showDerived={analysis.showDerived ?? false}
+          selectedKeys={analysis.selectedKeys}
         />
       {:else if analysis.type === "pam"}
         <PamSimulator
@@ -451,6 +453,7 @@
           timeoutInSeconds={analysis.timeoutInSeconds}
           method={analysis.method}
           showDerived={analysis.showDerived ?? false}
+          selectedKeys={analysis.selectedKeys}
         />
       {/if}
     {/if}
@@ -480,6 +483,7 @@
     {#if analysis.type === "simulation"}
       <AnalysisEditor
         parent={analysis}
+        model={model}
         onSave={(updated) => {
           analyses = analyses.map((a) =>
             a.id === analysis.id ? updated : a,
@@ -503,6 +507,7 @@
     {:else if analysis.type === "pam"}
       <PamScanEditor
         parent={analysis}
+        model={model}
         onSave={(updated) => {
           analyses = analyses.map((a) =>
             a.id === analysis.id ? updated : a,

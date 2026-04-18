@@ -1730,6 +1730,7 @@
       yMax: undefined,
       timeoutInSeconds: 20,
       method: "Radau",
+      showDerived: false,
     },
     {
       type: "pam" as const,
@@ -1739,9 +1740,11 @@
       col: 4,
       span: 3,
       yMax: undefined,
-      timeoutInSeconds: 60,
+      timeoutInSeconds: 120,
       method: "Radau",
       pamProtocol: defaultPamProtocol,
+      showDerived: true,
+      selectedKeys: ["Fluo"],
     },
   ]);
 </script>

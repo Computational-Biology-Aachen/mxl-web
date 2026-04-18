@@ -49,6 +49,7 @@
     top: clamp(1rem, var(--dist), 10rem);
     left: var(--dist);
     width: calc(100% - 2 * var(--dist));
+    max-height: calc(100vh - 2 * clamp(1rem, var(--dist), 10rem));
   }
   .md {
     --dist: 4rem;

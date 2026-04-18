@@ -1,5 +1,8 @@
 <script lang="ts">
   import AnalysisEditor from "$lib/simulations/TimeCourseEditor.svelte";
+  import { ModelBuilder } from "$lib/model-editor/modelBuilder";
+
+  const model = new ModelBuilder();
 
   let analysis = {
     type: "simulation" as const,
@@ -19,6 +22,7 @@
 
 <AnalysisEditor
   parent={analysis}
+  model={model}
   onSave={() => null}
   popovertarget="/"
 />

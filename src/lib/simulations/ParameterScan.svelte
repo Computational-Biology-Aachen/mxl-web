@@ -13,6 +13,7 @@
     tolerance = 1e-6,
     method,
     showDerived = false,
+    selectedKeys = undefined,
   }: {
     model: ModelBuilder;
     analysis: ParameterScanAnalysis;
@@ -20,11 +21,13 @@
     tolerance?: number;
     method: string;
     showDerived?: boolean;
+    selectedKeys?: string[];
   } = $props();
 
   type ScanResult = {
     paramValues: number[];
     labels: string[];
+    keys: string[];
     datasets: { label: string; data: number[] }[];
   };
 
@@ -40,6 +43,7 @@
   let scanResult = $state<ScanResult>({
     paramValues: [],
     labels: [],
+    keys: [],
     datasets: [],
   });
 
@@ -74,6 +78,7 @@
     scanResult = {
       paramValues,
       labels: allLabels,
+      keys: allKeys,
       datasets: allLabels.map((label) => ({
         label,
         data: new Array(analysis.steps).fill(NaN),
@@ -143,9 +148,10 @@
 
   let lineData = $derived.by(() => {
     if (!scanResult) return { labels: [], datasets: [] };
+    const visible = (key: string) => !selectedKeys || selectedKeys.includes(key);
     return {
       labels: scanResult.paramValues as number[],
-      datasets: scanResult.datasets,
+      datasets: scanResult.datasets.filter((_, i) => visible(scanResult.keys[i])),
     };
   });
 

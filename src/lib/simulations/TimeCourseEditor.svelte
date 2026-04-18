@@ -5,16 +5,19 @@
   import InputNumber from "$lib/inputs/InputNumber.svelte";
   import InputNumberOptional from "$lib/inputs/InputNumberOptional.svelte";
   import InputText from "$lib/inputs/InputText.svelte";
+  import type { ModelBuilder } from "$lib/model-editor/modelBuilder";
   import RowApart from "$lib/RowApart.svelte";
   import { untrack } from "svelte";
   import PopoverSaveButton from "../buttons/PopoverSaveButton.svelte";
 
   let {
     parent,
+    model,
     onSave,
     popovertarget,
   }: {
     parent: SimulationAnalysis;
+    model: ModelBuilder;
     onSave: (options: SimulationAnalysis) => void;
     popovertarget: string;
   } = $props();
@@ -32,6 +35,37 @@
   let timeoutInSeconds = $derived(parent.timeoutInSeconds);
   let method = $derived(parent.method);
   let showDerived = $state(untrack(() => parent.showDerived ?? false));
+
+  let allAvailableKeys = $derived([
+    ...model.variables.keys(),
+    ...(showDerived ? model.sortDependencies() : []),
+  ]);
+
+  let selectedKeys = $state<string[] | undefined>(untrack(() => parent.selectedKeys));
+
+  function keyLabel(key: string): string {
+    return (
+      model.variables.get(key)?.displayName ??
+      model.assignments.get(key)?.displayName ??
+      model.reactions.get(key)?.displayName ??
+      key
+    );
+  }
+
+  function isSelected(key: string): boolean {
+    return selectedKeys === undefined || selectedKeys.includes(key);
+  }
+
+  function toggle(key: string, checked: boolean) {
+    if (checked) {
+      if (selectedKeys === undefined) return;
+      const next = [...selectedKeys, key];
+      selectedKeys = next.length >= allAvailableKeys.length ? undefined : next;
+    } else {
+      const current = selectedKeys ?? [...allAvailableKeys];
+      selectedKeys = current.filter((k) => k !== key);
+    }
+  }
 </script>
 
 <RowApart>
@@ -49,6 +83,7 @@
         timeoutInSeconds: timeoutInSeconds,
         method: method,
         showDerived,
+        selectedKeys,
       })}
     popovertarget={popovertarget}
   />
@@ -110,3 +145,42 @@
   label="Show assignments & reactions"
   bind:checked={showDerived}
 />
+
+<details>
+  <summary class="section-summary">Variable selection</summary>
+  {#each allAvailableKeys as key (key)}
+    <InputCheckbox
+      id="sel-{key}"
+      label={keyLabel(key)}
+      bind:checked={
+        () => isSelected(key),
+        (v) => toggle(key, v)
+      }
+    />
+  {/each}
+</details>
+
+<style>
+  details {
+    margin-top: 0.5rem;
+  }
+
+  .section-summary {
+    cursor: pointer;
+    padding: 0.25rem 0;
+    font-weight: var(--weight-bold);
+    font-size: 0.875rem;
+    list-style: none;
+    user-select: none;
+  }
+
+  .section-summary::before {
+    content: "▶ ";
+    font-size: 0.6rem;
+    vertical-align: middle;
+  }
+
+  details[open] .section-summary::before {
+    content: "▼ ";
+  }
+</style>

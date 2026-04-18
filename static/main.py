@@ -62,7 +62,11 @@ def integrate(
             ys = res.y
 
             if calculate_derived:
-                der = np.array(derived(ts, ys, *pars), dtype=float)
+                # der = np.array(derived(ts, ys, *pars), dtype=float)
+                der = np.array(
+                    [derived(t, y, *pars) for t, y in zip(ts, ys.T)],
+                    dtype=float,
+                ).T
                 return ts, np.concat((ys, der)).T, None
             else:
                 return ts, ys.T, None
@@ -88,6 +92,7 @@ def integrate_protocol(
     for step in protocol:
         t_end = step["t_end"]
         ppfd = step["PFD"]
+        print(f"Simulating until t={t_end} with ppfd={ppfd}")
         try:
             res = solve_ivp(
                 model,
@@ -117,8 +122,14 @@ def integrate_protocol(
         ts_all.append(t_sim)
 
         if calculate_derived:
-            der = derived(t_sim, y_sim.T, ppfd, *pars)
-            ys_all.append(np.concat((y_sim, der.T)))
+            # der = derived(t_sim, y_sim.T, ppfd, *pars)
+            der = np.array(
+                [derived(t, y, ppfd, *pars) for t, y in zip(t_sim, y_sim)],
+                dtype=float,
+            )
+
+            print(y_sim.shape, der.shape)
+            ys_all.append(np.concat((y_sim, der), axis=1))
         else:
             ys_all.append(y_sim)
 
