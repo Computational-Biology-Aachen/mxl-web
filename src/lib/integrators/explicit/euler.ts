@@ -18,7 +18,7 @@ export function euler(
   );
 
   values[0] = initialValues;
-  for (let i = 0; i < n; i++) {
+  for (let i = 0; i < n - 1; i++) {
     values[i + 1] = values[i].map(
       (val, idx) => val + rhs(time[i], values[i], pars)[idx] * stepSize,
     );

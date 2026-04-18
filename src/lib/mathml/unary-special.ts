@@ -23,14 +23,14 @@ export class Log extends Base {
     if (changedChild) {
       const cloned = new Log(child, this.base);
       cloned.id = this.id;
-      return { node: cloned, changed: false };
+      return { node: cloned, changed: true };
     }
 
     const { node: base, changed: changedBase } = this.base.replace(id, next);
     if (changedBase) {
       const cloned = new Log(this.child, base);
       cloned.id = this.id;
-      return { node: cloned, changed: false };
+      return { node: cloned, changed: true };
     }
     return { node: this, changed: false };
   }
@@ -40,7 +40,7 @@ export class Log extends Base {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `np.log(${this.child.toPy(displayNames)}, ${this.base.toPy(displayNames)})`;
+    return `np.log(${this.child.toPy(displayNames)}) / np.log(${this.base.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
@@ -77,14 +77,14 @@ export class Sqrt extends Base {
     if (changedChild) {
       const cloned = new Sqrt(child, this.base);
       cloned.id = this.id;
-      return { node: cloned, changed: false };
+      return { node: cloned, changed: true };
     }
 
     const { node: base, changed: changedBase } = this.base.replace(id, next);
     if (changedBase) {
       const cloned = new Sqrt(this.child, base);
       cloned.id = this.id;
-      return { node: cloned, changed: false };
+      return { node: cloned, changed: true };
     }
     return { node: this, changed: false };
   }

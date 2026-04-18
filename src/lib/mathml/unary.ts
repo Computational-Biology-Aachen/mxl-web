@@ -67,7 +67,7 @@ export class Factorial extends Unary {
   }
 
   toPy(displayNames: Map<string, string>): string {
-    return `np.factorial(${this.child.toPy(displayNames)})`;
+    return `np.math.factorial(${this.child.toPy(displayNames)})`;
   }
 
   toTex(texNames: Map<string, string>): string {
