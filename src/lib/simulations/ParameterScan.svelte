@@ -5,6 +5,7 @@
   import type { ModelBuilder } from "../model-editor/modelBuilder";
   import { pyWorkerPool } from "../stores/workerPool";
   import { WorkerManager, type WorkerMessage } from "../stores/workerStore";
+  import SimulationError from "./SimulationError.svelte";
 
   let {
     model,
@@ -42,6 +43,7 @@
   }
 
   let err = $state<string | undefined>(undefined);
+  let hints = $state<string[] | undefined>(undefined);
   let scanResult = $state<ScanResult>({
     paramValues: [],
     labels: [],
@@ -59,6 +61,7 @@
 
   export function runScan(currentModel: ModelBuilder) {
     err = undefined;
+    hints = undefined;
 
     activeScanId++;
     const scanId = activeScanId;
@@ -132,6 +135,7 @@
 
     if (data.message !== undefined) {
       err = data.message;
+      hints = data.hints;
       return;
     }
 
@@ -181,7 +185,10 @@
 
 <div id="chart">
   {#if err}
-    <span>{err}</span>
+    <SimulationError
+      message={err}
+      hints={hints}
+    />
   {:else}
     {#if completedCount < totalCount || failedCount > 0}
       <div class="loading-container">

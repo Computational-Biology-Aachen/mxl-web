@@ -7,6 +7,7 @@ export interface WorkerMessage {
   values: number[][];
   requestId?: string;
   message: string | undefined;
+  hints?: string[];
 }
 
 type MessageHandler = (data: WorkerMessage) => void;

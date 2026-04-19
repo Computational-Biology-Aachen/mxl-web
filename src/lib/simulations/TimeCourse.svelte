@@ -5,6 +5,7 @@
   import { pyWorkerPool } from "../stores/workerPool";
   import { WorkerManager, type WorkerMessage } from "../stores/workerStore";
   import { arrayColumn } from "../utils";
+  import SimulationError from "./SimulationError.svelte";
 
   let {
     model,
@@ -30,6 +31,7 @@
 
   let loading = $state(true);
   let err: string | undefined = $state(undefined);
+  let hints = $state<string[] | undefined>(undefined);
   let result = $state<{ time: number[]; values: number[][] }>({
     time: [],
     values: [],
@@ -46,6 +48,7 @@
     // Clear any existing timeoutInSeconds
     if (timeoutInSecondsId) clearTimeout(timeoutInSecondsId);
     err = undefined;
+    hints = undefined;
 
     // Set a timeoutInSeconds for the request
     timeoutInSecondsId = setTimeout(() => {
@@ -124,6 +127,8 @@
 
       if (data.message !== undefined) {
         err = data.message;
+        hints = data.hints;
+        loading = false;
       } else {
         result = { time: data.time, values: data.values };
         loading = false;
@@ -150,7 +155,10 @@
 
 <div>
   {#if err}
-    <span>{err}</span>
+    <SimulationError
+      message={err}
+      hints={hints}
+    />
   {:else}
     <LineChart
       data={lineData}

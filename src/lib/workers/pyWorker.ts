@@ -53,7 +53,19 @@ onmessage = async function (event: MessageEvent) {
   const pyodide = await pyodidePromise;
 
   if (!pyodideReady || !pyodide) {
-    postMessage("pyodide_not_available");
+    const msg: WorkerMessage = {
+      time: [],
+      values: [],
+      requestId: event.data.requestId,
+      message: "Python runtime not available",
+      hints: [
+        "The Pyodide runtime (Python-in-browser) failed to load",
+        "Check your internet connection — Pyodide packages are fetched from a CDN",
+        "Open the browser console (F12) for details",
+        "Hard-refresh the page (Ctrl+Shift+R / Cmd+Shift+R) and try again",
+      ],
+    };
+    postMessage(msg);
     return;
   }
 
@@ -94,15 +106,27 @@ onmessage = async function (event: MessageEvent) {
       calculateDerived,
     );
   }
-  const err: string | undefined = errPy;
   const time: number[] = tPy.toJs();
   const values: number[][] = yPy.toJs();
 
+  let errMessage: string | undefined;
+  let hints: string[] | undefined;
+  if (errPy) {
+    try {
+      const parsed = JSON.parse(errPy as string);
+      errMessage = parsed.message;
+      hints = parsed.hints;
+    } catch {
+      errMessage = errPy as string;
+    }
+  }
+
   const message: WorkerMessage = {
-    time: time,
-    values: values,
-    requestId: requestId,
-    message: err,
+    time,
+    values,
+    requestId,
+    message: errMessage,
+    hints,
   };
   postMessage(message);
 };
