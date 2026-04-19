@@ -1,0 +1,25 @@
+[project]
+name = "mxlweb"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "numpy>=2.4.4",
+    "scipy>=1.17.1",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.11",
+]
+
+[tool.pyright]
+deprecateTypingAliases = true
+exclude = [
+    "**/.*",
+    "**/__pycache__",
+    "**/node_modules",
+    ".venv",
+    "tests/assets",
+]
