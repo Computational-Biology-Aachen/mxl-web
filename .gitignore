@@ -29,6 +29,7 @@ target/
 .pixi/*
 !.pixi/config.toml
 
-# LLMs
+# AI config files
+.github/copilot-instructions.md
+.claude
 CLAUDE.md
-.claude/
