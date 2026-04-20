@@ -232,4 +232,5 @@
   name={"Dynamic Entrobaction"}
   initModel={initModel}
   bind:analyses={analyses}
+  equationsOpen={true}
 />

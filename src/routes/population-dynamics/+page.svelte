@@ -107,4 +107,5 @@
   name={"Population Dynamics"}
   initModel={initModel}
   bind:analyses={analyses}
+  equationsOpen={true}
 />

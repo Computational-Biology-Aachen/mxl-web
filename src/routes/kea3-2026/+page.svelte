@@ -2683,4 +2683,5 @@
   name={"Model"}
   initModel={initModel}
   bind:analyses={analyses}
+  equationsOpen={false}
 ></AnalysesDashboard>

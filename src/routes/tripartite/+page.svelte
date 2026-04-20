@@ -187,6 +187,7 @@
   name={"Tripartite dynamics"}
   initModel={initModel}
   bind:analyses={analyses}
+  equationsOpen={true}
 >
   <p>
     Dynamic model of a tripartite population of <b>P</b>ublic consumers,

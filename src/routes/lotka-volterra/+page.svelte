@@ -122,6 +122,7 @@
   name={"Lotka-Volterra"}
   initModel={initModel}
   bind:analyses={analyses}
+  equationsOpen={true}
 >
   <p>
     The Lotka-Volterra equations, developed in the 1920s by Alfred Lotka and

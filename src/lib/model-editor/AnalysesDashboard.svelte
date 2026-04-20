@@ -6,6 +6,7 @@
     ParameterScanAnalysis,
     SimulationAnalysis,
   } from "$lib";
+  import Accordion from "$lib/Accordion.svelte";
   import ModelEditButton from "$lib/buttons/ModelEditButton.svelte";
   import ResetButton from "$lib/buttons/ResetButton.svelte";
   import DynBoxRow, { type Box } from "$lib/DynBoxRow.svelte";
@@ -33,11 +34,13 @@
     name,
     initModel,
     analyses = $bindable(),
+    equationsOpen = true,
   }: {
     name: string;
     initModel: () => ModelBuilder;
     analyses: Analyses;
     children?: Snippet;
+    equationsOpen?: boolean;
   } = $props();
 
   let model = $derived(initModel());
@@ -330,15 +333,17 @@
   {@render children()}
 {/if}
 
-<Pair>
-  <Icon>function</Icon>
-  <h3>Model Equations</h3>
-</Pair>
-
-<Math
-  tex={model.buildTex()}
-  display
-/>
+<Accordion bind:open={equationsOpen}>
+  {#snippet header()}
+    <Icon>function</Icon>
+    <h3>Model Equations</h3>
+  {/snippet}
+  <Math
+    tex={model.buildTex()}
+    fontSize={"0.9rem"}
+    display
+  />
+</Accordion>
 
 {#if parSliders.length > 0}
   <Pair>
