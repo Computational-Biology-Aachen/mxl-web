@@ -16,7 +16,7 @@ export type Stoichiometry = Array<Stoich>;
 
 export type Variable = {
   id: string;
-  value: number;
+  value: number | Base;
   displayName?: string;
   texName: string;
   slider?: SliderArgs;
@@ -114,14 +114,14 @@ export function idToDisplay(
 
 // Model View
 export class ModelView {
-  parameters: VarView = [];
-  variables: ParView = [];
+  parameters: ParView = [];
+  variables: VarView = [];
   assignments: AssView = [];
   reactions: RxnView = [];
 
   constructor(
-    parameters: VarView = [],
-    variables: ParView = [],
+    parameters: ParView = [],
+    variables: VarView = [],
     assignments: AssView = [],
     reactions: RxnView = [],
   ) {

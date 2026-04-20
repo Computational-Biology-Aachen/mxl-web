@@ -15,6 +15,7 @@
     method,
     showDerived = false,
     selectedKeys = undefined,
+    normalizedKeys = undefined,
     nTimePoints,
   }: {
     model: ModelBuilder;
@@ -24,6 +25,7 @@
     method: string;
     showDerived?: boolean;
     selectedKeys?: string[];
+    normalizedKeys?: string[];
     nTimePoints: number;
   } = $props();
 
@@ -111,10 +113,7 @@
       pyWorkerPool.postMessage({
         model: `${built}\nmodel`,
         derived: `${built}\nderived`,
-        initialValues: model.variables
-          .values()
-          .map((val) => val.value)
-          .toArray(),
+        initialValues: model.resolveInitialValues(),
         tEnd: tEnd,
         pars: [],
         requestId,
@@ -158,15 +157,29 @@
     completedCount++;
   }
 
+  function normalizeToMax(data: number[]): number[] {
+    const max = Math.max(...data);
+    if (max === 0 || !isFinite(max)) return data;
+    return data.map((v) => v / max);
+  }
+
   let lineData = $derived.by(() => {
     if (!scanResult) return { labels: [], datasets: [] };
     const visible = (key: string) =>
       !selectedKeys || selectedKeys.includes(key);
     return {
       labels: scanResult.paramValues as number[],
-      datasets: scanResult.datasets.filter((_, i) =>
-        visible(scanResult.keys[i]),
-      ),
+      datasets: scanResult.keys
+        .map((key, i) => ({ key, dataset: scanResult.datasets[i] }))
+        .filter(({ key }) => visible(key))
+        .map(({ key, dataset }) => ({
+          label: normalizedKeys?.includes(key)
+            ? `Norm(${dataset.label})`
+            : dataset.label,
+          data: normalizedKeys?.includes(key)
+            ? normalizeToMax(dataset.data)
+            : dataset.data,
+        })),
     };
   });
 

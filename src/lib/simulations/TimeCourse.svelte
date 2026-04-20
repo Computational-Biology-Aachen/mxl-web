@@ -15,6 +15,7 @@
     method,
     showDerived = false,
     selectedKeys = undefined,
+    normalizedKeys = undefined,
     nTimePoints,
   }: {
     model: ModelBuilder;
@@ -24,6 +25,7 @@
     method: string;
     showDerived?: boolean;
     selectedKeys?: string[];
+    normalizedKeys?: string[];
     nTimePoints: number;
   } = $props();
 
@@ -67,12 +69,7 @@
     pyWorker.postMessage({
       model: `${built}\nmodel`,
       derived: `${built}\nderived`,
-      initialValues: model.variables
-        .values()
-        .map((val) => {
-          return val.value;
-        })
-        .toArray(),
+      initialValues: model.resolveInitialValues(),
       tEnd: tEnd,
       pars: [],
       method: method,
@@ -80,6 +77,19 @@
       calculateDerived: showDerived,
       nTimePoints: nTimePoints,
     });
+  }
+
+  function normalizeToMax(data: number[]): number[] {
+    const max = Math.max(...data);
+    if (max === 0 || !isFinite(max)) return data;
+    return data.map((v) => v / max);
+  }
+
+  function maybeNormalize(key: string, data: number[]): number[] {
+    return normalizedKeys?.includes(key) ? normalizeToMax(data) : data;
+  }
+  function maybeRename(key: string): string {
+    return normalizedKeys?.includes(key) ? `Norm(${key})` : key;
   }
 
   let lineData = $derived.by(() => {
@@ -91,8 +101,8 @@
       .map((name, idx) => ({ name, idx }))
       .filter(({ name }) => visible(name))
       .map(({ name, idx }) => ({
-        label: model.variables.get(name)?.displayName ?? name,
-        data: arrayColumn(result.values, idx) as number[],
+        label: maybeRename(model.variables.get(name)?.displayName ?? name),
+        data: maybeNormalize(name, arrayColumn(result.values, idx) as number[]),
       }));
 
     if (!showDerived)
@@ -104,11 +114,15 @@
       : allDerived;
 
     const derivedDatasets = activeDerived.map((name, i) => ({
-      label:
+      label: maybeRename(
         model.assignments.get(name)?.displayName ??
-        model.reactions.get(name)?.displayName ??
+          model.reactions.get(name)?.displayName ??
+          name,
+      ),
+      data: maybeNormalize(
         name,
-      data: arrayColumn(result.values, nVars + i) as number[],
+        arrayColumn(result.values, nVars + i) as number[],
+      ),
     }));
 
     return {

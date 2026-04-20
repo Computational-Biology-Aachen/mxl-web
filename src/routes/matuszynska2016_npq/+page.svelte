@@ -1080,6 +1080,7 @@
       pamProtocol: defaultPamProtocol,
       showDerived: true,
       selectedKeys: ["Fluo"],
+      normalizedKeys: ["Fluo"],
       nTimePoints: 100,
     },
   ]);

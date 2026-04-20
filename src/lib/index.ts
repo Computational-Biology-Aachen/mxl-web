@@ -16,6 +16,7 @@ export type SimulationAnalysis = {
   method: string;
   showDerived?: boolean;
   selectedKeys?: string[];
+  normalizedKeys?: string[];
   nTimePoints: number;
 };
 
@@ -39,6 +40,7 @@ export type ParameterScanAnalysis = {
   method: string;
   showDerived?: boolean;
   selectedKeys?: string[];
+  normalizedKeys?: string[];
 };
 
 export type PamAnalysis = {
@@ -53,6 +55,7 @@ export type PamAnalysis = {
   pamProtocol: PamGroup[];
   showDerived?: boolean;
   selectedKeys?: string[];
+  normalizedKeys?: string[];
   nTimePoints: number;
 };
 

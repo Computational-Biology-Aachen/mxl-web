@@ -558,11 +558,25 @@
       .addVariable("pH", { value: 7.5, texName: "pH" })
       .addVariable("ATPactivity", { value: 0, texName: "ATPactivity" })
       .addVariable("delta_psi", {
-        value: 0.041318855555869116,
+        value: new Divide([
+          new Mul([
+            new Ln(new Num(10)),
+            new Name("R"),
+            new Name("T"),
+            new Add([new Name("pH"), new Minus([new Name("pH_lumen")])]),
+          ]),
+          new Name("F"),
+        ]),
         texName: "delta\\_psi",
       })
-      .addVariable("K_stroma", { value: 30.0, texName: "K\\_stroma" })
-      .addVariable("Cl_stroma", { value: 25.0, texName: "Cl\\_stroma" })
+      .addVariable("K_stroma", {
+        value: new Mul([new Num(0.5), new Name("K_total")]),
+        texName: "K\\_stroma",
+      })
+      .addVariable("Cl_stroma", {
+        value: new Mul([new Num(0.5), new Name("Cl_total")]),
+        texName: "Cl\\_stroma",
+      })
       .addAssignment("RT", {
         fn: new Mul([new Name("R"), new Name("T")]),
         texName: "RT",
@@ -2674,6 +2688,7 @@
       pamProtocol: defaultPamProtocol,
       showDerived: true,
       selectedKeys: ["Fluo"],
+      normalizedKeys: ["Fluo"],
       nTimePoints: 100,
     },
   ]);

@@ -30,7 +30,7 @@
     <li><a href="{base}/matuszynska2016_npq">Matuszyńska 2016 (NPQ)</a></li>
     <li><a href="{base}/matuszynska2016_phd">Matuszyńska 2016 (PHD)</a></li>
     <li><a href="{base}/saadat2021">Saadat 2021</a></li>
-    <li><a href="{base}/kea3-2026">KEA3 2026</a></li>
+    <li><a href="{base}/ebeling-2026">Ebeling 2026</a></li>
   </ul>
 
   <p>Steady-state models</p>

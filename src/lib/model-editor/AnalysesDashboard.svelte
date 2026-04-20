@@ -91,12 +91,14 @@
   let varSliders = $derived.by(() => {
     return model.variables
       .entries()
-      .filter((k) => k[1].slider !== undefined)
+      .filter(
+        (k) => k[1].slider !== undefined && typeof k[1].value === "number",
+      )
       .map(([id, par]) => {
         return {
           id: id,
           name: par.displayName,
-          init: par.value,
+          init: par.value as number,
           min: par.slider!.min,
           max: par.slider!.max,
           step: par.slider!.step,
@@ -388,7 +390,7 @@
         callback={runAllSimulations}
         bind:val={
           () => {
-            return model.variables.get(vari.id)!.value;
+            return model.variables.get(vari.id)!.value as number;
           },
           (val) => {
             let old = model.variables.get(vari.id)!;
@@ -437,6 +439,7 @@
           method={analysis.method}
           showDerived={analysis.showDerived ?? false}
           selectedKeys={analysis.selectedKeys}
+          normalizedKeys={analysis.normalizedKeys}
           nTimePoints={analysis.nTimePoints ?? 100}
         />
       {:else if analysis.type === "parameterScan"}
@@ -448,6 +451,7 @@
           method={analysis.method}
           showDerived={analysis.showDerived ?? false}
           selectedKeys={analysis.selectedKeys}
+          normalizedKeys={analysis.normalizedKeys}
           nTimePoints={2}
         />
       {:else if analysis.type === "pam"}
@@ -460,6 +464,7 @@
           method={analysis.method}
           showDerived={analysis.showDerived ?? false}
           selectedKeys={analysis.selectedKeys}
+          normalizedKeys={analysis.normalizedKeys}
           nTimePoints={analysis.nTimePoints ?? 100}
         />
       {/if}

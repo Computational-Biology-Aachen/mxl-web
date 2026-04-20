@@ -10,6 +10,7 @@
     type Parameter,
     type ParView,
     type RxnView,
+    type Variable,
     type VarView,
   } from "./modelView";
   import SliderEditor from "./SliderEditor.svelte";
@@ -28,8 +29,8 @@
     reactions: RxnView;
   } = $props();
 
-  function onSaveSlider(idx: number, update: Parameter) {
-    parameters[idx] = update;
+  function onSaveSlider(idx: number, update: Variable | Parameter) {
+    parameters[idx] = update as Parameter;
     parameters = parameters.slice();
   }
 </script>

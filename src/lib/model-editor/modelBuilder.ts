@@ -3,6 +3,21 @@ import { SvelteMap } from "svelte/reactivity";
 import { defaultTexName, defaultValue, renderTerms } from "./modelUtils";
 import { type SliderArgs } from "./modelView";
 
+function evalInitialAssignment(
+  expr: Base,
+  params: Map<string, number>,
+): number {
+  const names = [...params.keys()];
+  const values = [...params.values()];
+  try {
+    // eslint-disable-next-line no-new-func
+    const fn = new Function(...names, `return ${expr.toJs()}`);
+    return fn(...values) as number;
+  } catch {
+    return 0;
+  }
+}
+
 export type Stoich = {
   name: string;
   value: Base;
@@ -10,7 +25,7 @@ export type Stoich = {
 export type Stoichiometry = Array<Stoich>;
 
 export type Variable = {
-  value: number;
+  value: number | Base;
   displayName?: string;
   texName?: string;
   slider?: SliderArgs;
@@ -74,6 +89,18 @@ export class ModelBuilder {
   reactions: SvelteMap<string, Reaction> = new SvelteMap();
 
   constructor() {}
+
+  resolveInitialValues(): number[] {
+    const paramMap = new Map(
+      [...this.parameters.entries()].map(([k, v]) => [k, v.value]),
+    );
+    return [...this.variables.values()].map((v) => {
+      if (v.value instanceof Base) {
+        return evalInitialAssignment(v.value, paramMap);
+      }
+      return v.value;
+    });
+  }
 
   //
   clone(): ModelBuilder {
@@ -335,9 +362,18 @@ export class ModelBuilder {
 
     const extraArgs = `${userParameters.map((i) => `${i}: float`).join(",\n    ")}`;
 
+    const paramMap = new Map(
+      [...this.parameters.entries()].map(([k, v]) => [k, v.value]),
+    );
     const y0 = this.variables
       .entries()
-      .map(([name, value]) => `"${Name(name)}": ${value.value}`)
+      .map(([name, value]) => {
+        if (value.value instanceof Base) {
+          const numVal = evalInitialAssignment(value.value, paramMap);
+          return `"${Name(name)}": ${numVal}`;
+        }
+        return `"${Name(name)}": ${value.value}`;
+      })
       .toArray()
       .join(", ");
 

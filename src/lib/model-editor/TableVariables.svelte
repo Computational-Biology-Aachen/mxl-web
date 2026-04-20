@@ -1,12 +1,16 @@
 <script lang="ts">
   import InputNumber from "$lib/inputs/InputNumber.svelte";
+  import Math from "$lib/Math.svelte";
+  import { Base, Num } from "$lib/mathml";
   import { MediaQuery } from "svelte/reactivity";
   import TableAddButton from "../buttons/TableAddButton.svelte";
   import TableButtonClose from "../buttons/TableButtonClose.svelte";
   import TableButtonEdit from "../buttons/TableButtonEdit.svelte";
   import Popover from "../Popover.svelte";
+  import EqEditor from "./EqEditor.svelte";
   import { defaultTexName, defaultValue } from "./modelUtils";
   import {
+    idToTex,
     type AssView,
     type ParView,
     type RxnView,
@@ -33,6 +37,15 @@
     variables[idx] = update;
     variables = variables.slice();
   }
+
+  function onSaveInitialAssignment(idx: number, fn: Base) {
+    variables[idx] = { ...variables[idx], value: fn };
+    variables = variables.slice();
+  }
+
+  let texNames = $derived(
+    idToTex(variables, parameters, assignments, reactions),
+  );
 </script>
 
 {#snippet nameInput(idx: number)}
@@ -63,17 +76,28 @@
 {/snippet}
 
 {#snippet valueInput(idx: number)}
-  <InputNumber
-    id="var-{idx}"
-    border="transparent"
-    bind:value={
-      () => variables[idx].value,
-      (value) => {
-        variables[idx].value = value;
-        variables = variables.slice();
+  {#if variables[idx].value instanceof Base}
+    <div class="row">
+      <Math
+        tex={variables[idx].value.toTex(texNames)}
+        display={true}
+        fontSize={"0.75rem"}
+      />
+      <TableButtonEdit popovertarget="var-ia-editor-{idx}" />
+    </div>
+  {:else}
+    <InputNumber
+      id="var-{idx}"
+      border="transparent"
+      bind:value={
+        () => variables[idx].value as number,
+        (value) => {
+          variables[idx].value = value;
+          variables = variables.slice();
+        }
       }
-    }
-  />
+    />
+  {/if}
 {/snippet}
 
 {#snippet actions(idx: number, vari: Variable)}
@@ -175,10 +199,37 @@
   </Popover>
 {/each}
 
+{#each variables as vari, idx}
+  {#if vari.value instanceof Base}
+    <Popover
+      size="md"
+      popovertarget={`var-ia-editor-${idx}`}
+    >
+      <EqEditor
+        root={vari.value}
+        variables={variables}
+        parameters={parameters}
+        assignments={assignments}
+        reactions={reactions}
+        onSave={(fn) => onSaveInitialAssignment(idx, fn)}
+        popovertarget={`var-ia-editor-${idx}`}
+      />
+    </Popover>
+  {/if}
+{/each}
+
 <style>
   /* General */
   .padding {
     padding: 1rem;
+  }
+
+  .row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 0.5rem;
   }
 
   /* Input styles shared between table and cards */
