@@ -15,7 +15,7 @@
   } from "$lib/mathml";
   import AnalysesDashboard from "$lib/model-editor/AnalysesDashboard.svelte";
   import { ModelBuilder } from "$lib/model-editor/modelBuilder";
-  import type { PamPhase } from "$lib/simulations/protocol";
+  import type { PamGroup } from "$lib/simulations/protocol";
 
   function initModel(): ModelBuilder {
     return new ModelBuilder()
@@ -1025,26 +1025,26 @@
       });
   }
 
-  const defaultPamProtocol: PamPhase[] = [
+  const defaultPamProtocol: PamGroup[] = [
     {
-      backgroundPFD: 100,
-      backgroundLength: 9.2,
-      pulsePFD: 5000,
-      pulseLength: 0.8,
+      steps: [
+        { pfd: 100, duration: 9.2 },
+        { pfd: 5000, duration: 0.8 },
+      ],
       repetitions: 3,
     },
     {
-      backgroundPFD: 500,
-      backgroundLength: 9.2,
-      pulsePFD: 5000,
-      pulseLength: 0.8,
+      steps: [
+        { pfd: 500, duration: 9.2 },
+        { pfd: 5000, duration: 0.8 },
+      ],
       repetitions: 3,
     },
     {
-      backgroundPFD: 100,
-      backgroundLength: 9.2,
-      pulsePFD: 5000,
-      pulseLength: 0.8,
+      steps: [
+        { pfd: 100, duration: 9.2 },
+        { pfd: 5000, duration: 0.8 },
+      ],
       repetitions: 3,
     },
   ];

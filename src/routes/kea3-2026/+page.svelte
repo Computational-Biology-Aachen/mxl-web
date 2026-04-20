@@ -16,7 +16,7 @@
   } from "$lib/mathml";
   import AnalysesDashboard from "$lib/model-editor/AnalysesDashboard.svelte";
   import { ModelBuilder } from "$lib/model-editor/modelBuilder";
-  import type { PamPhase } from "$lib/simulations/protocol";
+  import type { PamGroup } from "$lib/simulations/protocol";
 
   function initModel(): ModelBuilder {
     return new ModelBuilder()
@@ -2612,47 +2612,54 @@
       });
   }
 
-  const defaultPamProtocol: PamPhase[] = [
+  const defaultPamProtocol: PamGroup[] = [
     {
-      backgroundPFD: 100,
-      backgroundLength: 9.2,
-      pulsePFD: 5000,
-      pulseLength: 0.8,
+      steps: [
+        { pfd: 100, duration: 9.2 },
+        { pfd: 5000, duration: 0.8 },
+      ],
       repetitions: 3,
     },
     {
-      backgroundPFD: 500,
-      backgroundLength: 9.2,
-      pulsePFD: 5000,
-      pulseLength: 0.8,
+      steps: [
+        { pfd: 500, duration: 9.2 },
+        { pfd: 5000, duration: 0.8 },
+      ],
       repetitions: 3,
     },
     {
-      backgroundPFD: 100,
-      backgroundLength: 9.2,
-      pulsePFD: 5000,
-      pulseLength: 0.8,
+      steps: [
+        { pfd: 100, duration: 9.2 },
+        { pfd: 5000, duration: 0.8 },
+      ],
+      repetitions: 3,
+    },
+  ];
+  const ecsProtocol: PamGroup[] = [
+    {
+      steps: [
+        { pfd: 900, duration: 60 },
+        { pfd: 90, duration: 20 },
+        { pfd: 0, duration: 30 },
+      ],
       repetitions: 3,
     },
   ];
   let analyses: Analyses = $state([
     {
-      type: "simulation" as const,
+      type: "pam" as const,
       id: 0,
       idx: 0,
-      title: "Simulation",
+      title: "ECS",
       col: 1,
       span: 3,
-      tEnd: 10,
-      xMin: undefined,
-      xMax: undefined,
-      yMin: undefined,
       yMax: undefined,
+      timeoutInSeconds: 120,
       method: "Radau",
-      timeoutInSeconds: 20,
-      nTimePoints: 100,
+      pamProtocol: ecsProtocol,
       showDerived: true,
       selectedKeys: ["delta_psi", "deltapH_in_volts", "pmf_in_V"],
+      nTimePoints: 100,
     },
     {
       type: "pam" as const,

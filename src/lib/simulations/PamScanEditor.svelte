@@ -9,7 +9,7 @@
   import { untrack } from "svelte";
   import PopoverSaveButton from "../buttons/PopoverSaveButton.svelte";
   import type { ModelBuilder } from "$lib/model-editor/modelBuilder";
-  import type { PamPhase } from "./protocol";
+  import { type PamGroup, migratePamPhases } from "./protocol";
 
   let {
     parent,
@@ -23,12 +23,18 @@
     popovertarget: string;
   } = $props();
 
+  function initGroups(): PamGroup[] {
+    const raw = untrack(() => $state.snapshot(parent.pamProtocol));
+    if (raw.length > 0 && "backgroundPFD" in (raw[0] as object)) {
+      return migratePamPhases(raw as unknown as Parameters<typeof migratePamPhases>[0]);
+    }
+    return raw as PamGroup[];
+  }
+
   let title = $state(untrack(() => parent.title));
   let timeoutInSeconds = $state(untrack(() => parent.timeoutInSeconds));
   let method = $state(untrack(() => parent.method));
-  let phases = $state<PamPhase[]>(
-    untrack(() => $state.snapshot(parent.pamProtocol)) as PamPhase[],
-  );
+  let groups = $state<PamGroup[]>(initGroups());
   let showDerived = $state(untrack(() => parent.showDerived ?? false));
   let nTimePoints = $state(untrack(() => parent.nTimePoints ?? 100));
 
@@ -65,21 +71,34 @@
     }
   }
 
-  function addPhase() {
-    phases = [
-      ...phases,
+  function addGroup() {
+    groups = [
+      ...groups,
       {
-        backgroundPFD: 100,
-        backgroundLength: 85,
-        pulsePFD: 5000,
-        pulseLength: 0.8,
+        steps: [{ pfd: 100, duration: 60 }],
         repetitions: 1,
       },
     ];
   }
 
-  function removePhase(i: number) {
-    phases = phases.filter((_, idx) => idx !== i);
+  function removeGroup(i: number) {
+    groups = groups.filter((_, idx) => idx !== i);
+  }
+
+  function addStep(groupIdx: number) {
+    groups = groups.map((g, i) =>
+      i === groupIdx
+        ? { ...g, steps: [...g.steps, { pfd: 100, duration: 60 }] }
+        : g,
+    );
+  }
+
+  function removeStep(groupIdx: number, stepIdx: number) {
+    groups = groups.map((g, i) =>
+      i === groupIdx
+        ? { ...g, steps: g.steps.filter((_, si) => si !== stepIdx) }
+        : g,
+    );
   }
 </script>
 
@@ -92,7 +111,7 @@
         title,
         timeoutInSeconds,
         method,
-        pamProtocol: phases,
+        pamProtocol: groups,
         showDerived,
         selectedKeys,
         nTimePoints,
@@ -124,58 +143,89 @@
 
 <h3>Protocol phases</h3>
 
-<div class="phase-grid">
-  <span class="header">BG PFD</span>
-  <span class="header">BG length (s)</span>
-  <span class="header">Pulse PFD</span>
-  <span class="header">Pulse length (s)</span>
-  <span class="header">Repetitions</span>
-  <span></span>
+{#each groups as group, gi}
+  <div class="group">
+    <div class="group-header">
+      <span class="group-label">Group {gi + 1} — repeat</span>
+      <InputNumber
+        id="reps-{gi}"
+        bind:value={group.repetitions}
+      />
+      <span class="group-label">×</span>
+      <button
+        class="remove"
+        onclick={() => removeGroup(gi)}
+        aria-label="Remove group"
+      >
+        <Icon
+          fontSize="sm"
+          color="inherit">close</Icon
+        >
+      </button>
+    </div>
 
-  {#each phases as phase, i}
-    <InputNumber
-      id="bg-pfd-{i}"
-      bind:value={phase.backgroundPFD}
-    />
-    <InputNumber
-      id="bg-len-{i}"
-      bind:value={phase.backgroundLength}
-    />
-    <InputNumber
-      id="pulse-pfd-{i}"
-      bind:value={phase.pulsePFD}
-    />
-    <InputNumber
-      id="pulse-len-{i}"
-      bind:value={phase.pulseLength}
-    />
-    <InputNumber
-      id="reps-{i}"
-      bind:value={phase.repetitions}
-    />
+    <div class="step-grid">
+      <span class="header">PFD</span>
+      <span class="header">Duration (s)</span>
+      <span class="header">Label</span>
+      <span></span>
+
+      {#each group.steps as step, si}
+        <InputNumber
+          id="step-pfd-{gi}-{si}"
+          bind:value={step.pfd}
+        />
+        <InputNumber
+          id="step-dur-{gi}-{si}"
+          bind:value={step.duration}
+        />
+        <input
+          id="step-label-{gi}-{si}"
+          class="label-input"
+          type="text"
+          placeholder="label"
+          value={step.label ?? ""}
+          oninput={(e) => {
+            step.label = e.currentTarget.value || undefined;
+          }}
+        />
+        <button
+          class="remove"
+          onclick={() => removeStep(gi, si)}
+          aria-label="Remove step"
+        >
+          <Icon
+            fontSize="sm"
+            color="inherit">close</Icon
+          >
+        </button>
+      {/each}
+    </div>
+
     <button
-      class="remove"
-      onclick={() => removePhase(i)}
-      aria-label="Remove phase"
+      class="add"
+      onclick={() => addStep(gi)}
     >
       <Icon
         fontSize="sm"
-        color="inherit">close</Icon
+        color="inherit">add</Icon
       >
+      Add step
     </button>
-  {/each}
-</div>
+  </div>
+{/each}
 
 <button
   class="add"
-  onclick={addPhase}
+  onclick={addGroup}
 >
   <Icon
     fontSize="sm"
     color="inherit">add</Icon
   >
-  Add phase
+  Add group
 </button>
+
 <InputCheckbox
   id="showDerived"
   label="Show assignments & reactions"
@@ -194,9 +244,29 @@
 </details>
 
 <style>
-  .phase-grid {
+  .group {
+    margin-bottom: 1rem;
+    border: var(--border);
+    border-radius: var(--border-radius);
+    padding: 0.5rem 0.75rem;
+  }
+
+  .group-header {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .group-label {
+    font-weight: var(--weight-bold);
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+
+  .step-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto;
+    grid-template-columns: 1fr 1fr 1fr auto;
     align-items: center;
     gap: 0.25rem 0.5rem;
     margin-bottom: 0.5rem;
@@ -240,6 +310,15 @@
 
   .add:hover {
     background-color: var(--bg-hover, #f5f5f5);
+  }
+
+  .label-input {
+    border: var(--border);
+    border-radius: var(--border-radius);
+    background-color: transparent;
+    padding: 0.35rem 0.5rem;
+    width: 100%;
+    font-size: 0.875rem;
   }
 
   details {

@@ -174,31 +174,28 @@
       nTimePoints: 100,
       pamProtocol: [
         {
-          backgroundPFD: 0,
-          backgroundLength: 2,
-          pulsePFD: 5000,
-          pulseLength: 0.8,
+          steps: [
+            { pfd: 0, duration: 2 },
+            { pfd: 5000, duration: 0.8 },
+          ],
           repetitions: 1,
         },
         {
-          backgroundPFD: 0,
-          backgroundLength: 27.2,
-          pulsePFD: 5000,
-          pulseLength: 0.8,
+          steps: [
+            { pfd: 0, duration: 27.2 },
+            { pfd: 5000, duration: 0.8 },
+          ],
           repetitions: 1,
         },
         {
-          backgroundPFD: 100,
-          backgroundLength: 84.2,
-          pulsePFD: 5000,
-          pulseLength: 0.8,
+          steps: [
+            { pfd: 100, duration: 84.2 },
+            { pfd: 5000, duration: 0.8 },
+          ],
           repetitions: 3,
         },
         {
-          backgroundPFD: 100,
-          backgroundLength: 14.2,
-          pulsePFD: 5000,
-          pulseLength: 0,
+          steps: [{ pfd: 100, duration: 14.2 }],
           repetitions: 1,
         },
       ],

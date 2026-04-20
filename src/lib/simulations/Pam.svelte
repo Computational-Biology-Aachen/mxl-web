@@ -11,7 +11,7 @@
   import { pyWorkerPool } from "../stores/workerPool";
   import { WorkerManager, type WorkerMessage } from "../stores/workerStore";
   import { arrayColumn } from "../utils";
-  import { type PamPhase, expandProtocol } from "./protocol";
+  import { type PamGroup, expandProtocol } from "./protocol";
   import SimulationError from "./SimulationError.svelte";
 
   let {
@@ -25,7 +25,7 @@
     nTimePoints,
   }: {
     model: ModelBuilder;
-    pamProtocol: PamPhase[];
+    pamProtocol: PamGroup[];
     yMax?: number | undefined;
     timeoutInSeconds: number;
     method: string;
@@ -89,35 +89,26 @@
     });
   }
 
-  let maxBackgroundPFD = $derived(
-    Math.max(0, ...pamProtocol.map((p) => p.backgroundPFD)),
+  let maxPFD = $derived(
+    Math.max(0, ...pamProtocol.flatMap((g) => g.steps.map((s) => s.pfd))),
   );
 
-  function backgroundPfdColor(pfd: number): string {
+  function stepColor(pfd: number): string {
     if (pfd === 0) return "rgba(0,0,0,0.08)";
-    const ratio = maxBackgroundPFD > 0 ? pfd / maxBackgroundPFD : 1;
+    const ratio = maxPFD > 0 ? pfd / maxPFD : 1;
     const alpha = (0.06 + ratio * 0.24).toFixed(2);
     return `rgba(255,200,0,${alpha})`;
   }
 
-  const pulseColor = "rgba(255,100,0,0.35)";
-
   let phaseRegions = $derived.by(() => {
     const regions: PhaseRegion[] = [];
     let t = 0;
-    for (const phase of pamProtocol) {
-      for (let i = 0; i < phase.repetitions; i++) {
-        const bgEnd = t + phase.backgroundLength;
-        regions.push({
-          start: t,
-          end: bgEnd,
-          color: backgroundPfdColor(phase.backgroundPFD),
-        });
-        t = bgEnd;
-        if (phase.pulseLength > 0) {
-          const pulseEnd = t + phase.pulseLength;
-          regions.push({ start: t, end: pulseEnd, color: pulseColor });
-          t = pulseEnd;
+    for (const group of pamProtocol) {
+      for (let i = 0; i < group.repetitions; i++) {
+        for (const step of group.steps) {
+          const end = t + step.duration;
+          regions.push({ start: t, end, color: stepColor(step.pfd) });
+          t = end;
         }
       }
     }

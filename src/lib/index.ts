@@ -1,5 +1,5 @@
 // place files you want to import through the `$lib` alias in this folder.
-import type { PamPhase } from "./simulations/protocol";
+import type { PamGroup } from "./simulations/protocol";
 
 export type SimulationAnalysis = {
   type: "simulation";
@@ -50,7 +50,7 @@ export type PamAnalysis = {
   yMax: number | undefined;
   timeoutInSeconds: number;
   method: string;
-  pamProtocol: PamPhase[];
+  pamProtocol: PamGroup[];
   showDerived?: boolean;
   selectedKeys?: string[];
   nTimePoints: number;
