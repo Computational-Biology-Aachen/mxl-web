@@ -5,10 +5,10 @@
   import InputChoice from "$lib/inputs/InputChoice.svelte";
   import InputNumber from "$lib/inputs/InputNumber.svelte";
   import InputText from "$lib/inputs/InputText.svelte";
+  import type { ModelBuilder } from "$lib/model-editor/modelBuilder";
   import RowApart from "$lib/RowApart.svelte";
   import { untrack } from "svelte";
   import PopoverSaveButton from "../buttons/PopoverSaveButton.svelte";
-  import type { ModelBuilder } from "$lib/model-editor/modelBuilder";
   import { type PamGroup, migratePamPhases } from "./protocol";
 
   let {
@@ -26,7 +26,9 @@
   function initGroups(): PamGroup[] {
     const raw = untrack(() => $state.snapshot(parent.pamProtocol));
     if (raw.length > 0 && "backgroundPFD" in (raw[0] as object)) {
-      return migratePamPhases(raw as unknown as Parameters<typeof migratePamPhases>[0]);
+      return migratePamPhases(
+        raw as unknown as Parameters<typeof migratePamPhases>[0],
+      );
     }
     return raw as PamGroup[];
   }
