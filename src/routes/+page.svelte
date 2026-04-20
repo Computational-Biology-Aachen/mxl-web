@@ -25,11 +25,12 @@
     <li><a href="{base}/tripartite">Tripartite dynamics</a></li>
     <li><a href="{base}/dynamic-entrobactin">Entrobactin</a></li>
     <!-- <li><a href="{base}/npq">NPQ</a></li> -->
+    <li><a href="{base}/yokota1985">Yokota 1985</a></li>
+    <li><a href="{base}/poolman2000">Poolman 2000</a></li>
     <li><a href="{base}/matuszynska2016_npq">Matuszyńska 2016 (NPQ)</a></li>
     <li><a href="{base}/matuszynska2016_phd">Matuszyńska 2016 (PHD)</a></li>
-    <li><a href="{base}/poolman2000">Poolman 2000</a></li>
     <li><a href="{base}/saadat2021">Saadat 2021</a></li>
-    <li><a href="{base}/yokota1985">Yokota 1985</a></li>
+    <li><a href="{base}/kea3-2026">KEA3 2026</a></li>
   </ul>
 
   <p>Steady-state models</p>
