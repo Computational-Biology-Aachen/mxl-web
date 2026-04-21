@@ -115,7 +115,7 @@
       pyWorkerPool.postMessage({
         model: `${built}\nmodel`,
         derived: `${built}\nderived`,
-        initialValues: model.resolveInitialValues(),
+        initialValues: clonedModel.resolveInitialValues(),
         tEnd: tEnd,
         pars: [],
         requestId,

@@ -115,6 +115,7 @@
         showDerived,
         selectedKeys,
         normalizedKeys: normalizedKeys.length > 0 ? normalizedKeys : undefined,
+        lineDisplay,
       })}
     popovertarget={popovertarget}
   />

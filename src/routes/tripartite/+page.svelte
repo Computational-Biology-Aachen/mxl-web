@@ -18,7 +18,7 @@
       timeoutInSeconds: 20,
       method: "Radau",
       nTimePoints: 100,
-      lineDisplay: "last",
+      lineDisplay: "first",
     },
     {
       type: "parameterScan" as const,
@@ -38,6 +38,7 @@
       yMax: undefined,
       timeoutInSeconds: 120,
       method: "LSODA",
+      lineDisplay: "current" as const,
     },
   ]);
 </script>

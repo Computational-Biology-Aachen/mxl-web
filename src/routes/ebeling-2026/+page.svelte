@@ -53,7 +53,7 @@
       showDerived: true,
       selectedKeys: ["delta_psi", "deltapH_in_volts", "pmf_in_V"],
       nTimePoints: 100,
-      lineDisplay: "last",
+      lineDisplay: "first",
     },
     {
       type: "pam" as const,
@@ -70,7 +70,7 @@
       selectedKeys: ["Fluo"],
       normalizedKeys: ["Fluo"],
       nTimePoints: 100,
-      lineDisplay: "last",
+      lineDisplay: "first",
     },
   ]);
 </script>

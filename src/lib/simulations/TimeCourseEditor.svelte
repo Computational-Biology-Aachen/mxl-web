@@ -95,9 +95,9 @@
       onSave({
         ...parent,
         tEnd,
-        xMin: yMaxAuto ? undefined : xMin,
-        xMax: yMaxAuto ? undefined : xMax,
-        yMin: yMaxAuto ? undefined : yMin,
+        xMin: xMinAuto ? undefined : xMin,
+        xMax: xMaxAuto ? undefined : xMax,
+        yMin: yMinAuto ? undefined : yMin,
         yMax: yMaxAuto ? undefined : yMax,
         title: title,
         timeoutInSeconds: timeoutInSeconds,
@@ -106,6 +106,7 @@
         selectedKeys,
         normalizedKeys: normalizedKeys.length > 0 ? normalizedKeys : undefined,
         nTimePoints,
+        lineDisplay,
       })}
     popovertarget={popovertarget}
   />

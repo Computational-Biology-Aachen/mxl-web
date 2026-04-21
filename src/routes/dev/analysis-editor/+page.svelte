@@ -18,6 +18,7 @@
     timeoutInSeconds: 10,
     method: "RK45",
     nTimePoints: 100,
+    lineDisplay: "current" as const,
   };
 </script>
 

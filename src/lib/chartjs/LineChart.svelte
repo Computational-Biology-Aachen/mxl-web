@@ -33,9 +33,12 @@
   } = $props();
 
   let chartInstance = $state<Chart | null>(null);
-  let prevDatasets: ChartData["datasets"] | null = null;
+  let firstDatasets: ChartData["datasets"] | null = null;
+  let lastDatasets: ChartData["datasets"] | null = null;
 
   $effect(() => {
+    console.log("lineDisplay", $state.snapshot(lineDisplay));
+
     const ch = chartInstance;
     if (!ch) return;
 
@@ -44,23 +47,30 @@
     const newDatasets = $state.snapshot(data.datasets) as ChartData["datasets"];
     const newLabels = data.labels;
 
-    if (prevDatasets === null) {
-      prevDatasets = (
-        ch.data.datasets as unknown as Record<string, unknown>[]
-      ).map((ds) => ({ ...ds })) as unknown as ChartData["datasets"];
+    const snapshotCurrent = () =>
+      (ch.data.datasets as unknown as Record<string, unknown>[]).map((ds) => ({
+        ...ds,
+      })) as unknown as ChartData["datasets"];
+
+    if (firstDatasets === null) {
+      firstDatasets = snapshotCurrent();
+      lastDatasets = firstDatasets;
       return;
     }
 
+    const referenceDatasets =
+      lineDisplay === "first" ? firstDatasets : lastDatasets!;
+
     const coloredNewDatasets = newDatasets.map((ds, i) => {
-      const prev = prevDatasets![i] as unknown as DS;
+      const ref = referenceDatasets[i] as unknown as DS;
       return {
         ...(ds as unknown as DS),
-        borderColor: prev?.borderColor,
-        backgroundColor: prev?.backgroundColor,
+        borderColor: ref?.borderColor,
+        backgroundColor: ref?.backgroundColor,
       };
     });
 
-    const dashedDatasets = prevDatasets.map((ds) => ({
+    const dashedDatasets = referenceDatasets.map((ds) => ({
       ...(ds as unknown as DS),
       borderDash: [6, 4],
       label: "",
@@ -73,10 +83,7 @@
     ] as unknown as ChartData["datasets"];
     ch.update("none");
 
-    // Keep updating to last simulation if this is set
-    if (lineDisplay === "last") {
-      prevDatasets = coloredNewDatasets as unknown as ChartData["datasets"];
-    }
+    lastDatasets = coloredNewDatasets as unknown as ChartData["datasets"];
   });
 
   // svelte-ignore state_referenced_locally
