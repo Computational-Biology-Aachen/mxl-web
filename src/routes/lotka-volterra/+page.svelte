@@ -1,84 +1,8 @@
 <script lang="ts">
   import type { Analyses } from "$lib";
-  import { Mul, Name, Num } from "$lib/mathml";
+  import scheme from "$lib/assets/lotka-volterra-scheme.png";
   import AnalysesDashboard from "$lib/model-editor/AnalysesDashboard.svelte";
-  import { ModelBuilder } from "$lib/model-editor/modelBuilder";
-
-  function initModel(): ModelBuilder {
-    return new ModelBuilder()
-      .addParameter("Alpha", {
-        value: 0.1,
-        texName: String.raw`\alpha`,
-        slider: {
-          min: "0.01",
-          max: "1.0",
-          step: "0.05",
-        },
-      })
-      .addParameter("Beta", {
-        value: 0.02,
-        texName: String.raw`\beta`,
-        slider: {
-          min: "0.01",
-          max: "1.0",
-          step: "0.05",
-        },
-      })
-      .addParameter("Gamma", {
-        value: 0.4,
-        texName: String.raw`\gamma`,
-        slider: {
-          min: "0.01",
-          max: "1.0",
-          step: "0.05",
-        },
-      })
-      .addParameter("Delta", {
-        value: 0.02,
-        texName: String.raw`\delta`,
-        slider: {
-          min: "0.01",
-          max: "1.0",
-          step: "0.001",
-        },
-      })
-      .addVariable("Prey", {
-        value: 10.0,
-        slider: {
-          min: "1.0",
-          max: "20.0",
-          step: "1.0",
-        },
-      })
-      .addVariable("Predator", {
-        value: 10.0,
-        slider: {
-          min: "1.0",
-          max: "20.0",
-          step: "1.0",
-        },
-      })
-      .addReaction("v0", {
-        fn: new Mul([new Name("Alpha"), new Name("Prey")]),
-        stoichiometry: [{ name: "Prey", value: new Num(1.0) }],
-      })
-      .addReaction("v1", {
-        fn: new Mul([new Name("Beta"), new Name("Prey"), new Name("Predator")]),
-        stoichiometry: [{ name: "Prey", value: new Num(-1.0) }],
-      })
-      .addReaction("v2", {
-        fn: new Mul([
-          new Name("Delta"),
-          new Name("Prey"),
-          new Name("Predator"),
-        ]),
-        stoichiometry: [{ name: "Predator", value: new Num(1.0) }],
-      })
-      .addReaction("v3", {
-        fn: new Mul([new Name("Gamma"), new Name("Predator")]),
-        stoichiometry: [{ name: "Predator", value: new Num(-1.0) }],
-      });
-  }
+  import { initModel } from "./model";
 
   let analyses: Analyses = $state([
     {
@@ -125,10 +49,30 @@
   equationsOpen={true}
 >
   <h1>Lotka Volterra model</h1>
-
   <p>
     The Lotka-Volterra equations, developed in the 1920s by Alfred Lotka and
     Vito Volterra representing the cyclic, phase-shifted population dynamics
     between a predator and its prey.
   </p>
+  <div class="centered">
+    <img
+      src={scheme}
+      alt="model-scheme"
+    />
+  </div>
 </AnalysesDashboard>
+
+<style>
+  img {
+    max-width: 90rem;
+    max-height: 25rem;
+  }
+
+  .centered {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+</style>
