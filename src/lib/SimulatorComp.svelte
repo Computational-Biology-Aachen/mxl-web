@@ -211,6 +211,7 @@
       data={lineData1}
       yMax={yLim}
       loading={loading}
+      lineDisplay="current"
     />
   </div>
   <div>
@@ -222,6 +223,7 @@
       data={lineData2}
       yMax={yLim}
       loading={loading}
+      lineDisplay="current"
     />
   </div>
 </div>

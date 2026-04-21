@@ -21,6 +21,7 @@
     xLabel = "Time / unit",
     yLabel = "Amount / unit",
     loading = true,
+    lineDisplay,
   }: {
     data: ChartData;
     yMax: number | undefined;
@@ -33,9 +34,57 @@
     xLabel?: string;
     yLabel?: string;
     loading?: boolean;
+    lineDisplay: "current" | "last" | "first";
   } = $props();
 
   const showLoadingSpinner = $derived(loading);
+
+  let chartInstance = $state<Chart | null>(null);
+  let prevDatasets: ChartData["datasets"] | null = null;
+
+  $effect(() => {
+    if (lineDisplay === "current") return;
+    const ch = chartInstance;
+    if (!ch) return;
+
+    const newDatasets = $state.snapshot(data.datasets) as ChartData["datasets"];
+    const newLabels = data.labels;
+
+    if (prevDatasets === null) {
+      prevDatasets = (
+        ch.data.datasets as unknown as Record<string, unknown>[]
+      ).map((ds) => ({ ...ds })) as unknown as ChartData["datasets"];
+      return;
+    }
+
+    type DS = Record<string, unknown>;
+    const coloredNewDatasets = newDatasets.map((ds, i) => {
+      const prev = prevDatasets![i] as unknown as DS;
+      return {
+        ...(ds as unknown as DS),
+        borderColor: prev?.borderColor,
+        backgroundColor: prev?.backgroundColor,
+      };
+    });
+
+    const dashedDatasets = prevDatasets.map((ds) => ({
+      ...(ds as unknown as DS),
+      borderDash: [6, 4],
+      label: "",
+    }));
+
+    ch.data.labels = newLabels as ChartData["labels"];
+    ch.data.datasets = [
+      ...coloredNewDatasets,
+      ...dashedDatasets,
+    ] as unknown as ChartData["datasets"];
+    ch.update("none");
+
+    // Keep updating to last simulation if this is set
+    if (lineDisplay === "last") {
+      prevDatasets = coloredNewDatasets as unknown as ChartData["datasets"];
+    }
+  });
 
   // Custom plugin for background phase shading + labels
   const phaseShadingPlugin = {
@@ -74,7 +123,7 @@
   };
 
   const myChart: Attachment = (canvas) => {
-    let chart = new Chart(canvas as HTMLCanvasElement, {
+    const chart = new Chart(canvas as HTMLCanvasElement, {
       type: "line",
       plugins: [phaseShadingPlugin],
       data: $state.snapshot(data) as ChartData,
@@ -116,14 +165,23 @@
             },
           },
         },
+        plugins: {
+          legend: {
+            labels: {
+              filter: (item) => item.text !== "",
+            },
+          },
+        },
         elements: {
           point: { radius: 0 },
         },
       },
     });
 
+    chartInstance = chart;
     return () => {
-      if (chart) chart.destroy();
+      chart.destroy();
+      chartInstance = null;
     };
   };
 </script>

@@ -21,6 +21,7 @@
       method: "LSODA",
       showDerived: false,
       nTimePoints: 100,
+      lineDisplay: "last",
     },
     {
       type: "simulation" as const,
@@ -38,6 +39,7 @@
       method: "LSODA",
       showDerived: true,
       nTimePoints: 500,
+      lineDisplay: "last",
     },
   ]);
 </script>

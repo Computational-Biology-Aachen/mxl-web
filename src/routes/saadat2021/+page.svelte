@@ -19,6 +19,7 @@
       timeoutInSeconds: 20,
       method: "Radau",
       nTimePoints: 100,
+      lineDisplay: "last",
     },
   ]);
 </script>

@@ -45,6 +45,7 @@
       method: "Radau",
       showDerived: false,
       nTimePoints: 500,
+      lineDisplay: "last",
     },
     {
       type: "pam" as const,
@@ -61,6 +62,7 @@
       selectedKeys: ["Fluo"],
       normalizedKeys: ["Fluo"],
       nTimePoints: 100,
+      lineDisplay: "last",
     },
   ]);
 </script>

@@ -1,17 +1,20 @@
 <script lang="ts">
   import InlineGrid2 from "$lib/InlineGrid2.svelte";
+  import type { Snippet } from "svelte";
 
   type Props = {
     id: string;
     label: string;
     value: string | undefined;
     border?: "transparent" | "solid";
+    children: Snippet;
   };
   let {
     id,
     label: name,
     value = $bindable(),
     border = "solid",
+    children,
   }: Props = $props();
 </script>
 
@@ -22,8 +25,7 @@
     class={border}
     bind:value={value}
   >
-    <option value="Radau">Radau</option>
-    <option value="LSODA">LSODA</option>
+    {@render children()}
   </select>
 </InlineGrid2>
 

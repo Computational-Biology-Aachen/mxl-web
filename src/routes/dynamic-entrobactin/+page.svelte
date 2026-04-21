@@ -20,6 +20,7 @@
       timeoutInSeconds: 20,
       method: "LSODA",
       nTimePoints: 100,
+      lineDisplay: "last",
     },
   ]);
 </script>

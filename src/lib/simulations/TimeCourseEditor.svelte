@@ -36,6 +36,7 @@
   let method = $derived(parent.method);
   let showDerived = $state(untrack(() => parent.showDerived ?? false));
   let nTimePoints = $state(untrack(() => parent.nTimePoints ?? 100));
+  let lineDisplay = $state(untrack(() => parent.lineDisplay));
 
   let allAvailableKeys = $derived([
     ...model.variables.keys(),
@@ -162,10 +163,22 @@
 />
 
 <InputChoice
-  id="integrationMethod"
+  id="pam-method"
   label="Method"
   bind:value={method}
-/>
+>
+  <option value="Radau">Radau</option>
+  <option value="LSODA">LSODA</option>
+</InputChoice>
+<InputChoice
+  id="line-display"
+  label="LineDisplay"
+  bind:value={lineDisplay}
+>
+  <option value="current">Only current</option>
+  <option value="last">Compare to last</option>
+  <option value="first">Compare to first</option>
+</InputChoice>
 <InputCheckbox
   id="showDerived"
   label="Show assignments & reactions"

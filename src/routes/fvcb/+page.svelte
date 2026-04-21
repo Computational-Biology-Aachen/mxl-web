@@ -181,6 +181,7 @@
   xLabel="Intercellular CO₂ / µbar"
   yLabel="CO₂ Assimilation / µmol m⁻² s⁻¹"
   loading={false}
+  lineDisplay="current"
 />
 
 <style>

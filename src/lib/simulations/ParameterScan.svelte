@@ -17,6 +17,7 @@
     selectedKeys = undefined,
     normalizedKeys = undefined,
     nTimePoints,
+    lineDisplay,
   }: {
     model: ModelBuilder;
     analysis: ParameterScanAnalysis;
@@ -27,6 +28,7 @@
     selectedKeys?: string[];
     normalizedKeys?: string[];
     nTimePoints: number;
+    lineDisplay: "current" | "last" | "first";
   } = $props();
 
   type ScanResult = {
@@ -119,7 +121,7 @@
         requestId,
         method: method,
         calculateDerived: showDerived,
-        nTimePoints: 2,
+        nTimePoints: nTimePoints,
       });
     });
   }
@@ -150,7 +152,18 @@
     );
     const converged = norm2 < tolerance;
     const resultValues = converged ? lastValues : lastValues.map(() => NaN);
-    if (!converged) failedCount++;
+    if (!converged) {
+      failedCount++;
+      console.log(
+        "RequestId",
+        data.requestId,
+        "didn't converge with norm of",
+        norm2,
+      );
+      console.log(prevValues);
+      console.log(lastValues);
+    }
+
     scanResult.datasets.forEach((dataset, varIdx) => {
       dataset.data[entry.paramIdx] = resultValues[varIdx];
     });
@@ -225,6 +238,7 @@
       yMax={analysis.yMax}
       xLabel={analysis.parameter}
       yLabel="Steady-state value"
+      lineDisplay={lineDisplay}
     />
   {/if}
 </div>

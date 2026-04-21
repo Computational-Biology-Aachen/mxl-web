@@ -2,6 +2,8 @@
   import Chart, { type ChartData } from "chart.js/auto";
   import type { Attachment } from "svelte/attachments";
 
+  type DS = Record<string, unknown>;
+
   let {
     data,
     yMin = 0,
@@ -14,6 +16,7 @@
     yLabel = "Amount / unit",
     loading = true,
     loadingDelay = 500,
+    lineDisplay,
   }: {
     data: ChartData;
     yMax: number | undefined;
@@ -26,7 +29,55 @@
     yLabel?: string;
     loading?: boolean;
     loadingDelay?: number;
+    lineDisplay: "current" | "last" | "first";
   } = $props();
+
+  let chartInstance = $state<Chart | null>(null);
+  let prevDatasets: ChartData["datasets"] | null = null;
+
+  $effect(() => {
+    const ch = chartInstance;
+    if (!ch) return;
+
+    if (lineDisplay === "current") return;
+
+    const newDatasets = $state.snapshot(data.datasets) as ChartData["datasets"];
+    const newLabels = data.labels;
+
+    if (prevDatasets === null) {
+      prevDatasets = (
+        ch.data.datasets as unknown as Record<string, unknown>[]
+      ).map((ds) => ({ ...ds })) as unknown as ChartData["datasets"];
+      return;
+    }
+
+    const coloredNewDatasets = newDatasets.map((ds, i) => {
+      const prev = prevDatasets![i] as unknown as DS;
+      return {
+        ...(ds as unknown as DS),
+        borderColor: prev?.borderColor,
+        backgroundColor: prev?.backgroundColor,
+      };
+    });
+
+    const dashedDatasets = prevDatasets.map((ds) => ({
+      ...(ds as unknown as DS),
+      borderDash: [6, 4],
+      label: "",
+    }));
+
+    ch.data.labels = newLabels as ChartData["labels"];
+    ch.data.datasets = [
+      ...coloredNewDatasets,
+      ...dashedDatasets,
+    ] as unknown as ChartData["datasets"];
+    ch.update("none");
+
+    // Keep updating to last simulation if this is set
+    if (lineDisplay === "last") {
+      prevDatasets = coloredNewDatasets as unknown as ChartData["datasets"];
+    }
+  });
 
   // svelte-ignore state_referenced_locally
   let showLoadingSpinner = $state(loading);
@@ -46,7 +97,7 @@
   });
 
   const myChart: Attachment = (canvas) => {
-    let chart = new Chart(canvas as HTMLCanvasElement, {
+    const chart = new Chart(canvas as HTMLCanvasElement, {
       type: "line",
       data: $state.snapshot(data) as ChartData,
       options: {
@@ -87,14 +138,23 @@
             },
           },
         },
+        plugins: {
+          legend: {
+            labels: {
+              filter: (item) => item.text !== "",
+            },
+          },
+        },
         elements: {
           point: { radius: 0 },
         },
       },
     });
 
+    chartInstance = chart;
     return () => {
-      if (chart) chart.destroy();
+      chart.destroy();
+      chartInstance = null;
     };
   };
 </script>

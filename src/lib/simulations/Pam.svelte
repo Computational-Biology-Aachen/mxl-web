@@ -24,6 +24,7 @@
     selectedKeys = undefined,
     normalizedKeys = undefined,
     nTimePoints,
+    lineDisplay,
   }: {
     model: ModelBuilder;
     pamProtocol: PamGroup[];
@@ -34,6 +35,7 @@
     selectedKeys?: string[];
     normalizedKeys?: string[];
     nTimePoints: number;
+    lineDisplay: "current" | "last" | "first";
   } = $props();
 
   const pyWorker = pyWorkerPool;
@@ -206,6 +208,7 @@
       loading={loading}
       yMax={yMax}
       phases={phaseRegions}
+      lineDisplay={lineDisplay}
     />
   {/if}
 </div>

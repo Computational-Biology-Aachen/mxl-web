@@ -18,6 +18,7 @@ export type SimulationAnalysis = {
   selectedKeys?: string[];
   normalizedKeys?: string[];
   nTimePoints: number;
+  lineDisplay: "current" | "last" | "first";
 };
 
 export type ParameterScanAnalysis = {
@@ -41,6 +42,7 @@ export type ParameterScanAnalysis = {
   showDerived?: boolean;
   selectedKeys?: string[];
   normalizedKeys?: string[];
+  lineDisplay: "current" | "last" | "first";
 };
 
 export type PamAnalysis = {
@@ -57,6 +59,7 @@ export type PamAnalysis = {
   selectedKeys?: string[];
   normalizedKeys?: string[];
   nTimePoints: number;
+  lineDisplay: "current" | "last" | "first";
 };
 
 export type Analysis = SimulationAnalysis | ParameterScanAnalysis | PamAnalysis;

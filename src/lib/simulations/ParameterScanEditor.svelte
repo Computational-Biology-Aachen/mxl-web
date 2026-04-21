@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { ParameterScanAnalysis } from "$lib";
   import InputCheckbox from "$lib/inputs/InputCheckbox.svelte";
+  import InputChoice from "$lib/inputs/InputChoice.svelte";
   import InputNumber from "$lib/inputs/InputNumber.svelte";
   import InputNumberOptional from "$lib/inputs/InputNumberOptional.svelte";
   import InputText from "$lib/inputs/InputText.svelte";
@@ -39,6 +40,7 @@
   let yMinAuto: boolean = $derived(untrack(() => parent.yMin) ? false : true);
   let yMaxAuto: boolean = $derived(untrack(() => parent.yMax) ? false : true);
   let showDerived = $state(untrack(() => parent.showDerived ?? false));
+  let lineDisplay = $state(untrack(() => parent.lineDisplay));
 
   let allAvailableKeys = $derived([
     ...model.variables.keys(),
@@ -168,6 +170,15 @@
   label="Steady-state tolerance (L2): "
   bind:value={tolerance}
 />
+<InputChoice
+  id="line-display"
+  label="LineDisplay"
+  bind:value={lineDisplay}
+>
+  <option value="current">Only current</option>
+  <option value="last">Compare to last</option>
+  <option value="first">Compare to first</option>
+</InputChoice>
 
 <h3>Plot options</h3>
 <InputNumberOptional

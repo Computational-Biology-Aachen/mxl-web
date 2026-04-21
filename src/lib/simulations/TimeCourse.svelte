@@ -17,6 +17,7 @@
     selectedKeys = undefined,
     normalizedKeys = undefined,
     nTimePoints,
+    lineDisplay,
   }: {
     model: ModelBuilder;
     tEnd: number;
@@ -27,6 +28,7 @@
     selectedKeys?: string[];
     normalizedKeys?: string[];
     nTimePoints: number;
+    lineDisplay: "current" | "last" | "first";
   } = $props();
 
   const pyWorker = pyWorkerPool;
@@ -178,6 +180,7 @@
       data={lineData}
       loading={loading}
       yMax={yMax}
+      lineDisplay={lineDisplay}
     />
   {/if}
 </div>

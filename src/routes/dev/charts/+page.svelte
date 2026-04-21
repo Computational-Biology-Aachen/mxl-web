@@ -25,6 +25,7 @@
   data={data}
   yMax={yMax}
   loading={false}
+  lineDisplay="current"
 />
 
 <button

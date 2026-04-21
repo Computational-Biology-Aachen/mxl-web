@@ -162,6 +162,7 @@
       timeoutInSeconds: 20,
       method: "Radau",
       nTimePoints: 100,
+      lineDisplay: "current",
     };
     analyses = [...analyses, newAnalysis];
   }
@@ -177,6 +178,7 @@
       timeoutInSeconds: 60,
       method: "Radau",
       nTimePoints: 100,
+      lineDisplay: "current",
       pamProtocol: [
         {
           steps: [
@@ -228,6 +230,7 @@
       yMax: undefined,
       timeoutInSeconds: 120,
       method: "Radau",
+      lineDisplay: "current",
     };
     analyses = [...analyses, newScan];
   }
@@ -443,6 +446,7 @@
           selectedKeys={analysis.selectedKeys}
           normalizedKeys={analysis.normalizedKeys}
           nTimePoints={analysis.nTimePoints ?? 100}
+          lineDisplay={analysis.lineDisplay}
         />
       {:else if analysis.type === "parameterScan"}
         <ParameterScanSimulator
@@ -454,7 +458,8 @@
           showDerived={analysis.showDerived ?? false}
           selectedKeys={analysis.selectedKeys}
           normalizedKeys={analysis.normalizedKeys}
-          nTimePoints={2}
+          nTimePoints={1000}
+          lineDisplay={analysis.lineDisplay}
         />
       {:else if analysis.type === "pam"}
         <PamSimulator
@@ -468,6 +473,7 @@
           selectedKeys={analysis.selectedKeys}
           normalizedKeys={analysis.normalizedKeys}
           nTimePoints={analysis.nTimePoints ?? 100}
+          lineDisplay={analysis.lineDisplay}
         />
       {/if}
     {/if}
