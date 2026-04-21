@@ -273,4 +273,6 @@
   initModel={initModel}
   bind:analyses={analyses}
   equationsOpen={false}
-></AnalysesDashboard>
+>
+  <h1>Yokota 1985 photorespiration model</h1>
+</AnalysesDashboard>

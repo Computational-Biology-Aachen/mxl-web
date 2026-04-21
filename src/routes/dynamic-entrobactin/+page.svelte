@@ -233,4 +233,6 @@
   initModel={initModel}
   bind:analyses={analyses}
   equationsOpen={true}
-/>
+>
+  <h1>Dynamic Entrobaction model</h1>
+</AnalysesDashboard>

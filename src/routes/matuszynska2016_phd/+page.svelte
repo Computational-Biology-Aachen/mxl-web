@@ -1752,6 +1752,8 @@
   ]);
 </script>
 
+<h1>Matuszyńska 2016 PhD model</h1>
+
 <AnalysesDashboard
   name={"Model"}
   initModel={initModel}

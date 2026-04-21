@@ -189,6 +189,7 @@
   bind:analyses={analyses}
   equationsOpen={true}
 >
+  <h1>Tripartite population model</h1>
   <p>
     Dynamic model of a tripartite population of <b>P</b>ublic consumers,
     <b>C</b>heaters and private <b>m</b>etabolisers.

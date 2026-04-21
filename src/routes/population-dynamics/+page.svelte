@@ -108,4 +108,6 @@
   initModel={initModel}
   bind:analyses={analyses}
   equationsOpen={true}
-/>
+>
+  <h1>Population dynamics</h1>
+</AnalysesDashboard>

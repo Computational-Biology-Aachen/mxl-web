@@ -1091,4 +1091,6 @@
   initModel={initModel}
   bind:analyses={analyses}
   equationsOpen={false}
-></AnalysesDashboard>
+>
+  <h1>Matuszyńska 2016 NPQ model</h1>
+</AnalysesDashboard>

@@ -803,4 +803,6 @@
   initModel={initModel}
   bind:analyses={analyses}
   equationsOpen={false}
-></AnalysesDashboard>
+>
+  <h1>Poolman 2000 CBB model</h1>
+</AnalysesDashboard>

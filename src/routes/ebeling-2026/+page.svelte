@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Analyses } from "$lib";
+  import scheme from "$lib/assets/ebeling2026-scheme.png";
   import {
     Add,
     Divide,
@@ -2699,4 +2700,27 @@
   initModel={initModel}
   bind:analyses={analyses}
   equationsOpen={false}
-></AnalysesDashboard>
+>
+  <h1>Ebeling 2026 model</h1>
+  <div class="centered">
+    <img
+      src={scheme}
+      alt="model-scheme"
+    />
+  </div>
+</AnalysesDashboard>
+
+<style>
+  img {
+    width: 100%;
+    max-width: 90rem;
+  }
+
+  .centered {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+</style>
