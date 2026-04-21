@@ -340,11 +340,13 @@
     <Icon>function</Icon>
     <h3>Model Equations</h3>
   {/snippet}
-  <Math
-    tex={model.buildTex()}
-    fontSize={"0.9rem"}
-    display
-  />
+  <div class="centered">
+    <Math
+      tex={model.buildTex()}
+      fontSize={"0.9rem"}
+      display
+    />
+  </div>
 </Accordion>
 
 {#if parSliders.length > 0}
@@ -553,6 +555,11 @@
     margin: 0;
     color: var(--error, #dc2626);
     font-size: 0.875rem;
+  }
+  .centered {
+    display: flex;
+    justify-content: center;
+    width: 100%;
   }
   .grid-row {
     display: flex;
