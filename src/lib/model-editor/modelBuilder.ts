@@ -105,10 +105,10 @@ export class ModelBuilder {
   //
   clone(): ModelBuilder {
     let cl = new ModelBuilder();
-    cl.parameters = this.parameters;
-    cl.variables = this.variables;
-    cl.assignments = this.assignments;
-    cl.reactions = this.reactions;
+    cl.parameters = new SvelteMap(this.parameters);
+    cl.variables = new SvelteMap(this.variables);
+    cl.assignments = new SvelteMap(this.assignments);
+    cl.reactions = new SvelteMap(this.reactions);
     return cl;
   }
 
@@ -273,6 +273,7 @@ export class ModelBuilder {
       })
       .toArray()
       .join("\n    ");
+    console.log(parameters);
 
     const variables = this.variables
       .entries()
