@@ -33,6 +33,7 @@
     display: inline-block;
     margin: 0;
     padding: 0;
+    max-width: 100%;
     /* transform-origin: left; */
     /* transform: scale(0.75); */
   }
