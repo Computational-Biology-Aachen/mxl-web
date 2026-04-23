@@ -19,10 +19,14 @@
     onclick={() => (open = !open)}
   >
     {@render header()}
-    <Icon
-      color="primary"
-      fontSize="lg">{open ? "expand_less" : "expand_more"}</Icon
-    >
+    <span>
+      <Icon
+        color="inherit"
+        fontSize="inherit"
+      >
+        {open ? "expand_less" : "expand_more"}</Icon
+      >
+    </span>
   </button>
   {#if open}
     <div class="content">
@@ -32,6 +36,22 @@
 </div>
 
 <style>
+  span {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    border: none;
+    border-radius: var(--round);
+    background-color: var(--primary);
+    width: 1.8rem;
+    height: 1.8rem;
+    color: white;
+    font-size: 1.33rem;
+  }
+  span:hover {
+    background-color: lch(from var(--primary) calc(l - 10) c h);
+  }
   .accordion {
     width: 100%;
   }
