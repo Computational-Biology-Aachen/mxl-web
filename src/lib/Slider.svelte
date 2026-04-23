@@ -36,7 +36,6 @@
   function stopDrag() {
     dragging = false;
     finalValue = liveVal;
-    // console.log(`New slider value: ${liveVal}`);
     if (callback) callback();
   }
 </script>

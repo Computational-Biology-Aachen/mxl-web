@@ -201,7 +201,6 @@ export class ModelBuilder {
         break;
       }
       const { k, args } = el;
-      // console.log(k, args);
       if (args.isSubsetOf(available)) {
         available = available.add(k);
         order.push(k);
@@ -273,7 +272,6 @@ export class ModelBuilder {
       })
       .toArray()
       .join("\n    ");
-    console.log(parameters);
 
     const variables = this.variables
       .entries()

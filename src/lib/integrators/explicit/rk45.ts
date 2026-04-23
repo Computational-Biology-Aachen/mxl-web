@@ -31,7 +31,6 @@ export function rk45(
     maxSteps = 10000,
   }: IntegratorKws,
 ): Integration {
-  // console.log(`t_end = ${tEnd}`);
   let h = hInit;
 
   const nVars = initialValues.length;
@@ -132,7 +131,6 @@ export function rk45(
     // );
     // h = Math.min(hMax, Math.max(hMin, h * factor));
   }
-  // console.log(`Took ${step} steps`);
 
   return { time: tValues, values: yValues };
 }

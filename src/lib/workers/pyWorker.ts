@@ -35,7 +35,6 @@ async function setupPyodide() {
     const response = await fetch(`${basePath}/main.py`);
     const pythonScript = await response.text();
     pyFuncs = pyodide.runPython(pythonScript);
-    // console.log("Python Ready");
     pyodideReady = true;
     return pyodide;
   } catch (e) {

@@ -21,8 +21,6 @@ export function rk2(
     maxSteps = 10000,
   }: IntegratorKws,
 ): Integration {
-  // console.log(`t_end = ${tEnd}`);
-
   const nVars = initialValues.length;
   let t = tStart;
   let y = initialValues.slice();
@@ -56,8 +54,6 @@ export function rk2(
     tValues.push(t);
     yValues.push(y.slice());
   }
-
-  // console.log(`Took ${step} steps`);
 
   return { time: tValues, values: yValues };
 }

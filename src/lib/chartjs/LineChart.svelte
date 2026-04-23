@@ -37,8 +37,6 @@
   let lastDatasets: ChartData["datasets"] | null = null;
 
   $effect(() => {
-    console.log("lineDisplay", $state.snapshot(lineDisplay));
-
     const ch = chartInstance;
     if (!ch) return;
 
