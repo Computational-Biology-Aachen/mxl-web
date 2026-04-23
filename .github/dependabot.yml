@@ -9,7 +9,7 @@ updates:
     assignees:
       - "marvinvanaalst"
     commit-message:
-      prefix: "bot: dep: "
+      prefix: "build(deps): "
     groups:
       dependencies:
         patterns:
