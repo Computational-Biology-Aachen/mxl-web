@@ -24,7 +24,7 @@
 </script>
 
 <AnalysesDashboard
-  name={"Model"}
+  name={"Yokota 1985"}
   initModel={initModel}
   bind:analyses={analyses}
   equationsOpen={false}

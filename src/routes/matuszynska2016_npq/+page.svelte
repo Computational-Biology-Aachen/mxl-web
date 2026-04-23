@@ -68,7 +68,7 @@
 </script>
 
 <AnalysesDashboard
-  name={"Model"}
+  name={"Matuszyńska 2016"}
   initModel={initModel}
   bind:analyses={analyses}
   equationsOpen={false}

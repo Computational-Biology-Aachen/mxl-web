@@ -76,7 +76,7 @@
 </script>
 
 <AnalysesDashboard
-  name={"Model"}
+  name={"Ebeling 2026"}
   initModel={initModel}
   bind:analyses={analyses}
   equationsOpen={false}

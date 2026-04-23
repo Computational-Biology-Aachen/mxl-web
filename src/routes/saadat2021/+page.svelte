@@ -25,7 +25,7 @@
 </script>
 
 <AnalysesDashboard
-  name={"Model"}
+  name={"Saadat 2021"}
   initModel={initModel}
   bind:analyses={analyses}
   equationsOpen={false}

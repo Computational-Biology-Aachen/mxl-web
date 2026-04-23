@@ -67,11 +67,11 @@
   ]);
 </script>
 
-<h1>Matuszyńska 2016 PhD model</h1>
-
 <AnalysesDashboard
-  name={"Model"}
+  name={"Matuszyńska 2016"}
   initModel={initModel}
   bind:analyses={analyses}
   equationsOpen={false}
-></AnalysesDashboard>
+>
+  <h1>Matuszyńska 2016 PhD model</h1>
+</AnalysesDashboard>
