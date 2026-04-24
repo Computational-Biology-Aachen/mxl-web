@@ -1,7 +1,11 @@
 <script lang="ts">
   import { base } from "$app/paths";
   import Icon from "$lib/Icon.svelte";
+  import ModelCard from "$lib/ModelCard.svelte";
+  import ModelGallery from "$lib/ModelGallery.svelte";
   import { pyWorkerManager } from "$lib/stores/workerStore";
+  import ebelingScheme from "$lib/assets/ebeling2026-scheme.png";
+  import lotkaVolterraScheme from "$lib/assets/lotka-volterra-scheme.png";
 
   // Get shared workers to initialise them
   const pyWorker = pyWorkerManager;
@@ -17,47 +21,62 @@
   <h2>Select a pre-defined model</h2>
 </div>
 
-<div class="card">
-  <p>Quickly start by picking one of our pre-build ODE models</p>
-  <ul>
-    <li><a href="{base}/lotka-volterra">Lotka Volterra</a></li>
-    <li><a href="{base}/population-dynamics">Population dynamics</a></li>
-    <li><a href="{base}/tripartite">Tripartite dynamics</a></li>
-    <li><a href="{base}/dynamic-entrobactin">Entrobactin</a></li>
-    <!-- <li><a href="{base}/npq">NPQ</a></li> -->
-    <li><a href="{base}/yokota1985">Yokota 1985</a></li>
-    <li><a href="{base}/poolman2000">Poolman 2000</a></li>
-    <li><a href="{base}/matuszynska2016_npq">Matuszyńska 2016 (NPQ)</a></li>
-    <li><a href="{base}/matuszynska2016_phd">Matuszyńska 2016 (PHD)</a></li>
-    <li><a href="{base}/saadat2021">Saadat 2021</a></li>
-    <li><a href="{base}/ebeling-2026">Ebeling 2026</a></li>
-  </ul>
+<ModelGallery title="ODE models">
+  <ModelCard
+    name="Lotka Volterra"
+    href="{base}/lotka-volterra"
+    image={lotkaVolterraScheme}
+  />
+  <ModelCard
+    name="Population dynamics"
+    href="{base}/population-dynamics"
+  />
+  <ModelCard
+    name="Tripartite dynamics"
+    href="{base}/tripartite"
+  />
+  <ModelCard
+    name="Entrobactin"
+    href="{base}/dynamic-entrobactin"
+  />
+  <ModelCard
+    name="Yokota 1985"
+    href="{base}/yokota1985"
+  />
+  <ModelCard
+    name="Poolman 2000"
+    href="{base}/poolman2000"
+  />
+  <ModelCard
+    name="Matuszyńska 2016 (NPQ)"
+    href="{base}/matuszynska2016_npq"
+  />
+  <ModelCard
+    name="Matuszyńska 2016 (PHD)"
+    href="{base}/matuszynska2016_phd"
+  />
+  <ModelCard
+    name="Saadat 2021"
+    href="{base}/saadat2021"
+  />
+  <ModelCard
+    name="Ebeling 2026"
+    href="{base}/ebeling-2026"
+    image={ebelingScheme}
+  />
+</ModelGallery>
 
-  <p>Steady-state models</p>
-  <ul>
-    <li><a href="{base}/fvcb">FvCB</a></li>
-  </ul>
-</div>
+<ModelGallery title="Steady-state models">
+  <ModelCard
+    name="FvCB"
+    href="{base}/fvcb"
+  />
+</ModelGallery>
 
 <style>
   .heading {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-  }
-  .card {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    box-shadow: var(--shadow);
-    border-radius: var(--border-radius);
-    background-color: var(--bg-l1);
-    padding: 1.5rem;
-  }
-  li {
-    list-style-position: inside;
-  }
-  li::marker {
-    color: var(--primary);
   }
 </style>
