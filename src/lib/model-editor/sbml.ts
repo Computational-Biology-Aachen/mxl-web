@@ -1,9 +1,10 @@
 import {
   type Base,
-  Add,
   Abs,
   Acos,
   Acot,
+  Add,
+  And,
   ArcCosh,
   ArcCoth,
   ArcCsc,
@@ -39,8 +40,8 @@ import {
   Minus,
   Mul,
   Name,
-  NotEqual,
   Not,
+  NotEqual,
   Num,
   Or,
   Piecewise,
@@ -54,11 +55,10 @@ import {
   Sqrt,
   Tan,
   Tanh,
-  And,
   Xor,
 } from "$lib/mathml";
-import { ModelBuilder } from "./modelBuilder";
 import type { Stoichiometry } from "./modelBuilder";
+import { ModelBuilder } from "./modelBuilder";
 
 const SBML_NS = "http://www.sbml.org/sbml/level3/version2/core";
 const MATHML_NS = "http://www.w3.org/1998/Math/MathML";
@@ -288,7 +288,7 @@ export function modelToSbml(model: ModelBuilder, name: string): string {
     const items = [...model.variables.entries()]
       .map(([id, v]) => {
         const displayName = v.displayName ?? id;
-        return `<species id="${escapeXml(id)}" name="${escapeXml(displayName)}" compartment="default" initialAmount="${v.value}" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>`;
+        return `<species id="${escapeXml(id)}" name="${escapeXml(displayName)}" compartment="default" initialConcentration="${v.value}" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>`;
       })
       .join("\n      ");
     speciesXml = `<listOfSpecies>\n      ${items}\n    </listOfSpecies>`;
