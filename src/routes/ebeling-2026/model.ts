@@ -16,7 +16,10 @@ import { ModelBuilder } from "$lib/model-editor/modelBuilder";
 
 export function initModel(): ModelBuilder {
   return new ModelBuilder()
-    .addParameter("PPFD", { value: 100.0, texName: "PPFD" })
+    .addParameter("PPFD", {
+      value: 100.0,
+      texName: "PPFD",
+    })
     .addParameter("CO2_dissolved", {
       value: 0.013226,
       texName: "CO2 (dissolved)",
@@ -30,42 +33,126 @@ export function initModel(): ModelBuilder {
       value: 8.0,
       texName: "O2 (dissolved)\\_lumen",
     })
-    .addParameter("bH", { value: 100.0, texName: "bH" })
-    .addParameter("F", { value: 96.485, texName: "F" })
-    .addParameter("E_0_PC", { value: 0.38, texName: "E^0\\_PC" })
-    .addParameter("E_0_P700", { value: 0.48, texName: "E^0\\_P700" })
-    .addParameter("E_0_FA", { value: -0.55, texName: "E^0\\_FA" })
-    .addParameter("E_0_Fd", { value: -0.43, texName: "E^0\\_Fd" })
-    .addParameter("E_0_NADP", { value: -0.113, texName: "E^0\\_NADP" })
-    .addParameter("convf", { value: 0.032, texName: "convf" })
-    .addParameter("R", { value: 0.0083, texName: "R" })
-    .addParameter("T", { value: 298.0, texName: "T" })
+    .addParameter("bH", {
+      value: 100.0,
+      texName: "bH",
+    })
+    .addParameter("F", {
+      value: 96.485,
+      texName: "F",
+    })
+    .addParameter("E_0_PC", {
+      value: 0.38,
+      texName: "E^0\\_PC",
+    })
+    .addParameter("E_0_P700", {
+      value: 0.48,
+      texName: "E^0\\_P700",
+    })
+    .addParameter("E_0_FA", {
+      value: -0.55,
+      texName: "E^0\\_FA",
+    })
+    .addParameter("E_0_Fd", {
+      value: -0.43,
+      texName: "E^0\\_Fd",
+    })
+    .addParameter("E_0_NADP", {
+      value: -0.113,
+      texName: "E^0\\_NADP",
+    })
+    .addParameter("convf", {
+      value: 0.032,
+      texName: "convf",
+    })
+    .addParameter("R", {
+      value: 0.0083,
+      texName: "R",
+    })
+    .addParameter("T", {
+      value: 298.0,
+      texName: "T",
+    })
     .addParameter("Carotenoids_tot", {
       value: 1.0,
       texName: "Carotenoids\\_tot",
     })
-    .addParameter("Fd_", { value: 5.0, texName: "Fd*" })
-    .addParameter("PC_tot", { value: 4.0, texName: "PC\\_tot" })
-    .addParameter("PSBS_tot", { value: 1.0, texName: "PSBS\\_tot" })
-    .addParameter("LHC_tot", { value: 1.0, texName: "LHC\\_tot" })
-    .addParameter("gamma0", { value: 0.06260060801266355, texName: "gamma0" })
-    .addParameter("gamma1", { value: 0.4053583123566203, texName: "gamma1" })
-    .addParameter("gamma2", { value: 0.7040758738825375, texName: "gamma2" })
-    .addParameter("gamma3", { value: 0.07834807781016208, texName: "gamma3" })
-    .addParameter("kZSat", { value: 0.12, texName: "kZSat" })
-    .addParameter("E_0_QA", { value: -0.14, texName: "E^0\\_QA" })
-    .addParameter("E_0_PQ", { value: 0.354, texName: "E^0\\_PQ" })
-    .addParameter("PQ_tot", { value: 17.5, texName: "PQ\\_tot" })
-    .addParameter("staticAntII", { value: 0.1, texName: "staticAntII" })
-    .addParameter("staticAntI", { value: 0.37, texName: "staticAntI" })
+    .addParameter("Fd_", {
+      value: 5.0,
+      texName: "Fd*",
+    })
+    .addParameter("PC_tot", {
+      value: 4.0,
+      texName: "PC\\_tot",
+    })
+    .addParameter("PSBS_tot", {
+      value: 1.0,
+      texName: "PSBS\\_tot",
+    })
+    .addParameter("LHC_tot", {
+      value: 1.0,
+      texName: "LHC\\_tot",
+    })
+    .addParameter("gamma0", {
+      value: 0.06260060801266355,
+      texName: "gamma0",
+    })
+    .addParameter("gamma1", {
+      value: 0.4053583123566203,
+      texName: "gamma1",
+    })
+    .addParameter("gamma2", {
+      value: 0.7040758738825375,
+      texName: "gamma2",
+    })
+    .addParameter("gamma3", {
+      value: 0.07834807781016208,
+      texName: "gamma3",
+    })
+    .addParameter("kZSat", {
+      value: 0.12,
+      texName: "kZSat",
+    })
+    .addParameter("E_0_QA", {
+      value: -0.14,
+      texName: "E^0\\_QA",
+    })
+    .addParameter("E_0_PQ", {
+      value: 0.354,
+      texName: "E^0\\_PQ",
+    })
+    .addParameter("PQ_tot", {
+      value: 17.5,
+      texName: "PQ\\_tot",
+    })
+    .addParameter("staticAntII", {
+      value: 0.1,
+      texName: "staticAntII",
+    })
+    .addParameter("staticAntI", {
+      value: 0.37,
+      texName: "staticAntI",
+    })
     .addParameter("Thioredoxin_tot", {
       value: 1.0,
       texName: "Thioredoxin\\_tot",
     })
-    .addParameter("E_total", { value: 6.0, texName: "E\\_total" })
-    .addParameter("NADP_", { value: 0.8, texName: "NADP*" })
-    .addParameter("A_P", { value: 2.55, texName: "A*P" })
-    .addParameter("Pi_tot", { value: 17.05, texName: "Pi\\_tot" })
+    .addParameter("E_total", {
+      value: 6.0,
+      texName: "E\\_total",
+    })
+    .addParameter("NADP_", {
+      value: 0.8,
+      texName: "NADP*",
+    })
+    .addParameter("A_P", {
+      value: 2.55,
+      texName: "A*P",
+    })
+    .addParameter("Pi_tot", {
+      value: 17.05,
+      texName: "Pi\\_tot",
+    })
     .addParameter("kf_ferredoxin_thioredoxin_reductase", {
       value: 0.8,
       texName: "kf\\_ferredoxin\\_thioredoxin\\_reductase",
@@ -78,7 +165,10 @@ export function initModel(): ModelBuilder {
       value: 0.1,
       texName: "kf\\_tr\\_inactivation",
     })
-    .addParameter("ASC_tot_", { value: 10, texName: "ASC\\_tot*" })
+    .addParameter("ASC_tot_", {
+      value: 10,
+      texName: "ASC\\_tot*",
+    })
     .addParameter("Glutathion_tot", {
       value: 10.0,
       texName: "Glutathion\\_tot",
@@ -87,9 +177,18 @@ export function initModel(): ModelBuilder {
       value: 20.0,
       texName: "kf\\_atp\\_synthase",
     })
-    .addParameter("HPR", { value: 4.666666666666667, texName: "HPR" })
-    .addParameter("Pi_mol", { value: 0.01, texName: "Pi\\_mol" })
-    .addParameter("DeltaG0_ATP", { value: 30.6, texName: "DeltaG0\\_ATP" })
+    .addParameter("HPR", {
+      value: 4.666666666666667,
+      texName: "HPR",
+    })
+    .addParameter("Pi_mol", {
+      value: 0.01,
+      texName: "Pi\\_mol",
+    })
+    .addParameter("DeltaG0_ATP", {
+      value: 30.6,
+      texName: "DeltaG0\\_ATP",
+    })
     .addParameter("kh_lhc_protonation", {
       value: 10,
       texName: "kh\\_lhc\\_protonation",
@@ -135,33 +234,90 @@ export function initModel(): ModelBuilder {
       value: 1.56,
       texName: "km\\_fnr\\_Ferredoxine (reduced)",
     })
-    .addParameter("km_fnr_NADP", { value: 0.22, texName: "km\\_fnr\\_NADP" })
-    .addParameter("E0_fnr", { value: 3.0, texName: "E0\\_fnr" })
-    .addParameter("kcat_fnr", { value: 500.0, texName: "kcat\\_fnr" })
-    .addParameter("kf_ndh", { value: 0.002, texName: "kf\\_ndh" })
-    .addParameter("PSII_total", { value: 2.5, texName: "PSII\\_total" })
-    .addParameter("PSI_total", { value: 2.5, texName: "PSI\\_total" })
-    .addParameter("kH0", { value: 500000000.0, texName: "kH0" })
-    .addParameter("kPQred", { value: 250.0, texName: "kPQred" })
-    .addParameter("kPCox", { value: 2500.0, texName: "kPCox" })
-    .addParameter("kFdred", { value: 250000.0, texName: "kFdred" })
-    .addParameter("k2", { value: 5000000000.0, texName: "k2" })
-    .addParameter("kH", { value: 5000000000.0, texName: "kH" })
-    .addParameter("kF", { value: 625000000.0, texName: "kF" })
-    .addParameter("kMehler", { value: 1.0, texName: "kMehler" })
+    .addParameter("km_fnr_NADP", {
+      value: 0.22,
+      texName: "km\\_fnr\\_NADP",
+    })
+    .addParameter("E0_fnr", {
+      value: 3.0,
+      texName: "E0\\_fnr",
+    })
+    .addParameter("kcat_fnr", {
+      value: 500.0,
+      texName: "kcat\\_fnr",
+    })
+    .addParameter("kf_ndh", {
+      value: 0.002,
+      texName: "kf\\_ndh",
+    })
+    .addParameter("PSII_total", {
+      value: 2.5,
+      texName: "PSII\\_total",
+    })
+    .addParameter("PSI_total", {
+      value: 2.5,
+      texName: "PSI\\_total",
+    })
+    .addParameter("kH0", {
+      value: 500000000.0,
+      texName: "kH0",
+    })
+    .addParameter("kPQred", {
+      value: 250.0,
+      texName: "kPQred",
+    })
+    .addParameter("kPCox", {
+      value: 2500.0,
+      texName: "kPCox",
+    })
+    .addParameter("kFdred", {
+      value: 250000.0,
+      texName: "kFdred",
+    })
+    .addParameter("k2", {
+      value: 5000000000.0,
+      texName: "k2",
+    })
+    .addParameter("kH", {
+      value: 5000000000.0,
+      texName: "kH",
+    })
+    .addParameter("kF", {
+      value: 625000000.0,
+      texName: "kF",
+    })
+    .addParameter("kMehler", {
+      value: 1.0,
+      texName: "kMehler",
+    })
     .addParameter("kf_proton_leak", {
       value: 10.0,
       texName: "kf\\_proton\\_leak",
     })
-    .addParameter("kPTOX", { value: 0.01, texName: "kPTOX" })
-    .addParameter("kStt7", { value: 0.0035, texName: "kStt7" })
+    .addParameter("kPTOX", {
+      value: 0.01,
+      texName: "kPTOX",
+    })
+    .addParameter("kStt7", {
+      value: 0.0035,
+      texName: "kStt7",
+    })
     .addParameter("km_lhc_state_transition_12", {
       value: 0.2,
       texName: "km\\_lhc\\_state\\_transition\\_12",
     })
-    .addParameter("n_ST", { value: 2.0, texName: "n\\_ST" })
-    .addParameter("kPph1", { value: 0.0013, texName: "kPph1" })
-    .addParameter("E0_rubisco", { value: 1.0, texName: "E0\\_rubisco" })
+    .addParameter("n_ST", {
+      value: 2.0,
+      texName: "n\\_ST",
+    })
+    .addParameter("kPph1", {
+      value: 0.0013,
+      texName: "kPph1",
+    })
+    .addParameter("E0_rubisco", {
+      value: 1.0,
+      texName: "E0\\_rubisco",
+    })
     .addParameter("kcat_rubisco_carboxylase", {
       value: 2.72,
       texName: "kcat\\_rubisco\\_carboxylase",
@@ -202,8 +358,14 @@ export function initModel(): ModelBuilder {
       value: 0.00031,
       texName: "keq\\_phosphoglycerate\\_kinase",
     })
-    .addParameter("kre_gadph", { value: 800000000.0, texName: "kre\\_gadph" })
-    .addParameter("keq_gadph", { value: 16000000.0, texName: "keq\\_gadph" })
+    .addParameter("kre_gadph", {
+      value: 800000000.0,
+      texName: "kre\\_gadph",
+    })
+    .addParameter("keq_gadph", {
+      value: 16000000.0,
+      texName: "keq\\_gadph",
+    })
     .addParameter("kre_triose_phosphate_isomerase", {
       value: 800000000.0,
       texName: "kre\\_triose\\_phosphate\\_isomerase",
@@ -228,9 +390,18 @@ export function initModel(): ModelBuilder {
       value: 13.0,
       texName: "keq\\_aldolase\\_dhap\\_e4p",
     })
-    .addParameter("E0_fbpase", { value: 1.0, texName: "E0\\_fbpase" })
-    .addParameter("kcat_fbpase", { value: 1.6, texName: "kcat\\_fbpase" })
-    .addParameter("km_fbpase_s", { value: 0.03, texName: "km\\_fbpase\\_s" })
+    .addParameter("E0_fbpase", {
+      value: 1.0,
+      texName: "E0\\_fbpase",
+    })
+    .addParameter("kcat_fbpase", {
+      value: 1.6,
+      texName: "kcat\\_fbpase",
+    })
+    .addParameter("km_fbpase_s", {
+      value: 0.03,
+      texName: "km\\_fbpase\\_s",
+    })
     .addParameter("ki_fbpase_F6P", {
       value: 0.7,
       texName: "ki\\_fbpase\\_F6P",
@@ -255,9 +426,18 @@ export function initModel(): ModelBuilder {
       value: 0.85,
       texName: "keq\\_transketolase\\_gap\\_s7p",
     })
-    .addParameter("E0_SBPase", { value: 1.0, texName: "E0\\_SBPase" })
-    .addParameter("kcat_SBPase", { value: 0.32, texName: "kcat\\_SBPase" })
-    .addParameter("km_SBPase_s", { value: 0.013, texName: "km\\_SBPase\\_s" })
+    .addParameter("E0_SBPase", {
+      value: 1.0,
+      texName: "E0\\_SBPase",
+    })
+    .addParameter("kcat_SBPase", {
+      value: 0.32,
+      texName: "kcat\\_SBPase",
+    })
+    .addParameter("km_SBPase_s", {
+      value: 0.013,
+      texName: "km\\_SBPase\\_s",
+    })
     .addParameter("ki_SBPase_Orthophosphate", {
       value: 12.0,
       texName: "ki\\_SBPase\\_Orthophosphate",
@@ -314,8 +494,14 @@ export function initModel(): ModelBuilder {
       value: 0.4,
       texName: "ki\\_phosphoribulokinase\\_5",
     })
-    .addParameter("kre_g6pi", { value: 800000000.0, texName: "kre\\_g6pi" })
-    .addParameter("keq_g6pi", { value: 2.3, texName: "keq\\_g6pi" })
+    .addParameter("kre_g6pi", {
+      value: 800000000.0,
+      texName: "kre\\_g6pi",
+    })
+    .addParameter("keq_g6pi", {
+      value: 2.3,
+      texName: "keq\\_g6pi",
+    })
     .addParameter("kre_phosphoglucomutase", {
       value: 800000000.0,
       texName: "kre\\_phosphoglucomutase",
@@ -328,9 +514,18 @@ export function initModel(): ModelBuilder {
       value: 0.5,
       texName: "Orthophosphate (external)",
     })
-    .addParameter("km_ex_pga", { value: 0.25, texName: "km\\_ex\\_pga" })
-    .addParameter("km_ex_gap", { value: 0.075, texName: "km\\_ex\\_gap" })
-    .addParameter("km_ex_dhap", { value: 0.077, texName: "km\\_ex\\_dhap" })
+    .addParameter("km_ex_pga", {
+      value: 0.25,
+      texName: "km\\_ex\\_pga",
+    })
+    .addParameter("km_ex_gap", {
+      value: 0.075,
+      texName: "km\\_ex\\_gap",
+    })
+    .addParameter("km_ex_dhap", {
+      value: 0.077,
+      texName: "km\\_ex\\_dhap",
+    })
     .addParameter("km_N_translocator_Orthophosphate__external_", {
       value: 0.74,
       texName: "km\\_N\\_translocator\\_Orthophosphate (external)",
@@ -347,7 +542,10 @@ export function initModel(): ModelBuilder {
       value: 1.0,
       texName: "E0\\_N\\_translocator",
     })
-    .addParameter("E0_ex_g1p", { value: 1.0, texName: "E0\\_ex\\_g1p" })
+    .addParameter("E0_ex_g1p", {
+      value: 1.0,
+      texName: "E0\\_ex\\_g1p",
+    })
     .addParameter("km_ex_g1p_G1P", {
       value: 0.08,
       texName: "km\\_ex\\_g1p\\_G1P",
@@ -356,7 +554,10 @@ export function initModel(): ModelBuilder {
       value: 0.08,
       texName: "km\\_ex\\_g1p\\_ATP",
     })
-    .addParameter("ki_ex_g1p", { value: 10.0, texName: "ki\\_ex\\_g1p" })
+    .addParameter("ki_ex_g1p", {
+      value: 10.0,
+      texName: "ki\\_ex\\_g1p",
+    })
     .addParameter("ki_ex_g1p_3PGA", {
       value: 0.1,
       texName: "ki\\_ex\\_g1p\\_3PGA",
@@ -369,7 +570,10 @@ export function initModel(): ModelBuilder {
       value: 0.02,
       texName: "ki\\_ex\\_g1p\\_FBP",
     })
-    .addParameter("kcat_ex_g1p", { value: 0.32, texName: "kcat\\_ex\\_g1p" })
+    .addParameter("kcat_ex_g1p", {
+      value: 0.32,
+      texName: "kcat\\_ex\\_g1p",
+    })
     .addParameter("kf_mda_reductase_1", {
       value: 500.0,
       texName: "kf\\_mda\\_reductase\\_1",
@@ -390,15 +594,42 @@ export function initModel(): ModelBuilder {
       value: 0.0014,
       texName: "km\\_mda\\_reductase\\_2\\_MDA",
     })
-    .addParameter("kf1", { value: 10000.0, texName: "kf1" })
-    .addParameter("kr1", { value: 220.0, texName: "kr1" })
-    .addParameter("kf2", { value: 10000.0, texName: "kf2" })
-    .addParameter("kr2", { value: 4000.0, texName: "kr2" })
-    .addParameter("kf3", { value: 2510.0, texName: "kf3" })
-    .addParameter("kf4", { value: 10000.0, texName: "kf4" })
-    .addParameter("kr4", { value: 4000.0, texName: "kr4" })
-    .addParameter("kf5", { value: 2510.0, texName: "kf5" })
-    .addParameter("XT", { value: 0.07, texName: "XT" })
+    .addParameter("kf1", {
+      value: 10000.0,
+      texName: "kf1",
+    })
+    .addParameter("kr1", {
+      value: 220.0,
+      texName: "kr1",
+    })
+    .addParameter("kf2", {
+      value: 10000.0,
+      texName: "kf2",
+    })
+    .addParameter("kr2", {
+      value: 4000.0,
+      texName: "kr2",
+    })
+    .addParameter("kf3", {
+      value: 2510.0,
+      texName: "kf3",
+    })
+    .addParameter("kf4", {
+      value: 10000.0,
+      texName: "kf4",
+    })
+    .addParameter("kr4", {
+      value: 4000.0,
+      texName: "kr4",
+    })
+    .addParameter("kf5", {
+      value: 2510.0,
+      texName: "kf5",
+    })
+    .addParameter("XT", {
+      value: 0.07,
+      texName: "XT",
+    })
     .addParameter("E0_glutathion_reductase", {
       value: 0.0014,
       texName: "E0\\_glutathion\\_reductase",
@@ -423,7 +654,10 @@ export function initModel(): ModelBuilder {
       value: 2.5,
       texName: "km\\_dehydroascorbate\\_reductase\\_GSH",
     })
-    .addParameter("K", { value: 0.5, texName: "K" })
+    .addParameter("K", {
+      value: 0.5,
+      texName: "K",
+    })
     .addParameter("E0_dehydroascorbate_reductase", {
       value: 0.0017,
       texName: "E0\\_dehydroascorbate\\_reductase",
@@ -432,25 +666,58 @@ export function initModel(): ModelBuilder {
       value: 142,
       texName: "kcat\\_dehydroascorbate\\_reductase",
     })
-    .addParameter("kf_ex_atp", { value: 0.5, texName: "kf\\_ex\\_atp" })
-    .addParameter("kf_ex_nadph", { value: 0.5, texName: "kf\\_ex\\_nadph" })
+    .addParameter("kf_ex_atp", {
+      value: 0.5,
+      texName: "kf\\_ex\\_atp",
+    })
+    .addParameter("kf_ex_nadph", {
+      value: 0.5,
+      texName: "kf\\_ex\\_nadph",
+    })
     .addParameter("kH_Qslope", {
       value: 30000000000.0,
       texName: "kH\\_Qslope",
     })
-    .addParameter("b6f_content", { value: 1, texName: "b6f\\_content" })
-    .addParameter("max_b6f", { value: 500, texName: "max\\_b6f" })
-    .addParameter("pKreg", { value: 7, texName: "pKreg" })
+    .addParameter("b6f_content", {
+      value: 1,
+      texName: "b6f\\_content",
+    })
+    .addParameter("max_b6f", {
+      value: 500,
+      texName: "max\\_b6f",
+    })
+    .addParameter("pKreg", {
+      value: 7,
+      texName: "pKreg",
+    })
     .addParameter("stroma_buffering", {
       value: 400,
       texName: "stroma\\_buffering",
     })
-    .addParameter("kActATPase", { value: 0.001, texName: "kActATPase" })
-    .addParameter("kDeactATPase", { value: 0.002, texName: "kDeactATPase" })
-    .addParameter("k_ATPsynthase", { value: 20, texName: "k\\_ATPsynthase" })
-    .addParameter("b", { value: 1.8688304401249531, texName: "b" })
-    .addParameter("pK0E", { value: 5.960025833706074, texName: "pK0E" })
-    .addParameter("k_import_ATP", { value: 0.5, texName: "k\\_import\\_ATP" })
+    .addParameter("kActATPase", {
+      value: 0.001,
+      texName: "kActATPase",
+    })
+    .addParameter("kDeactATPase", {
+      value: 0.002,
+      texName: "kDeactATPase",
+    })
+    .addParameter("k_ATPsynthase", {
+      value: 20,
+      texName: "k\\_ATPsynthase",
+    })
+    .addParameter("b", {
+      value: 1.8688304401249531,
+      texName: "b",
+    })
+    .addParameter("pK0E", {
+      value: 5.960025833706074,
+      texName: "pK0E",
+    })
+    .addParameter("k_import_ATP", {
+      value: 0.5,
+      texName: "k\\_import\\_ATP",
+    })
     .addParameter("k_import_NADPH", {
       value: 0.5,
       texName: "k\\_import\\_NADPH",
@@ -471,7 +738,10 @@ export function initModel(): ModelBuilder {
       value: 0.26274793681796166,
       texName: "KEA3\\_ATP\\_treshold",
     })
-    .addParameter("KEA3_pH_reg", { value: 7.69, texName: "KEA3\\_pH\\_reg" })
+    .addParameter("KEA3_pH_reg", {
+      value: 7.69,
+      texName: "KEA3\\_pH\\_reg",
+    })
     .addParameter("K_delta_psi_treshold", {
       value: 0.08146807307624158,
       texName: "K\\_delta\\_psi\\_treshold",
@@ -534,28 +804,82 @@ export function initModel(): ModelBuilder {
         step: "0.1",
       },
     })
-    .addParameter("K_total", { value: 60, texName: "K\\_total" })
-    .addParameter("Cl_total", { value: 50, texName: "Cl\\_total" })
+    .addParameter("K_total", {
+      value: 60,
+      texName: "K\\_total",
+    })
+    .addParameter("Cl_total", {
+      value: 50,
+      texName: "Cl\\_total",
+    })
     .addParameter("ClCe_ATP_threshold", {
       value: 0.2,
       texName: "ClCe\\_ATP\\_threshold",
     })
-    .addVariable("_3PGA", { value: 0.9167729479368978, texName: "3PGA" })
-    .addVariable("BPGA", { value: 0.0003814495319659031, texName: "BPGA" })
-    .addVariable("GAP", { value: 0.00580821050261484, texName: "GAP" })
-    .addVariable("DHAP", { value: 0.1277806166216142, texName: "DHAP" })
-    .addVariable("FBP", { value: 0.005269452472931973, texName: "FBP" })
-    .addVariable("F6P", { value: 0.2874944558066638, texName: "F6P" })
-    .addVariable("G6P", { value: 0.6612372482712676, texName: "G6P" })
-    .addVariable("G1P", { value: 0.03835176039761378, texName: "G1P" })
-    .addVariable("SBP", { value: 0.011101373736607443, texName: "SBP" })
-    .addVariable("S7P", { value: 0.1494578301900007, texName: "S7P" })
-    .addVariable("E4P", { value: 0.00668295494870102, texName: "E4P" })
-    .addVariable("X5P", { value: 0.020988553174809618, texName: "X5P" })
-    .addVariable("R5P", { value: 0.035155825913785584, texName: "R5P" })
-    .addVariable("RUBP", { value: 0.11293260727162346, texName: "RUBP" })
-    .addVariable("RU5P", { value: 0.014062330254191594, texName: "RU5P" })
-    .addVariable("ATP", { value: 1.4612747767895344, texName: "ATP" })
+    .addVariable("_3PGA", {
+      value: 0.9167729479368978,
+      texName: "3PGA",
+    })
+    .addVariable("BPGA", {
+      value: 0.0003814495319659031,
+      texName: "BPGA",
+    })
+    .addVariable("GAP", {
+      value: 0.00580821050261484,
+      texName: "GAP",
+    })
+    .addVariable("DHAP", {
+      value: 0.1277806166216142,
+      texName: "DHAP",
+    })
+    .addVariable("FBP", {
+      value: 0.005269452472931973,
+      texName: "FBP",
+    })
+    .addVariable("F6P", {
+      value: 0.2874944558066638,
+      texName: "F6P",
+    })
+    .addVariable("G6P", {
+      value: 0.6612372482712676,
+      texName: "G6P",
+    })
+    .addVariable("G1P", {
+      value: 0.03835176039761378,
+      texName: "G1P",
+    })
+    .addVariable("SBP", {
+      value: 0.011101373736607443,
+      texName: "SBP",
+    })
+    .addVariable("S7P", {
+      value: 0.1494578301900007,
+      texName: "S7P",
+    })
+    .addVariable("E4P", {
+      value: 0.00668295494870102,
+      texName: "E4P",
+    })
+    .addVariable("X5P", {
+      value: 0.020988553174809618,
+      texName: "X5P",
+    })
+    .addVariable("R5P", {
+      value: 0.035155825913785584,
+      texName: "R5P",
+    })
+    .addVariable("RUBP", {
+      value: 0.11293260727162346,
+      texName: "RUBP",
+    })
+    .addVariable("RU5P", {
+      value: 0.014062330254191594,
+      texName: "RU5P",
+    })
+    .addVariable("ATP", {
+      value: 1.4612747767895344,
+      texName: "ATP",
+    })
     .addVariable("Ferredoxine__oxidised_", {
       value: 3.715702384326767,
       texName: "Ferredoxine (oxidised)",
@@ -564,7 +888,10 @@ export function initModel(): ModelBuilder {
       value: 0.7805901436176024,
       texName: "Light-harvesting complex",
     })
-    .addVariable("NADPH", { value: 0.5578718406315588, texName: "NADPH" })
+    .addVariable("NADPH", {
+      value: 0.5578718406315588,
+      texName: "NADPH",
+    })
     .addVariable("Plastocyanine__oxidised_", {
       value: 1.8083642974980014,
       texName: "Plastocyanine (oxidised)",
@@ -581,10 +908,22 @@ export function initModel(): ModelBuilder {
       value: 0.9629870646993118,
       texName: "Violaxanthin",
     })
-    .addVariable("MDA", { value: 2.0353396709300447e-7, texName: "MDA" })
-    .addVariable("H2O2", { value: 1.2034405327140102e-7, texName: "H2O2" })
-    .addVariable("DHA", { value: 1.0296456279861962e-11, texName: "DHA" })
-    .addVariable("GSSG", { value: 4.99986167652437e-12, texName: "GSSG" })
+    .addVariable("MDA", {
+      value: 2.0353396709300447e-7,
+      texName: "MDA",
+    })
+    .addVariable("H2O2", {
+      value: 1.2034405327140102e-7,
+      texName: "H2O2",
+    })
+    .addVariable("DHA", {
+      value: 1.0296456279861962e-11,
+      texName: "DHA",
+    })
+    .addVariable("GSSG", {
+      value: 4.99986167652437e-12,
+      texName: "GSSG",
+    })
     .addVariable("Thioredoxin__oxidised_", {
       value: 0.9334426859846461,
       texName: "Thioredoxin (oxidised)",
@@ -593,7 +932,10 @@ export function initModel(): ModelBuilder {
       value: 3.6023635680406634,
       texName: "E\\_inactive",
     })
-    .addVariable("P700FA", { value: 1.506615384275408, texName: "P700FA" })
+    .addVariable("P700FA", {
+      value: 1.506615384275408,
+      texName: "P700FA",
+    })
     .addVariable("P700_FA_", {
       value: 0.019197449388051676,
       texName: "P700+FA-",
@@ -602,12 +944,30 @@ export function initModel(): ModelBuilder {
       value: 0.028144516332212766,
       texName: "P700FA-",
     })
-    .addVariable("B0", { value: 1.9379789566530539, texName: "B0" })
-    .addVariable("B1", { value: 9.786232812526368e-8, texName: "B1" })
-    .addVariable("B2", { value: 0.5620208537555176, texName: "B2" })
-    .addVariable("pH_lumen", { value: 6.8, texName: "pH\\_lumen" })
-    .addVariable("pH", { value: 7.5, texName: "pH" })
-    .addVariable("ATPactivity", { value: 0, texName: "ATPactivity" })
+    .addVariable("B0", {
+      value: 1.9379789566530539,
+      texName: "B0",
+    })
+    .addVariable("B1", {
+      value: 9.786232812526368e-8,
+      texName: "B1",
+    })
+    .addVariable("B2", {
+      value: 0.5620208537555176,
+      texName: "B2",
+    })
+    .addVariable("pH_lumen", {
+      value: 6.8,
+      texName: "pH\\_lumen",
+    })
+    .addVariable("pH", {
+      value: 7.5,
+      texName: "pH",
+    })
+    .addVariable("ATPactivity", {
+      value: 0,
+      texName: "ATPactivity",
+    })
     .addVariable("delta_psi", {
       value: new Divide([
         new Mul([
