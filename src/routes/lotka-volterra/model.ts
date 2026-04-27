@@ -1,11 +1,11 @@
-import { Mul, Name, Num } from "$lib/mathml";
+import { Minus, Mul, Name, Num } from "$lib/mathml";
 import { ModelBuilder } from "$lib/model-editor/modelBuilder";
 
 export function initModel(): ModelBuilder {
   return new ModelBuilder()
     .addParameter("Alpha", {
       value: 0.1,
-      texName: String.raw`\alpha`,
+      texName: "\\alpha",
       slider: {
         min: "0.01",
         max: "1.0",
@@ -14,7 +14,7 @@ export function initModel(): ModelBuilder {
     })
     .addParameter("Beta", {
       value: 0.02,
-      texName: String.raw`\beta`,
+      texName: "\\beta",
       slider: {
         min: "0.01",
         max: "1.0",
@@ -23,7 +23,7 @@ export function initModel(): ModelBuilder {
     })
     .addParameter("Gamma", {
       value: 0.4,
-      texName: String.raw`\gamma`,
+      texName: "\\gamma",
       slider: {
         min: "0.01",
         max: "1.0",
@@ -32,7 +32,7 @@ export function initModel(): ModelBuilder {
     })
     .addParameter("Delta", {
       value: 0.02,
-      texName: String.raw`\delta`,
+      texName: "\\delta",
       slider: {
         min: "0.01",
         max: "1.0",
@@ -41,6 +41,7 @@ export function initModel(): ModelBuilder {
     })
     .addVariable("Prey", {
       value: 10.0,
+      texName: "Prey",
       slider: {
         min: "1.0",
         max: "20.0",
@@ -49,26 +50,29 @@ export function initModel(): ModelBuilder {
     })
     .addVariable("Predator", {
       value: 10.0,
+      texName: "Predator",
       slider: {
         min: "1.0",
         max: "20.0",
         step: "1.0",
       },
     })
-    .addReaction("v0", {
+    .addReaction("prey_growth", {
       fn: new Mul([new Name("Alpha"), new Name("Prey")]),
       stoichiometry: [{ name: "Prey", value: new Num(1.0) }],
+      texName: "prey\\_growth",
     })
-    .addReaction("v1", {
-      fn: new Mul([new Name("Beta"), new Name("Prey"), new Name("Predator")]),
-      stoichiometry: [{ name: "Prey", value: new Num(-1.0) }],
+    .addReaction("predation", {
+      fn: new Mul([new Name("Predator"), new Name("Prey")]),
+      stoichiometry: [
+        { name: "Prey", value: new Minus([new Name("Beta")]) },
+        { name: "Predator", value: new Name("Delta") },
+      ],
+      texName: "predation",
     })
-    .addReaction("v2", {
-      fn: new Mul([new Name("Delta"), new Name("Prey"), new Name("Predator")]),
-      stoichiometry: [{ name: "Predator", value: new Num(1.0) }],
-    })
-    .addReaction("v3", {
+    .addReaction("predator_death", {
       fn: new Mul([new Name("Gamma"), new Name("Predator")]),
       stoichiometry: [{ name: "Predator", value: new Num(-1.0) }],
+      texName: "predator\\_death",
     });
 }

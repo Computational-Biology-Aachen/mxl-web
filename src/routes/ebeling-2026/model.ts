@@ -29,7 +29,7 @@ export function initModel(): ModelBuilder {
         step: "0.0001",
       },
     })
-    .addParameter("O2__dissolved__lumen", {
+    .addParameter("O2_dissolved_lumen", {
       value: 8.0,
       texName: "O2 (dissolved)\\_lumen",
     })
@@ -41,23 +41,23 @@ export function initModel(): ModelBuilder {
       value: 96.485,
       texName: "F",
     })
-    .addParameter("E_0_PC", {
+    .addParameter("E0_PC", {
       value: 0.38,
       texName: "E^0\\_PC",
     })
-    .addParameter("E_0_P700", {
+    .addParameter("E0_P700", {
       value: 0.48,
       texName: "E^0\\_P700",
     })
-    .addParameter("E_0_FA", {
+    .addParameter("E0_FA", {
       value: -0.55,
       texName: "E^0\\_FA",
     })
-    .addParameter("E_0_Fd", {
+    .addParameter("E0_Fd", {
       value: -0.43,
       texName: "E^0\\_Fd",
     })
-    .addParameter("E_0_NADP", {
+    .addParameter("E0_NADP", {
       value: -0.113,
       texName: "E^0\\_NADP",
     })
@@ -77,7 +77,7 @@ export function initModel(): ModelBuilder {
       value: 1.0,
       texName: "Carotenoids\\_tot",
     })
-    .addParameter("Fd_", {
+    .addParameter("Fd_star", {
       value: 5.0,
       texName: "Fd*",
     })
@@ -113,11 +113,11 @@ export function initModel(): ModelBuilder {
       value: 0.12,
       texName: "kZSat",
     })
-    .addParameter("E_0_QA", {
+    .addParameter("E0_QA", {
       value: -0.14,
       texName: "E^0\\_QA",
     })
-    .addParameter("E_0_PQ", {
+    .addParameter("E0_PQ", {
       value: 0.354,
       texName: "E^0\\_PQ",
     })
@@ -141,11 +141,11 @@ export function initModel(): ModelBuilder {
       value: 6.0,
       texName: "E\\_total",
     })
-    .addParameter("NADP_", {
+    .addParameter("NADP_star", {
       value: 0.8,
       texName: "NADP*",
     })
-    .addParameter("A_P", {
+    .addParameter("A_star_P", {
       value: 2.55,
       texName: "A*P",
     })
@@ -165,8 +165,8 @@ export function initModel(): ModelBuilder {
       value: 0.1,
       texName: "kf\\_tr\\_inactivation",
     })
-    .addParameter("ASC_tot_", {
-      value: 10,
+    .addParameter("ASC_tot_star", {
+      value: 10.0,
       texName: "ASC\\_tot*",
     })
     .addParameter("Glutathion_tot", {
@@ -190,7 +190,7 @@ export function initModel(): ModelBuilder {
       texName: "DeltaG0\\_ATP",
     })
     .addParameter("kh_lhc_protonation", {
-      value: 10,
+      value: 10.0,
       texName: "kh\\_lhc\\_protonation",
     })
     .addParameter("kf_lhc_protonation", {
@@ -219,7 +219,7 @@ export function initModel(): ModelBuilder {
       texName: "kf\\_violaxanthin\\_deepoxidase",
     })
     .addParameter("kh_violaxanthin_deepoxidase", {
-      value: 4,
+      value: 4.0,
       texName: "kh\\_violaxanthin\\_deepoxidase",
     })
     .addParameter("ksat_violaxanthin_deepoxidase", {
@@ -230,7 +230,7 @@ export function initModel(): ModelBuilder {
       value: 0.000106261953934132,
       texName: "kf\\_zeaxanthin\\_epoxidase",
     })
-    .addParameter("km_fnr_Ferredoxine__reduced_", {
+    .addParameter("km_fnr_Ferredoxine_reduced", {
       value: 1.56,
       texName: "km\\_fnr\\_Ferredoxine (reduced)",
     })
@@ -510,7 +510,7 @@ export function initModel(): ModelBuilder {
       value: 0.058,
       texName: "keq\\_phosphoglucomutase",
     })
-    .addParameter("Orthophosphate__external_", {
+    .addParameter("Orthophosphate_external", {
       value: 0.5,
       texName: "Orthophosphate (external)",
     })
@@ -526,7 +526,7 @@ export function initModel(): ModelBuilder {
       value: 0.077,
       texName: "km\\_ex\\_dhap",
     })
-    .addParameter("km_N_translocator_Orthophosphate__external_", {
+    .addParameter("km_N_translocator_Orthophosphate_external", {
       value: 0.74,
       texName: "km\\_N\\_translocator\\_Orthophosphate (external)",
     })
@@ -635,7 +635,7 @@ export function initModel(): ModelBuilder {
       texName: "E0\\_glutathion\\_reductase",
     })
     .addParameter("kcat_glutathion_reductase", {
-      value: 595,
+      value: 595.0,
       texName: "kcat\\_glutathion\\_reductase",
     })
     .addParameter("km_glutathion_reductase_NADPH", {
@@ -663,7 +663,7 @@ export function initModel(): ModelBuilder {
       texName: "E0\\_dehydroascorbate\\_reductase",
     })
     .addParameter("kcat_dehydroascorbate_reductase", {
-      value: 142,
+      value: 142.0,
       texName: "kcat\\_dehydroascorbate\\_reductase",
     })
     .addParameter("kf_ex_atp", {
@@ -679,19 +679,19 @@ export function initModel(): ModelBuilder {
       texName: "kH\\_Qslope",
     })
     .addParameter("b6f_content", {
-      value: 1,
+      value: 1.0,
       texName: "b6f\\_content",
     })
     .addParameter("max_b6f", {
-      value: 500,
+      value: 500.0,
       texName: "max\\_b6f",
     })
     .addParameter("pKreg", {
-      value: 7,
+      value: 7.0,
       texName: "pKreg",
     })
     .addParameter("stroma_buffering", {
-      value: 400,
+      value: 400.0,
       texName: "stroma\\_buffering",
     })
     .addParameter("kActATPase", {
@@ -703,7 +703,7 @@ export function initModel(): ModelBuilder {
       texName: "kDeactATPase",
     })
     .addParameter("k_ATPsynthase", {
-      value: 20,
+      value: 20.0,
       texName: "k\\_ATPsynthase",
     })
     .addParameter("b", {
@@ -751,7 +751,7 @@ export function initModel(): ModelBuilder {
       texName: "VCCN\\_delta\\_psi\\_treshold",
     })
     .addParameter("k_Cl_leak", {
-      value: 25,
+      value: 25.0,
       texName: "k\\_Cl\\_leak",
       slider: {
         min: "0.0",
@@ -769,7 +769,7 @@ export function initModel(): ModelBuilder {
       },
     })
     .addParameter("k_KEA", {
-      value: 90,
+      value: 90.0,
       texName: "k\\_KEA",
       slider: {
         min: "0.0",
@@ -805,11 +805,11 @@ export function initModel(): ModelBuilder {
       },
     })
     .addParameter("K_total", {
-      value: 60,
+      value: 60.0,
       texName: "K\\_total",
     })
     .addParameter("Cl_total", {
-      value: 50,
+      value: 50.0,
       texName: "Cl\\_total",
     })
     .addParameter("ClCe_ATP_threshold", {
@@ -880,11 +880,11 @@ export function initModel(): ModelBuilder {
       value: 1.4612747767895344,
       texName: "ATP",
     })
-    .addVariable("Ferredoxine__oxidised_", {
+    .addVariable("Ferredoxine_oxidised", {
       value: 3.715702384326767,
       texName: "Ferredoxine (oxidised)",
     })
-    .addVariable("Light_harvesting_complex", {
+    .addVariable("Light_minus_harvesting_complex", {
       value: 0.7805901436176024,
       texName: "Light-harvesting complex",
     })
@@ -892,15 +892,15 @@ export function initModel(): ModelBuilder {
       value: 0.5578718406315588,
       texName: "NADPH",
     })
-    .addVariable("Plastocyanine__oxidised_", {
+    .addVariable("Plastocyanine_oxidised", {
       value: 1.8083642974980014,
       texName: "Plastocyanine (oxidised)",
     })
-    .addVariable("Plastoquinone__oxidised_", {
+    .addVariable("Plastoquinone_oxidised", {
       value: 10.251099271612473,
       texName: "Plastoquinone (oxidised)",
     })
-    .addVariable("PsbS__de_protonated_", {
+    .addVariable("PsbS_de_minus_protonated", {
       value: 0.9667381262477079,
       texName: "PsbS (de-protonated)",
     })
@@ -924,7 +924,7 @@ export function initModel(): ModelBuilder {
       value: 4.99986167652437e-12,
       texName: "GSSG",
     })
-    .addVariable("Thioredoxin__oxidised_", {
+    .addVariable("Thioredoxin_oxidised", {
       value: 0.9334426859846461,
       texName: "Thioredoxin (oxidised)",
     })
@@ -936,11 +936,11 @@ export function initModel(): ModelBuilder {
       value: 1.506615384275408,
       texName: "P700FA",
     })
-    .addVariable("P700_FA_", {
+    .addVariable("P700_plus_FA_minus", {
       value: 0.019197449388051676,
       texName: "P700+FA-",
     })
-    .addVariable("P700FA_", {
+    .addVariable("P700FA_minus", {
       value: 0.028144516332212766,
       texName: "P700FA-",
     })
@@ -965,13 +965,13 @@ export function initModel(): ModelBuilder {
       texName: "pH",
     })
     .addVariable("ATPactivity", {
-      value: 0,
+      value: 0.0,
       texName: "ATPactivity",
     })
     .addVariable("delta_psi", {
       value: new Divide([
         new Mul([
-          new Ln(new Num(10)),
+          new Num(2.302585092994046),
           new Name("R"),
           new Name("T"),
           new Add([new Name("pH"), new Minus([new Name("pH_lumen")])]),
@@ -1003,49 +1003,49 @@ export function initModel(): ModelBuilder {
       ]),
       texName: "Zeaxanthin",
     })
-    .addAssignment("Ferredoxine__reduced_", {
+    .addAssignment("Ferredoxine_reduced", {
       fn: new Add([
-        new Name("Fd_"),
-        new Minus([new Name("Ferredoxine__oxidised_")]),
+        new Name("Fd_star"),
+        new Minus([new Name("Ferredoxine_oxidised")]),
       ]),
       texName: "Ferredoxine (reduced)",
     })
-    .addAssignment("Plastocyanine__reduced_", {
+    .addAssignment("Plastocyanine_reduced", {
       fn: new Add([
         new Name("PC_tot"),
-        new Minus([new Name("Plastocyanine__oxidised_")]),
+        new Minus([new Name("Plastocyanine_oxidised")]),
       ]),
       texName: "Plastocyanine (reduced)",
     })
-    .addAssignment("PsbS__protonated_", {
+    .addAssignment("PsbS_protonated", {
       fn: new Add([
         new Name("PSBS_tot"),
-        new Minus([new Name("PsbS__de_protonated_")]),
+        new Minus([new Name("PsbS_de_minus_protonated")]),
       ]),
       texName: "PsbS (protonated)",
     })
-    .addAssignment("Light_harvesting_complex__protonated_", {
+    .addAssignment("Light_minus_harvesting_complex_protonated", {
       fn: new Add([
         new Name("LHC_tot"),
-        new Minus([new Name("Light_harvesting_complex")]),
+        new Minus([new Name("Light_minus_harvesting_complex")]),
       ]),
       texName: "Light-harvesting complex (protonated)",
     })
     .addAssignment("Q", {
       fn: new Add([
         new Mul([
-          new Name("PsbS__de_protonated_"),
+          new Name("PsbS_de_minus_protonated"),
           new Name("Violaxanthin"),
           new Name("gamma0"),
         ]),
         new Mul([
-          new Name("PsbS__protonated_"),
+          new Name("PsbS_protonated"),
           new Name("Violaxanthin"),
           new Name("gamma1"),
         ]),
         new Divide([
           new Mul([
-            new Name("PsbS__de_protonated_"),
+            new Name("PsbS_de_minus_protonated"),
             new Name("Zeaxanthin"),
             new Name("gamma3"),
           ]),
@@ -1053,7 +1053,7 @@ export function initModel(): ModelBuilder {
         ]),
         new Divide([
           new Mul([
-            new Name("PsbS__protonated_"),
+            new Name("PsbS_protonated"),
             new Name("Zeaxanthin"),
             new Name("gamma2"),
           ]),
@@ -1062,13 +1062,13 @@ export function initModel(): ModelBuilder {
       ]),
       texName: "Q",
     })
-    .addAssignment("keq_Plastoquinone__reduced_", {
+    .addAssignment("keq_Plastoquinone_reduced", {
       fn: new Exp(
         new Divide([
           new Add([
-            new Mul([new Num(2.0), new Name("E_0_PQ"), new Name("F")]),
+            new Mul([new Num(2.0), new Name("E0_PQ"), new Name("F")]),
             new Minus([
-              new Mul([new Num(2.0), new Name("E_0_QA"), new Name("F")]),
+              new Mul([new Num(2.0), new Name("E0_QA"), new Name("F")]),
             ]),
             new Minus([
               new Mul([new Num(2.0), new Name("dG_pH"), new Name("pH")]),
@@ -1079,10 +1079,10 @@ export function initModel(): ModelBuilder {
       ),
       texName: "keq\\_Plastoquinone (reduced)",
     })
-    .addAssignment("Plastoquinone__reduced_", {
+    .addAssignment("Plastoquinone_reduced", {
       fn: new Add([
         new Name("PQ_tot"),
-        new Minus([new Name("Plastoquinone__oxidised_")]),
+        new Minus([new Name("Plastoquinone_oxidised")]),
       ]),
       texName: "Plastoquinone (reduced)",
     })
@@ -1090,7 +1090,7 @@ export function initModel(): ModelBuilder {
       fn: new Add([
         new Name("staticAntII"),
         new Mul([
-          new Name("Light_harvesting_complex"),
+          new Name("Light_minus_harvesting_complex"),
           new Add([
             new Num(1.0),
             new Minus([new Name("staticAntI")]),
@@ -1100,10 +1100,10 @@ export function initModel(): ModelBuilder {
       ]),
       texName: "PSII\\_cross\\_section",
     })
-    .addAssignment("Thioredoxin__reduced_", {
+    .addAssignment("Thioredoxin_reduced", {
       fn: new Add([
         new Name("Thioredoxin_tot"),
-        new Minus([new Name("Thioredoxin__oxidised_")]),
+        new Minus([new Name("Thioredoxin_oxidised")]),
       ]),
       texName: "Thioredoxin (reduced)",
     })
@@ -1112,11 +1112,11 @@ export function initModel(): ModelBuilder {
       texName: "E\\_active",
     })
     .addAssignment("NADP", {
-      fn: new Add([new Name("NADP_"), new Minus([new Name("NADPH")])]),
+      fn: new Add([new Name("NADP_star"), new Minus([new Name("NADPH")])]),
       texName: "NADP",
     })
     .addAssignment("ADP", {
-      fn: new Add([new Name("A_P"), new Minus([new Name("ATP")])]),
+      fn: new Add([new Name("A_star_P"), new Minus([new Name("ATP")])]),
       texName: "ADP",
     })
     .addAssignment("Orthophosphate", {
@@ -1143,7 +1143,7 @@ export function initModel(): ModelBuilder {
     })
     .addAssignment("ascorbate", {
       fn: new Add([
-        new Name("ASC_tot_"),
+        new Name("ASC_tot_star"),
         new Minus([new Name("DHA")]),
         new Minus([new Name("MDA")]),
       ]),
@@ -1180,9 +1180,9 @@ export function initModel(): ModelBuilder {
         new Divide([
           new Add([
             new Minus([new Mul([new Name("dG_pH"), new Name("pH")])]),
-            new Mul([new Num(2.0), new Name("E_0_NADP"), new Name("F")]),
+            new Mul([new Num(2.0), new Name("E0_NADP"), new Name("F")]),
             new Minus([
-              new Mul([new Num(2.0), new Name("E_0_Fd"), new Name("F")]),
+              new Mul([new Num(2.0), new Name("E0_Fd"), new Name("F")]),
             ]),
           ]),
           new Name("RT"),
@@ -1246,8 +1246,8 @@ export function initModel(): ModelBuilder {
           new Add([
             new Num(1.0),
             new Divide([
-              new Name("km_N_translocator_Orthophosphate__external_"),
-              new Name("Orthophosphate__external_"),
+              new Name("km_N_translocator_Orthophosphate_external"),
+              new Name("Orthophosphate_external"),
             ]),
           ]),
           new Add([
@@ -1296,8 +1296,8 @@ export function initModel(): ModelBuilder {
       fn: new Exp(
         new Divide([
           new Add([
-            new Mul([new Name("E_0_P700"), new Name("F")]),
-            new Minus([new Mul([new Name("E_0_PC"), new Name("F")])]),
+            new Mul([new Name("E0_P700"), new Name("F")]),
+            new Minus([new Mul([new Name("E0_PC"), new Name("F")])]),
           ]),
           new Name("RT"),
         ]),
@@ -1308,8 +1308,8 @@ export function initModel(): ModelBuilder {
       fn: new Exp(
         new Divide([
           new Add([
-            new Mul([new Name("E_0_Fd"), new Name("F")]),
-            new Minus([new Mul([new Name("E_0_FA"), new Name("F")])]),
+            new Mul([new Name("E0_Fd"), new Name("F")]),
+            new Minus([new Mul([new Name("E0_FA"), new Name("F")])]),
           ]),
           new Name("RT"),
         ]),
@@ -1325,41 +1325,41 @@ export function initModel(): ModelBuilder {
       ]),
       texName: "B3",
     })
-    .addAssignment("P700_FA", {
+    .addAssignment("P700_plus_FA", {
       fn: new Add([
         new Name("PSI_total"),
         new Minus([new Name("P700FA")]),
-        new Minus([new Name("P700FA_")]),
-        new Minus([new Name("P700_FA_")]),
+        new Minus([new Name("P700FA_minus")]),
+        new Minus([new Name("P700_plus_FA_minus")]),
       ]),
       texName: "P700+FA",
     })
-    .addAssignment("rel_P700_FA", {
-      fn: new Divide([new Name("P700_FA"), new Name("PSI_total")]),
+    .addAssignment("rel_P700_plus_FA", {
+      fn: new Divide([new Name("P700_plus_FA"), new Name("PSI_total")]),
       texName: "rel\\_P700+FA",
     })
     .addAssignment("rel_P700FA", {
       fn: new Divide([new Name("P700FA"), new Name("PSI_total")]),
       texName: "rel\\_P700FA",
     })
-    .addAssignment("rel_P700FA_", {
-      fn: new Divide([new Name("P700FA_"), new Name("PSI_total")]),
+    .addAssignment("rel_P700FA_minus", {
+      fn: new Divide([new Name("P700FA_minus"), new Name("PSI_total")]),
       texName: "rel\\_P700FA-",
     })
-    .addAssignment("rel_P700_FA_", {
-      fn: new Divide([new Name("P700_FA_"), new Name("PSI_total")]),
+    .addAssignment("rel_P700_plus_FA_minus", {
+      fn: new Divide([new Name("P700_plus_FA_minus"), new Name("PSI_total")]),
       texName: "rel\\_P700+FA-",
     })
     .addAssignment("rel_P700", {
       fn: new Divide([
-        new Add([new Name("P700_FA"), new Name("P700_FA_")]),
+        new Add([new Name("P700_plus_FA"), new Name("P700_plus_FA_minus")]),
         new Name("PSI_total"),
       ]),
       texName: "rel\\_P700",
     })
-    .addAssignment("rel_P700_", {
+    .addAssignment("rel_P700_plus", {
       fn: new Divide([
-        new Add([new Name("P700_FA"), new Name("P700_FA_")]),
+        new Add([new Name("P700_plus_FA"), new Name("P700_plus_FA_minus")]),
         new Name("PSI_total"),
       ]),
       texName: "rel\\_P700+",
@@ -1560,10 +1560,10 @@ export function initModel(): ModelBuilder {
         new Divide([
           new Add([
             new Minus([new Mul([new Num(2.0), new Name("pmf_in_V")])]),
-            new Mul([new Num(2.0), new Name("E_0_PC"), new Name("F")]),
+            new Mul([new Num(2.0), new Name("E0_PC"), new Name("F")]),
             new Mul([new Num(2.0), new Name("dG_pH"), new Name("pH_lumen")]),
             new Minus([
-              new Mul([new Num(2.0), new Name("E_0_PQ"), new Name("F")]),
+              new Mul([new Num(2.0), new Name("E0_PQ"), new Name("F")]),
             ]),
           ]),
           new Name("RT"),
@@ -1654,9 +1654,9 @@ export function initModel(): ModelBuilder {
         new Divide([
           new Add([
             new Minus([new Mul([new Num(4.0), new Name("pmf")])]),
-            new Mul([new Num(2.0), new Name("E_0_PQ"), new Name("F")]),
+            new Mul([new Num(2.0), new Name("E0_PQ"), new Name("F")]),
             new Minus([
-              new Mul([new Num(2.0), new Name("E_0_Fd"), new Name("F")]),
+              new Mul([new Num(2.0), new Name("E0_Fd"), new Name("F")]),
             ]),
             new Minus([
               new Mul([new Num(2.0), new Name("dG_pH"), new Name("pH")]),
@@ -1686,25 +1686,25 @@ export function initModel(): ModelBuilder {
     })
     .addReaction("ferredoxin_thioredoxin_reductase", {
       fn: new Mul([
-        new Name("Ferredoxine__reduced_"),
-        new Name("Thioredoxin__oxidised_"),
+        new Name("Ferredoxine_reduced"),
+        new Name("Thioredoxin_oxidised"),
         new Name("kf_ferredoxin_thioredoxin_reductase"),
       ]),
       stoichiometry: [
-        { name: "Thioredoxin__oxidised_", value: new Num(-1.0) },
-        { name: "Ferredoxine__oxidised_", value: new Num(1.0) },
+        { name: "Thioredoxin_oxidised", value: new Num(-1.0) },
+        { name: "Ferredoxine_oxidised", value: new Num(1.0) },
       ],
       texName: "ferredoxin\\_thioredoxin\\_reductase",
     })
     .addReaction("tr_activation", {
       fn: new Mul([
         new Name("E_inactive"),
-        new Name("Thioredoxin__reduced_"),
+        new Name("Thioredoxin_reduced"),
         new Name("kf_tr_activation"),
       ]),
       stoichiometry: [
         { name: "E_inactive", value: new Num(-5.0) },
-        { name: "Thioredoxin__oxidised_", value: new Num(5.0) },
+        { name: "Thioredoxin_oxidised", value: new Num(5.0) },
       ],
       texName: "tr\\_activation",
     })
@@ -1744,7 +1744,7 @@ export function initModel(): ModelBuilder {
     .addReaction("lhc_protonation", {
       fn: new Divide([
         new Mul([
-          new Name("PsbS__de_protonated_"),
+          new Name("PsbS_de_minus_protonated"),
           new Name("kf_lhc_protonation"),
           new Pow(new Name("protons_lumen"), new Name("kh_lhc_protonation")),
         ]),
@@ -1762,26 +1762,30 @@ export function initModel(): ModelBuilder {
           ),
         ]),
       ]),
-      stoichiometry: [{ name: "PsbS__de_protonated_", value: new Num(-1.0) }],
+      stoichiometry: [
+        { name: "PsbS_de_minus_protonated", value: new Num(-1.0) },
+      ],
       texName: "lhc\\_protonation",
     })
     .addReaction("lhc_deprotonation", {
       fn: new Mul([
-        new Name("PsbS__protonated_"),
+        new Name("PsbS_protonated"),
         new Name("kf_lhc_deprotonation"),
       ]),
-      stoichiometry: [{ name: "PsbS__de_protonated_", value: new Num(1.0) }],
+      stoichiometry: [
+        { name: "PsbS_de_minus_protonated", value: new Num(1.0) },
+      ],
       texName: "lhc\\_deprotonation",
     })
     .addReaction("cyclic_electron_flow", {
       fn: new Mul([
-        new Name("Plastoquinone__oxidised_"),
+        new Name("Plastoquinone_oxidised"),
         new Name("kf_cyclic_electron_flow"),
-        new Pow(new Name("Ferredoxine__reduced_"), new Num(2.0)),
+        new Pow(new Name("Ferredoxine_reduced"), new Num(2.0)),
       ]),
       stoichiometry: [
-        { name: "Plastoquinone__oxidised_", value: new Num(-1.0) },
-        { name: "Ferredoxine__oxidised_", value: new Num(2.0) },
+        { name: "Plastoquinone_oxidised", value: new Num(-1.0) },
+        { name: "Ferredoxine_oxidised", value: new Num(2.0) },
       ],
       texName: "cyclic\\_electron\\_flow",
     })
@@ -1833,8 +1837,8 @@ export function initModel(): ModelBuilder {
                 new Name("NADP"),
                 new Pow(
                   new Divide([
-                    new Name("Ferredoxine__reduced_"),
-                    new Name("km_fnr_Ferredoxine__reduced_"),
+                    new Name("Ferredoxine_reduced"),
+                    new Name("km_fnr_Ferredoxine_reduced"),
                   ]),
                   new Num(2.0),
                 ),
@@ -1847,8 +1851,8 @@ export function initModel(): ModelBuilder {
                   new Name("NADPH"),
                   new Pow(
                     new Divide([
-                      new Name("Ferredoxine__oxidised_"),
-                      new Name("km_fnr_Ferredoxine__reduced_"),
+                      new Name("Ferredoxine_oxidised"),
+                      new Name("km_fnr_Ferredoxine_reduced"),
                     ]),
                     new Num(2.0),
                   ),
@@ -1876,14 +1880,14 @@ export function initModel(): ModelBuilder {
               new Num(1.0),
               new Pow(
                 new Divide([
-                  new Name("Ferredoxine__reduced_"),
-                  new Name("km_fnr_Ferredoxine__reduced_"),
+                  new Name("Ferredoxine_reduced"),
+                  new Name("km_fnr_Ferredoxine_reduced"),
                 ]),
                 new Num(2.0),
               ),
               new Divide([
-                new Name("Ferredoxine__reduced_"),
-                new Name("km_fnr_Ferredoxine__reduced_"),
+                new Name("Ferredoxine_reduced"),
+                new Name("km_fnr_Ferredoxine_reduced"),
               ]),
             ]),
           ]),
@@ -1899,30 +1903,28 @@ export function initModel(): ModelBuilder {
               new Num(1.0),
               new Pow(
                 new Divide([
-                  new Name("Ferredoxine__oxidised_"),
-                  new Name("km_fnr_Ferredoxine__reduced_"),
+                  new Name("Ferredoxine_oxidised"),
+                  new Name("km_fnr_Ferredoxine_reduced"),
                 ]),
                 new Num(2.0),
               ),
               new Divide([
-                new Name("Ferredoxine__oxidised_"),
-                new Name("km_fnr_Ferredoxine__reduced_"),
+                new Name("Ferredoxine_oxidised"),
+                new Name("km_fnr_Ferredoxine_reduced"),
               ]),
             ]),
           ]),
         ]),
       ]),
       stoichiometry: [
-        { name: "Ferredoxine__oxidised_", value: new Num(2.0) },
+        { name: "Ferredoxine_oxidised", value: new Num(2.0) },
         { name: "NADPH", value: new Name("convf") },
       ],
       texName: "fnr",
     })
     .addReaction("ndh", {
-      fn: new Mul([new Name("Plastoquinone__oxidised_"), new Name("kf_ndh")]),
-      stoichiometry: [
-        { name: "Plastoquinone__oxidised_", value: new Num(-1.0) },
-      ],
+      fn: new Mul([new Name("Plastoquinone_oxidised"), new Name("kf_ndh")]),
+      stoichiometry: [{ name: "Plastoquinone_oxidised", value: new Num(-1.0) }],
       texName: "ndh",
     })
     .addReaction("proton_leak", {
@@ -1952,27 +1954,25 @@ export function initModel(): ModelBuilder {
     })
     .addReaction("PTOX", {
       fn: new Mul([
-        new Name("O2__dissolved__lumen"),
-        new Name("Plastoquinone__reduced_"),
+        new Name("O2_dissolved_lumen"),
+        new Name("Plastoquinone_reduced"),
         new Name("kPTOX"),
       ]),
-      stoichiometry: [
-        { name: "Plastoquinone__oxidised_", value: new Num(1.0) },
-      ],
+      stoichiometry: [{ name: "Plastoquinone_oxidised", value: new Num(1.0) }],
       texName: "PTOX",
     })
     .addReaction("lhc_state_transition_12", {
       fn: new Divide([
         new Mul([
           new Num(1.0),
-          new Name("Light_harvesting_complex"),
+          new Name("Light_minus_harvesting_complex"),
           new Name("kStt7"),
         ]),
         new Add([
           new Num(1.0),
           new Pow(
             new Divide([
-              new Name("Plastoquinone__oxidised_"),
+              new Name("Plastoquinone_oxidised"),
               new Mul([
                 new Name("PQ_tot"),
                 new Name("km_lhc_state_transition_12"),
@@ -1983,17 +1983,17 @@ export function initModel(): ModelBuilder {
         ]),
       ]),
       stoichiometry: [
-        { name: "Light_harvesting_complex", value: new Num(-1.0) },
+        { name: "Light_minus_harvesting_complex", value: new Num(-1.0) },
       ],
       texName: "lhc\\_state\\_transition\\_12",
     })
     .addReaction("lhc_state_transition_21", {
       fn: new Mul([
-        new Name("Light_harvesting_complex__protonated_"),
+        new Name("Light_minus_harvesting_complex_protonated"),
         new Name("kPph1"),
       ]),
       stoichiometry: [
-        { name: "Light_harvesting_complex", value: new Num(1.0) },
+        { name: "Light_minus_harvesting_complex", value: new Num(1.0) },
       ],
       texName: "lhc\\_state\\_transition\\_21",
     })
@@ -2542,18 +2542,18 @@ export function initModel(): ModelBuilder {
       ],
       texName: "dehydroascorbate\\_reductase",
     })
-    .addReaction("toP700FA_", {
+    .addReaction("toP700FA_minus", {
       fn: new Add([
         new Mul([
-          new Name("P700_FA_"),
-          new Name("Plastocyanine__reduced_"),
+          new Name("P700_plus_FA_minus"),
+          new Name("Plastocyanine_reduced"),
           new Name("kPCox"),
         ]),
         new Minus([
           new Divide([
             new Mul([
-              new Name("P700FA_"),
-              new Name("Plastocyanine__oxidised_"),
+              new Name("P700FA_minus"),
+              new Name("Plastocyanine_oxidised"),
               new Name("kPCox"),
             ]),
             new Name("keq_PCP700"),
@@ -2561,23 +2561,23 @@ export function initModel(): ModelBuilder {
         ]),
       ]),
       stoichiometry: [
-        { name: "P700_FA_", value: new Num(-1.0) },
-        { name: "P700FA_", value: new Num(1.0) },
-        { name: "Plastocyanine__oxidised_", value: new Num(1.0) },
+        { name: "P700_plus_FA_minus", value: new Num(-1.0) },
+        { name: "P700FA_minus", value: new Num(1.0) },
+        { name: "Plastocyanine_oxidised", value: new Num(1.0) },
       ],
       texName: "toP700FA-",
     })
     .addReaction("toP700FA_v3", {
       fn: new Add([
         new Mul([
-          new Name("Ferredoxine__oxidised_"),
-          new Name("P700FA_"),
+          new Name("Ferredoxine_oxidised"),
+          new Name("P700FA_minus"),
           new Name("kFdred"),
         ]),
         new Minus([
           new Divide([
             new Mul([
-              new Name("Ferredoxine__reduced_"),
+              new Name("Ferredoxine_reduced"),
               new Name("P700FA"),
               new Name("kFdred"),
             ]),
@@ -2586,24 +2586,24 @@ export function initModel(): ModelBuilder {
         ]),
       ]),
       stoichiometry: [
-        { name: "P700FA_", value: new Num(-1.0) },
-        { name: "Ferredoxine__oxidised_", value: new Num(-1.0) },
+        { name: "P700FA_minus", value: new Num(-1.0) },
+        { name: "Ferredoxine_oxidised", value: new Num(-1.0) },
         { name: "P700FA", value: new Num(1.0) },
       ],
       texName: "toP700FA\\_v3",
     })
-    .addReaction("toP700_FA", {
+    .addReaction("toP700_plus_FA", {
       fn: new Add([
         new Mul([
-          new Name("Ferredoxine__oxidised_"),
-          new Name("P700_FA_"),
+          new Name("Ferredoxine_oxidised"),
+          new Name("P700_plus_FA_minus"),
           new Name("kFdred"),
         ]),
         new Minus([
           new Divide([
             new Mul([
-              new Name("Ferredoxine__reduced_"),
-              new Name("P700_FA"),
+              new Name("Ferredoxine_reduced"),
+              new Name("P700_plus_FA"),
               new Name("kFdred"),
             ]),
             new Name("keq_FAFd"),
@@ -2611,23 +2611,23 @@ export function initModel(): ModelBuilder {
         ]),
       ]),
       stoichiometry: [
-        { name: "P700_FA_", value: new Num(-1.0) },
-        { name: "Ferredoxine__oxidised_", value: new Num(-1.0) },
+        { name: "P700_plus_FA_minus", value: new Num(-1.0) },
+        { name: "Ferredoxine_oxidised", value: new Num(-1.0) },
       ],
       texName: "toP700+FA",
     })
     .addReaction("toP700FA_v5", {
       fn: new Add([
         new Mul([
-          new Name("P700_FA"),
-          new Name("Plastocyanine__reduced_"),
+          new Name("P700_plus_FA"),
+          new Name("Plastocyanine_reduced"),
           new Name("kPCox"),
         ]),
         new Minus([
           new Divide([
             new Mul([
               new Name("P700FA"),
-              new Name("Plastocyanine__oxidised_"),
+              new Name("Plastocyanine_oxidised"),
               new Name("kPCox"),
             ]),
             new Name("keq_PCP700"),
@@ -2636,7 +2636,7 @@ export function initModel(): ModelBuilder {
       ]),
       stoichiometry: [
         { name: "P700FA", value: new Num(1.0) },
-        { name: "Plastocyanine__oxidised_", value: new Num(1.0) },
+        { name: "Plastocyanine_oxidised", value: new Num(1.0) },
       ],
       texName: "toP700FA\\_v5",
     })
@@ -2648,32 +2648,32 @@ export function initModel(): ModelBuilder {
       ]),
       stoichiometry: [
         { name: "P700FA", value: new Num(-1.0) },
-        { name: "P700_FA_", value: new Num(1.0) },
+        { name: "P700_plus_FA_minus", value: new Num(1.0) },
       ],
       texName: "PSI",
     })
     .addReaction("mehler1", {
       fn: new Mul([
-        new Name("O2__dissolved__lumen"),
-        new Name("P700FA_"),
+        new Name("O2_dissolved_lumen"),
+        new Name("P700FA_minus"),
         new Name("kMehler"),
       ]),
       stoichiometry: [
         { name: "H2O2", value: new Name("convf") },
         { name: "P700FA", value: new Num(2.0) },
-        { name: "P700FA_", value: new Num(-2.0) },
+        { name: "P700FA_minus", value: new Num(-2.0) },
       ],
       texName: "mehler1",
     })
     .addReaction("mehler2", {
       fn: new Mul([
-        new Name("O2__dissolved__lumen"),
-        new Name("P700_FA_"),
+        new Name("O2_dissolved_lumen"),
+        new Name("P700_plus_FA_minus"),
         new Name("kMehler"),
       ]),
       stoichiometry: [
         { name: "H2O2", value: new Name("convf") },
-        { name: "P700_FA_", value: new Num(-2.0) },
+        { name: "P700_plus_FA_minus", value: new Num(-2.0) },
       ],
       texName: "mehler2",
     })
@@ -2725,23 +2725,23 @@ export function initModel(): ModelBuilder {
       fn: new Add([
         new Mul([
           new Name("B2"),
-          new Name("Plastoquinone__oxidised_"),
+          new Name("Plastoquinone_oxidised"),
           new Name("kPQred"),
         ]),
         new Minus([
           new Divide([
             new Mul([
               new Name("B0"),
-              new Name("Plastoquinone__reduced_"),
+              new Name("Plastoquinone_reduced"),
               new Name("kPQred"),
             ]),
-            new Name("keq_Plastoquinone__reduced_"),
+            new Name("keq_Plastoquinone_reduced"),
           ]),
         ]),
       ]),
       stoichiometry: [
         { name: "B2", value: new Num(-1.0) },
-        { name: "Plastoquinone__oxidised_", value: new Num(-0.5) },
+        { name: "Plastoquinone_oxidised", value: new Num(-0.5) },
         { name: "B0", value: new Num(1.0) },
         { name: "pH", value: new Num(0.0025) },
       ],
@@ -2776,28 +2776,28 @@ export function initModel(): ModelBuilder {
       fn: new Add([
         new Divide([
           new Mul([
-            new Name("Plastocyanine__oxidised_"),
-            new Name("Plastoquinone__reduced_"),
+            new Name("Plastocyanine_oxidised"),
+            new Name("Plastoquinone_reduced"),
             new Name("keq_b6f_dyn"),
           ]),
           new Add([
-            new Name("Plastoquinone__oxidised_"),
-            new Name("Plastoquinone__reduced_"),
+            new Name("Plastoquinone_oxidised"),
+            new Name("Plastoquinone_reduced"),
           ]),
         ]),
         new Minus([
           new Divide([
             new Mul([
-              new Name("Plastocyanine__reduced_"),
+              new Name("Plastocyanine_reduced"),
               new Name("keq_b6f_dyn"),
               new Add([
                 new Num(1.0),
                 new Minus([
                   new Divide([
-                    new Name("Plastoquinone__reduced_"),
+                    new Name("Plastoquinone_reduced"),
                     new Add([
-                      new Name("Plastoquinone__oxidised_"),
-                      new Name("Plastoquinone__reduced_"),
+                      new Name("Plastoquinone_oxidised"),
+                      new Name("Plastoquinone_reduced"),
                     ]),
                   ]),
                 ]),
@@ -2808,8 +2808,8 @@ export function initModel(): ModelBuilder {
         ]),
       ]),
       stoichiometry: [
-        { name: "Plastocyanine__oxidised_", value: new Num(-2.0) },
-        { name: "Plastoquinone__oxidised_", value: new Num(1.0) },
+        { name: "Plastocyanine_oxidised", value: new Num(-2.0) },
+        { name: "Plastoquinone_oxidised", value: new Num(1.0) },
         { name: "pH_lumen", value: new Num(-0.04) },
         { name: "pH", value: new Num(0.01) },
         {
@@ -2950,10 +2950,7 @@ export function initModel(): ModelBuilder {
               new Add([
                 new Mul([new Num(10.0), new Name("Cl_leak_PQ")]),
                 new Minus([
-                  new Mul([
-                    new Num(10.0),
-                    new Name("Plastoquinone__oxidised_"),
-                  ]),
+                  new Mul([new Num(10.0), new Name("Plastoquinone_oxidised")]),
                 ]),
               ]),
             ),
@@ -2970,13 +2967,13 @@ export function initModel(): ModelBuilder {
       fn: new Divide([
         new Mul([
           new Num(0.9),
-          new Name("Plastoquinone__oxidised_"),
+          new Name("Plastoquinone_oxidised"),
           new Name("k_NDH1"),
           new Pow(
             new Num(10.0),
             new Add([new Num(-6.5), new Name("pH_lumen")]),
           ),
-          new Pow(new Name("Ferredoxine__reduced_"), new Num(2.0)),
+          new Pow(new Name("Ferredoxine_reduced"), new Num(2.0)),
         ]),
         new Mul([
           new Add([
@@ -2991,15 +2988,17 @@ export function initModel(): ModelBuilder {
             new Mul([
               new Num(7.38905609893065),
               new Exp(
-                new Minus([new Mul([new Num(100.0), new Name("P700_FA_")])]),
+                new Minus([
+                  new Mul([new Num(100.0), new Name("P700_plus_FA_minus")]),
+                ]),
               ),
             ]),
           ]),
         ]),
       ]),
       stoichiometry: [
-        { name: "Ferredoxine__oxidised_", value: new Num(2.0) },
-        { name: "Plastoquinone__oxidised_", value: new Num(-1.0) },
+        { name: "Ferredoxine_oxidised", value: new Num(2.0) },
+        { name: "Plastoquinone_oxidised", value: new Num(-1.0) },
         { name: "pH_lumen", value: new Num(-0.04) },
         { name: "pH", value: new Num(0.01) },
         {
@@ -3017,5 +3016,25 @@ export function initModel(): ModelBuilder {
       ]),
       stoichiometry: [{ name: "Cl_stroma", value: new Num(-1.0) }],
       texName: "ClCe\\_bi",
+    })
+    .addAssignment("PQ_ox_div_tot", {
+      fn: new Divide([new Name("Plastoquinone_reduced"), new Name("PQ_tot")]),
+      texName: "PQ\\_ox/tot",
+    })
+    .addAssignment("Fd_ox_div_tot", {
+      fn: new Divide([new Name("Ferredoxine_reduced"), new Name("Fd_star")]),
+      texName: "Fd\\_ox/tot",
+    })
+    .addAssignment("PC_ox_div_tot", {
+      fn: new Divide([new Name("Plastocyanine_reduced"), new Name("PC_tot")]),
+      texName: "PC\\_ox/tot",
+    })
+    .addAssignment("NADPH_div_tot", {
+      fn: new Divide([new Name("NADPH"), new Name("NADP_star")]),
+      texName: "NADPH/tot",
+    })
+    .addAssignment("ATP_div_tot", {
+      fn: new Divide([new Name("ATP"), new Name("A_star_P")]),
+      texName: "ATP/tot",
     });
 }
