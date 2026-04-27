@@ -1,6 +1,16 @@
 import { Minus, Mul, Name, Num } from "$lib/mathml";
 import { ModelBuilder } from "$lib/model-editor/modelBuilder";
 
+/**
+ * E. coli / C. glutamicum co-culture population dynamics.
+ *
+ * Two-species competition with Monod-type growth. Each species grows proportionally
+ * to its affinity (a_e, a_c) and max growth rate (μ_e, μ_c). C. glutamicum has
+ * an additional density-dependent death term (θ·C²). Simpler precursor to
+ * dynamic-entrobactin — no shared siderophore variable.
+ *
+ * Variables: e_coli (E), c_gluta (C)
+ */
 export function initModel(): ModelBuilder {
   return new ModelBuilder()
     .addVariable("e_coli", {

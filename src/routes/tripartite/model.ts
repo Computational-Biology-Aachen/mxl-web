@@ -1,6 +1,19 @@
 import { Minus, Mul, Name, Num } from "$lib/mathml";
 import { ModelBuilder } from "$lib/model-editor/modelBuilder";
 
+/**
+ * Tripartite microbial community — cooperation, cheating, and private goods.
+ *
+ * Three cell types with density-dependent (logistic) growth:
+ *   P (Public)  — produces shared public goods; exploited by cheaters via α·P·C
+ *   C (Cheater) — exploits public goods without contributing; grows on α·P·C
+ *   M (Private) — produces private goods; competes with P via β·P·M
+ *
+ * Models evolutionary dynamics of cooperation breakdown and niche partitioning.
+ *
+ * Variables: Public (P), Cheater (C), Private (M)
+ * Parameters: r_P, r_M, α (P→C benefit), β (P↔M competition), η, ν, γ (density terms)
+ */
 export function initModel(): ModelBuilder {
   return new ModelBuilder()
     .addVariable("Public", {

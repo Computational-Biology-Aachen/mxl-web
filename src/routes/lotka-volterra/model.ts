@@ -1,6 +1,16 @@
 import { Minus, Mul, Name, Num } from "$lib/mathml";
 import { ModelBuilder } from "$lib/model-editor/modelBuilder";
 
+/**
+ * Lotka-Volterra predator-prey model (Lotka 1925, Volterra 1926).
+ *
+ * Two-species ecological oscillator: Prey grows exponentially (α), Predator dies
+ * exponentially (γ), and predation transfers biomass at rates β (prey loss) and
+ * δ (predator gain per kill).
+ *
+ * Variables: Prey, Predator
+ * Parameters: α (prey growth), β (predation loss), γ (predator death), δ (predator gain)
+ */
 export function initModel(): ModelBuilder {
   return new ModelBuilder()
     .addParameter("Alpha", {

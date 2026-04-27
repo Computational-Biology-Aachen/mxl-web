@@ -1,6 +1,18 @@
 import { Add, Divide, Minus, Mul, Name, Num } from "$lib/mathml";
 import { ModelBuilder } from "$lib/model-editor/modelBuilder";
 
+/**
+ * Poolman et al. (2000) Calvin–Benson cycle model.
+ *
+ * Kinetic model of carbon fixation in C3 plant chloroplasts. Rubisco carboxylase
+ * and oxygenase compete for RuBP; downstream enzymes (FBPase, SBPase, etc.)
+ * regenerate RuBP. Driven by dissolved CO₂, NADPH, and ATP (A·P). Enzyme activities
+ * scale with E0 × kcat; product inhibition via ki terms.
+ *
+ * Variables: RuBP, 3PGA, GAP, FBP, SBP, and other Calvin cycle intermediates
+ * Parameters: kcat/Km for each enzyme; CO₂, NADPH, ATP as boundary inputs
+ * Ref: Poolman et al. (2000) J Theor Biol 204:271–282
+ */
 export function initModel(): ModelBuilder {
   return new ModelBuilder()
     .addParameter("CO2__dissolved_", {

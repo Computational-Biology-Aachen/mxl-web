@@ -14,6 +14,18 @@ import {
 } from "$lib/mathml";
 import { ModelBuilder } from "$lib/model-editor/modelBuilder";
 
+/**
+ * Ebeling et al. (2026) comprehensive chloroplast electron transport model.
+ *
+ * Integrates PSII, Cyt b6f, PSI, ferredoxin-NADP⁺ reductase (FNR), ATP synthase,
+ * and NPQ into one ODE system. Nernst-equation redox driving forces govern each
+ * electron transfer step. Includes linear electron flow (LEF), cyclic electron flow
+ * (CEF), and xanthophyll/PsbS-based photoprotection. Supports PAM protocol.
+ *
+ * Variables: PSII states, PQ, PC, PSI, Fd, NADPH, lumenal H⁺, PsbS_p, LHC states
+ * Parameters: PPFD, CO₂, O₂, standard reduction potentials (E°), kinetic constants
+ * Ref: Ebeling et al. (2026)
+ */
 export function initModel(): ModelBuilder {
   return new ModelBuilder()
     .addParameter("PPFD", {

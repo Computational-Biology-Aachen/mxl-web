@@ -12,6 +12,17 @@ import {
 } from "$lib/mathml";
 import { ModelBuilder } from "$lib/model-editor/modelBuilder";
 
+/**
+ * Matuszyńska (2016 PhD) extended chloroplast model with PSI and lumenal pH.
+ *
+ * Extends the NPQ model to include PSI electron transport (P700, Fd, NADPH) and
+ * explicit lumenal pH dynamics. Carotenoid pool and LHC antenna switching couple
+ * photoprotection to the redox state of both photosystems. Supports PAM protocol.
+ *
+ * Variables: PSII states, PQ, PSI, Fd, NADPH, lumenal H⁺, PsbS_p, xanthophylls
+ * Parameters: PPFD, pH, nadph, E°_PC/P700/FA/Fd/NADP, Carotenoids_tot, LHC_tot…
+ * Ref: Matuszyńska PhD thesis (2016), RWTH Aachen University
+ */
 export function initModel(): ModelBuilder {
   return new ModelBuilder()
     .addParameter("pH", { value: 7.9, texName: "pH" })

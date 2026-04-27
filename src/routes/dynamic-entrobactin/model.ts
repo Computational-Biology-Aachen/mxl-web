@@ -1,10 +1,23 @@
 import { Add, Divide, Minus, Mul, Name, Num } from "$lib/mathml";
 import { ModelBuilder } from "$lib/model-editor/modelBuilder";
 
-// FIXME @ Tanvir: you wrote
-// \frac{dE}{dt}&=\mu_E\,\frac{a_E\,B}{K_E+B}\,E-\delta_E\,E \\
-// but didn't implement the "-\delta_E\,E" part. Dunno what your
-// model is supposed to be, so I'm removing this from the tex display
+/**
+ * E. coli / C. glutamicum co-culture competing for enterobactin (B).
+ *
+ * Extends population-dynamics with an explicit siderophore variable. E. coli produces
+ * enterobactin; both species consume it via Monod uptake to drive growth. Affinity is
+ * conserved (a_e + a_c = 10). Cross-feeding and cheating dynamics emerge from the
+ * shared iron-chelator pool.
+ *
+ * Variables: e_coli (E), c_gluta (C), enterobactin (B)
+ * Parameters: μ_e, μ_c, a_e, K_e, K_c, θ, r_prod, r_cons_E, r_cons_C
+ *
+ * FIXME @ Tanvir: you wrote
+ * \frac{dE}{dt}&=\mu_E\,\frac{a_E\,B}{K_E+B}\,E-\delta_E\,E \\
+ * but didn't implement the "-\delta_E\,E" part. Dunno what your
+ * model is supposed to be, so I'm removing this from the tex display
+ */
+
 export function initModel(): ModelBuilder {
   return new ModelBuilder()
     .addVariable("e_coli", {

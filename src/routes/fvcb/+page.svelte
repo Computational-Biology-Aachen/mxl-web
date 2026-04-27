@@ -1,3 +1,12 @@
+<!--
+  FvCB model — Farquhar, von Caemmerer & Berry (1980) C3 photosynthesis.
+
+  Net CO₂ assimilation (An) = min(Wc, Wj, Wp) − Rd, where:
+    Wc — RuBisCO-limited rate (Vcmax, Kc, Ko, Γ*)
+    Wj — electron-transport-limited rate (J, Γ*)
+    Wp — triose-phosphate-utilisation-limited rate (Tp)
+  Pure algebraic evaluation over Ci range 0–1000 µbar; no ODE worker needed.
+-->
 <script lang="ts">
   import LineChart from "$lib/chartjs/LineChart.svelte";
   import Slider from "$lib/Slider.svelte";

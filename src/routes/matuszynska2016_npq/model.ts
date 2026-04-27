@@ -13,6 +13,18 @@ import {
 } from "$lib/mathml";
 import { ModelBuilder } from "$lib/model-editor/modelBuilder";
 
+/**
+ * Matuszyńska et al. (2016) Non-Photochemical Quenching (NPQ) model.
+ *
+ * ODE model of photoprotection in plant PSII. Tracks PSII open/closed states,
+ * plastoquinone (PQ/PQH₂) redox, lumenal proton buffering, ATP synthesis,
+ * PsbS protonation, and xanthophyll (X) de-epoxidation (zeaxanthin formation).
+ * Supports PAM fluorescence protocol simulation to reproduce Fm/Fm′ quenching.
+ *
+ * Variables: PSII states, PQ, ATP, PsbS_p, zeaxanthin (X)
+ * Parameters: PSII_tot, PQ_tot, AP_tot, PsbS_tot, X_tot, k_Cytb6f, k_ATPsynth…
+ * Ref: Matuszyńska et al. (2016) Biochim Biophys Acta 1857:1948–1960
+ */
 export function initModel(): ModelBuilder {
   return new ModelBuilder()
     .addParameter("PSII_tot", { value: 2.5, texName: "PSII\\_tot" })

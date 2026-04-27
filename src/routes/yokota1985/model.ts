@@ -1,6 +1,17 @@
 import { Add, Divide, Mul, Name, Num } from "$lib/mathml";
 import { ModelBuilder } from "$lib/model-editor/modelBuilder";
 
+/**
+ * Yokota & Canvin (1985) photorespiration model — C2 cycle.
+ *
+ * Kinetic model of the photorespiratory pathway in plant chloroplasts/peroxisomes.
+ * Glycolate (from Rubisco oxygenase) flows through glyoxylate → glycine → serine →
+ * hydroxypyruvate, with H₂O₂ produced by glycolate oxidase and scavenged by catalase.
+ * All enzyme rates use Michaelis-Menten kinetics (Vmax = kcat × E0; v = Vmax·S/(S+Km)).
+ *
+ * Variables: glycolate, glyoxylate, glycine, serine, hydroxypyruvate, H₂O₂
+ * Ref: Yokota & Canvin (1985) Plant Physiol 77:735–739
+ */
 export function initModel(): ModelBuilder {
   return new ModelBuilder()
     .addParameter("kf_phosphoglycolate_phosphatase", {

@@ -12,6 +12,18 @@ import {
 } from "$lib/mathml";
 import { ModelBuilder } from "$lib/model-editor/modelBuilder";
 
+/**
+ * Saadat et al. (2021) PSI electron transport chain model.
+ *
+ * Models linear electron flow through Photosystem I (PSI) in chloroplasts.
+ * Electron transfer from plastocyanin (PC) through P700 → iron-sulfur cluster (FA)
+ * → ferredoxin (Fd) → NADPH is driven by PPFD and governed by Nernst equilibrium
+ * potentials. Includes the Mehler reaction (O₂ reduction at PSI).
+ *
+ * Variables: PC, P700, Fd, and their redox states
+ * Parameters: E°_PC, E°_P700, E°_FA, E°_Fd, E°_NADP, PPFD, CO₂, O₂_lumen
+ * Ref: Saadat et al. (2021)
+ */
 export function initModel(): ModelBuilder {
   return new ModelBuilder()
     .addParameter("PPFD", { value: 100.0, texName: "PPFD" })
