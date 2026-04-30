@@ -1,5 +1,5 @@
 <script lang="ts">
-  import SimulatorComp from "$lib/SimulatorComp.svelte";
+  import SimulatorComp from "$lib/simulations/TimeCourseComp.svelte";
 
   import { modelPy1, modelPy2 } from "./modelPy";
 

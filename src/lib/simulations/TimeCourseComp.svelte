@@ -1,15 +1,15 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import LineChart from "./chartjs/LineChart.svelte";
-  import Slider from "./Slider.svelte";
-  import {
-    pyWorkerManager,
-    pyWorkerManager2,
-    WorkerManager,
-  } from "./stores/workerStore";
-  import { arrayColumn } from "./utils";
+  import LineChart from "../chartjs/LineChart.svelte";
+  import Slider from "../Slider.svelte";
+
+  import { arrayColumn } from "../utils";
 
   import Math from "$lib/Math.svelte";
+  import { pyWorkerPool } from "$lib/stores/workerPool";
+  import { WorkerManager } from "../stores/workerStore";
+
+  const pyWorker = pyWorkerPool;
 
   let {
     modelPy1,
@@ -43,14 +43,9 @@
     method: string;
   } = $props();
 
-  const pyWorker1 = pyWorkerManager;
-  const pyWorker2 = pyWorkerManager2;
-  const backend1 = $derived({ worker: pyWorker1, model: modelPy1 });
-  const backend2 = $derived({ worker: pyWorker2, model: modelPy2 });
-
   let loading1 = $state(true);
   let loading2 = $state(true);
-  let loading = $derived(loading1 && loading2);
+  let loading = $derived(loading1 || loading2);
   let result1 = $state<{ time: number[]; values: number[][] }>({
     time: [],
     values: [],
@@ -60,36 +55,39 @@
     values: [],
   });
 
-  let localVariables = $derived(variables.map((i) => i.init));
-  let localPars = $derived(pars.map((i) => i.init));
-  let currentRequestId = $state<string | null>(null);
+  let localVariables = $state(variables.map((i) => i.init));
+  let localPars = $state(pars.map((i) => i.init));
+  let currentRequestId1 = $state<string | null>(null);
+  let currentRequestId2 = $state<string | null>(null);
 
   function runSimulation() {
     loading1 = true;
     loading2 = true;
-    const requestId = WorkerManager.generateRequestId();
-    currentRequestId = requestId;
+    const requestId1 = WorkerManager.generateRequestId();
+    const requestId2 = WorkerManager.generateRequestId();
+    currentRequestId1 = requestId1;
+    currentRequestId2 = requestId2;
 
-    backend1.worker.postMessage({
-      model: backend1.model,
+    pyWorker.postMessage({
+      model: modelPy1,
       derived: "",
       initialValues: localVariables.slice(0, localVariables.length),
       tEnd: tEnd,
       pars: localPars.slice(0, localPars.length),
       method: method,
-      requestId: requestId,
+      requestId: requestId1,
       nTimePoints: 100,
       calculateDerived: false,
     });
 
-    backend2.worker.postMessage({
-      model: backend2.model,
+    pyWorker.postMessage({
+      model: modelPy2,
       derived: "",
       initialValues: localVariables.slice(0, localVariables.length),
       tEnd: tEnd,
       pars: localPars.slice(0, localPars.length),
       method: method,
-      requestId: requestId,
+      requestId: requestId2,
       nTimePoints: 100,
       calculateDerived: false,
     });
@@ -127,28 +125,22 @@
     };
   });
   onMount(() => {
-    // Set up message handlers for this component
-    const unsubscribePy1 = pyWorker1.onMessage((data) => {
-      // Only update if this message is for us
-      if (data.requestId === currentRequestId) {
+    const unsubscribePy = pyWorker.onMessage((data) => {
+      if (data.requestId === currentRequestId1) {
         result1 = data;
         loading1 = false;
-      }
-    });
-    const unsubscribePy2 = pyWorker2.onMessage((data) => {
-      // Only update if this message is for us
-      if (data.requestId === currentRequestId) {
+      } else if (data.requestId === currentRequestId2) {
         result2 = data;
         loading2 = false;
       }
     });
+
     // Initial run
     runSimulation();
 
     // Cleanup handlers (workers are shared so don't terminate them)
     return () => {
-      unsubscribePy1();
-      unsubscribePy2();
+      unsubscribePy();
     };
   });
 
