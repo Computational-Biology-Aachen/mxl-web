@@ -79,6 +79,10 @@
     href="{base}/ebeling-2026"
     image={schemeEbeling}
   />
+  <ModelCard
+    name="Tomato KEA3"
+    href="{base}/kea3-tomato"
+  />
 </ModelGallery>
 
 <ModelGallery title="Steady-state models">
