@@ -1,11 +1,20 @@
+<!--
+ @component
+ Parameter scan (simulation until steady-state for multiple parameter sets)
+-->
+
 <script lang="ts">
   import type { ParameterScanAnalysis } from "$lib";
   import LineChart from "$lib/chartjs/LineChart.svelte";
   import { onMount } from "svelte";
   import type { ModelBuilder } from "../model-editor/modelBuilder";
   import { pyWorkerPool } from "../stores/workerPool";
-  import { WorkerManager, type WorkerMessage } from "../stores/workerStore";
-  import SimulationError from "./SimulationError.svelte";
+  import {
+    WorkerManager,
+    type SimulationError,
+    type SimulationResult,
+  } from "../stores/workerStore";
+  import SimErrDisplay from "./SimErrDisplay.svelte";
 
   let {
     model,
@@ -46,7 +55,7 @@
     );
   }
 
-  let err = $state<string | undefined>(undefined);
+  let err: SimulationError | undefined = $state(undefined);
   let hints = $state<string[] | undefined>(undefined);
   let scanResult = $state<ScanResult>({
     paramValues: [],
@@ -71,7 +80,8 @@
     const scanId = activeScanId;
     const paramValues = linspace(analysis.min, analysis.max, analysis.steps);
     const varKeys = [...currentModel.variables.keys()];
-    const allDerivedKeys = showDerived ? currentModel.sortDependencies() : [];
+    const order = model.sortDependencies();
+    const allDerivedKeys = showDerived ? order : [];
     const derivedSelection =
       showDerived && selectedKeys
         ? allDerivedKeys.filter((k) => selectedKeys.includes(k))
@@ -116,6 +126,8 @@
         model: `${built}\nmodel`,
         derived: `${built}\nderived`,
         initialValues: clonedModel.resolveInitialValues(),
+        names: model.getNames(),
+        derivedSelection: derivedSelection ? derivedSelection : order,
         tEnd: tEnd,
         pars: [],
         requestId,
@@ -126,7 +138,7 @@
     });
   }
 
-  function handleResults(data: WorkerMessage) {
+  function handleResults(data: SimulationResult) {
     if (!data.requestId) return;
     const entry = requestMap.get(data.requestId);
     if (!entry) return;
@@ -134,9 +146,8 @@
 
     if (entry.scanId !== activeScanId) return; // stale batch
 
-    if (data.message !== undefined) {
-      err = data.message;
-      hints = data.hints;
+    if (data.err !== undefined) {
+      err = data.err;
       return;
     }
 
@@ -211,10 +222,7 @@
 
 <div id="chart">
   {#if err}
-    <SimulationError
-      message={err}
-      hints={hints}
-    />
+    <SimErrDisplay err={err} />
   {:else}
     {#if completedCount < totalCount || failedCount > 0}
       <div class="loading-container">

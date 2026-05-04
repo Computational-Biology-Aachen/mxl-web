@@ -216,6 +216,15 @@ export class ModelBuilder {
     return order;
   }
 
+  getNames(): Array<string> {
+    return this.variables
+      .entries()
+      .map(([name, _]) => {
+        return name;
+      })
+      .toArray();
+  }
+
   getDisplayNames(): Map<string, string> {
     const names: Map<string, string> = new Map();
 

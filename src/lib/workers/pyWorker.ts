@@ -1,4 +1,8 @@
-import type { WorkerMessage } from "$lib/stores/workerStore";
+import type {
+  SimulationError,
+  SimulationRequest,
+  SimulationResult,
+} from "$lib/stores/workerStore";
 import { loadPyodide, version } from "pyodide";
 export {}; // make it a module
 
@@ -8,22 +12,6 @@ let basePath = ""; // Will be set via initialization message
 let pyodidePromise: Promise<any> | null = null;
 
 const indexURL = `https://cdn.jsdelivr.net/pyodide/v${version}/full/`;
-
-export interface SimulationRequest {
-  // Required; don't change!
-  requestId: string;
-  model: string;
-  derived: string;
-  initialValues: number[];
-  tEnd: number;
-  nTimePoints: number;
-  pars: number[];
-  method: string;
-  calculateDerived: boolean;
-  // Optional
-  type?: string;
-  protocol?: { t_end: number; PFD: number }[];
-}
 
 async function setupPyodide() {
   try {
@@ -52,17 +40,21 @@ onmessage = async function (event: MessageEvent) {
   const pyodide = await pyodidePromise;
 
   if (!pyodideReady || !pyodide) {
-    const msg: WorkerMessage = {
+    const msg: SimulationResult = {
       time: [],
       values: [],
       requestId: event.data.requestId,
-      message: "Python runtime not available",
-      hints: [
-        "The Pyodide runtime (Python-in-browser) failed to load",
-        "Check your internet connection — Pyodide packages are fetched from a CDN",
-        "Open the browser console (F12) for details",
-        "Hard-refresh the page (Ctrl+Shift+R / Cmd+Shift+R) and try again",
-      ],
+      err: {
+        message: "Python runtime not available",
+        hints: [
+          "The Pyodide runtime (Python-in-browser) failed to load",
+          "Check your internet connection — Pyodide packages are fetched from a CDN",
+          "Open the browser console (F12) for details",
+          "Hard-refresh the page (Ctrl+Shift+R / Cmd+Shift+R) and try again",
+        ],
+        dxdt: undefined,
+        args: undefined,
+      },
     };
     postMessage(msg);
     return;
@@ -72,6 +64,8 @@ onmessage = async function (event: MessageEvent) {
     model,
     derived,
     initialValues: y0,
+    names,
+    derivedSelection,
     tEnd,
     pars,
     requestId,
@@ -92,6 +86,8 @@ onmessage = async function (event: MessageEvent) {
       method,
       pyodide.toPy(protocol),
       calculateDerived,
+      names,
+      derivedSelection,
     );
   } else {
     [tPy, yPy, errPy] = pyFuncs.integrate(
@@ -103,29 +99,23 @@ onmessage = async function (event: MessageEvent) {
       nTimePoints,
       method,
       calculateDerived,
+      names,
+      derivedSelection,
     );
   }
   const time: number[] = tPy.toJs();
   const values: number[][] = yPy.toJs();
 
-  let errMessage: string | undefined;
-  let hints: string[] | undefined;
+  let err: SimulationError | undefined;
   if (errPy) {
-    try {
-      const parsed = JSON.parse(errPy as string);
-      errMessage = parsed.message;
-      hints = parsed.hints;
-    } catch {
-      errMessage = errPy as string;
-    }
+    err = JSON.parse(errPy as string);
   }
 
-  const message: WorkerMessage = {
+  const message: SimulationResult = {
     time,
     values,
     requestId,
-    message: errMessage,
-    hints,
+    err,
   };
   postMessage(message);
 };

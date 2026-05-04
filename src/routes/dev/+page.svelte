@@ -18,7 +18,6 @@
   <ul>
     <li><a href="{base}/dev/analyses">analyses</a></li>
     <li><a href="{base}/dev/eq-editor">Eq editor</a></li>
-    <li><a href="{base}/dev/model-comp">Model comparison</a></li>
     <li><a href="{base}/dev/model-edit">Model edit</a></li>
     <li><a href="{base}/dev/stoich-editor">Stoich editor</a></li>
     <li><a href="{base}/dev/stoich-latex">Stoich latex</a></li>

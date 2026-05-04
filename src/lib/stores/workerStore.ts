@@ -1,23 +1,40 @@
 import { browser } from "$app/environment";
 import { base } from "$app/paths";
-import type { SimulationRequest } from "$lib/workers/pyWorker";
 
-export interface WorkerMessage {
+export interface SimulationRequest {
+  // Required; don't change!
+  requestId: string;
+  model: string;
+  derived: string;
+  initialValues: number[];
+  names: Array<string>;
+  derivedSelection: Array<string>;
+  tEnd: number;
+  nTimePoints: number;
+  pars: number[];
+  method: string;
+  calculateDerived: boolean;
+  // Optional
+  type?: string;
+  protocol?: { t_end: number; PFD: number }[];
+}
+
+export interface SimulationError {
+  message: string;
+  hints: Array<String>;
+  dxdt?: Array<{ name: string; val: number }>;
+  args?: Array<{ name: string; val: number }>;
+}
+
+export interface SimulationResult {
   time: number[];
   values: number[][];
   requestId?: string;
-  message: string | undefined;
-  hints?: string[];
+  err?: SimulationError;
 }
 
-type MessageHandler = (data: WorkerMessage) => void;
-type ErrorHandler = (error: ErrorEvent) => void;
-
-// Use ?worker&url to prevent inlining and get the actual worker URL
-// const pyWorkerUrl = new URL("../workers/pyWorker.ts", import.meta.url);
-import pyWorkerUrlString from "../workers/pyWorker.ts?worker&url";
-
-const pyWorkerUrl = new URL(pyWorkerUrlString, import.meta.url);
+export type MessageHandler = (data: SimulationResult) => void;
+export type ErrorHandler = (error: ErrorEvent) => void;
 
 export class WorkerManager {
   private worker: Worker | null = null;
@@ -95,4 +112,3 @@ export class WorkerManager {
     return this.initialized && this.worker !== null;
   }
 }
-

@@ -40,7 +40,19 @@ def time_points(t_end: float, n: int) -> dict[str, Any]:
 STIFF_METHODS = {"BDF", "LSODA", "Radau"}
 
 
-def _make_error(message: str, method: str) -> str:
+type ModelFn = Callable[[float, Iterable[float]], Iterable[float]]
+type DerivedFn = Callable[[float, Iterable[float]], Iterable[float]]
+
+
+def _make_error(
+    message: str,
+    method: str,
+    model: ModelFn,
+    derived: DerivedFn,
+    y0: list[float],
+    names: list[str],
+    derived_selection: list[str],
+) -> str:
     hints: list[str] = []
     m = message.lower()
 
@@ -105,18 +117,37 @@ def _make_error(message: str, method: str) -> str:
             "Check that all initial conditions and parameter values are physically meaningful"
         )
 
-    return json.dumps({"message": message, "hints": hints})
+    return json.dumps(
+        {
+            "message": f"Solver failed with message: {message}",
+            "hints": hints,
+            "dxdt": [
+                {"name": f"{k}", "val": f"{v:.2e}"}
+                for k, v in zip(names, np.array(model(0, y0)), strict=True)
+            ],
+            "args": [
+                {"name": f"{k}", "val": f"{v:.2e}"}
+                for k, v in sorted(
+                    zip(derived_selection, np.array(derived(0, y0)), strict=True),
+                    key=lambda x: abs(x[1]),
+                    reverse=True,
+                )
+            ],
+        }
+    )
 
 
 def integrate(
-    model: Callable[[float, Iterable[float]], Iterable[float]],
-    derived: Callable[[float, Iterable[float]], Iterable[float]],
+    model: ModelFn,
+    derived: DerivedFn,
     y0: Iterable[float],
     t_end: float,
     pars: Iterable[float],
     n: int,
     method: Literal["RK45", "LSODA", "BDF", "Radau"],
     calculate_derived: bool,
+    names: list[str],
+    derived_selection: list[str],
 ) -> tuple[np.ndarray, np.ndarray, str | None]:
 
     try:
@@ -141,9 +172,34 @@ def integrate(
                 return ts, np.concat((ys, der)).T, None
             else:
                 return ts, ys.T, None
-        return np.array([]), np.array([]), _make_error(res.message, method)
+
+        return (
+            np.array([]),
+            np.array([]),
+            _make_error(
+                res.message,
+                method,
+                model,
+                derived,
+                y0,
+                names,
+                derived_selection,
+            ),
+        )
     except Exception as e:
-        return np.array([]), np.array([]), _make_error(str(e), method)
+        return (
+            np.array([]),
+            np.array([]),
+            _make_error(
+                str(e),
+                method,
+                model,
+                derived,
+                y0,
+                names,
+                derived_selection,
+            ),
+        )
 
 
 def integrate_protocol(
@@ -155,6 +211,7 @@ def integrate_protocol(
     method: Literal["RK45", "LSODA", "BDF", "Radau"],
     protocol: list[dict[str, float]],  # (t_end, ppfd)
     calculate_derived: bool,
+    names: list[str],
 ) -> tuple[np.ndarray, np.ndarray, str | None]:
     ts_all = []
     ys_all = []

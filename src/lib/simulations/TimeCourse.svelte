@@ -1,11 +1,20 @@
+<!--
+ @component
+ Time course (simulation over time)
+-->
+
 <script lang="ts">
   import { onMount } from "svelte";
   import LineChart from "../chartjs/LineChart.svelte";
   import type { ModelBuilder } from "../model-editor/modelBuilder";
   import { pyWorkerPool } from "../stores/workerPool";
-  import { WorkerManager, type WorkerMessage } from "../stores/workerStore";
+  import {
+    WorkerManager,
+    type SimulationError,
+    type SimulationResult,
+  } from "../stores/workerStore";
   import { arrayColumn } from "../utils";
-  import SimulationError from "./SimulationError.svelte";
+  import SimErrDisplay from "./SimErrDisplay.svelte";
 
   let {
     model,
@@ -34,8 +43,7 @@
   const pyWorker = pyWorkerPool;
 
   let loading = $state(true);
-  let err: string | undefined = $state(undefined);
-  let hints = $state<string[] | undefined>(undefined);
+  let err: SimulationError | undefined = $state(undefined);
   let result = $state<{ time: number[]; values: number[][] }>({
     time: [],
     values: [],
@@ -52,17 +60,20 @@
     // Clear any existing timeoutInSeconds
     if (timeoutInSecondsId) clearTimeout(timeoutInSecondsId);
     err = undefined;
-    hints = undefined;
 
     // Set a timeoutInSeconds for the request
     timeoutInSecondsId = setTimeout(() => {
       if (currentRequestId === requestId) {
-        err = "Simulation timed out";
+        err = {
+          message: "Simulation timed out",
+          hints: ["Increase the simulation timeout via the ≡ menu"],
+        };
         loading = false;
       }
     }, timeoutInSeconds * 1000);
 
-    const allDerived = new Set(model.sortDependencies());
+    const order = model.sortDependencies();
+    const allDerived = new Set(order);
     const derivedSelection =
       showDerived && selectedKeys
         ? selectedKeys.filter((k) => allDerived.has(k))
@@ -72,6 +83,8 @@
       model: `${built}\nmodel`,
       derived: `${built}\nderived`,
       initialValues: model.resolveInitialValues(),
+      names: model.getNames(),
+      derivedSelection: derivedSelection ? derivedSelection : order,
       tEnd: tEnd,
       pars: [],
       method: method,
@@ -133,7 +146,7 @@
     };
   });
 
-  function handleResults(data: WorkerMessage) {
+  function handleResults(data: SimulationResult) {
     if (data.requestId === currentRequestId) {
       // Clear the timeoutInSeconds since we got a response
       if (timeoutInSecondsId) {
@@ -141,9 +154,8 @@
         timeoutInSecondsId = null;
       }
 
-      if (data.message !== undefined) {
-        err = data.message;
-        hints = data.hints;
+      if (data.err !== undefined) {
+        err = data.err;
         loading = false;
       } else {
         result = { time: data.time, values: data.values };
@@ -171,10 +183,7 @@
 
 <div>
   {#if err}
-    <SimulationError
-      message={err}
-      hints={hints}
-    />
+    <SimErrDisplay err={err} />
   {:else}
     <LineChart
       data={lineData}

@@ -1,14 +1,16 @@
 import { browser } from "$app/environment";
-import type { WorkerMessage } from "./workerStore";
+import type { SimulationResult } from "./workerStore";
 import { WorkerManager } from "./workerStore";
 
-import type { SimulationRequest } from "$lib/workers/pyWorker";
+import type {
+  ErrorHandler,
+  MessageHandler,
+  SimulationRequest,
+} from "./workerStore";
+
+// Use ?worker&url to prevent inlining and get the actual worker URL
 import pyWorkerUrlString from "../workers/pyWorker.ts?worker&url";
-
 const pyWorkerUrl = new URL(pyWorkerUrlString, import.meta.url);
-
-type MessageHandler = (data: WorkerMessage) => void;
-type ErrorHandler = (error: ErrorEvent) => void;
 
 export class WorkerPool {
   private workers: WorkerManager[] = [];
@@ -24,13 +26,16 @@ export class WorkerPool {
         const worker = new WorkerManager(workerUrl);
         this.workers.push(worker);
         this.idleWorkers.push(worker);
-        worker.onMessage((data) => this.handleWorkerMessage(worker, data));
+        worker.onMessage((data) => this.handleSimulationResult(worker, data));
         worker.onError((e) => this.errorHandlers.forEach((h) => h(e)));
       }
     }
   }
 
-  private handleWorkerMessage(worker: WorkerManager, data: WorkerMessage) {
+  private handleSimulationResult(
+    worker: WorkerManager,
+    data: SimulationResult,
+  ) {
     this.messageHandlers.forEach((h) => h(data));
     this.idleWorkers.push(worker);
     this.dispatchNext();
