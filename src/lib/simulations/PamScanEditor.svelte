@@ -36,6 +36,8 @@
   let title = $state(untrack(() => parent.title));
   let timeoutInSeconds = $state(untrack(() => parent.timeoutInSeconds));
   let method = $state(untrack(() => parent.method));
+  let ppfdKey = $state(untrack(() => parent.ppfdKey));
+  let fluoKey = $state(untrack(() => parent.fluoKey ?? ""));
   let groups = $state<PamGroup[]>(initGroups());
   let showDerived = $state(untrack(() => parent.showDerived ?? false));
   let nTimePoints = $state(untrack(() => parent.nTimePoints ?? 100));
@@ -131,6 +133,8 @@
         title,
         timeoutInSeconds,
         method,
+        ppfdKey,
+        fluoKey: fluoKey || undefined,
         pamProtocol: groups,
         showDerived,
         selectedKeys,
@@ -146,6 +150,16 @@
   id="pam-name"
   label="Name: "
   bind:value={title}
+/>
+<InputText
+  id="pam-ppfd-key"
+  label="Illumination parameter key: "
+  bind:value={ppfdKey}
+/>
+<InputText
+  id="pam-fluo-key"
+  label="Fluorescence key (empty to skip NPQ): "
+  bind:value={fluoKey}
 />
 <InputNumber
   id="pam-timeout"

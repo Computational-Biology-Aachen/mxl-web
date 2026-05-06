@@ -177,6 +177,8 @@
       yMax: undefined,
       timeoutInSeconds: 60,
       method: "Radau",
+      ppfdKey: "PPFD",
+      fluoKey: "Fluo",
       nTimePoints: 100,
       lineDisplay: "current",
       pamProtocol: [
@@ -466,6 +468,8 @@
           bind:this={pamRefs[box.id]}
           model={model}
           pamProtocol={analysis.pamProtocol}
+          ppfdKey={analysis.ppfdKey}
+          fluoKey={analysis.fluoKey}
           yMax={analysis.yMax}
           timeoutInSeconds={analysis.timeoutInSeconds}
           method={analysis.method}

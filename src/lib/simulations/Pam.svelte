@@ -24,6 +24,8 @@
     yMax,
     timeoutInSeconds,
     method,
+    ppfdKey,
+    fluoKey,
     showDerived = false,
     selectedKeys = undefined,
     normalizedKeys = undefined,
@@ -35,6 +37,8 @@
     yMax?: number | undefined;
     timeoutInSeconds: number;
     method: string;
+    ppfdKey: string;
+    fluoKey?: string;
     showDerived?: boolean;
     selectedKeys?: string[];
     normalizedKeys?: string[];
@@ -80,7 +84,7 @@
       showDerived && selectedKeys
         ? selectedKeys.filter((k) => allDerived.has(k))
         : undefined;
-    const built = model.buildPython(["PPFD"], derivedSelection);
+    const built = model.buildPython([ppfdKey], derivedSelection);
 
     pyWorker.postMessage({
       model: `${built}\nmodel`,
@@ -282,7 +286,7 @@
     }));
 
     const showNpq = !selectedKeys || selectedKeys.includes("NPQ");
-    const fluoIdx = activeDerived.indexOf("Fluo");
+    const fluoIdx = fluoKey !== undefined ? activeDerived.indexOf(fluoKey) : -1;
 
     let npqDataset: { label: string; data: number[] } | undefined;
     if (fluoIdx !== -1 && showNpq) {

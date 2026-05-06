@@ -57,6 +57,8 @@
       yMax: undefined,
       timeoutInSeconds: 60,
       method: "Radau",
+      ppfdKey: "PPFD",
+      fluoKey: "Fluo",
       pamProtocol: defaultPamProtocol,
       showDerived: true,
       selectedKeys: ["Fluo"],

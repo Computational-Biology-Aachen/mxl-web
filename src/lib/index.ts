@@ -54,6 +54,8 @@ export type PamAnalysis = {
   yMax: number | undefined;
   timeoutInSeconds: number;
   method: string;
+  ppfdKey: string;
+  fluoKey?: string;
   pamProtocol: PamGroup[];
   showDerived?: boolean;
   selectedKeys?: string[];

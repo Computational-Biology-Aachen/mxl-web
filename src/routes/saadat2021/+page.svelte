@@ -56,6 +56,7 @@
       yMax: undefined,
       timeoutInSeconds: 120,
       method: "Radau",
+      ppfdKey: "PPFD",
       pamProtocol: defaultPamProtocol,
       showDerived: true,
       selectedKeys: ["GAP", "atp"],
