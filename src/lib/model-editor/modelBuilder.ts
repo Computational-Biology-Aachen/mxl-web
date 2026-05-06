@@ -266,6 +266,18 @@ export class ModelBuilder {
   }
 
   buildPython(userParameters: string[], selectedDerived?: string[]): string {
+    for (const key of userParameters) {
+      if (!this.parameters.has(key)) {
+        throw new Error(`buildPython: unknown parameter key "${key}"`);
+      }
+    }
+    if (selectedDerived !== undefined) {
+      for (const key of selectedDerived) {
+        if (!this.assignments.has(key) && !this.reactions.has(key)) {
+          throw new Error(`buildPython: unknown derived key "${key}"`);
+        }
+      }
+    }
     const order = this.sortDependencies();
     const displayNames = this.getDisplayNames();
     const Name = (x: string) => defaultValue(displayNames.get(x), x);
