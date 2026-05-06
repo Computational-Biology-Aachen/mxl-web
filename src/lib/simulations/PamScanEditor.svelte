@@ -44,6 +44,7 @@
   let allAvailableKeys = $derived([
     ...model.variables.keys(),
     ...(showDerived ? model.sortDependencies() : []),
+    "NPQ",
   ]);
 
   let selectedKeys = $state<string[] | undefined>(
