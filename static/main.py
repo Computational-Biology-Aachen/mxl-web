@@ -46,10 +46,12 @@ type DerivedFn = Callable[[float, Iterable[float]], Iterable[float]]
 
 def _make_error(
     message: str,
+    *,
     method: str,
     model: ModelFn,
     derived: DerivedFn,
     y0: list[float],
+    args: tuple[float, ...],
     names: list[str],
     derived_selection: list[str],
 ) -> str:
@@ -123,12 +125,14 @@ def _make_error(
             "hints": hints,
             "dxdt": [
                 {"name": f"{k}", "val": f"{v:.2e}"}
-                for k, v in zip(names, np.array(model(0, y0)), strict=True)
+                for k, v in zip(names, np.array(model(0, y0, *args)), strict=True)
             ],
             "args": [
                 {"name": f"{k}", "val": f"{v:.2e}"}
                 for k, v in sorted(
-                    zip(derived_selection, np.array(derived(0, y0)), strict=True),
+                    zip(
+                        derived_selection, np.array(derived(0, y0, *args)), strict=True
+                    ),
                     key=lambda x: abs(x[1]),
                     reverse=True,
                 )
@@ -178,12 +182,13 @@ def integrate(
             np.array([]),
             _make_error(
                 res.message,
-                method,
-                model,
-                derived,
-                y0,
-                names,
-                derived_selection,
+                method=method,
+                model=model,
+                derived=derived,
+                y0=y0,
+                names=names,
+                derived_selection=derived_selection,
+                args=pars,
             ),
         )
     except Exception as e:
@@ -192,12 +197,13 @@ def integrate(
             np.array([]),
             _make_error(
                 str(e),
-                method,
-                model,
-                derived,
-                y0,
-                names,
-                derived_selection,
+                method=method,
+                model=model,
+                derived=derived,
+                y0=y0,
+                names=names,
+                derived_selection=derived_selection,
+                args=pars,
             ),
         )
 
@@ -212,6 +218,7 @@ def integrate_protocol(
     protocol: list[dict[str, float]],  # (t_end, ppfd)
     calculate_derived: bool,
     names: list[str],
+    derived_selection: list[str],
 ) -> tuple[np.ndarray, np.ndarray, str | None]:
     ts_all = []
     ys_all = []
@@ -232,10 +239,36 @@ def integrate_protocol(
                 atol=1e-8,
             )
         except Exception as e:
-            return np.array([]), np.array([]), _make_error(str(e), method)
+            return (
+                np.array([]),
+                np.array([]),
+                _make_error(
+                    str(e),
+                    method=method,
+                    model=model,
+                    derived=derived,
+                    y0=y0,
+                    names=names,
+                    derived_selection=derived_selection,
+                    args=(step["PFD"], *pars),
+                ),
+            )
 
         if not res.success:
-            return np.array([]), np.array([]), _make_error(res.message, method)
+            return (
+                np.array([]),
+                np.array([]),
+                _make_error(
+                    res.message,
+                    method=method,
+                    model=model,
+                    derived=derived,
+                    y0=y0,
+                    names=names,
+                    derived_selection=derived_selection,
+                    args=(step["PFD"], *pars),
+                ),
+            )
 
         t_start = t_end
         t_sim = res.t
