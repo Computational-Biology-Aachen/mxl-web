@@ -137,6 +137,117 @@
     return normalizedKeys?.includes(key) ? `Norm(${key})` : key;
   }
 
+  function interpolateAtIndices(
+    indices: number[],
+    values: number[],
+    length: number,
+    method: "linear" | "akima" = "linear",
+  ): number[] {
+    const out = new Array(length).fill(NaN);
+    if (indices.length === 0) return out;
+
+    if (method === "akima") {
+      // Akima piecewise cubic interpolation.
+      // Uses x = indices, y = values as knots.
+      const n = indices.length;
+
+      if (n === 1) {
+        for (let k = 0; k < length; k++) out[k] = values[0];
+        return out;
+      }
+
+      // segment slopes m[i] = (y[i+1]-y[i]) / (x[i+1]-x[i])
+      const m: number[] = [];
+      for (let i = 0; i < n - 1; i++) {
+        m.push((values[i + 1] - values[i]) / (indices[i + 1] - indices[i]));
+      }
+
+      // extend m with 2 virtual slopes on each side (mirror extrapolation)
+      const mExt = [
+        2 * m[0] - m[1],
+        2 * m[0] - m[1],
+        ...m,
+        2 * m[n - 2] - m[n - 3 < 0 ? 0 : n - 3],
+        2 * m[n - 2] - m[n - 3 < 0 ? 0 : n - 3],
+      ];
+
+      // knot tangents t[i]
+      const t: number[] = [];
+      for (let i = 0; i < n; i++) {
+        const mi = mExt; // alias
+        const w1 = Math.abs(mi[i + 3] - mi[i + 2]);
+        const w2 = Math.abs(mi[i + 1] - mi[i]);
+        const denom = w1 + w2;
+        t.push(
+          denom < 1e-14
+            ? (mi[i + 1] + mi[i + 2]) / 2
+            : (w1 * mi[i + 1] + w2 * mi[i + 2]) / denom,
+        );
+      }
+
+      // fill each segment with a Hermite cubic
+      for (let p = 0; p < n - 1; p++) {
+        const x0 = indices[p];
+        const x1 = indices[p + 1];
+        const y0 = values[p];
+        const y1 = values[p + 1];
+        const t0 = t[p];
+        const t1 = t[p + 1];
+        const h = x1 - x0;
+        const end = p === n - 2 ? x1 : x1 - 1;
+        for (let k = x0; k <= end; k++) {
+          const u = (k - x0) / h;
+          const u2 = u * u;
+          const u3 = u2 * u;
+          // Hermite basis
+          const h00 = 2 * u3 - 3 * u2 + 1;
+          const h10 = u3 - 2 * u2 + u;
+          const h01 = -2 * u3 + 3 * u2;
+          const h11 = u3 - u2;
+          out[k] = h00 * y0 + h10 * h * t0 + h01 * y1 + h11 * h * t1;
+        }
+      }
+      return out;
+    }
+
+    // linear (default)
+    indices.forEach((i, j) => {
+      out[i] = values[j];
+    });
+    for (let p = 0; p < indices.length - 1; p++) {
+      const i0 = indices[p];
+      const i1 = indices[p + 1];
+      const v0 = values[p];
+      const v1 = values[p + 1];
+      for (let k = i0 + 1; k < i1; k++) {
+        out[k] = v0 + ((v1 - v0) * (k - i0)) / (i1 - i0);
+      }
+    }
+    return out;
+  }
+
+  function findPeaks(data: number[], minProminence: number): number[] {
+    const n = data.length;
+    const candidates: number[] = [];
+    for (let i = 1; i < n - 1; i++) {
+      if (data[i] > data[i - 1] && data[i] > data[i + 1]) candidates.push(i);
+    }
+    return candidates.filter((peakIdx) => {
+      const peakVal = data[peakIdx];
+      let leftMin = peakVal;
+      for (let j = peakIdx - 1; j >= 0; j--) {
+        if (data[j] > peakVal) break;
+        leftMin = Math.min(leftMin, data[j]);
+      }
+      let rightMin = peakVal;
+      for (let j = peakIdx + 1; j < n; j++) {
+        if (data[j] > peakVal) break;
+        rightMin = Math.min(rightMin, data[j]);
+      }
+      return peakVal - Math.max(leftMin, rightMin) >= minProminence;
+    });
+  }
+
   let lineData = $derived.by(() => {
     const nVars = model.variables.size;
     const visible = (key: string) =>
@@ -170,9 +281,39 @@
       ),
     }));
 
+    const showNpq = !selectedKeys || selectedKeys.includes("NPQ");
+    const fluoIdx = activeDerived.indexOf("Fluo");
+
+    let npqDataset: { label: string; data: number[] } | undefined;
+    if (fluoIdx !== -1 && showNpq) {
+      const fluoNorm = normalizeToMax(
+        arrayColumn(result.values, nVars + fluoIdx) as number[],
+      );
+      const peakIndices = findPeaks(fluoNorm, 0.2);
+      const Fm = peakIndices.map((i) => fluoNorm[i]);
+      const Fm0 = Fm[0] ?? NaN;
+
+      console.log("fluoNorm", fluoNorm);
+      console.log("Found peaks", peakIndices);
+      const npqAtPeak = Fm.map((fm) => (Fm0 - fm) / fm);
+      const npqValues = interpolateAtIndices(
+        peakIndices,
+        npqAtPeak,
+        fluoNorm.length,
+        "akima",
+      );
+
+      console.log("npqValues", npqValues);
+      npqDataset = { label: "NPQ", data: npqValues };
+    }
+
     return {
       labels: result.time as number[],
-      datasets: [...varDatasets, ...derivedDatasets],
+      datasets: [
+        ...varDatasets,
+        ...derivedDatasets,
+        ...(npqDataset ? [npqDataset] : []),
+      ],
     };
   });
 
