@@ -2,18 +2,24 @@ import {
   Add,
   Divide,
   Exp,
+  GreaterThan,
   Ln,
   Max,
   Minus,
   Mul,
   Name,
   Num,
+  Piecewise,
   Pow,
 } from "$lib/mathml";
 import { ModelBuilder } from "$lib/model-editor/modelBuilder";
 
 export function initModel(): ModelBuilder {
   return new ModelBuilder()
+    .addParameter("PPFD", {
+      value: 200.0,
+      texName: "PPFD",
+    })
     .addParameter("PSIItot", {
       value: 2.5,
       texName: "PSIItot",
@@ -301,83 +307,52 @@ export function initModel(): ModelBuilder {
       value: 7.2,
       texName: "pHlumen\\_init",
     })
-    .addParameter("pfd", {
-      value: 200.0,
-      texName: "pfd",
-    })
     .addVariable("B0", {
-      value: 2.5,
+      value: 1.9587919653281205,
       texName: "B0",
     })
     .addVariable("B1", {
-      value: 0.0,
+      value: 5.308607566760226e-8,
       texName: "B1",
     })
     .addVariable("B2", {
-      value: 0.0,
+      value: 0.5412079539026975,
       texName: "B2",
     })
     .addVariable("PQH2", {
-      value: 0.0,
+      value: 14.753583247530687,
       texName: "PQH2",
     })
     .addVariable("ATP", {
-      value: 25.0,
+      value: 23.681707158359565,
       texName: "ATP",
     })
     .addVariable("H_lumen", {
-      value: new Divide([
-        new Mul([
-          new Num(1000.0),
-          new Name("lumen_volume_per_area_membrane"),
-          new Pow(new Num(10.0), new Minus([new Name("pHlumen_init")])),
-        ]),
-        new Name("molChl_per_area_membrane"),
-      ]),
+      value: 0.004056077821448256,
       texName: "H\\_lumen",
     })
     .addVariable("delta_psi", {
-      value: new Minus([
-        new Mul([
-          new Num(2.302585092994046),
-          new Name("R"),
-          new Name("delta_pH"),
-        ]),
-      ]),
+      value: 0.02512099319259713,
       texName: "delta\\_psi",
     })
     .addVariable("Vx", {
-      value: 1.0,
+      value: 0.9500845858289113,
       texName: "Vx",
     })
     .addVariable("PsbS", {
-      value: 1.0,
+      value: 0.6863197475682336,
       texName: "PsbS",
     })
     .addVariable("ATPactivity", {
-      value: 0.1,
+      value: 1.0,
       texName: "ATPactivity",
     })
     .addVariable("K_lumen", {
-      value: new Divide([
-        new Mul([
-          new Num(1000.0),
-          new Name("K_lumen_conc_initial"),
-          new Name("lumen_volume_per_area_membrane"),
-        ]),
-        new Name("molChl_per_area_membrane"),
-      ]),
+      value: 400.0,
       texName: "K\\_lumen",
     })
     .addVariable("K_stroma", {
-      value: new Divide([
-        new Mul([
-          new Num(1000.0),
-          new Name("K_stroma_conc_initial"),
-          new Name("stroma_volume_per_area_membrane"),
-        ]),
-        new Name("molChl_per_area_membrane"),
-      ]),
+      value: 3200.0,
       texName: "K\\_stroma",
     })
     .addAssignment("RT", {
@@ -664,7 +639,7 @@ export function initModel(): ModelBuilder {
       ]),
       texName: "qL",
     })
-    .addAssignment("Fluorescence", {
+    .addAssignment("Fluo", {
       fn: new Add([
         new Divide([
           new Mul([new Name("B0"), new Name("kF")]),
@@ -684,7 +659,7 @@ export function initModel(): ModelBuilder {
           ]),
         ]),
       ]),
-      texName: "Fluorescence",
+      texName: "Fluo",
     })
     .addAssignment("PsbS_deprot_act", {
       fn: new Divide([
@@ -757,7 +732,7 @@ export function initModel(): ModelBuilder {
       texName: "reg\\_KEA3",
     })
     .addReaction("B01", {
-      fn: new Mul([new Name("B0"), new Name("pfd")]),
+      fn: new Mul([new Name("B0"), new Name("PPFD")]),
       stoichiometry: [
         { name: "B0", value: new Num(-2.0) },
         { name: "B1", value: new Num(2.0) },
@@ -820,7 +795,7 @@ export function initModel(): ModelBuilder {
       texName: "B20",
     })
     .addReaction("B23", {
-      fn: new Mul([new Name("B2"), new Name("pfd")]),
+      fn: new Mul([new Name("B2"), new Name("PPFD")]),
       stoichiometry: [{ name: "B2", value: new Num(-2.0) }],
       texName: "B23",
     })
@@ -850,7 +825,7 @@ export function initModel(): ModelBuilder {
               new Mul([
                 new Name("Keqcytb6f"),
                 new Name("k_cytb6f"),
-                new Name("pfd"),
+                new Name("PPFD"),
               ]),
               new Add([new Num(1.0), new Name("Keqcytb6f")]),
             ]),
@@ -860,7 +835,7 @@ export function initModel(): ModelBuilder {
           new Divide([
             new Mul([
               new Name("k_cytb6f"),
-              new Name("pfd"),
+              new Name("PPFD"),
               new Add([new Name("PQtot"), new Minus([new Name("PQH2")])]),
             ]),
             new Add([new Num(1.0), new Name("Keqcytb6f")]),
@@ -881,24 +856,14 @@ export function initModel(): ModelBuilder {
       texName: "vPQox",
     })
     .addReaction("vATPactivity", {
-      fn: new Add([
-        new Divide([
-          new Mul([
-            new Name("kActATPase"),
-            new Name("pfd"),
-            new Add([new Num(1.0), new Minus([new Name("ATPactivity")])]),
-          ]),
-          new Add([new Num(1e-8), new Name("pfd")]),
+      fn: new Piecewise([
+        new Mul([
+          new Name("kActATPase"),
+          new Add([new Num(1.0), new Minus([new Name("ATPactivity")])]),
         ]),
+        new GreaterThan([new Name("PPFD"), new Num(0.0)]),
         new Minus([
-          new Divide([
-            new Mul([
-              new Name("ATPactivity"),
-              new Name("kDeactATPase"),
-              new Name("pfd"),
-            ]),
-            new Add([new Num(1e-8), new Name("pfd")]),
-          ]),
+          new Mul([new Name("ATPactivity"), new Name("kDeactATPase")]),
         ]),
       ]),
       stoichiometry: [{ name: "ATPactivity", value: new Num(1.0) }],
