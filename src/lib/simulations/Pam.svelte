@@ -292,9 +292,6 @@
       const peakIndices = findPeaks(fluoNorm, 0.2);
       const Fm = peakIndices.map((i) => fluoNorm[i]);
       const Fm0 = Fm[0] ?? NaN;
-
-      console.log("fluoNorm", fluoNorm);
-      console.log("Found peaks", peakIndices);
       const npqAtPeak = Fm.map((fm) => (Fm0 - fm) / fm);
       const npqValues = interpolateAtIndices(
         peakIndices,
@@ -302,8 +299,6 @@
         fluoNorm.length,
         "akima",
       );
-
-      console.log("npqValues", npqValues);
       npqDataset = { label: "NPQ", data: npqValues };
     }
 
