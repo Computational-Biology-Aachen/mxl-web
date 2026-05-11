@@ -87,11 +87,13 @@
     const built = model.buildPython([ppfdKey], derivedSelection);
 
     pyWorker.postMessage({
-      model: `${built}\nmodel`,
-      derived: `${built}\nderived`,
+      rhsFn: `${built}\nmodel`,
+      allDerivedFn: `${built}\nall_derived`,
+      selectDerivedFn: `${built}\nderived`,
       initialValues: model.resolveInitialValues(),
-      names: model.getNames(),
-      derivedSelection: derivedSelection ? derivedSelection : order,
+      rhsNames: model.getNames(),
+      allDerivedNames: order,
+      selectDerivedNames: derivedSelection ? derivedSelection : order,
       tEnd: 0,
       pars: [],
       method: method,

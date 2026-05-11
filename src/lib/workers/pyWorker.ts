@@ -61,11 +61,13 @@ onmessage = async function (event: MessageEvent) {
   }
 
   const {
-    model,
-    derived,
-    initialValues: y0,
-    names,
-    derivedSelection,
+    rhsFn,
+    allDerivedFn,
+    selectDerivedFn,
+    initialValues,
+    rhsNames,
+    allDerivedNames,
+    selectDerivedNames,
     tEnd,
     pars,
     requestId,
@@ -78,29 +80,33 @@ onmessage = async function (event: MessageEvent) {
   let tPy: any, yPy: any, errPy: any;
   if (protocol) {
     [tPy, yPy, errPy] = pyFuncs.integrate_protocol(
-      pyodide.runPython(model),
-      pyodide.runPython(derived),
-      y0,
+      pyodide.runPython(rhsFn),
+      pyodide.runPython(allDerivedFn),
+      pyodide.runPython(selectDerivedFn),
+      initialValues,
       pars,
       nTimePoints,
       method,
       pyodide.toPy(protocol),
       calculateDerived,
-      names,
-      derivedSelection,
+      rhsNames,
+      allDerivedNames,
+      selectDerivedNames,
     );
   } else {
     [tPy, yPy, errPy] = pyFuncs.integrate(
-      pyodide.runPython(model),
-      pyodide.runPython(derived),
-      y0,
+      pyodide.runPython(rhsFn),
+      pyodide.runPython(allDerivedFn),
+      pyodide.runPython(selectDerivedFn),
+      initialValues,
       tEnd,
       pars,
       nTimePoints,
       method,
       calculateDerived,
-      names,
-      derivedSelection,
+      rhsNames,
+      allDerivedNames,
+      selectDerivedNames,
     );
   }
   const time: number[] = tPy.toJs();

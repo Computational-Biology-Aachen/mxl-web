@@ -123,11 +123,13 @@
       });
       const built = clonedModel.buildPython([], derivedSelection);
       pyWorkerPool.postMessage({
-        model: `${built}\nmodel`,
-        derived: `${built}\nderived`,
-        initialValues: clonedModel.resolveInitialValues(),
-        names: model.getNames(),
-        derivedSelection: derivedSelection ? derivedSelection : order,
+        rhsFn: `${built}\nmodel`,
+        allDerivedFn: `${built}\nall_derived`,
+        selectDerivedFn: `${built}\nderived`,
+        initialValues: model.resolveInitialValues(),
+        rhsNames: model.getNames(),
+        allDerivedNames: order,
+        selectDerivedNames: derivedSelection ? derivedSelection : order,
         tEnd: tEnd,
         pars: [],
         requestId,

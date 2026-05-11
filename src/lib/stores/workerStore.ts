@@ -4,11 +4,13 @@ import { base } from "$app/paths";
 export interface SimulationRequest {
   // Required; don't change!
   requestId: string;
-  model: string;
-  derived: string;
+  rhsFn: string;
+  allDerivedFn: string;
+  selectDerivedFn: string;
   initialValues: number[];
-  names: Array<string>;
-  derivedSelection: Array<string>;
+  rhsNames: Array<string>;
+  allDerivedNames: Array<string>;
+  selectDerivedNames: Array<string>;
   tEnd: number;
   nTimePoints: number;
   pars: number[];
