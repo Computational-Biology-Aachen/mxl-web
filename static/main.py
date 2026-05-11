@@ -1,8 +1,7 @@
-# type: ignore
-
 import json
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
-from typing import Any, Callable, Iterable, Literal
+from typing import Any, Literal
 
 import numpy as np
 from scipy.integrate import solve_ivp
@@ -41,19 +40,19 @@ STIFF_METHODS = {"BDF", "LSODA", "Radau"}
 
 
 type ModelFn = Callable[[float, Iterable[float]], Iterable[float]]
-type DerivedFn = Callable[[float, Iterable[float]], Iterable[float]]
+type DerivedFn = Callable[[float, Iterable[float], *tuple[float, ...]], Iterable[float]]
 
 
 def _make_error(
     message: str,
     *,
     method: str,
-    model: ModelFn,
-    derived: DerivedFn,
-    y0: list[float],
+    rhs_fn: ModelFn,
+    all_derived_fn: DerivedFn,
+    y0: Iterable[float],
     args: tuple[float, ...],
-    names: list[str],
-    derived_selection: list[str],
+    rhs_names: list[str],
+    all_derived_names: list[str],
 ) -> str:
     hints: list[str] = []
     m = message.lower()
@@ -125,13 +124,15 @@ def _make_error(
             "hints": hints,
             "dxdt": [
                 {"name": f"{k}", "val": f"{v:.2e}"}
-                for k, v in zip(names, np.array(model(0, y0, *args)), strict=True)
+                for k, v in zip(rhs_names, np.array(rhs_fn(0, y0, *args)), strict=True)
             ],
             "args": [
                 {"name": f"{k}", "val": f"{v:.2e}"}
                 for k, v in sorted(
                     zip(
-                        derived_selection, np.array(derived(0, y0, *args)), strict=True
+                        all_derived_names,
+                        np.array(all_derived_fn(0, y0, *args)),
+                        strict=True,
                     ),
                     key=lambda x: abs(x[1]),
                     reverse=True,
@@ -142,21 +143,23 @@ def _make_error(
 
 
 def integrate(
-    model: ModelFn,
-    derived: DerivedFn,
+    rhs_fn: ModelFn,
+    all_derived_fn: DerivedFn,
+    select_derived_fn: DerivedFn,
     y0: Iterable[float],
     t_end: float,
-    pars: Iterable[float],
+    pars: tuple[float, ...],
     n: int,
     method: Literal["RK45", "LSODA", "BDF", "Radau"],
     calculate_derived: bool,
-    names: list[str],
-    derived_selection: list[str],
+    rhs_names: list[str],
+    all_derived_names: list[str],
+    select_derived_names: list[str],
 ) -> tuple[np.ndarray, np.ndarray, str | None]:
 
     try:
         res = solve_ivp(
-            model,
+            rhs_fn,
             y0=y0,
             args=pars,
             method=method,
@@ -170,7 +173,7 @@ def integrate(
 
             if calculate_derived:
                 der = np.array(
-                    [derived(t, y, *pars) for t, y in zip(ts, ys.T)],
+                    [select_derived_fn(t, y, *pars) for t, y in zip(ts, ys.T)],
                     dtype=float,
                 ).T
                 return ts, np.concat((ys, der)).T, None
@@ -183,11 +186,11 @@ def integrate(
             _make_error(
                 res.message,
                 method=method,
-                model=model,
-                derived=derived,
+                rhs_fn=rhs_fn,
+                rhs_names=rhs_names,
+                all_derived_fn=all_derived_fn,
+                all_derived_names=all_derived_names,
                 y0=y0,
-                names=names,
-                derived_selection=derived_selection,
                 args=pars,
             ),
         )
@@ -198,27 +201,29 @@ def integrate(
             _make_error(
                 str(e),
                 method=method,
-                model=model,
-                derived=derived,
+                rhs_fn=rhs_fn,
+                rhs_names=rhs_names,
+                all_derived_fn=all_derived_fn,
+                all_derived_names=all_derived_names,
                 y0=y0,
-                names=names,
-                derived_selection=derived_selection,
                 args=pars,
             ),
         )
 
 
 def integrate_protocol(
-    model: Callable[[float, Iterable[float]], Iterable[float]],
-    derived: Callable[[float, Iterable[float]], Iterable[float]],
+    rhs_fn: ModelFn,
+    all_derived_fn: DerivedFn,
+    select_derived_fn: DerivedFn,
     y0: Iterable[float],
     pars: Iterable[float],
     n: int,
     method: Literal["RK45", "LSODA", "BDF", "Radau"],
     protocol: list[dict[str, float]],  # (t_end, ppfd)
     calculate_derived: bool,
-    names: list[str],
-    derived_selection: list[str],
+    rhs_names: list[str],
+    all_derived_names: list[str],
+    select_derived_names: list[str],
 ) -> tuple[np.ndarray, np.ndarray, str | None]:
     ts_all = []
     ys_all = []
@@ -229,7 +234,7 @@ def integrate_protocol(
         ppfd = step["PFD"]
         try:
             res = solve_ivp(
-                model,
+                rhs_fn,
                 y0=y0,
                 args=(ppfd, *pars),
                 method=method,
@@ -245,11 +250,11 @@ def integrate_protocol(
                 _make_error(
                     str(e),
                     method=method,
-                    model=model,
-                    derived=derived,
+                    rhs_fn=rhs_fn,
+                    rhs_names=rhs_names,
+                    all_derived_fn=all_derived_fn,
+                    all_derived_names=all_derived_names,
                     y0=y0,
-                    names=names,
-                    derived_selection=derived_selection,
                     args=(step["PFD"], *pars),
                 ),
             )
@@ -261,11 +266,11 @@ def integrate_protocol(
                 _make_error(
                     res.message,
                     method=method,
-                    model=model,
-                    derived=derived,
+                    rhs_fn=rhs_fn,
+                    rhs_names=rhs_names,
+                    all_derived_fn=all_derived_fn,
+                    all_derived_names=all_derived_names,
                     y0=y0,
-                    names=names,
-                    derived_selection=derived_selection,
                     args=(step["PFD"], *pars),
                 ),
             )
@@ -283,7 +288,7 @@ def integrate_protocol(
 
         if calculate_derived:
             der = np.array(
-                [derived(t, y, ppfd, *pars) for t, y in zip(t_sim, y_sim)],
+                [select_derived_fn(t, y, ppfd, *pars) for t, y in zip(t_sim, y_sim)],
                 dtype=float,
             )
             ys_all.append(np.concat((y_sim, der), axis=1))
