@@ -17,7 +17,7 @@ import { ModelBuilder } from "$lib/model-editor/modelBuilder";
 export function initModel(): ModelBuilder {
   return new ModelBuilder()
     .addParameter("PPFD", {
-      value: 200.0,
+      value: 10.0,
       texName: "PPFD",
     })
     .addParameter("PSIItot", {
@@ -308,51 +308,82 @@ export function initModel(): ModelBuilder {
       texName: "pHlumen\\_init",
     })
     .addVariable("B0", {
-      value: 1.9587919653281205,
+      value: 2.5,
       texName: "B0",
     })
     .addVariable("B1", {
-      value: 5.308607566760226e-8,
+      value: 0.0,
       texName: "B1",
     })
     .addVariable("B2", {
-      value: 0.5412079539026975,
+      value: 0.0,
       texName: "B2",
     })
     .addVariable("PQH2", {
-      value: 14.753583247530687,
+      value: 0.0,
       texName: "PQH2",
     })
     .addVariable("ATP", {
-      value: 23.681707158359565,
+      value: 25.0,
       texName: "ATP",
     })
     .addVariable("H_lumen", {
-      value: 0.004056077821448256,
+      value: new Divide([
+        new Mul([
+          new Num(1000.0),
+          new Name("lumen_volume_per_area_membrane"),
+          new Pow(new Num(10.0), new Minus([new Name("pHlumen_init")])),
+        ]),
+        new Name("molChl_per_area_membrane"),
+      ]),
       texName: "H\\_lumen",
     })
     .addVariable("delta_psi", {
-      value: 0.02512099319259713,
+      value: new Minus([
+        new Divide([
+          new Mul([
+            new Num(2.302585092994046),
+            new Name("F"),
+            new Name("R"),
+            new Name("delta_pH"),
+          ]),
+          new Name("T"),
+        ]),
+      ]),
       texName: "delta\\_psi",
     })
     .addVariable("Vx", {
-      value: 0.9500845858289113,
+      value: 1.0,
       texName: "Vx",
     })
     .addVariable("PsbS", {
-      value: 0.6863197475682336,
+      value: 1.0,
       texName: "PsbS",
     })
     .addVariable("ATPactivity", {
-      value: 1.0,
+      value: 0.1,
       texName: "ATPactivity",
     })
     .addVariable("K_lumen", {
-      value: 400.0,
+      value: new Divide([
+        new Mul([
+          new Num(1000.0),
+          new Name("K_lumen_conc_initial"),
+          new Name("lumen_volume_per_area_membrane"),
+        ]),
+        new Name("molChl_per_area_membrane"),
+      ]),
       texName: "K\\_lumen",
     })
     .addVariable("K_stroma", {
-      value: 3200.0,
+      value: new Divide([
+        new Mul([
+          new Num(1000.0),
+          new Name("K_stroma_conc_initial"),
+          new Name("stroma_volume_per_area_membrane"),
+        ]),
+        new Name("molChl_per_area_membrane"),
+      ]),
       texName: "K\\_stroma",
     })
     .addAssignment("RT", {
@@ -498,13 +529,13 @@ export function initModel(): ModelBuilder {
       fn: new Exp(
         new Divide([
           new Add([
-            new Mul([new Num(2.0), new Name("E0PCPCm"), new Name("F")]),
             new Minus([
               new Mul([new Num(2.0), new Name("E0PQPQH2"), new Name("F")]),
             ]),
             new Minus([
               new Mul([new Num(2.0), new Name("F"), new Name("pmfV")]),
             ]),
+            new Mul([new Num(2.0), new Name("E0PCPCm"), new Name("F")]),
             new Mul([
               new Num(4.605170185988092),
               new Name("R"),
@@ -824,8 +855,8 @@ export function initModel(): ModelBuilder {
             new Divide([
               new Mul([
                 new Name("Keqcytb6f"),
-                new Name("k_cytb6f"),
                 new Name("PPFD"),
+                new Name("k_cytb6f"),
               ]),
               new Add([new Num(1.0), new Name("Keqcytb6f")]),
             ]),
@@ -834,8 +865,8 @@ export function initModel(): ModelBuilder {
         new Minus([
           new Divide([
             new Mul([
-              new Name("k_cytb6f"),
               new Name("PPFD"),
+              new Name("k_cytb6f"),
               new Add([new Name("PQtot"), new Minus([new Name("PQH2")])]),
             ]),
             new Add([new Num(1.0), new Name("Keqcytb6f")]),
