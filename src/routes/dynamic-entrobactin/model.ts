@@ -1,219 +1,111 @@
 import { Add, Divide, Minus, Mul, Name, Num } from "$lib/mathml";
 import { ModelBuilder } from "$lib/model-editor/modelBuilder";
 
-/**
- * E. coli / C. glutamicum co-culture competing for enterobactin (B).
- *
- * Extends population-dynamics with an explicit siderophore variable. E. coli produces
- * enterobactin; both species consume it via Monod uptake to drive growth. Affinity is
- * conserved (a_e + a_c = 10). Cross-feeding and cheating dynamics emerge from the
- * shared iron-chelator pool.
- *
- * Variables: e_coli (E), c_gluta (C), enterobactin (B)
- * Parameters: μ_e, μ_c, a_e, K_e, K_c, θ, r_prod, r_cons_E, r_cons_C
- *
- * FIXME @ Tanvir: you wrote
- * \frac{dE}{dt}&=\mu_E\,\frac{a_E\,B}{K_E+B}\,E-\delta_E\,E \\
- * but didn't implement the "-\delta_E\,E" part. Dunno what your
- * model is supposed to be, so I'm removing this from the tex display
- */
-
 export function initModel(): ModelBuilder {
   return new ModelBuilder()
+    .addParameter("mu_max_e_coli", {
+      value: 0.25,
+      texName: "mu\\_max\\_e\\_coli",
+    })
+    .addParameter("mu_min_e_coli", {
+      value: 0.15,
+      texName: "mu\\_min\\_e\\_coli",
+    })
+    .addParameter("mu_max_c_gluta", {
+      value: 0.4,
+      texName: "mu\\_max\\_c\\_gluta",
+    })
+    .addParameter("km_e_coli", {
+      value: 0.2678,
+      texName: "km\\_e\\_coli",
+    })
+    .addParameter("km_c_gluta", {
+      value: 2.678,
+      texName: "km\\_c\\_gluta",
+    })
+    .addParameter("qmax_p1_ecoli", {
+      value: 0.24101999999999998,
+      texName: "qmax\\_p1\\_ecoli",
+    })
+    .addParameter("qmax_c1_ecoli", {
+      value: 0.09640800000000001,
+      texName: "qmax\\_c1\\_ecoli",
+    })
+    .addParameter("qmax_c1_gluta", {
+      value: 0.15425280000000005,
+      texName: "qmax\\_c1\\_gluta",
+    })
     .addVariable("e_coli", {
-      value: 5.0,
-      texName: String.raw`E`,
-      slider: {
-        min: "0.0",
-        max: "1000.0",
-        step: "1",
-      },
+      value: 100.0,
+      texName: "e\\_coli",
     })
     .addVariable("c_gluta", {
-      value: 5.0,
-      texName: String.raw`C`,
-      slider: {
-        min: "0.0",
-        max: "1000.0",
-        step: "1",
-      },
+      value: 100.0,
+      texName: "c\\_gluta",
     })
     .addVariable("enterobactin", {
-      value: 1.0,
-      texName: String.raw`B`,
-      slider: {
-        desc: "B₀",
-        min: "0.0",
-        max: "1000.0",
-        step: "0.5",
-      },
+      value: 15.0,
+      texName: "enterobactin",
     })
-    .addParameter("mu_e", {
-      value: 0.4,
-      texName: String.raw`\mu_e`,
-      slider: {
-        desc: "E. coli growth rate",
-        min: "0.0",
-        max: "2.0",
-        step: "0.01",
-      },
-    })
-    .addParameter("mu_c", {
-      value: 0.3,
-      texName: String.raw`\mu_c`,
-      slider: {
-        desc: "C. glut growth rate",
-        min: "0.0",
-        max: "2.0",
-        step: "0.01",
-      },
-    })
-    .addParameter("a_e", {
-      value: 6.0,
-      texName: String.raw`a_e`,
-      slider: {
-        desc: "E. coli affinity",
-        min: "0.0",
-        max: "10.0",
-        step: "0.1",
-      },
-    })
-    .addParameter("K_e", {
-      value: 0.5,
-      texName: String.raw`K_e`,
-      slider: {
-        desc: "(half-sat E. coli)",
-        min: "0.00000001",
-        max: "1.0",
-        step: "0.000001",
-      },
-    })
-    .addParameter("K_c", {
-      value: 0.5,
-      texName: String.raw`K_c`,
-      slider: {
-        desc: "(half-sat C)",
-        min: "0.00000001",
-        max: "1.0",
-        step: "0.000001",
-      },
-    })
-    .addParameter("theta", {
-      value: 0.001,
-      texName: String.raw`\theta`,
-      slider: {
-        desc: "C density loss",
-        min: "0.0",
-        max: "1.0",
-        step: "0.0001",
-      },
-    })
-    .addParameter("r_prod", {
-      value: 0.2,
-      texName: String.raw`r_{prod}`,
-      slider: {
-        desc: "B production by E",
-        min: "0.0",
-        max: "5.0",
-        step: "0.0001",
-      },
-    })
-    .addParameter("r_cons_e", {
-      value: 1.0,
-      texName: String.raw`r_{cons,E}`,
-      slider: {
-        desc: "B consumption weight E",
-        min: "0.0",
-        max: "5.0",
-        step: "0.0001",
-      },
-    })
-    .addParameter("r_cons_c", {
-      value: 1.0,
-      texName: String.raw`r_{cons,C}`,
-      slider: {
-        desc: "B consumption weight C",
-        min: "0.0",
-        max: "5.0",
-        step: "0.0001",
-      },
-    })
-    .addAssignment("a_c", {
-      fn: new Minus([new Num(10), new Name("a_e")]),
-      texName: String.raw`a_c`,
-    })
-    .addAssignment("uptake_E_growth", {
+    .addAssignment("qp1", {
       fn: new Divide([
-        new Mul([new Name("a_e"), new Name("enterobactin")]),
-        new Add([new Name("K_e"), new Name("enterobactin")]),
+        new Mul([new Name("mu_e_coli"), new Name("qmax_p1_ecoli")]),
+        new Name("mu_max_e_coli"),
       ]),
-      texName: String.raw`\text{uptake}_{E,growth}`,
+      texName: "qp1",
     })
-    .addAssignment("uptake_C_growth", {
+    .addAssignment("qc1_e_coli", {
       fn: new Divide([
-        new Mul([new Name("a_c"), new Name("enterobactin")]),
-        new Add([new Name("K_c"), new Name("enterobactin")]),
+        new Mul([new Name("mu_e_coli"), new Name("qmax_c1_ecoli")]),
+        new Name("mu_max_e_coli"),
       ]),
-      texName: String.raw`\text{uptake}_{C,growth}`,
+      texName: "qc1\\_e\\_coli",
     })
-    .addAssignment("cons_term_E", {
-      fn: new Mul([
-        new Name("mu_e"),
+    .addAssignment("qc1_c_gluta", {
+      fn: new Divide([
+        new Mul([new Name("mu_c_gluta"), new Name("qmax_c1_gluta")]),
+        new Name("mu_max_c_gluta"),
+      ]),
+      texName: "qc1\\_c\\_gluta",
+    })
+    .addReaction("mu_e_coli", {
+      fn: new Add([
+        new Name("mu_min_e_coli"),
         new Divide([
-          new Mul([new Name("a_e"), new Name("enterobactin")]),
           new Mul([
-            new Add([new Name("K_e"), new Name("a_e")]),
             new Name("enterobactin"),
+            new Add([
+              new Name("mu_max_e_coli"),
+              new Minus([new Name("mu_min_e_coli")]),
+            ]),
           ]),
-        ]),
-        new Name("e_coli"),
-      ]),
-      texName: String.raw`\text{cons}_{E}`,
-    })
-    .addAssignment("cons_term_C", {
-      fn: new Mul([
-        new Name("mu_c"),
-        new Divide([
-          new Mul([new Name("a_c"), new Name("enterobactin")]),
-          new Mul([
-            new Add([new Name("K_c"), new Name("a_c")]),
-            new Name("enterobactin"),
-          ]),
-        ]),
-        new Name("c_gluta"),
-      ]),
-      texName: String.raw`\text{cons}_{C}`,
-    })
-    .addReaction("dEdt", {
-      fn: new Mul([
-        new Name("mu_e"),
-        new Name("uptake_E_growth"),
-        new Name("e_coli"),
-      ]),
-      stoichiometry: [{ name: "e_coli", value: new Num(1.0) }],
-    })
-    .addReaction("dCdt", {
-      fn: new Minus([
-        new Mul([
-          new Name("mu_c"),
-          new Name("uptake_C_growth"),
-          new Name("c_gluta"),
-        ]),
-        new Mul([
-          new Name("theta"),
-          // FIXME: square
-          new Name("c_gluta"),
-          new Name("c_gluta"),
+          new Add([new Name("enterobactin"), new Name("km_e_coli")]),
         ]),
       ]),
-      stoichiometry: [{ name: "c_gluta", value: new Num(1.0) }],
+      stoichiometry: [{ name: "e_coli", value: new Name("e_coli") }],
+      texName: "mu\\_e\\_coli",
     })
-    .addReaction("dBdt", {
-      fn: new Minus([
-        new Mul([new Name("r_prod"), new Name("enterobactin")]),
-        new Mul([new Name("r_cons_e"), new Name("cons_term_E")]),
-        new Mul([new Name("r_cons_c"), new Name("cons_term_C")]),
+    .addReaction("mu_c_gluta", {
+      fn: new Divide([
+        new Mul([new Name("enterobactin"), new Name("mu_max_c_gluta")]),
+        new Add([new Name("enterobactin"), new Name("km_c_gluta")]),
       ]),
+      stoichiometry: [{ name: "c_gluta", value: new Name("c_gluta") }],
+      texName: "mu\\_c\\_gluta",
+    })
+    .addReaction("eb_prod", {
+      fn: new Mul([new Name("e_coli"), new Name("qp1")]),
       stoichiometry: [{ name: "enterobactin", value: new Num(1.0) }],
+      texName: "eb\\_prod",
+    })
+    .addReaction("eb_cons_coli", {
+      fn: new Mul([new Name("e_coli"), new Name("qc1_e_coli")]),
+      stoichiometry: [{ name: "enterobactin", value: new Num(-1.0) }],
+      texName: "eb\\_cons\\_coli",
+    })
+    .addReaction("eb_cons_gluta", {
+      fn: new Mul([new Name("c_gluta"), new Name("qc1_c_gluta")]),
+      stoichiometry: [{ name: "enterobactin", value: new Num(-1.0) }],
+      texName: "eb\\_cons\\_gluta",
     });
 }
