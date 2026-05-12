@@ -3,109 +3,134 @@ import { ModelBuilder } from "$lib/model-editor/modelBuilder";
 
 export function initModel(): ModelBuilder {
   return new ModelBuilder()
-    .addParameter("mu_max_e_coli", {
-      value: 0.25,
-      texName: "mu\\_max\\_e\\_coli",
+    .addParameter("Y_X1_S", {
+      value: 0.45,
+      texName: "Y\\_X1\\_S",
     })
-    .addParameter("mu_min_e_coli", {
-      value: 0.15,
-      texName: "mu\\_min\\_e\\_coli",
+    .addParameter("Y_X2_S", {
+      value: 0.5,
+      texName: "Y\\_X2\\_S",
     })
-    .addParameter("mu_max_c_gluta", {
-      value: 0.4,
-      texName: "mu\\_max\\_c\\_gluta",
+    .addParameter("mu_max1", {
+      value: 0.22,
+      texName: "mu\\_max1",
     })
-    .addParameter("km_e_coli", {
-      value: 0.2678,
-      texName: "km\\_e\\_coli",
+    .addParameter("mu_max2", {
+      value: 0.45,
+      texName: "mu\\_max2",
     })
-    .addParameter("km_c_gluta", {
-      value: 2.678,
-      texName: "km\\_c\\_gluta",
+    .addParameter("K_s1", {
+      value: 0.0005,
+      texName: "K\\_s1",
     })
-    .addParameter("qmax_p1_ecoli", {
-      value: 0.24101999999999998,
-      texName: "qmax\\_p1\\_ecoli",
+    .addParameter("K_s2", {
+      value: 0.005,
+      texName: "K\\_s2",
     })
-    .addParameter("qmax_c1_ecoli", {
-      value: 0.09640800000000001,
-      texName: "qmax\\_c1\\_ecoli",
+    .addParameter("q_p1_max", {
+      value: 0.015,
+      texName: "q\\_p1\\_max",
     })
-    .addParameter("qmax_c1_gluta", {
-      value: 0.15425280000000005,
-      texName: "qmax\\_c1\\_gluta",
+    .addParameter("q_up_X1_max", {
+      value: 0.005,
+      texName: "q\\_up\\_X1\\_max",
     })
-    .addVariable("e_coli", {
-      value: 100.0,
-      texName: "e\\_coli",
+    .addParameter("q_up_X2_max", {
+      value: 0.01,
+      texName: "q\\_up\\_X2\\_max",
     })
-    .addVariable("c_gluta", {
-      value: 100.0,
-      texName: "c\\_gluta",
+    .addParameter("K_s_X1_minus_P", {
+      value: 1e-5,
+      texName: "K\\_s\\_X1-P",
     })
-    .addVariable("enterobactin", {
-      value: 15.0,
-      texName: "enterobactin",
+    .addParameter("K_s_X2_minus_P", {
+      value: 0.001,
+      texName: "K\\_s\\_X2-P",
     })
-    .addAssignment("qp1", {
-      fn: new Divide([
-        new Mul([new Name("mu_e_coli"), new Name("qmax_p1_ecoli")]),
-        new Name("mu_max_e_coli"),
+    .addParameter("innoculationRatio", {
+      value: 0.5,
+      texName: "innoculationRatio",
+      slider: {
+        min: "0.1",
+        max: "0.9",
+        step: "0.1",
+      },
+    })
+    .addVariable("x1", {
+      value: new Name("innoculationRatio"),
+      texName: "x1",
+    })
+    .addVariable("x2", {
+      value: new Add([
+        new Num(1.0),
+        new Minus([new Name("innoculationRatio")]),
       ]),
-      texName: "qp1",
+      texName: "x2",
     })
-    .addAssignment("qc1_e_coli", {
+    .addVariable("s1", {
+      value: 10.0,
+      texName: "s1",
+    })
+    .addVariable("p1", {
+      value: 0.02,
+      texName: "p1",
+    })
+    .addReaction("mu1", {
       fn: new Divide([
-        new Mul([new Name("mu_e_coli"), new Name("qmax_c1_ecoli")]),
-        new Name("mu_max_e_coli"),
-      ]),
-      texName: "qc1\\_e\\_coli",
-    })
-    .addAssignment("qc1_c_gluta", {
-      fn: new Divide([
-        new Mul([new Name("mu_c_gluta"), new Name("qmax_c1_gluta")]),
-        new Name("mu_max_c_gluta"),
-      ]),
-      texName: "qc1\\_c\\_gluta",
-    })
-    .addReaction("mu_e_coli", {
-      fn: new Add([
-        new Name("mu_min_e_coli"),
-        new Divide([
-          new Mul([
-            new Name("enterobactin"),
-            new Add([
-              new Name("mu_max_e_coli"),
-              new Minus([new Name("mu_min_e_coli")]),
-            ]),
-          ]),
-          new Add([new Name("enterobactin"), new Name("km_e_coli")]),
+        new Mul([new Name("mu_max1"), new Name("p1"), new Name("s1")]),
+        new Mul([
+          new Add([new Name("K_s1"), new Name("s1")]),
+          new Add([new Name("K_s_X1_minus_P"), new Name("p1")]),
         ]),
       ]),
-      stoichiometry: [{ name: "e_coli", value: new Name("e_coli") }],
-      texName: "mu\\_e\\_coli",
+      stoichiometry: [
+        { name: "x1", value: new Name("x1") },
+        {
+          name: "s1",
+          value: new Minus([new Divide([new Name("x1"), new Name("Y_X1_S")])]),
+        },
+      ],
+      texName: "mu1",
     })
-    .addReaction("mu_c_gluta", {
+    .addReaction("mu2", {
       fn: new Divide([
-        new Mul([new Name("enterobactin"), new Name("mu_max_c_gluta")]),
-        new Add([new Name("enterobactin"), new Name("km_c_gluta")]),
+        new Mul([new Name("mu_max2"), new Name("p1"), new Name("s1")]),
+        new Mul([
+          new Add([new Name("K_s2"), new Name("s1")]),
+          new Add([new Name("K_s_X2_minus_P"), new Name("p1")]),
+        ]),
       ]),
-      stoichiometry: [{ name: "c_gluta", value: new Name("c_gluta") }],
-      texName: "mu\\_c\\_gluta",
+      stoichiometry: [
+        { name: "x2", value: new Name("x2") },
+        {
+          name: "s1",
+          value: new Minus([new Divide([new Name("x2"), new Name("Y_X2_S")])]),
+        },
+      ],
+      texName: "mu2",
     })
-    .addReaction("eb_prod", {
-      fn: new Mul([new Name("e_coli"), new Name("qp1")]),
-      stoichiometry: [{ name: "enterobactin", value: new Num(1.0) }],
-      texName: "eb\\_prod",
+    .addReaction("q_p1", {
+      fn: new Divide([
+        new Mul([new Name("mu1"), new Name("q_p1_max")]),
+        new Name("mu_max1"),
+      ]),
+      stoichiometry: [{ name: "p1", value: new Name("x1") }],
+      texName: "q\\_p1",
     })
-    .addReaction("eb_cons_coli", {
-      fn: new Mul([new Name("e_coli"), new Name("qc1_e_coli")]),
-      stoichiometry: [{ name: "enterobactin", value: new Num(-1.0) }],
-      texName: "eb\\_cons\\_coli",
+    .addReaction("q_up1", {
+      fn: new Divide([
+        new Mul([new Name("mu1"), new Name("q_up_X1_max")]),
+        new Name("mu_max1"),
+      ]),
+      stoichiometry: [{ name: "p1", value: new Minus([new Name("x1")]) }],
+      texName: "q\\_up1",
     })
-    .addReaction("eb_cons_gluta", {
-      fn: new Mul([new Name("c_gluta"), new Name("qc1_c_gluta")]),
-      stoichiometry: [{ name: "enterobactin", value: new Num(-1.0) }],
-      texName: "eb\\_cons\\_gluta",
+    .addReaction("q_up2", {
+      fn: new Divide([
+        new Mul([new Name("mu2"), new Name("q_up_X2_max")]),
+        new Name("mu_max2"),
+      ]),
+      stoichiometry: [{ name: "p1", value: new Minus([new Name("x2")]) }],
+      texName: "q\\_up2",
     });
 }
