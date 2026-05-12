@@ -76,6 +76,12 @@
     err = undefined;
     hints = undefined;
 
+    if (!currentModel.parameters.has(analysis.parameter)) {
+      throw new Error(
+        `Parameter "${analysis.parameter}" does not exist in the model. Available parameters: ${[...currentModel.parameters.keys()].join(", ")}`,
+      );
+    }
+
     activeScanId++;
     const scanId = activeScanId;
     const paramValues = linspace(analysis.min, analysis.max, analysis.steps);
@@ -126,8 +132,8 @@
         rhsFn: `${built}\nmodel`,
         allDerivedFn: `${built}\nall_derived`,
         selectDerivedFn: `${built}\nderived`,
-        initialValues: model.resolveInitialValues(),
-        rhsNames: model.getNames(),
+        initialValues: clonedModel.resolveInitialValues(),
+        rhsNames: clonedModel.getNames(),
         allDerivedNames: order,
         selectDerivedNames: derivedSelection ? derivedSelection : order,
         tEnd: tEnd,
