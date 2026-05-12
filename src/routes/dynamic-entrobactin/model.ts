@@ -14,10 +14,20 @@ export function initModel(): ModelBuilder {
     .addParameter("mu_max1", {
       value: 0.22,
       texName: "mu\\_max1",
+      slider: {
+        min: "0.1",
+        max: "0.9",
+        step: "0.1",
+      },
     })
     .addParameter("mu_max2", {
       value: 0.45,
       texName: "mu\\_max2",
+      slider: {
+        min: "0.1",
+        max: "0.9",
+        step: "0.1",
+      },
     })
     .addParameter("K_s1", {
       value: 0.0005,
@@ -50,11 +60,11 @@ export function initModel(): ModelBuilder {
     .addParameter("innoculationRatio", {
       value: 0.5,
       texName: "innoculationRatio",
-      slider: {
-        min: "0.1",
-        max: "0.9",
-        step: "0.1",
-      },
+      // slider: {
+      //   min: "0.1",
+      //   max: "0.9",
+      //   step: "0.1",
+      // },
     })
     .addVariable("x1", {
       value: new Name("innoculationRatio"),
