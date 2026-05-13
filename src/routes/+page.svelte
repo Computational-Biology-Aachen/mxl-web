@@ -1,11 +1,11 @@
 <script lang="ts">
   import { base } from "$app/paths";
   import schemeEbeling from "$lib/assets/ebeling2026-scheme.png";
-  import schemeEntrobactin from "$lib/assets/entrobactin.png";
   import schemeKea3 from "$lib/assets/kea3-tomato.png";
   import schemeLotkaVolt from "$lib/assets/lotka-volterra-scheme.png";
   import scheme2016npq from "$lib/assets/matuszynska2016npq.png";
   import scheme2016phd from "$lib/assets/matuszynska2016phd.png";
+  import schemeEnterobactin from "$lib/assets/mibinet-duo.png";
   import schemePopDyn from "$lib/assets/population-dynamics.png";
   import schemeSaadat from "$lib/assets/saadat2021.png";
   import schemeTripartite from "$lib/assets/tripartite.png";
@@ -48,7 +48,7 @@
   <ModelCard
     name="Entrobactin"
     href="{base}/dynamic-entrobactin"
-    image={schemeEntrobactin}
+    image={schemeEnterobactin}
   />
   <ModelCard
     name="Yokota 1985"

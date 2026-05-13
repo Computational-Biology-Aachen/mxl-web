@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Analyses } from "$lib";
+  import scheme from "$lib/assets/mibinet-duo.png";
   import AnalysesDashboard from "$lib/model-editor/AnalysesDashboard.svelte";
 
   import { initModel } from "./model";
@@ -53,4 +54,25 @@
   equationsOpen={true}
 >
   <h1>Dynamic Entrobaction model</h1>
+  <div class="centered">
+    <img
+      src={scheme}
+      alt="model-scheme"
+    />
+  </div>
 </AnalysesDashboard>
+
+<style>
+  img {
+    max-width: 90rem;
+    max-height: 20rem;
+  }
+
+  .centered {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+</style>
