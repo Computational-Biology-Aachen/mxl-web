@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Analyses } from "$lib";
+  import { backends, type Analyses } from "$lib";
   import AnalysesDashboard from "$lib/model-editor/AnalysesDashboard.svelte";
   import { initModel } from "./model";
   let analyses: Analyses = $state([
@@ -16,7 +16,7 @@
       yMin: undefined,
       yMax: undefined,
       timeoutInSeconds: 20,
-      method: "Radau",
+      backend: backends.wasmRadau5,
       nTimePoints: 100,
       lineDisplay: "first",
     },
@@ -37,7 +37,7 @@
       yMin: undefined,
       yMax: undefined,
       timeoutInSeconds: 120,
-      method: "LSODA",
+      backend: backends.wasmRadau5,
       lineDisplay: "current" as const,
     },
   ]);

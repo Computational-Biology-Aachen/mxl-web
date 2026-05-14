@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Analyses } from "$lib";
+  import { backends, type Analyses } from "$lib";
   import scheme from "$lib/assets/lotka-volterra-scheme.png";
   import AnalysesDashboard from "$lib/model-editor/AnalysesDashboard.svelte";
   import { initModel } from "./model";
@@ -18,7 +18,7 @@
       yMin: undefined,
       yMax: undefined,
       timeoutInSeconds: 20,
-      method: "LSODA",
+      backend: backends.wasmRadau5,
       showDerived: false,
       nTimePoints: 100,
       lineDisplay: "last",
@@ -36,7 +36,7 @@
       yMin: undefined,
       yMax: undefined,
       timeoutInSeconds: 20,
-      method: "LSODA",
+      backend: backends.wasmRadau5,
       showDerived: true,
       nTimePoints: 500,
       lineDisplay: "last",

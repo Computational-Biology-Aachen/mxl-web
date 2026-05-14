@@ -7,7 +7,7 @@
   import { onMount } from "svelte";
   import LineChart from "../chartjs/LineChart.svelte";
   import type { ModelBuilder } from "../model-editor/modelBuilder";
-  import { pyWorkerPool, wasmWorkerPool } from "../stores/workerPool";
+  import type { Backend } from "../stores/backends";
   import {
     WorkerManager,
     type SimulationError,
@@ -21,7 +21,7 @@
     tEnd,
     yMax,
     timeoutInSeconds,
-    method,
+    backend,
     showDerived = false,
     selectedKeys = undefined,
     normalizedKeys = undefined,
@@ -32,7 +32,7 @@
     tEnd: number;
     yMax?: number | undefined;
     timeoutInSeconds: number;
-    method: string;
+    backend: Backend;
     showDerived?: boolean;
     selectedKeys?: string[];
     normalizedKeys?: string[];
@@ -71,28 +71,20 @@
     }, timeoutInSeconds * 1000);
 
     const order = model.sortDependencies();
-    const allDerived = new Set(order);
+    const allDerivedSet = new Set(order);
     const derivedSelection =
       showDerived && selectedKeys
-        ? selectedKeys.filter((k) => allDerived.has(k))
+        ? selectedKeys.filter((k) => allDerivedSet.has(k))
         : undefined;
 
-    const isWasm = method === "radau5";
-    const worker = isWasm ? wasmWorkerPool : pyWorkerPool;
-    const built = model.buildPython([], derivedSelection);
-    worker.postMessage({
-      rhsFn: `${built}\nmodel`,
-      rhsWat: isWasm ? model.buildWat() : undefined,
-      allDerivedFn: `${built}\nall_derived`,
-      selectDerivedFn: `${built}\nderived`,
+    const req = backend.buildRequest(model, { derivedSelection });
+    backend.getPool().postMessage({
+      ...req,
       initialValues: model.resolveInitialValues(),
       rhsNames: model.getNames(),
       allDerivedNames: order,
-      selectDerivedNames: derivedSelection ? derivedSelection : order,
+      selectDerivedNames: derivedSelection ?? order,
       tEnd: tEnd,
-      pars: isWasm ? model.resolveParameters() : [],
-      parNames: isWasm ? model.getParameterNames() : undefined,
-      method: method,
       requestId: requestId,
       calculateDerived: showDerived,
       nTimePoints: nTimePoints,
@@ -169,21 +161,15 @@
     }
   }
 
+  $effect(() => {
+    const unsub = backend.getPool().onMessage(handleResults);
+    return unsub;
+  });
+
   onMount(() => {
-    const unsub = pyWorkerPool.onMessage(handleResults);
-    const unsubWasm = wasmWorkerPool.onMessage(handleResults);
-
-    // Initial run
     runSimulation(model);
-
-    // Cleanup handlers (workers are shared so don't terminate them)
     return () => {
-      unsub();
-      unsubWasm();
-      // Clean up any pending timeoutInSeconds
-      if (timeoutInSecondsId) {
-        clearTimeout(timeoutInSecondsId);
-      }
+      if (timeoutInSecondsId) clearTimeout(timeoutInSecondsId);
     };
   });
 </script>

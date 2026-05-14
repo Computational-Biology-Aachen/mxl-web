@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Analyses } from "$lib";
+  import { backends, type Analyses } from "$lib";
   import AnalysesDashboard from "$lib/model-editor/AnalysesDashboard.svelte";
   import type { PamGroup } from "$lib/simulations/protocol";
   import { initModel } from "./model";
@@ -42,7 +42,7 @@
       yMin: undefined,
       yMax: undefined,
       timeoutInSeconds: 20,
-      method: "Radau",
+      backend: backends.wasmRadau5,
       showDerived: false,
       nTimePoints: 500,
       lineDisplay: "last",
@@ -56,7 +56,7 @@
       col: 4,
       yMax: undefined,
       timeoutInSeconds: 60,
-      method: "Radau",
+      backend: backends.wasmRadau5,
       ppfdKey: "PPFD",
       fluoKey: "Fluo",
       pamProtocol: defaultPamProtocol,

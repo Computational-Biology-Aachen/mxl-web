@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Analyses } from "$lib";
+  import { backends, type Analyses } from "$lib";
   import scheme from "$lib/assets/mibinet-duo.png";
   import AnalysesDashboard from "$lib/model-editor/AnalysesDashboard.svelte";
 
@@ -19,7 +19,7 @@
       yMin: undefined,
       yMax: undefined,
       timeoutInSeconds: 20,
-      method: "radau5",
+      backend: backends.wasmRadau5,
       nTimePoints: 100,
       lineDisplay: "first",
     },
@@ -40,7 +40,7 @@
       yMin: undefined,
       yMax: undefined,
       timeoutInSeconds: 120,
-      method: "radau5",
+      backend: backends.wasmRadau5,
       selectedKeys: ["x1", "x2"],
       lineDisplay: "current" as const,
     },

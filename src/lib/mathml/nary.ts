@@ -209,7 +209,9 @@ export class Not extends Nary {
     const inner =
       this.children.length === 1
         ? this.children[0].toWat(ctx)
-        : this.children.map((c) => c.toWat(ctx)).reduce((a, b) => `(i32.and ${a} ${b})`);
+        : this.children
+            .map((c) => c.toWat(ctx))
+            .reduce((a, b) => `(i32.and ${a} ${b})`);
     return `(i32.eqz ${inner})`;
   }
 }
@@ -295,7 +297,9 @@ export class Eq extends Nary {
     if (this.children.length < 2) return `(i32.const 1)`;
     const pairs: string[] = [];
     for (let i = 0; i + 1 < this.children.length; i++) {
-      pairs.push(`(f64.eq ${this.children[i].toWat(ctx)} ${this.children[i + 1].toWat(ctx)})`);
+      pairs.push(
+        `(f64.eq ${this.children[i].toWat(ctx)} ${this.children[i + 1].toWat(ctx)})`,
+      );
     }
     return pairs.reduce((a, b) => `(i32.and ${a} ${b})`);
   }
@@ -331,7 +335,9 @@ export class GreaterEqual extends Nary {
     if (this.children.length < 2) return `(i32.const 1)`;
     const pairs: string[] = [];
     for (let i = 0; i + 1 < this.children.length; i++) {
-      pairs.push(`(f64.ge ${this.children[i].toWat(ctx)} ${this.children[i + 1].toWat(ctx)})`);
+      pairs.push(
+        `(f64.ge ${this.children[i].toWat(ctx)} ${this.children[i + 1].toWat(ctx)})`,
+      );
     }
     return pairs.reduce((a, b) => `(i32.and ${a} ${b})`);
   }
@@ -367,7 +373,9 @@ export class GreaterThan extends Nary {
     if (this.children.length < 2) return `(i32.const 1)`;
     const pairs: string[] = [];
     for (let i = 0; i + 1 < this.children.length; i++) {
-      pairs.push(`(f64.gt ${this.children[i].toWat(ctx)} ${this.children[i + 1].toWat(ctx)})`);
+      pairs.push(
+        `(f64.gt ${this.children[i].toWat(ctx)} ${this.children[i + 1].toWat(ctx)})`,
+      );
     }
     return pairs.reduce((a, b) => `(i32.and ${a} ${b})`);
   }
@@ -403,7 +411,9 @@ export class LessEqual extends Nary {
     if (this.children.length < 2) return `(i32.const 1)`;
     const pairs: string[] = [];
     for (let i = 0; i + 1 < this.children.length; i++) {
-      pairs.push(`(f64.le ${this.children[i].toWat(ctx)} ${this.children[i + 1].toWat(ctx)})`);
+      pairs.push(
+        `(f64.le ${this.children[i].toWat(ctx)} ${this.children[i + 1].toWat(ctx)})`,
+      );
     }
     return pairs.reduce((a, b) => `(i32.and ${a} ${b})`);
   }
@@ -439,7 +449,9 @@ export class LessThan extends Nary {
     if (this.children.length < 2) return `(i32.const 1)`;
     const pairs: string[] = [];
     for (let i = 0; i + 1 < this.children.length; i++) {
-      pairs.push(`(f64.lt ${this.children[i].toWat(ctx)} ${this.children[i + 1].toWat(ctx)})`);
+      pairs.push(
+        `(f64.lt ${this.children[i].toWat(ctx)} ${this.children[i + 1].toWat(ctx)})`,
+      );
     }
     return pairs.reduce((a, b) => `(i32.and ${a} ${b})`);
   }
@@ -475,7 +487,9 @@ export class NotEqual extends Nary {
     if (this.children.length < 2) return `(i32.const 0)`;
     const pairs: string[] = [];
     for (let i = 0; i + 1 < this.children.length; i++) {
-      pairs.push(`(f64.ne ${this.children[i].toWat(ctx)} ${this.children[i + 1].toWat(ctx)})`);
+      pairs.push(
+        `(f64.ne ${this.children[i].toWat(ctx)} ${this.children[i + 1].toWat(ctx)})`,
+      );
     }
     return pairs.reduce((a, b) => `(i32.or ${a} ${b})`);
   }
@@ -543,7 +557,8 @@ export class Minus extends Nary {
   }
   toWat(ctx: WatContext): string {
     if (this.children.length === 0) return `(f64.const 0)`;
-    if (this.children.length === 1) return `(f64.neg ${this.children[0].toWat(ctx)})`;
+    if (this.children.length === 1)
+      return `(f64.neg ${this.children[0].toWat(ctx)})`;
     return this.children
       .map((c) => c.toWat(ctx))
       .reduce((a, b) => `(f64.sub ${a} ${b})`);

@@ -1,10 +1,11 @@
 <script lang="ts">
-  import type { SimulationAnalysis } from "$lib";
+  import { allBackends, type Backend, type SimulationAnalysis } from "$lib";
   import InputCheckbox from "$lib/inputs/InputCheckbox.svelte";
   import InputChoice from "$lib/inputs/InputChoice.svelte";
   import InputNumber from "$lib/inputs/InputNumber.svelte";
   import InputNumberOptional from "$lib/inputs/InputNumberOptional.svelte";
   import InputText from "$lib/inputs/InputText.svelte";
+  import InlineGrid2 from "$lib/InlineGrid2.svelte";
   import type { ModelBuilder } from "$lib/model-editor/modelBuilder";
   import RowApart from "$lib/RowApart.svelte";
   import { untrack } from "svelte";
@@ -33,7 +34,7 @@
   let yMaxAuto: boolean = $derived(untrack(() => parent.yMax) ? false : true);
   let title = $derived(parent.title);
   let timeoutInSeconds = $derived(parent.timeoutInSeconds);
-  let method = $derived(parent.method);
+  let backend = $state<Backend>(untrack(() => parent.backend));
   let showDerived = $state(untrack(() => parent.showDerived ?? false));
   let nTimePoints = $state(untrack(() => parent.nTimePoints ?? 100));
   let lineDisplay = $state(untrack(() => parent.lineDisplay));
@@ -101,7 +102,7 @@
         yMax: yMaxAuto ? undefined : yMax,
         title: title,
         timeoutInSeconds: timeoutInSeconds,
-        method: method,
+        backend: backend,
         showDerived,
         selectedKeys,
         normalizedKeys: normalizedKeys.length > 0 ? normalizedKeys : undefined,
@@ -163,14 +164,17 @@
   bind:condition={xMaxAuto}
 />
 
-<InputChoice
-  id="pam-method"
-  label="Method"
-  bind:value={method}
->
-  <option value="Radau">Radau</option>
-  <option value="LSODA">LSODA</option>
-</InputChoice>
+<InlineGrid2>
+  <label for="tc-backend">Backend</label>
+  <select
+    id="tc-backend"
+    bind:value={backend}
+  >
+    {#each allBackends as b}
+      <option value={b}>{b.label}</option>
+    {/each}
+  </select>
+</InlineGrid2>
 <InputChoice
   id="line-display"
   label="LineDisplay"

@@ -1,5 +1,9 @@
 // place files you want to import through the `$lib` alias in this folder.
 import type { PamGroup } from "./simulations/protocol";
+import type { Backend } from "./stores/backends";
+
+export type { Backend };
+export { allBackends, backends } from "./stores/backends";
 
 export type SimulationAnalysis = {
   type: "simulation";
@@ -13,7 +17,7 @@ export type SimulationAnalysis = {
   yMin: number | undefined;
   yMax: number | undefined;
   timeoutInSeconds: number;
-  method: string;
+  backend: Backend;
   showDerived?: boolean;
   selectedKeys?: string[];
   normalizedKeys?: string[];
@@ -38,7 +42,7 @@ export type ParameterScanAnalysis = {
   yMin: number | undefined;
   yMax: number | undefined;
   timeoutInSeconds: number;
-  method: string;
+  backend: Backend;
   showDerived?: boolean;
   selectedKeys?: string[];
   normalizedKeys?: string[];
@@ -53,7 +57,7 @@ export type PamAnalysis = {
   span: number;
   yMax: number | undefined;
   timeoutInSeconds: number;
-  method: string;
+  backend: Backend;
   ppfdKey: string;
   fluoKey?: string;
   pamProtocol: PamGroup[];

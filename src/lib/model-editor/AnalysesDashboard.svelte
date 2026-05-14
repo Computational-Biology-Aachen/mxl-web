@@ -1,10 +1,11 @@
 <script lang="ts">
   import { base } from "$app/paths";
-  import type {
-    Analyses,
-    PamAnalysis,
-    ParameterScanAnalysis,
-    SimulationAnalysis,
+  import {
+    backends,
+    type Analyses,
+    type PamAnalysis,
+    type ParameterScanAnalysis,
+    type SimulationAnalysis,
   } from "$lib";
   import Accordion from "$lib/Accordion.svelte";
   import ModelEditButton from "$lib/buttons/ModelEditButton.svelte";
@@ -160,7 +161,7 @@
       xMin: undefined,
       xMax: undefined,
       timeoutInSeconds: 20,
-      method: "Radau",
+      backend: backends.wasmRadau5,
       nTimePoints: 100,
       lineDisplay: "current",
     };
@@ -176,7 +177,7 @@
       span: box.span,
       yMax: undefined,
       timeoutInSeconds: 60,
-      method: "Radau",
+      backend: backends.wasmRadau5,
       ppfdKey: "PPFD",
       fluoKey: "Fluo",
       nTimePoints: 100,
@@ -231,7 +232,7 @@
       yMin: undefined,
       yMax: undefined,
       timeoutInSeconds: 120,
-      method: "Radau",
+      backend: backends.wasmRadau5,
       lineDisplay: "current",
     };
     analyses = [...analyses, newScan];
@@ -443,7 +444,7 @@
           tEnd={analysis.tEnd}
           yMax={analysis.yMax}
           timeoutInSeconds={analysis.timeoutInSeconds}
-          method={analysis.method}
+          backend={analysis.backend}
           showDerived={analysis.showDerived ?? false}
           selectedKeys={analysis.selectedKeys}
           normalizedKeys={analysis.normalizedKeys}
@@ -456,7 +457,7 @@
           model={model}
           analysis={analysis}
           tEnd={analysis.tEnd}
-          method={analysis.method}
+          backend={analysis.backend}
           showDerived={analysis.showDerived ?? false}
           selectedKeys={analysis.selectedKeys}
           normalizedKeys={analysis.normalizedKeys}
@@ -472,7 +473,7 @@
           fluoKey={analysis.fluoKey}
           yMax={analysis.yMax}
           timeoutInSeconds={analysis.timeoutInSeconds}
-          method={analysis.method}
+          backend={analysis.backend}
           showDerived={analysis.showDerived ?? false}
           selectedKeys={analysis.selectedKeys}
           normalizedKeys={analysis.normalizedKeys}

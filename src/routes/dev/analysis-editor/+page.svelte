@@ -1,6 +1,7 @@
 <script lang="ts">
   import { ModelBuilder } from "$lib/model-editor/modelBuilder";
   import AnalysisEditor from "$lib/simulations/TimeCourseEditor.svelte";
+  import { backends } from "$lib/stores/backends";
 
   const model = new ModelBuilder();
 
@@ -16,7 +17,7 @@
     yMin: undefined,
     yMax: 20.0,
     timeoutInSeconds: 10,
-    method: "RK45",
+    backend: backends.wasmRadau5,
     nTimePoints: 100,
     lineDisplay: "current" as const,
   };

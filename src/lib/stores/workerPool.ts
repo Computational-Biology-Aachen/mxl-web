@@ -9,11 +9,6 @@ import type {
 } from "./workerStore";
 
 // Use ?worker&url to prevent inlining and get the actual worker URL
-import pyWorkerUrlString from "../workers/pyWorker.ts?worker&url";
-const pyWorkerUrl = new URL(pyWorkerUrlString, import.meta.url);
-
-import wasmWorkerUrlString from "../workers/wasmWorker.ts?worker&url";
-const wasmWorkerUrl = new URL(wasmWorkerUrlString, import.meta.url);
 
 export class WorkerPool {
   private workers: WorkerManager[] = [];
@@ -99,8 +94,3 @@ export class WorkerPool {
     return WorkerManager.generateRequestId();
   }
 }
-
-export const pyWorkerPool: WorkerPool = new WorkerPool(pyWorkerUrl);
-
-// Single worker — RADAU5 is serial; no benefit from pooling
-export const wasmWorkerPool: WorkerPool = new WorkerPool(wasmWorkerUrl, 1);

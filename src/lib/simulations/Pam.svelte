@@ -8,7 +8,7 @@
 
   import PamChart, { type PhaseRegion } from "../chartjs/PamChart.svelte";
   import type { ModelBuilder } from "../model-editor/modelBuilder";
-  import { pyWorkerPool } from "../stores/workerPool";
+  import type { Backend } from "../stores/backends";
   import {
     WorkerManager,
     type SimulationError,
@@ -23,7 +23,7 @@
     pamProtocol,
     yMax,
     timeoutInSeconds,
-    method,
+    backend,
     ppfdKey,
     fluoKey,
     showDerived = false,
@@ -36,7 +36,7 @@
     pamProtocol: PamGroup[];
     yMax?: number | undefined;
     timeoutInSeconds: number;
-    method: string;
+    backend: Backend;
     ppfdKey: string;
     fluoKey?: string;
     showDerived?: boolean;
@@ -45,8 +45,6 @@
     nTimePoints: number;
     lineDisplay: "current" | "last" | "first";
   } = $props();
-
-  const pyWorker = pyWorkerPool;
 
   let loading = $state(true);
   let err: SimulationError | undefined = $state(undefined);
@@ -79,24 +77,23 @@
     const protocol = expandProtocol(pamProtocol);
 
     const order = model.sortDependencies();
-    const allDerived = new Set(order);
+    const allDerivedSet = new Set(order);
     const derivedSelection =
       showDerived && selectedKeys
-        ? selectedKeys.filter((k) => allDerived.has(k))
+        ? selectedKeys.filter((k) => allDerivedSet.has(k))
         : undefined;
-    const built = model.buildPython([ppfdKey], derivedSelection);
 
-    pyWorker.postMessage({
-      rhsFn: `${built}\nmodel`,
-      allDerivedFn: `${built}\nall_derived`,
-      selectDerivedFn: `${built}\nderived`,
+    const req = backend.buildRequest(model, {
+      userParameters: [ppfdKey],
+      derivedSelection,
+    });
+    backend.getPool().postMessage({
+      ...req,
       initialValues: model.resolveInitialValues(),
       rhsNames: model.getNames(),
       allDerivedNames: order,
-      selectDerivedNames: derivedSelection ? derivedSelection : order,
+      selectDerivedNames: derivedSelection ?? order,
       tEnd: 0,
-      pars: [],
-      method: method,
       requestId: requestId,
       protocol: protocol,
       calculateDerived: showDerived,
@@ -335,11 +332,14 @@
     }
   }
 
+  $effect(() => {
+    const unsub = backend.getPool().onMessage(handleResults);
+    return unsub;
+  });
+
   onMount(() => {
-    const unsub = pyWorker.onMessage(handleResults);
     runSimulation(model);
     return () => {
-      unsub();
       if (timeoutInSecondsId) clearTimeout(timeoutInSecondsId);
     };
   });

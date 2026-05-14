@@ -4,7 +4,7 @@ import { base } from "$app/paths";
 export interface SimulationRequest {
   // Required; don't change!
   requestId: string;
-  rhsFn: string;
+  rhsFn?: string;
   /** WAT module string for native WASM backend (method === 'radau5') */
   rhsWat?: string;
   allDerivedFn: string;

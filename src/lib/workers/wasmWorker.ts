@@ -164,7 +164,10 @@ function runSegment(
     const time = Array.from(mod.HEAPF64.subarray(tPtr / 8, tPtr / 8 + outN));
     const yOut: number[][] = Array.from({ length: outN }, (_, step) =>
       Array.from(
-        mod.HEAPF64.subarray(yOutPtr / 8 + step * n, yOutPtr / 8 + (step + 1) * n),
+        mod.HEAPF64.subarray(
+          yOutPtr / 8 + step * n,
+          yOutPtr / 8 + (step + 1) * n,
+        ),
       ),
     );
 
@@ -281,7 +284,18 @@ onmessage = async function (event: MessageEvent) {
         t += seg.t_end;
       }
     } else {
-      const result = runSegment(mod, modelIdx, n, 0, tEnd, y, parsArr, rtol, atol, nTimePoints);
+      const result = runSegment(
+        mod,
+        modelIdx,
+        n,
+        0,
+        tEnd,
+        y,
+        parsArr,
+        rtol,
+        atol,
+        nTimePoints,
+      );
       if ("err" in result) throw new Error(result.err);
       allTime = result.time;
       allY = result.y;

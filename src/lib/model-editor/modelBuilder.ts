@@ -525,16 +525,85 @@ ${body}
   }
 
   buildJs(): string {
-    return `
-        function model(
-          time: number,
-          variables: number[],
-          parameters: number[],
-        ) {
-            const [] = variables;
+    const order = this.sortDependencies();
+    const varKeys = [...this.variables.keys()];
+    const parKeys = [...this.parameters.keys()];
 
+    const varDestructure =
+      varKeys.length > 0 ? `const [${varKeys.join(", ")}] = variables;` : "";
+    const parDestructure =
+      parKeys.length > 0 ? `const [${parKeys.join(", ")}] = pars;` : "";
 
-        }`;
+    const fns = order
+      .map((name) => {
+        const item = this.assignments.get(name) ?? this.reactions.get(name)!;
+        return `  const ${name} = ${item.fn.toJs()};`;
+      })
+      .join("\n");
+
+    const rhs: Record<string, string> = Object.fromEntries(
+      varKeys.map((k) => [k, ""]),
+    );
+    this.reactions.forEach((rxn, rxnName) => {
+      rxn.stoichiometry.forEach(({ name: varName, value: stoich }) => {
+        if (stoich instanceof Num) {
+          const prefix = stoich.value < 0 ? "-" : "+";
+          if (Math.abs(stoich.value) === 1) {
+            rhs[varName] += `${prefix}${rxnName}`;
+          } else {
+            rhs[varName] += `${prefix}${Math.abs(stoich.value)}*${rxnName}`;
+          }
+        } else {
+          rhs[varName] += `+(${stoich.toJs()})*${rxnName}`;
+        }
+      });
+    });
+
+    const returns = varKeys.map((k) => rhs[k] || "0").join(", ");
+
+    return `(time, variables, pars) => {
+  ${varDestructure}
+  ${parDestructure}
+${fns}
+  return [${returns}];
+}`;
+  }
+
+  buildJsDerived(selectedDerived?: string[]): {
+    allDerived: string;
+    selectDerived: string;
+  } {
+    const order = this.sortDependencies();
+    const varKeys = [...this.variables.keys()];
+    const parKeys = [...this.parameters.keys()];
+
+    const varDestructure =
+      varKeys.length > 0 ? `const [${varKeys.join(", ")}] = variables;` : "";
+    const parDestructure =
+      parKeys.length > 0 ? `const [${parKeys.join(", ")}] = pars;` : "";
+
+    const fns = order
+      .map((name) => {
+        const item = this.assignments.get(name) ?? this.reactions.get(name)!;
+        return `  const ${name} = ${item.fn.toJs()};`;
+      })
+      .join("\n");
+
+    const allDerived = `(time, variables, pars) => {
+  ${varDestructure}
+  ${parDestructure}
+${fns}
+  return [${order.join(", ")}];
+}`;
+
+    const selected = selectedDerived ?? order;
+    const indices = selected.map((k) => order.indexOf(k)).filter((i) => i >= 0);
+    const selectDerived =
+      indices.length > 0
+        ? `(all) => [${indices.map((i) => `all[${i}]`).join(", ")}]`
+        : `(all) => all`;
+
+    return { allDerived, selectDerived };
   }
 
   buildTex(): string {

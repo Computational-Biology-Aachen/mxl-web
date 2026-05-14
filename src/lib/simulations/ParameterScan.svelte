@@ -8,7 +8,7 @@
   import LineChart from "$lib/chartjs/LineChart.svelte";
   import { onMount } from "svelte";
   import type { ModelBuilder } from "../model-editor/modelBuilder";
-  import { pyWorkerPool, wasmWorkerPool } from "../stores/workerPool";
+  import type { Backend } from "../stores/backends";
   import {
     WorkerManager,
     type SimulationError,
@@ -21,7 +21,7 @@
     analysis,
     tEnd,
     tolerance = 1e-6,
-    method,
+    backend,
     showDerived = false,
     selectedKeys = undefined,
     normalizedKeys = undefined,
@@ -32,7 +32,7 @@
     analysis: ParameterScanAnalysis;
     tEnd: number;
     tolerance?: number;
-    method: string;
+    backend: Backend;
     showDerived?: boolean;
     selectedKeys?: string[];
     normalizedKeys?: string[];
@@ -127,23 +127,15 @@
         ...clonedModel.parameters.get(analysis.parameter),
         value: paramValue,
       });
-      const isWasm = method === "radau5";
-      const worker = isWasm ? wasmWorkerPool : pyWorkerPool;
-      const built = clonedModel.buildPython([], derivedSelection);
-      worker.postMessage({
-        rhsFn: `${built}\nmodel`,
-        rhsWat: isWasm ? clonedModel.buildWat() : undefined,
-        allDerivedFn: `${built}\nall_derived`,
-        selectDerivedFn: `${built}\nderived`,
+      const req = backend.buildRequest(clonedModel, { derivedSelection });
+      backend.getPool().postMessage({
+        ...req,
         initialValues: clonedModel.resolveInitialValues(),
         rhsNames: clonedModel.getNames(),
         allDerivedNames: order,
-        selectDerivedNames: derivedSelection ? derivedSelection : order,
+        selectDerivedNames: derivedSelection ?? order,
         tEnd: tEnd,
-        pars: isWasm ? clonedModel.resolveParameters() : [],
-        parNames: isWasm ? clonedModel.getParameterNames() : undefined,
         requestId,
-        method: method,
         calculateDerived: showDerived,
         nTimePoints: nTimePoints,
       });
@@ -219,18 +211,13 @@
     };
   });
 
+  $effect(() => {
+    const unsub = backend.getPool().onMessage(handleResults);
+    return unsub;
+  });
+
   onMount(() => {
-    const unsub = pyWorkerPool.onMessage(handleResults);
-    const unsubWasm = wasmWorkerPool.onMessage(handleResults);
-
-    // Initial run
     runScan(model);
-
-    // Cleanup handlers (workers are shared so don't terminate them)
-    return () => {
-      unsub();
-      unsubWasm();
-    };
   });
 </script>
 

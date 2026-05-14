@@ -1,10 +1,11 @@
 <script lang="ts">
-  import type { PamAnalysis } from "$lib";
+  import { allBackends, type Backend, type PamAnalysis } from "$lib";
   import Icon from "$lib/Icon.svelte";
   import InputCheckbox from "$lib/inputs/InputCheckbox.svelte";
   import InputChoice from "$lib/inputs/InputChoice.svelte";
   import InputNumber from "$lib/inputs/InputNumber.svelte";
   import InputText from "$lib/inputs/InputText.svelte";
+  import InlineGrid2 from "$lib/InlineGrid2.svelte";
   import type { ModelBuilder } from "$lib/model-editor/modelBuilder";
   import RowApart from "$lib/RowApart.svelte";
   import { untrack } from "svelte";
@@ -35,7 +36,7 @@
 
   let title = $state(untrack(() => parent.title));
   let timeoutInSeconds = $state(untrack(() => parent.timeoutInSeconds));
-  let method = $state(untrack(() => parent.method));
+  let backend = $state<Backend>(untrack(() => parent.backend));
   let ppfdKey = $state(untrack(() => parent.ppfdKey));
   let fluoKey = $state(untrack(() => parent.fluoKey ?? ""));
   let groups = $state<PamGroup[]>(initGroups());
@@ -132,7 +133,7 @@
         ...parent,
         title,
         timeoutInSeconds,
-        method,
+        backend,
         ppfdKey,
         fluoKey: fluoKey || undefined,
         pamProtocol: groups,
@@ -171,14 +172,17 @@
   label="Time points per step: "
   bind:value={nTimePoints}
 />
-<InputChoice
-  id="pam-method"
-  label="Method"
-  bind:value={method}
->
-  <option value="Radau">Radau</option>
-  <option value="LSODA">LSODA</option>
-</InputChoice>
+<InlineGrid2>
+  <label for="pam-backend">Backend</label>
+  <select
+    id="pam-backend"
+    bind:value={backend}
+  >
+    {#each allBackends as b}
+      <option value={b}>{b.label}</option>
+    {/each}
+  </select>
+</InlineGrid2>
 
 <InputChoice
   id="line-display"

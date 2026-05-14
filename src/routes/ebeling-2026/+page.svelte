@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Analyses } from "$lib";
+  import { backends, type Analyses } from "$lib";
   import scheme from "$lib/assets/ebeling2026-scheme.png";
   import AnalysesDashboard from "$lib/model-editor/AnalysesDashboard.svelte";
   import type { PamGroup } from "$lib/simulations/protocol";
@@ -48,7 +48,7 @@
       span: 3,
       yMax: undefined,
       timeoutInSeconds: 120,
-      method: "Radau",
+      backend: backends.wasmRadau5,
       ppfdKey: "PPFD",
       pamProtocol: ecsProtocol,
       showDerived: true,
@@ -65,7 +65,7 @@
       span: 3,
       yMax: undefined,
       timeoutInSeconds: 120,
-      method: "Radau",
+      backend: backends.wasmRadau5,
       ppfdKey: "PPFD",
       fluoKey: "Fluo",
       pamProtocol: defaultPamProtocol,

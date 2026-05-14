@@ -13,10 +13,6 @@
   import Icon from "$lib/Icon.svelte";
   import ModelCard from "$lib/ModelCard.svelte";
   import ModelGallery from "$lib/ModelGallery.svelte";
-  import { pyWorkerPool } from "$lib/stores/workerPool";
-
-  // Get shared workers to initialise them
-  const workerPool = pyWorkerPool;
 </script>
 
 <hgroup>

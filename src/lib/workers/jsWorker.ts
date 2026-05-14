@@ -143,14 +143,14 @@ onmessage = function (event: MessageEvent) {
         const allDerivedFnEval = new Function(`return (${allDerivedFn})`)() as (
           t: number,
           y: number[],
-          ...args: number[]
+          pars: number[]
         ) => number[];
         // eslint-disable-next-line no-new-func
         const selectDerivedFnEval = new Function(
           `return (${selectDerivedFn})`,
         )() as (all: number[]) => number[];
         values = resampled.values.map((yRow, i) => {
-          const allDerived = allDerivedFnEval(resampled.time[i], yRow, ...pars);
+          const allDerived = allDerivedFnEval(resampled.time[i], yRow, pars);
           return selectDerivedFnEval(allDerived);
         });
       } catch {
@@ -158,7 +158,11 @@ onmessage = function (event: MessageEvent) {
       }
     }
 
-    postMessage({ time: resampled.time, values, requestId } as SimulationResult);
+    postMessage({
+      time: resampled.time,
+      values,
+      requestId,
+    } as SimulationResult);
   } catch (e) {
     const err: SimulationError = {
       message: e instanceof Error ? e.message : String(e),
