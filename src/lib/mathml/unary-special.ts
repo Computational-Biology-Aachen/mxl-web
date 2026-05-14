@@ -1,4 +1,5 @@
 import { Base, Name, Num } from "./base";
+import type { WatContext } from "./wat-context";
 
 ///////////////////////////////////////////////////////////////////////////////
 // Special unary fns
@@ -49,6 +50,9 @@ export class Log extends Base {
 
   toSBML(): string {
     return `<apply><log/><logbase>${this.base.toSBML()}</logbase>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(f64.div (call $math_log ${this.child.toWat(ctx)}) (call $math_log ${this.base.toWat(ctx)}))`;
   }
 
   getSymbols(symbols: Set<string>): Set<string> {
@@ -103,6 +107,9 @@ export class Sqrt extends Base {
 
   toSBML(): string {
     return `<apply><root/><degree>${this.base.toSBML()}</degree>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(call $math_pow ${this.child.toWat(ctx)} (f64.div (f64.const 1) ${this.base.toWat(ctx)}))`;
   }
 
   getSymbols(symbols: Set<string>): Set<string> {

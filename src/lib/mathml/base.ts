@@ -1,3 +1,5 @@
+import type { WatContext } from "./wat-context";
+
 let idCounter = 0;
 
 // Acts as a common ancestor for all expression node types
@@ -7,6 +9,7 @@ export abstract class Base {
   abstract toPy(displayNames: Map<string, string>): string;
   abstract toTex(texNames: Map<string, string>): string;
   abstract toSBML(): string;
+  abstract toWat(ctx: WatContext): string;
   abstract getSymbols(symbols: Set<string>): Set<string>;
   // abstract default(): Base;
   abstract replace(id: number, next: Base): { node: Base; changed: boolean };
@@ -169,6 +172,23 @@ export class Name extends Nullary {
   toSBML(): string {
     return `<ci>${this.name}</ci>`;
   }
+  toWat(ctx: WatContext): string {
+    if (ctx.timeVar && this.name === ctx.timeVar) {
+      return `(local.get 1)`;
+    }
+    if (ctx.localNames?.has(this.name)) {
+      return `(local.get $${this.name})`;
+    }
+    const vi = ctx.varIndex.get(this.name);
+    if (vi !== undefined) {
+      return `(f64.load (i32.add (local.get 2) (i32.const ${vi * 8})))`;
+    }
+    const pi = ctx.parIndex.get(this.name);
+    if (pi !== undefined) {
+      return `(f64.load (i32.add (local.get 4) (i32.const ${pi * 8})))`;
+    }
+    return `(f64.const 0)`;
+  }
   getSymbols(symbols: Set<string>): Set<string> {
     symbols.add(this.name);
     return symbols;
@@ -196,6 +216,9 @@ export class Num extends Nullary {
   }
   toSBML(): string {
     return `<cn>${this.value}</cn>`;
+  }
+  toWat(_ctx: WatContext): string {
+    return `(f64.const ${this.value})`;
   }
   getSymbols(symbols: Set<string>): Set<string> {
     return symbols;

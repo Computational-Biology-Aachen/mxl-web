@@ -8,7 +8,7 @@
   import LineChart from "$lib/chartjs/LineChart.svelte";
   import { onMount } from "svelte";
   import type { ModelBuilder } from "../model-editor/modelBuilder";
-  import { pyWorkerPool } from "../stores/workerPool";
+  import { pyWorkerPool, wasmWorkerPool } from "../stores/workerPool";
   import {
     WorkerManager,
     type SimulationError,
@@ -127,9 +127,12 @@
         ...clonedModel.parameters.get(analysis.parameter),
         value: paramValue,
       });
+      const isWasm = method === "radau5";
+      const worker = isWasm ? wasmWorkerPool : pyWorkerPool;
       const built = clonedModel.buildPython([], derivedSelection);
-      pyWorkerPool.postMessage({
+      worker.postMessage({
         rhsFn: `${built}\nmodel`,
+        rhsWat: isWasm ? clonedModel.buildWat() : undefined,
         allDerivedFn: `${built}\nall_derived`,
         selectDerivedFn: `${built}\nderived`,
         initialValues: clonedModel.resolveInitialValues(),
@@ -137,7 +140,7 @@
         allDerivedNames: order,
         selectDerivedNames: derivedSelection ? derivedSelection : order,
         tEnd: tEnd,
-        pars: [],
+        pars: isWasm ? clonedModel.resolveParameters() : [],
         requestId,
         method: method,
         calculateDerived: showDerived,
@@ -217,6 +220,7 @@
 
   onMount(() => {
     const unsub = pyWorkerPool.onMessage(handleResults);
+    const unsubWasm = wasmWorkerPool.onMessage(handleResults);
 
     // Initial run
     runScan(model);
@@ -224,6 +228,7 @@
     // Cleanup handlers (workers are shared so don't terminate them)
     return () => {
       unsub();
+      unsubWasm();
     };
   });
 </script>

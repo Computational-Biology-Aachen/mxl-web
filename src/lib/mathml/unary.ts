@@ -1,4 +1,5 @@
 import { Base, Unary } from "./base";
+import type { WatContext } from "./wat-context";
 
 ///////////////////////////////////////////////////////////////////////////////
 // Unary fns
@@ -20,6 +21,9 @@ export class Abs extends Unary {
   toSBML(): string {
     return `<apply><abs/>${this.child.toSBML()}</apply>`;
   }
+  toWat(ctx: WatContext): string {
+    return `(f64.abs ${this.child.toWat(ctx)})`;
+  }
 }
 
 export class Ceiling extends Unary {
@@ -37,6 +41,9 @@ export class Ceiling extends Unary {
   }
   toSBML(): string {
     return `<apply><ceiling/>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(f64.ceil ${this.child.toWat(ctx)})`;
   }
 }
 
@@ -56,6 +63,9 @@ export class Exp extends Unary {
   toSBML(): string {
     return `<apply><exp/>${this.child.toSBML()}</apply>`;
   }
+  toWat(ctx: WatContext): string {
+    return `(call $math_exp ${this.child.toWat(ctx)})`;
+  }
 }
 
 export class Factorial extends Unary {
@@ -65,17 +75,17 @@ export class Factorial extends Unary {
   toJs(): string {
     return `factorial(${this.child.toJs()})`;
   }
-
   toPy(displayNames: Map<string, string>): string {
     return `np.math.factorial(${this.child.toPy(displayNames)})`;
   }
-
   toTex(texNames: Map<string, string>): string {
     return `${this.child.toTex(texNames)}!`;
   }
-
   toSBML(): string {
     return `<apply><factorial/>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(call $math_factorial ${this.child.toWat(ctx)})`;
   }
 }
 
@@ -86,17 +96,17 @@ export class Floor extends Unary {
   toJs(): string {
     return `Math.floor(${this.child.toJs()})`;
   }
-
   toPy(displayNames: Map<string, string>): string {
     return `np.floor(${this.child.toPy(displayNames)})`;
   }
-
   toTex(texNames: Map<string, string>): string {
     return `\\lfloor ${this.child.toTex(texNames)} \\rfloor`;
   }
-
   toSBML(): string {
     return `<apply><floor/>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(f64.floor ${this.child.toWat(ctx)})`;
   }
 }
 
@@ -104,21 +114,20 @@ export class Ln extends Unary {
   constructor(public child: Base) {
     super();
   }
-
   toJs(): string {
     return `Math.log(${this.child.toJs()})`;
   }
-
   toPy(displayNames: Map<string, string>): string {
     return `np.log(${this.child.toPy(displayNames)})`;
   }
-
   toTex(texNames: Map<string, string>): string {
     return `\\ln(${this.child.toTex(texNames)})`;
   }
-
   toSBML(): string {
     return `<apply><ln/>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(call $math_log ${this.child.toWat(ctx)})`;
   }
 }
 
@@ -126,21 +135,20 @@ export class Sin extends Unary {
   constructor(public child: Base) {
     super();
   }
-
   toJs(): string {
     return `Math.sin(${this.child.toJs()})`;
   }
-
   toPy(displayNames: Map<string, string>): string {
     return `np.sin(${this.child.toPy(displayNames)})`;
   }
-
   toTex(texNames: Map<string, string>): string {
     return `\\sin(${this.child.toTex(texNames)})`;
   }
-
   toSBML(): string {
     return `<apply><sin/>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(call $math_sin ${this.child.toWat(ctx)})`;
   }
 }
 
@@ -148,21 +156,20 @@ export class Cos extends Unary {
   constructor(public child: Base) {
     super();
   }
-
   toJs(): string {
     return `Math.cos(${this.child.toJs()})`;
   }
-
   toPy(displayNames: Map<string, string>): string {
     return `np.cos(${this.child.toPy(displayNames)})`;
   }
-
   toTex(texNames: Map<string, string>): string {
     return `\\cos(${this.child.toTex(texNames)})`;
   }
-
   toSBML(): string {
     return `<apply><cos/>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(call $math_cos ${this.child.toWat(ctx)})`;
   }
 }
 
@@ -170,21 +177,20 @@ export class Tan extends Unary {
   constructor(public child: Base) {
     super();
   }
-
   toJs(): string {
     return `Math.tan(${this.child.toJs()})`;
   }
-
   toPy(displayNames: Map<string, string>): string {
     return `np.tan(${this.child.toPy(displayNames)})`;
   }
-
   toTex(texNames: Map<string, string>): string {
     return `\\tan(${this.child.toTex(texNames)})`;
   }
-
   toSBML(): string {
     return `<apply><tan/>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(call $math_tan ${this.child.toWat(ctx)})`;
   }
 }
 
@@ -192,21 +198,20 @@ export class Sec extends Unary {
   constructor(public child: Base) {
     super();
   }
-
   toJs(): string {
     return `1 / Math.cos(${this.child.toJs()})`;
   }
-
   toPy(displayNames: Map<string, string>): string {
     return `1 / np.cos(${this.child.toPy(displayNames)})`;
   }
-
   toTex(texNames: Map<string, string>): string {
     return `\\sec(${this.child.toTex(texNames)})`;
   }
-
   toSBML(): string {
     return `<apply><sec/>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(f64.div (f64.const 1) (call $math_cos ${this.child.toWat(ctx)}))`;
   }
 }
 
@@ -214,21 +219,20 @@ export class Csc extends Unary {
   constructor(public child: Base) {
     super();
   }
-
   toJs(): string {
     return `1 / Math.sin(${this.child.toJs()})`;
   }
-
   toPy(displayNames: Map<string, string>): string {
     return `1 / np.sin(${this.child.toPy(displayNames)})`;
   }
-
   toTex(texNames: Map<string, string>): string {
     return `\\csc(${this.child.toTex(texNames)})`;
   }
-
   toSBML(): string {
     return `<apply><csc/>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(f64.div (f64.const 1) (call $math_sin ${this.child.toWat(ctx)}))`;
   }
 }
 
@@ -236,21 +240,20 @@ export class Cot extends Unary {
   constructor(public child: Base) {
     super();
   }
-
   toJs(): string {
     return `1 / Math.tan(${this.child.toJs()})`;
   }
-
   toPy(displayNames: Map<string, string>): string {
     return `1 / np.tan(${this.child.toPy(displayNames)})`;
   }
-
   toTex(texNames: Map<string, string>): string {
     return `\\cot(${this.child.toTex(texNames)})`;
   }
-
   toSBML(): string {
     return `<apply><cot/>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(f64.div (f64.const 1) (call $math_tan ${this.child.toWat(ctx)}))`;
   }
 }
 
@@ -258,21 +261,20 @@ export class Asin extends Unary {
   constructor(public child: Base) {
     super();
   }
-
   toJs(): string {
     return `Math.asin(${this.child.toJs()})`;
   }
-
   toPy(displayNames: Map<string, string>): string {
     return `np.asin(${this.child.toPy(displayNames)})`;
   }
-
   toTex(texNames: Map<string, string>): string {
     return `\\arcsin(${this.child.toTex(texNames)})`;
   }
-
   toSBML(): string {
     return `<apply><arcsin/>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(call $math_asin ${this.child.toWat(ctx)})`;
   }
 }
 
@@ -280,21 +282,20 @@ export class Acos extends Unary {
   constructor(public child: Base) {
     super();
   }
-
   toJs(): string {
     return `Math.acos(${this.child.toJs()})`;
   }
-
   toPy(displayNames: Map<string, string>): string {
     return `np.acos(${this.child.toPy(displayNames)})`;
   }
-
   toTex(texNames: Map<string, string>): string {
     return `\\arccos(${this.child.toTex(texNames)})`;
   }
-
   toSBML(): string {
     return `<apply><arccos/>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(call $math_acos ${this.child.toWat(ctx)})`;
   }
 }
 
@@ -302,21 +303,20 @@ export class Atan extends Unary {
   constructor(public child: Base) {
     super();
   }
-
   toJs(): string {
     return `Math.atan(${this.child.toJs()})`;
   }
-
   toPy(displayNames: Map<string, string>): string {
     return `np.atan(${this.child.toPy(displayNames)})`;
   }
-
   toTex(texNames: Map<string, string>): string {
     return `\\arctan(${this.child.toTex(texNames)})`;
   }
-
   toSBML(): string {
     return `<apply><arctan/>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(call $math_atan ${this.child.toWat(ctx)})`;
   }
 }
 
@@ -324,21 +324,20 @@ export class Acot extends Unary {
   constructor(public child: Base) {
     super();
   }
-
   toJs(): string {
     return `Math.atan(1 / ${this.child.toJs()})`;
   }
-
   toPy(displayNames: Map<string, string>): string {
     return `np.atan(1 / ${this.child.toPy(displayNames)})`;
   }
-
   toTex(texNames: Map<string, string>): string {
     return `\\text{arccot}(${this.child.toTex(texNames)})`;
   }
-
   toSBML(): string {
     return `<apply><arccot/>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(call $math_atan (f64.div (f64.const 1) ${this.child.toWat(ctx)}))`;
   }
 }
 
@@ -346,21 +345,20 @@ export class ArcSec extends Unary {
   constructor(public child: Base) {
     super();
   }
-
   toJs(): string {
     return `Math.acos(1 / ${this.child.toJs()})`;
   }
-
   toPy(displayNames: Map<string, string>): string {
     return `np.acos(1 / ${this.child.toPy(displayNames)})`;
   }
-
   toTex(texNames: Map<string, string>): string {
     return `\\text{arcsec}(${this.child.toTex(texNames)})`;
   }
-
   toSBML(): string {
     return `<apply><arcsec/>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(call $math_acos (f64.div (f64.const 1) ${this.child.toWat(ctx)}))`;
   }
 }
 
@@ -368,21 +366,20 @@ export class ArcCsc extends Unary {
   constructor(public child: Base) {
     super();
   }
-
   toJs(): string {
     return `Math.asin(1 / ${this.child.toJs()})`;
   }
-
   toPy(displayNames: Map<string, string>): string {
     return `np.asin(1 / ${this.child.toPy(displayNames)})`;
   }
-
   toTex(texNames: Map<string, string>): string {
     return `\\text{arccsc}(${this.child.toTex(texNames)})`;
   }
-
   toSBML(): string {
     return `<apply><arccsc/>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(call $math_asin (f64.div (f64.const 1) ${this.child.toWat(ctx)}))`;
   }
 }
 
@@ -390,21 +387,20 @@ export class Sinh extends Unary {
   constructor(public child: Base) {
     super();
   }
-
   toJs(): string {
     return `Math.sinh(${this.child.toJs()})`;
   }
-
   toPy(displayNames: Map<string, string>): string {
     return `np.sinh(${this.child.toPy(displayNames)})`;
   }
-
   toTex(texNames: Map<string, string>): string {
     return `\\sinh(${this.child.toTex(texNames)})`;
   }
-
   toSBML(): string {
     return `<apply><sinh/>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(call $math_sinh ${this.child.toWat(ctx)})`;
   }
 }
 
@@ -412,21 +408,20 @@ export class Cosh extends Unary {
   constructor(public child: Base) {
     super();
   }
-
   toJs(): string {
     return `Math.cosh(${this.child.toJs()})`;
   }
-
   toPy(displayNames: Map<string, string>): string {
     return `np.cosh(${this.child.toPy(displayNames)})`;
   }
-
   toTex(texNames: Map<string, string>): string {
     return `\\cosh(${this.child.toTex(texNames)})`;
   }
-
   toSBML(): string {
     return `<apply><cosh/>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(call $math_cosh ${this.child.toWat(ctx)})`;
   }
 }
 
@@ -434,21 +429,20 @@ export class Tanh extends Unary {
   constructor(public child: Base) {
     super();
   }
-
   toJs(): string {
     return `Math.tanh(${this.child.toJs()})`;
   }
-
   toPy(displayNames: Map<string, string>): string {
     return `np.tanh(${this.child.toPy(displayNames)})`;
   }
-
   toTex(texNames: Map<string, string>): string {
     return `\\tanh(${this.child.toTex(texNames)})`;
   }
-
   toSBML(): string {
     return `<apply><tanh/>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(call $math_tanh ${this.child.toWat(ctx)})`;
   }
 }
 
@@ -456,21 +450,20 @@ export class Sech extends Unary {
   constructor(public child: Base) {
     super();
   }
-
   toJs(): string {
     return `1 / Math.cosh(${this.child.toJs()})`;
   }
-
   toPy(displayNames: Map<string, string>): string {
     return `1 / np.cosh(${this.child.toPy(displayNames)})`;
   }
-
   toTex(texNames: Map<string, string>): string {
     return `\\text{sech}(${this.child.toTex(texNames)})`;
   }
-
   toSBML(): string {
     return `<apply><sech/>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(f64.div (f64.const 1) (call $math_cosh ${this.child.toWat(ctx)}))`;
   }
 }
 
@@ -478,21 +471,20 @@ export class Csch extends Unary {
   constructor(public child: Base) {
     super();
   }
-
   toJs(): string {
     return `1 / Math.sinh(${this.child.toJs()})`;
   }
-
   toPy(displayNames: Map<string, string>): string {
     return `1 / np.sinh(${this.child.toPy(displayNames)})`;
   }
-
   toTex(texNames: Map<string, string>): string {
     return `\\text{csch}(${this.child.toTex(texNames)})`;
   }
-
   toSBML(): string {
     return `<apply><csch/>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(f64.div (f64.const 1) (call $math_sinh ${this.child.toWat(ctx)}))`;
   }
 }
 
@@ -500,21 +492,20 @@ export class Coth extends Unary {
   constructor(public child: Base) {
     super();
   }
-
   toJs(): string {
     return `1 / Math.tanh(${this.child.toJs()})`;
   }
-
   toPy(displayNames: Map<string, string>): string {
     return `1 / np.tanh(${this.child.toPy(displayNames)})`;
   }
-
   toTex(texNames: Map<string, string>): string {
     return `\\coth(${this.child.toTex(texNames)})`;
   }
-
   toSBML(): string {
     return `<apply><coth/>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(f64.div (f64.const 1) (call $math_tanh ${this.child.toWat(ctx)}))`;
   }
 }
 
@@ -522,21 +513,20 @@ export class ArcSinh extends Unary {
   constructor(public child: Base) {
     super();
   }
-
   toJs(): string {
     return `Math.asinh(${this.child.toJs()})`;
   }
-
   toPy(displayNames: Map<string, string>): string {
     return `np.asinh(${this.child.toPy(displayNames)})`;
   }
-
   toTex(texNames: Map<string, string>): string {
     return `\\text{arcsinh}(${this.child.toTex(texNames)})`;
   }
-
   toSBML(): string {
     return `<apply><arcsinh/>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(call $math_asinh ${this.child.toWat(ctx)})`;
   }
 }
 
@@ -544,21 +534,20 @@ export class ArcCosh extends Unary {
   constructor(public child: Base) {
     super();
   }
-
   toJs(): string {
     return `Math.acosh(${this.child.toJs()})`;
   }
-
   toPy(displayNames: Map<string, string>): string {
     return `np.acosh(${this.child.toPy(displayNames)})`;
   }
-
   toTex(texNames: Map<string, string>): string {
     return `\\text{arccosh}(${this.child.toTex(texNames)})`;
   }
-
   toSBML(): string {
     return `<apply><arccosh/>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(call $math_acosh ${this.child.toWat(ctx)})`;
   }
 }
 
@@ -566,21 +555,20 @@ export class ArcTanh extends Unary {
   constructor(public child: Base) {
     super();
   }
-
   toJs(): string {
     return `Math.atanh(${this.child.toJs()})`;
   }
-
   toPy(displayNames: Map<string, string>): string {
     return `np.atanh(${this.child.toPy(displayNames)})`;
   }
-
   toTex(texNames: Map<string, string>): string {
     return `\\text{arctanh}(${this.child.toTex(texNames)})`;
   }
-
   toSBML(): string {
     return `<apply><arctanh/>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(call $math_atanh ${this.child.toWat(ctx)})`;
   }
 }
 
@@ -588,21 +576,20 @@ export class ArcCsch extends Unary {
   constructor(public child: Base) {
     super();
   }
-
   toJs(): string {
     return `Math.asinh(1 / ${this.child.toJs()})`;
   }
-
   toPy(displayNames: Map<string, string>): string {
     return `np.asinh(1 / ${this.child.toPy(displayNames)})`;
   }
-
   toTex(texNames: Map<string, string>): string {
     return `\\text{arccsch}(${this.child.toTex(texNames)})`;
   }
-
   toSBML(): string {
     return `<apply><arccsch/>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(call $math_asinh (f64.div (f64.const 1) ${this.child.toWat(ctx)}))`;
   }
 }
 
@@ -610,21 +597,20 @@ export class ArcSech extends Unary {
   constructor(public child: Base) {
     super();
   }
-
   toJs(): string {
     return `Math.acosh(1 / ${this.child.toJs()})`;
   }
-
   toPy(displayNames: Map<string, string>): string {
     return `np.acosh(1 / ${this.child.toPy(displayNames)})`;
   }
-
   toTex(texNames: Map<string, string>): string {
     return `\\text{arcsech}(${this.child.toTex(texNames)})`;
   }
-
   toSBML(): string {
     return `<apply><arcsech/>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(call $math_acosh (f64.div (f64.const 1) ${this.child.toWat(ctx)}))`;
   }
 }
 
@@ -632,21 +618,20 @@ export class ArcCoth extends Unary {
   constructor(public child: Base) {
     super();
   }
-
   toJs(): string {
     return `Math.atanh(1 / ${this.child.toJs()})`;
   }
-
   toPy(displayNames: Map<string, string>): string {
     return `np.atanh(1 / ${this.child.toPy(displayNames)})`;
   }
-
   toTex(texNames: Map<string, string>): string {
     return `\\text{arccoth}(${this.child.toTex(texNames)})`;
   }
-
   toSBML(): string {
     return `<apply><arccoth/>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(call $math_atanh (f64.div (f64.const 1) ${this.child.toWat(ctx)}))`;
   }
 }
 
@@ -654,20 +639,19 @@ export class RateOf extends Unary {
   constructor(public child: Base) {
     super();
   }
-
   toJs(): string {
     return `rateOf(${this.child.toJs()})`;
   }
-
   toPy(displayNames: Map<string, string>): string {
     return `rate_of(${this.child.toPy(displayNames)})`;
   }
-
   toTex(texNames: Map<string, string>): string {
     return `\\frac{d}{dt}(${this.child.toTex(texNames)})`;
   }
-
   toSBML(): string {
     return `<apply><csymbol definitionURL="http://www.sbml.org/sbml/symbols/rateOf">rateOf</csymbol>${this.child.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(f64.const 0)`;
   }
 }

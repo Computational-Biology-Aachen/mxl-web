@@ -438,6 +438,92 @@ ${selectedDerivedBlock}
 y0 = {${y0}}
     `;
   }
+  getParameterNames(): string[] {
+    return [...this.parameters.keys()];
+  }
+
+  resolveParameters(): number[] {
+    return [...this.parameters.values()].map((p) => p.value);
+  }
+
+  buildWat(): string {
+    const order = this.sortDependencies();
+    const varNames = [...this.variables.keys()];
+    const parNames = [...this.parameters.keys()];
+
+    const ctx = {
+      varIndex: new Map(varNames.map((n, i) => [n, i] as [string, number])),
+      parIndex: new Map(parNames.map((n, i) => [n, i] as [string, number])),
+      timeVar: "t",
+      localNames: new Set(order),
+    };
+
+    const localDecls = order
+      .map((name) => `    (local $${name} f64)`)
+      .join("\n");
+
+    const localSets = order
+      .map((name) => {
+        const item = this.assignments.get(name) ?? this.reactions.get(name)!;
+        return `    (local.set $${name} ${item.fn.toWat(ctx)})`;
+      })
+      .join("\n");
+
+    const stores = varNames
+      .map((varName, i) => {
+        const terms: string[] = [];
+        this.reactions.forEach((rxn, rxnName) => {
+          const contrib = rxn.stoichiometry.find((s) => s.name === varName);
+          if (contrib) {
+            terms.push(
+              `(f64.mul (local.get $${rxnName}) ${contrib.value.toWat(ctx)})`,
+            );
+          }
+        });
+        const rhs =
+          terms.length === 0
+            ? "(f64.const 0)"
+            : terms.length === 1
+              ? terms[0]
+              : terms
+                  .slice(1)
+                  .reduce((acc, t) => `(f64.add ${acc} ${t})`, terms[0]);
+        return `    (f64.store (i32.add (local.get 3) (i32.const ${i * 8})) ${rhs})`;
+      })
+      .join("\n");
+
+    const body =
+      (localDecls ? localDecls + "\n" : "") +
+      (localSets ? localSets + "\n" : "") +
+      stores;
+
+    return `(module
+  (import "env" "memory" (memory 1))
+  (import "math" "exp"       (func $math_exp       (param f64) (result f64)))
+  (import "math" "log"       (func $math_log       (param f64) (result f64)))
+  (import "math" "sin"       (func $math_sin       (param f64) (result f64)))
+  (import "math" "cos"       (func $math_cos       (param f64) (result f64)))
+  (import "math" "tan"       (func $math_tan       (param f64) (result f64)))
+  (import "math" "asin"      (func $math_asin      (param f64) (result f64)))
+  (import "math" "acos"      (func $math_acos      (param f64) (result f64)))
+  (import "math" "atan"      (func $math_atan      (param f64) (result f64)))
+  (import "math" "sinh"      (func $math_sinh      (param f64) (result f64)))
+  (import "math" "cosh"      (func $math_cosh      (param f64) (result f64)))
+  (import "math" "tanh"      (func $math_tanh      (param f64) (result f64)))
+  (import "math" "asinh"     (func $math_asinh     (param f64) (result f64)))
+  (import "math" "acosh"     (func $math_acosh     (param f64) (result f64)))
+  (import "math" "atanh"     (func $math_atanh     (param f64) (result f64)))
+  (import "math" "factorial" (func $math_factorial (param f64) (result f64)))
+  (import "math" "pow" (func $math_pow (param f64 f64) (result f64)))
+  (import "math" "max" (func $math_max (param f64 f64) (result f64)))
+  (import "math" "min" (func $math_min (param f64 f64) (result f64)))
+  (import "math" "rem" (func $math_rem (param f64 f64) (result f64)))
+  (func (export "fcn") (param i32) (param f64) (param i32) (param i32) (param i32)
+${body}
+  )
+)`;
+  }
+
   buildJs(): string {
     return `
         function model(

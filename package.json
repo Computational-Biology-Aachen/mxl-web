@@ -12,7 +12,8 @@
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "format": "prettier --write src/",
     "lint": "eslint src/",
-    "test": "vitest tests/"
+    "test": "vitest tests/",
+    "build:wasm": "emcc src-c/radau5.c src-c/dc_decsol.c src-c/decsol.c src-c/radau5_wrapper.c src-c/libf2c_stubs.c -I src-c/ -o static/wasm/radau5.js -s WASM=1 -s MODULARIZE=1 -s EXPORT_NAME=RadauModule -s ALLOW_TABLE_GROWTH=1 -s RESERVED_FUNCTION_POINTERS=8 -s EXPORTED_FUNCTIONS='[\"_run_radau5\",\"_set_model_fn\",\"_init_output\",\"_free_output\",\"_get_out_n\",\"_get_out_t\",\"_get_out_y\",\"_malloc\",\"_free\"]' -s EXPORTED_RUNTIME_METHODS='[\"addFunction\",\"removeFunction\",\"ccall\",\"cwrap\",\"HEAPF64\",\"wasmMemory\"]' -O2 -Wno-deprecated-non-prototype"
   },
   "devDependencies": {
     "@eslint/compat": ">=2.1.0",
@@ -26,8 +27,8 @@
     "globals": ">=17.6.0",
     "mdsvex": ">=0.12.7",
     "prettier": ">=3.8.3",
-    "prettier-plugin-svelte": ">=3.5.2",
     "prettier-plugin-css-order": ">=2.2.0",
+    "prettier-plugin-svelte": ">=3.5.2",
     "svelte": ">=5.55.5",
     "svelte-check": ">=4.4.7",
     "typescript": ">=6.0.3",
@@ -46,7 +47,8 @@
     "shiki": ">=4.0.2",
     "svelte-fa": ">=4.0.4",
     "svelte-media-queries": ">=1.6.2",
-    "vitest": "^4.1.6"
+    "vitest": "^4.1.6",
+    "wat-compiler": "^1.1.1"
   },
   "overrides": {
     "cookie": ">=1.1.1",

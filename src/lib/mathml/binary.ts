@@ -1,4 +1,5 @@
 import { Base, Binary, Name } from "./base";
+import type { WatContext } from "./wat-context";
 
 ///////////////////////////////////////////////////////////////////////////////
 // Binary fns
@@ -30,6 +31,9 @@ export class Pow extends Binary {
   toSBML(): string {
     return `<apply><power/>${this.left.toSBML()}${this.right.toSBML()}</apply>`;
   }
+  toWat(ctx: WatContext): string {
+    return `(call $math_pow ${this.left.toWat(ctx)} ${this.right.toWat(ctx)})`;
+  }
 }
 
 export class Implies extends Binary {
@@ -57,5 +61,8 @@ export class Implies extends Binary {
 
   toSBML(): string {
     return `<apply><implies/>${this.left.toSBML()}${this.right.toSBML()}</apply>`;
+  }
+  toWat(ctx: WatContext): string {
+    return `(i32.or (i32.eqz ${this.left.toWat(ctx)}) ${this.right.toWat(ctx)})`;
   }
 }

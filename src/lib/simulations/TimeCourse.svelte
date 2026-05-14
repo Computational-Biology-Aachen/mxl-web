@@ -7,7 +7,7 @@
   import { onMount } from "svelte";
   import LineChart from "../chartjs/LineChart.svelte";
   import type { ModelBuilder } from "../model-editor/modelBuilder";
-  import { pyWorkerPool } from "../stores/workerPool";
+  import { pyWorkerPool, wasmWorkerPool } from "../stores/workerPool";
   import {
     WorkerManager,
     type SimulationError,
@@ -39,8 +39,6 @@
     nTimePoints: number;
     lineDisplay: "current" | "last" | "first";
   } = $props();
-
-  const pyWorker = pyWorkerPool;
 
   let loading = $state(true);
   let err: SimulationError | undefined = $state(undefined);
@@ -78,9 +76,13 @@
       showDerived && selectedKeys
         ? selectedKeys.filter((k) => allDerived.has(k))
         : undefined;
+
+    const isWasm = method === "radau5";
+    const worker = isWasm ? wasmWorkerPool : pyWorkerPool;
     const built = model.buildPython([], derivedSelection);
-    pyWorker.postMessage({
+    worker.postMessage({
       rhsFn: `${built}\nmodel`,
+      rhsWat: isWasm ? model.buildWat() : undefined,
       allDerivedFn: `${built}\nall_derived`,
       selectDerivedFn: `${built}\nderived`,
       initialValues: model.resolveInitialValues(),
@@ -88,7 +90,7 @@
       allDerivedNames: order,
       selectDerivedNames: derivedSelection ? derivedSelection : order,
       tEnd: tEnd,
-      pars: [],
+      pars: isWasm ? model.resolveParameters() : [],
       method: method,
       requestId: requestId,
       calculateDerived: showDerived,
@@ -167,7 +169,8 @@
   }
 
   onMount(() => {
-    const unsub = pyWorker.onMessage(handleResults);
+    const unsub = pyWorkerPool.onMessage(handleResults);
+    const unsubWasm = wasmWorkerPool.onMessage(handleResults);
 
     // Initial run
     runSimulation(model);
@@ -175,6 +178,7 @@
     // Cleanup handlers (workers are shared so don't terminate them)
     return () => {
       unsub();
+      unsubWasm();
       // Clean up any pending timeoutInSeconds
       if (timeoutInSecondsId) {
         clearTimeout(timeoutInSecondsId);
