@@ -1,6 +1,7 @@
 export interface ProtocolStep {
   t_end: number;
   PFD: number;
+  [key: string]: number;
 }
 
 export type Protocol = ProtocolStep[];

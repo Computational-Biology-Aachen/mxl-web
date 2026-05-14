@@ -141,6 +141,7 @@
         selectDerivedNames: derivedSelection ? derivedSelection : order,
         tEnd: tEnd,
         pars: isWasm ? clonedModel.resolveParameters() : [],
+        parNames: isWasm ? clonedModel.getParameterNames() : undefined,
         requestId,
         method: method,
         calculateDerived: showDerived,

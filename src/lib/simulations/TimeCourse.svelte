@@ -91,6 +91,7 @@
       selectDerivedNames: derivedSelection ? derivedSelection : order,
       tEnd: tEnd,
       pars: isWasm ? model.resolveParameters() : [],
+      parNames: isWasm ? model.getParameterNames() : undefined,
       method: method,
       requestId: requestId,
       calculateDerived: showDerived,

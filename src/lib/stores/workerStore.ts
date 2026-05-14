@@ -20,7 +20,8 @@ export interface SimulationRequest {
   calculateDerived: boolean;
   // Optional
   type?: string;
-  protocol?: { t_end: number; PFD: number }[];
+  parNames?: string[];
+  protocol?: Array<{ t_end: number } & Record<string, number>>;
 }
 
 export interface SimulationError {

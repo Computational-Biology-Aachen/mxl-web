@@ -220,6 +220,7 @@ onmessage = async function (event: MessageEvent) {
     selectDerivedNames,
     tEnd,
     pars,
+    parNames,
     requestId,
     nTimePoints,
     protocol,
@@ -254,9 +255,14 @@ onmessage = async function (event: MessageEvent) {
     if (protocol && protocol.length > 0) {
       let t = 0;
       for (const seg of protocol) {
-        // Update PFD parameter — protocol entries have { t_end, PFD }
-        // PFD is convention from enterobactin; worker just passes all pars
-        // The caller is responsible for updating pars per segment.
+        // Update any matching parameters from the segment (e.g. PFD for enterobactin)
+        if (parNames) {
+          for (const [key, val] of Object.entries(seg)) {
+            if (key === "t_end") continue;
+            const idx = parNames.indexOf(key);
+            if (idx >= 0) parsArr[idx] = val as number;
+          }
+        }
         const result = runSegment(
           mod,
           modelIdx,
