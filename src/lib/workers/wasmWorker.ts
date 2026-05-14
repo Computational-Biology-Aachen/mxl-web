@@ -271,7 +271,7 @@ onmessage = async function (event: MessageEvent) {
           modelIdx,
           n,
           t,
-          t + seg.t_end,
+          seg.t_end,
           y,
           parsArr,
           rtol,
@@ -281,7 +281,7 @@ onmessage = async function (event: MessageEvent) {
         if ("err" in result) throw new Error(result.err);
         allTime = allTime.concat(result.time);
         allY = allY.concat(result.y);
-        t += seg.t_end;
+        t = seg.t_end;
       }
     } else {
       const result = runSegment(
@@ -310,7 +310,7 @@ onmessage = async function (event: MessageEvent) {
       const selectDerivedFnEval = eval(`(${selectDerivedFn})`);
       values = allY.map((yRow, i) => {
         const allDerived = allDerivedFnEval(allTime[i], yRow, pars);
-        return selectDerivedFnEval(allDerived);
+        return [...yRow, ...selectDerivedFnEval(allDerived)];
       });
     }
 

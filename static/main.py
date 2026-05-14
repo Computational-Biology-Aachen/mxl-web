@@ -231,7 +231,8 @@ def integrate_protocol(
     t_start = 0
     for step in protocol:
         t_end = step["t_end"]
-        ppfd = step["PFD"]
+        ppfd_key = next(k for k in step if k != "t_end")
+        ppfd = step[ppfd_key]
         try:
             res = solve_ivp(
                 rhs_fn,
@@ -255,7 +256,7 @@ def integrate_protocol(
                     all_derived_fn=all_derived_fn,
                     all_derived_names=all_derived_names,
                     y0=y0,
-                    args=(step["PFD"], *pars),
+                    args=(ppfd, *pars),
                 ),
             )
 
@@ -271,7 +272,7 @@ def integrate_protocol(
                     all_derived_fn=all_derived_fn,
                     all_derived_names=all_derived_names,
                     y0=y0,
-                    args=(step["PFD"], *pars),
+                    args=(ppfd, *pars),
                 ),
             )
 

@@ -1,6 +1,5 @@
 export interface ProtocolStep {
   t_end: number;
-  PFD: number;
   [key: string]: number;
 }
 
@@ -37,14 +36,14 @@ export function migratePamPhases(phases: PamPhase[]): PamGroup[] {
   });
 }
 
-export function expandProtocol(groups: PamGroup[]): Protocol {
+export function expandProtocol(groups: PamGroup[], ppfdKey: string): Protocol {
   const steps: ProtocolStep[] = [];
   let t = 0;
   for (const group of groups) {
     for (let i = 0; i < group.repetitions; i++) {
       for (const step of group.steps) {
         t += step.duration;
-        steps.push({ t_end: t, PFD: step.pfd });
+        steps.push({ t_end: t, [ppfdKey]: step.pfd });
       }
     }
   }

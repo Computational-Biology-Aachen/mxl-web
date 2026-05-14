@@ -74,7 +74,7 @@
       }
     }, timeoutInSeconds * 1000);
 
-    const protocol = expandProtocol(pamProtocol);
+    const protocol = expandProtocol(pamProtocol, ppfdKey);
 
     const order = model.sortDependencies();
     const allDerivedSet = new Set(order);

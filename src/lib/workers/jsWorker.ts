@@ -120,12 +120,12 @@ onmessage = function (event: MessageEvent) {
             if (idx >= 0) runPars[idx] = val as number;
           }
         }
-        const result = integrate(method, model, y, t, t + seg.t_end, runPars);
+        const result = integrate(method, model, y, t, seg.t_end, runPars);
         if (result.err) throw new Error(result.err);
         allTime = allTime.concat(result.time);
         allValues = allValues.concat(result.values);
         y.splice(0, y.length, ...result.values[result.values.length - 1]);
-        t += seg.t_end;
+        t = seg.t_end;
       }
     } else {
       const result = integrate(method, model, y, 0, tEnd, pars);
@@ -151,7 +151,7 @@ onmessage = function (event: MessageEvent) {
         )() as (all: number[]) => number[];
         values = resampled.values.map((yRow, i) => {
           const allDerived = allDerivedFnEval(resampled.time[i], yRow, pars);
-          return selectDerivedFnEval(allDerived);
+          return [...yRow, ...selectDerivedFnEval(allDerived)];
         });
       } catch {
         // Fall back to raw state variables if derived evaluation fails
