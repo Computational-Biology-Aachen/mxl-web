@@ -127,7 +127,9 @@ export class Ln extends Unary {
     return `<apply><ln/>${this.child.toSBML()}</apply>`;
   }
   toWat(ctx: WatContext): string {
-    return `(call $math_log ${this.child.toWat(ctx)})`;
+    // Clamp to smallest positive f64 before log to avoid NaN when implicit
+    // solver (RADAU5 Newton iterations) temporarily drives state negative.
+    return `(call $math_log (f64.max ${this.child.toWat(ctx)} (f64.const 5e-324)))`;
   }
 }
 

@@ -134,12 +134,15 @@ function resampleUniform(
   const outTime: number[] = [];
   const outY: number[][] = [];
   for (let k = 0; k < nPoints; k++) {
-    const t = nPoints === 1 ? tStart : tStart + (k / (nPoints - 1)) * (tEnd - tStart);
+    const t =
+      nPoints === 1 ? tStart : tStart + (k / (nPoints - 1)) * (tEnd - tStart);
     outTime.push(t);
-    let lo = 0, hi = time.length - 1;
+    let lo = 0,
+      hi = time.length - 1;
     while (hi - lo > 1) {
       const mid = (lo + hi) >> 1;
-      if (time[mid] <= t) lo = mid; else hi = mid;
+      if (time[mid] <= t) lo = mid;
+      else hi = mid;
     }
     if (hi === lo || time[hi] === time[lo]) {
       outY.push([...y[lo]]);
@@ -191,8 +194,12 @@ function runSegment(
     );
 
     if (idid < 0) {
-      console.error(`[wasmWorker] RADAU5 IDID=${idid} at t=[${tStart},${tEnd}] n=${n}`);
-      return { err: `RADAU5 failed with IDID=${idid} (t=[${tStart.toFixed(3)},${tEnd.toFixed(3)}])` };
+      console.error(
+        `[wasmWorker] RADAU5 IDID=${idid} at t=[${tStart},${tEnd}] n=${n}`,
+      );
+      return {
+        err: `RADAU5 failed with IDID=${idid} (t=[${tStart.toFixed(3)},${tEnd.toFixed(3)}])`,
+      };
     }
 
     const outN = mod._get_out_n();
@@ -215,7 +222,9 @@ function runSegment(
 
     // Append the true endpoint if the buffer stopped short of tEnd.
     const lastT = time.length > 0 ? time[time.length - 1] : -Infinity;
-    const endpointAppended = time.length === 0 || Math.abs(lastT - tEnd) > 1e-10 * (1 + Math.abs(tEnd));
+    const endpointAppended =
+      time.length === 0 ||
+      Math.abs(lastT - tEnd) > 1e-10 * (1 + Math.abs(tEnd));
     if (endpointAppended) {
       time.push(tEnd);
       yOut.push(Array.from(y));
@@ -229,7 +238,9 @@ function runSegment(
         `tRange=[${time[0]?.toFixed(6) ?? "–"},${time[time.length - 1]?.toFixed(6) ?? "–"}]`,
         `endpointAppended=${endpointAppended}`,
         `yNaN=${yHasNaN}`,
-        `y=[${Array.from(y).map(v => v.toExponential(2)).join(",")}]`,
+        `y=[${Array.from(y)
+          .map((v) => v.toExponential(2))
+          .join(",")}]`,
       );
     }
 
@@ -335,7 +346,11 @@ onmessage = async function (event: MessageEvent) {
         if ("err" in result) throw new Error(result.err);
         // Resample each segment to nTimePoints uniform times, matching Python's t_eval per segment.
         // Skip first point of subsequent segments to avoid duplicates at boundaries.
-        const { time: segTime, y: segY } = resampleUniform(result.time, result.y, nTimePoints);
+        const { time: segTime, y: segY } = resampleUniform(
+          result.time,
+          result.y,
+          nTimePoints,
+        );
         const skip = allTime.length > 0 ? 1 : 0;
         allTime = allTime.concat(segTime.slice(skip));
         allY = allY.concat(segY.slice(skip));
