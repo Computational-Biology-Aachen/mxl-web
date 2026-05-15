@@ -173,7 +173,10 @@ function runSegment(
     mod.HEAPF64.set(pars, rparPtr / 8);
 
     mod._set_model_fn(modelIdx);
-    mod._init_output(nout, n);
+    // Small buffer — stiff segments can take far more steps than nout.
+    // We always append the true endpoint below, so resampleUniform always
+    // spans tStart→tEnd regardless of overflow.
+    mod._init_output(Math.max(nout, 1000), n);
 
     const idid = mod._run_radau5(
       n,
@@ -205,9 +208,15 @@ function runSegment(
       ),
     );
 
-    // Update y in-place for protocol chaining (last output row)
-    if (outN > 0) {
-      y.set(yOut[outN - 1]);
+    // Always read the true endpoint from the heap — the output buffer may not
+    // reach tEnd if the solver took more steps than the buffer capacity.
+    y.set(mod.HEAPF64.subarray(yPtr / 8, yPtr / 8 + n));
+
+    // Append the true endpoint if the buffer stopped short of tEnd.
+    const lastT = time.length > 0 ? time[time.length - 1] : -Infinity;
+    if (time.length === 0 || Math.abs(lastT - tEnd) > 1e-10 * (1 + Math.abs(tEnd))) {
+      time.push(tEnd);
+      yOut.push(Array.from(y));
     }
 
     mod._free_output();
@@ -252,9 +261,6 @@ onmessage = async function (event: MessageEvent) {
     allDerivedFn,
     selectDerivedFn,
     initialValues,
-    rhsNames,
-    allDerivedNames,
-    selectDerivedNames,
     tEnd,
     pars,
     parNames,
