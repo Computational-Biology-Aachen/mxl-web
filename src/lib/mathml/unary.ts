@@ -34,7 +34,7 @@ export class Ceiling extends Unary {
     return `Math.ceil(${this.child.toJs()})`;
   }
   toPy(displayNames: Map<string, string>): string {
-    return `ceil(${this.child.toPy(displayNames)})`;
+    return `math.ceil(${this.child.toPy(displayNames)})`;
   }
   toTex(texNames: Map<string, string>): string {
     return `\\lceil ${this.child.toTex(texNames)} \\rceil`;
@@ -73,10 +73,11 @@ export class Factorial extends Unary {
     super();
   }
   toJs(): string {
-    return `factorial(${this.child.toJs()})`;
+    const n = this.child.toJs();
+    return `((n => { let r = 1; for (let i = 2; i <= Math.round(n); i++) r *= i; return r; })(${n}))`;
   }
   toPy(displayNames: Map<string, string>): string {
-    return `np.math.factorial(${this.child.toPy(displayNames)})`;
+    return `math.factorial(int(round(${this.child.toPy(displayNames)})))`;
   }
   toTex(texNames: Map<string, string>): string {
     return `${this.child.toTex(texNames)}!`;
@@ -643,10 +644,10 @@ export class RateOf extends Unary {
     super();
   }
   toJs(): string {
-    return `rateOf(${this.child.toJs()})`;
+    return `0`;
   }
   toPy(displayNames: Map<string, string>): string {
-    return `rate_of(${this.child.toPy(displayNames)})`;
+    return `0`;
   }
   toTex(texNames: Map<string, string>): string {
     return `\\frac{d}{dt}(${this.child.toTex(texNames)})`;

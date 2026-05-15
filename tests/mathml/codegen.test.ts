@@ -163,15 +163,14 @@ describe("Floor", () => {
 describe("Factorial", () => {
   const n = new Name("n");
 
-  it("toJs", () => expect(new Factorial(n).toJs()).toBe("factorial(n)"));
+  it("toJs", () => expect(new Factorial(n).toJs()).toBe("((n => { let r = 1; for (let i = 2; i <= Math.round(n); i++) r *= i; return r; })(n))"));
   it("toTex", () => expect(new Factorial(n).toTex(NO_NAMES)).toBe("n!"));
   it("toSBML", () => expect(new Factorial(n).toSBML()).toBe("<apply><factorial/><ci>n</ci></apply>"));
 
   // BUG: np.factorial does not exist in NumPy; should be math.factorial(n) or scipy.special.factorial(n)
-  it("toPy uses valid Python — BUG: uses nonexistent np.factorial", () => {
+  it("toPy uses math.factorial", () => {
     const py = new Factorial(n).toPy(NO_NAMES);
-    expect(py).not.toContain("np.factorial");
-    expect(py).toMatch(/math\.factorial|scipy\.special\.factorial/);
+    expect(py).toContain("math.factorial");
   });
 });
 
@@ -253,16 +252,14 @@ describe("Piecewise", () => {
   const cond = new LessThan([x, zero]);
 
   it("toPy with otherwise clause", () => {
-    // piecewise(1 if x<0, 0) → "1 if x < 0 else 0"
     const pw = new Piecewise([one, cond, zero]);
     const py = pw.toPy(NO_NAMES);
-    expect(py).toBe("1 if x < 0 else 0");
+    expect(py).toBe("(1 if x < 0 else 0)");
   });
 
   it("toPy defaults to nan when no otherwise", () => {
-    // piecewise(1 if x<0) with no otherwise → "1 if x < 0 else float('nan')"
     const pw = new Piecewise([one, cond]);
-    expect(pw.toPy(NO_NAMES)).toBe("1 if x < 0 else float('nan')");
+    expect(pw.toPy(NO_NAMES)).toBe("(1 if x < 0 else float('nan'))");
   });
 
   it("toTex produces cases environment", () => {

@@ -415,7 +415,7 @@ derived = selected_derived`
 derived = all_derived`;
 
     return `import numpy as np
-from math import ceil
+import math
 
 def model(
     time: float,

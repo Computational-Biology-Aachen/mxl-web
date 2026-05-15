@@ -85,10 +85,10 @@ export class Piecewise extends Nary {
       this.children.length % 2 === 1
         ? this.children[this.children.length - 1].toPy(displayNames)
         : "float('nan')";
-    return (
+    const expr =
       parts.join(" else ") +
-      (parts.length > 0 ? ` else ${otherwise}` : otherwise)
-    );
+      (parts.length > 0 ? ` else ${otherwise}` : otherwise);
+    return `(${expr})`;
   }
   toTex(texNames: Map<string, string>): string {
     const parts: string[] = [];
@@ -151,7 +151,7 @@ export class Rem extends Nary {
     if (this.children.length === 0) return "0";
     return this.children
       .map((c) => c.toPy(displayNames))
-      .reduce((acc, cur) => `(${acc}) % (${cur})`);
+      .reduce((acc, cur) => `math.fmod(${acc}, ${cur})`);
   }
   toTex(texNames: Map<string, string>): string {
     if (this.children.length === 0) return "0";
@@ -669,7 +669,7 @@ export class IntDivide extends Nary {
     if (this.children.length === 0) return "0";
     return this.children
       .map((c) => c.toPy(displayNames))
-      .reduce((acc, cur) => `(${acc}) // (${cur})`);
+      .reduce((acc, cur) => `math.trunc((${acc}) / (${cur}))`);
   }
   toTex(texNames: Map<string, string>): string {
     if (this.children.length === 0) return "0";
@@ -691,6 +691,6 @@ export class IntDivide extends Nary {
     const divided = this.children
       .map((c) => c.toWat(ctx))
       .reduce((a, b) => `(f64.div ${a} ${b})`);
-    return `(f64.floor ${divided})`;
+    return `(f64.trunc ${divided})`;
   }
 }
