@@ -118,6 +118,40 @@ async function compileModel(
 }
 
 // ------------------------------------------------------------
+// Resample irregular time series to nPoints evenly-spaced times
+// ------------------------------------------------------------
+function resampleUniform(
+  time: number[],
+  y: number[][],
+  nPoints: number,
+): { time: number[]; y: number[][] } {
+  if (time.length === 0 || nPoints <= 0) return { time, y };
+  if (time.length === 1) {
+    return { time: Array(nPoints).fill(time[0]), y: Array(nPoints).fill(y[0]) };
+  }
+  const tStart = time[0];
+  const tEnd = time[time.length - 1];
+  const outTime: number[] = [];
+  const outY: number[][] = [];
+  for (let k = 0; k < nPoints; k++) {
+    const t = nPoints === 1 ? tStart : tStart + (k / (nPoints - 1)) * (tEnd - tStart);
+    outTime.push(t);
+    let lo = 0, hi = time.length - 1;
+    while (hi - lo > 1) {
+      const mid = (lo + hi) >> 1;
+      if (time[mid] <= t) lo = mid; else hi = mid;
+    }
+    if (hi === lo || time[hi] === time[lo]) {
+      outY.push([...y[lo]]);
+    } else {
+      const alpha = (t - time[lo]) / (time[hi] - time[lo]);
+      outY.push(y[lo].map((v, j) => v + alpha * (y[hi][j] - v)));
+    }
+  }
+  return { time: outTime, y: outY };
+}
+
+// ------------------------------------------------------------
 // Run one integration segment
 // ------------------------------------------------------------
 function runSegment(
@@ -258,7 +292,7 @@ onmessage = async function (event: MessageEvent) {
     if (protocol && protocol.length > 0) {
       let t = 0;
       for (const seg of protocol) {
-        // Update any matching parameters from the segment (e.g. PFD for enterobactin)
+        // Update any matching parameters from the segment
         if (parNames) {
           for (const [key, val] of Object.entries(seg)) {
             if (key === "t_end") continue;
@@ -279,8 +313,12 @@ onmessage = async function (event: MessageEvent) {
           nTimePoints,
         );
         if ("err" in result) throw new Error(result.err);
-        allTime = allTime.concat(result.time);
-        allY = allY.concat(result.y);
+        // Resample each segment to nTimePoints uniform times, matching Python's t_eval per segment.
+        // Skip first point of subsequent segments to avoid duplicates at boundaries.
+        const { time: segTime, y: segY } = resampleUniform(result.time, result.y, nTimePoints);
+        const skip = allTime.length > 0 ? 1 : 0;
+        allTime = allTime.concat(segTime.slice(skip));
+        allY = allY.concat(segY.slice(skip));
         t = seg.t_end;
       }
     } else {
@@ -297,8 +335,9 @@ onmessage = async function (event: MessageEvent) {
         nTimePoints,
       );
       if ("err" in result) throw new Error(result.err);
-      allTime = result.time;
-      allY = result.y;
+      const resampled = resampleUniform(result.time, result.y, nTimePoints);
+      allTime = resampled.time;
+      allY = resampled.y;
     }
 
     mod.removeFunction(modelIdx);
