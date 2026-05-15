@@ -46,6 +46,10 @@
     display: flex;
     flex-direction: column;
     gap: 2rem;
+    margin-right: auto;
+    margin-left: auto;
     padding: 2rem 5rem;
+    width: 100%;
+    max-width: 120rem;
   }
 </style>

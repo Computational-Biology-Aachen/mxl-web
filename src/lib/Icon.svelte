@@ -6,14 +6,21 @@
     children,
     color = "primary",
     fontSize = "inherit",
+    style = "",
+    klass = "",
   }: {
     children: Snippet;
-    color?: "primary" | "inherit";
+    color?: "primary" | "inherit" | "c1" | "c2" | "c3" | "c4";
     fontSize?: "inherit" | "sm" | "md" | "lg";
+    style?: string;
+    klass?: string;
   } = $props();
 </script>
 
-<span class="material-symbols-outlined col-{color} ft-{fontSize}">
+<span
+  class="material-symbols-outlined col-{color} ft-{fontSize} {klass}"
+  style={style}
+>
   {@render children()}
 </span>
 
@@ -23,6 +30,19 @@
   }
   .col-primary {
     color: var(--primary);
+  }
+
+  .col-c1 {
+    color: #135bec;
+  }
+  .col-c2 {
+    color: #006466;
+  }
+  .col-c3 {
+    color: #570066;
+  }
+  .col-c4 {
+    color: #ed1379;
   }
 
   .ft-inherit {
