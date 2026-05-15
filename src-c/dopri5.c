@@ -536,7 +536,7 @@ static doublereal c_b47 = 1.;
     logical last;
     doublereal hnew, bspl, facc1, facc2, expo1, hlamb, ydiff, atoli;
     integer iasti;
-    extern doublereal hinit_(integer *, S_fp, doublereal *, doublereal *, 
+    extern doublereal hinit_dopri5_(integer *, S_fp, doublereal *, doublereal *, 
 	    doublereal *, doublereal *, doublereal *, doublereal *, 
 	    doublereal *, integer *, doublereal *, doublereal *, doublereal *,
 	     integer *, doublereal *, integer *);
@@ -615,7 +615,7 @@ static doublereal c_b47 = 1.;
     *hmax = abs(*hmax);
     iord = 5;
     if (*h__ == 0.) {
-	*h__ = hinit_(n, (S_fp)fcn, x, &y[1], xend, &posneg, &k1[1], &k2[1], &
+	*h__ = hinit_dopri5_(n, (S_fp)fcn, x, &y[1], xend, &posneg, &k1[1], &k2[1], &
 		k3[1], &iord, hmax, &atol[1], &rtol[1], itol, &rpar[1], &ipar[
 		1]);
     }
@@ -904,7 +904,7 @@ L79:
 } /* dopcor_ */
 
 
-doublereal hinit_(integer *n, S_fp fcn, doublereal *x, doublereal *y, 
+doublereal hinit_dopri5_(integer *n, S_fp fcn, doublereal *x, doublereal *y, 
 	doublereal *xend, doublereal *posneg, doublereal *f0, doublereal *f1, 
 	doublereal *y1, integer *iord, doublereal *hmax, doublereal *atol, 
 	doublereal *rtol, integer *itol, doublereal *rpar, integer *ipar)
@@ -1025,7 +1025,7 @@ doublereal hinit_(integer *n, S_fp fcn, doublereal *x, doublereal *y,
     h__ = min(d__1,*hmax);
     ret_val = d_sign(&h__, posneg);
     return ret_val;
-} /* hinit_ */
+} /* hinit_dopri5_ */
 
 
 doublereal contd5_(integer *ii, doublereal *x, doublereal *con, integer *
