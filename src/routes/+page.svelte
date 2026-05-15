@@ -1,38 +1,39 @@
-<!-- Few ideas. The front page should include some central eye catcher quotes, like:
-Living models for collaborative science.
-or
-What if every biological model could become an interactive scientific instrument?
-
-Then smaller emotional text
-
-I would make a short mission statement. And add a tab on the top: how it works + how to cite
-
--->
-
 <script lang="ts">
   import { base } from "$app/paths";
+  import schemeEbeling from "$lib/assets/ebeling2026-scheme.png";
+  import ccls from "$lib/assets/logos/ccls.svg";
+  import cpbl from "$lib/assets/logos/cpbl.svg";
+  import mibinet from "$lib/assets/logos/mibinet.png";
+  import rwth from "$lib/assets/logos/rwth.svg";
   import schemeLotkaVolt from "$lib/assets/lotka-volterra-scheme.png";
+  import schemeEnterobactin from "$lib/assets/mibinet-duo.png";
   import hero from "$lib/assets/mxlweb-hero.png";
-  import schemePopDyn from "$lib/assets/population-dynamics.png";
-  import schemeTripartite from "$lib/assets/tripartite.png";
+  import schemeSir from "$lib/assets/sir.png";
   import Icon from "$lib/Icon.svelte";
   import PrimaryLinkButton from "$lib/links/PrimaryLinkButton.svelte";
   import SecondaryLinkButton from "$lib/links/SecondaryLinkButton.svelte";
-  import ModelCard from "$lib/ModelCard.svelte";
   import ModelGallery from "$lib/ModelGallery.svelte";
+  import ModelHighlight from "$lib/ModelHighlight.svelte";
   import Row from "$lib/Row.svelte";
 </script>
 
 <div class="container">
   <div class="top">
     <div class="top-left">
-      <h1>
-        Living models for <br />
+      <h1 class="banner">
+        <strong>Living</strong> models for <br />
         <span style="color: var(--primary);">collaborative science.</span>
       </h1>
       <p>
-        Stop sending static plots. Share living biological models your
-        collaborators can manipulate, mutate, perturb, and understand instantly.
+        Stop sending static plots.
+        <br />
+        <br />
+        MxlWeb transformes ordinary ODE models into interactive web applications that
+        let you explore biological systems - right in your browser.
+        <br />
+        <br />
+        Share living biological models your collaborators can manipulate, mutate,
+        perturb, and understand instantly.
       </p>
       <Row>
         <PrimaryLinkButton href="{base}/lotka-volterra"
@@ -51,7 +52,7 @@ I would make a short mission statement. And add a tab on the top: how it works +
   </div>
 
   <div class="heading">
-    <Icon color="primary">bolt</Icon>
+    <Icon color="primary">info</Icon>
     <h2>Why MxlWeb?</h2>
   </div>
 
@@ -127,30 +128,75 @@ I would make a short mission statement. And add a tab on the top: how it works +
   </div>
 
   <div class="heading">
-    <Icon
-      color="primary"
-      style="font-size: 2rem">bolt</Icon
-    >
+    <Icon color="primary">bolt</Icon>
     <h2>Explore biological scenarios in real time</h2>
   </div>
 
-  <ModelGallery title="ODE models">
-    <ModelCard
-      name="Lotka Volterra"
+  <ModelGallery>
+    <ModelHighlight
+      name="Photosynthesis dynamics"
+      desc="Light, CO₂ and feedback in a dynamic model."
+      href="{base}/ebeling-2026"
+      image={schemeEbeling}
+    />
+    <ModelHighlight
+      name="Race for iron"
+      desc="What is the effect of a public good on a microbial community?"
+      href="{base}/dynamic-entrobactin"
+      image={schemeEnterobactin}
+    />
+    <ModelHighlight
+      name="Population dynamics"
+      desc="Explore how predators and prey survive in a dynamic environment"
       href="{base}/lotka-volterra"
       image={schemeLotkaVolt}
     />
-    <ModelCard
-      name="Population dynamics"
-      href="{base}/population-dynamics"
-      image={schemePopDyn}
-    />
-    <ModelCard
-      name="Tripartite dynamics"
-      href="{base}/tripartite"
-      image={schemeTripartite}
+    <ModelHighlight
+      name="Host-Parasite interaction"
+      desc="How infection, immune response and outcomes evolve?"
+      href="{base}/sir"
+      image={schemeSir}
     />
   </ModelGallery>
+
+  <div class="heading">
+    <Icon color="primary">handshake</Icon>
+    <h2>Trusted by the scientific community</h2>
+  </div>
+  <div class="logo-bar">
+    <a href="https://www.rwth-aachen.de">
+      <img
+        class="logo"
+        src={rwth}
+        alt="rwth logo"
+      />
+    </a>
+    <a href="https://www.cpbl.rwth-aachen.de/">
+      <img
+        class="logo"
+        src={cpbl}
+        style="height: 6rem"
+        alt="cpbl logo"
+      />
+    </a>
+    <a href="https://www.ccls.rwth-aachen.de">
+      <img
+        class="logo"
+        src={ccls}
+        style="height: 4rem"
+        alt="ccls logo"
+      />
+    </a>
+    <a href="https://www.sfb1535.hhu.de/en/mibinet">
+      <img
+        class="logo"
+        src={mibinet}
+        style="height: 5.5rem"
+        alt="mibinet logo"
+      />
+    </a>
+  </div>
+  <!-- End container -->
 </div>
 
 <style>
@@ -160,7 +206,7 @@ I would make a short mission statement. And add a tab on the top: how it works +
     gap: 2rem;
     margin-right: auto;
     margin-left: auto;
-    padding: 2rem 5rem;
+    padding: 2rem 5rem 10rem;
     width: 100%;
     max-width: 100rem;
   }
@@ -188,6 +234,11 @@ I would make a short mission statement. And add a tab on the top: how it works +
     height: 100%;
   }
 
+  .banner {
+    font-size: 3rem;
+    letter-spacing: -1px;
+  }
+
   .top-img {
     border: 1px solid rgba(0, 0, 0, 0.2);
     border-radius: 20px;
@@ -201,6 +252,7 @@ I would make a short mission statement. And add a tab on the top: how it works +
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    margin-top: 2rem;
   }
 
   .row-main {
@@ -300,5 +352,26 @@ I would make a short mission statement. And add a tab on the top: how it works +
   }
   .box-header {
     font-size: 1rem;
+  }
+
+  .logo-bar {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin: 1rem 0;
+    height: 6rem;
+  }
+
+  .logo {
+    transition:
+      transform 150ms cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    height: 5rem;
+  }
+  .logo:hover {
+    transform: translateY(-3px);
+    color: var(--primary);
   }
 </style>

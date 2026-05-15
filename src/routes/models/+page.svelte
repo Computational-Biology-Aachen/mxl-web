@@ -8,6 +8,7 @@
   import schemeEnterobactin from "$lib/assets/mibinet-duo.png";
   import schemePopDyn from "$lib/assets/population-dynamics.png";
   import schemeSaadat from "$lib/assets/saadat2021.png";
+  import schemeSir from "$lib/assets/sir.png";
   import schemeTripartite from "$lib/assets/tripartite.png";
   import schemeYokota from "$lib/assets/yokota.png";
   import Icon from "$lib/Icon.svelte";
@@ -80,6 +81,11 @@
     name="Tomato KEA3"
     href="{base}/kea3-tomato"
     image={schemeKea3}
+  />
+  <ModelCard
+    name="SIR"
+    href="{base}/sir"
+    image={schemeSir}
   />
 </ModelGallery>
 
