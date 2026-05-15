@@ -5,7 +5,7 @@
   type Props = {
     id: string;
     label: string;
-    value: string | undefined;
+    value: string | any | undefined;
     border?: "transparent" | "solid";
     children: Snippet;
   };

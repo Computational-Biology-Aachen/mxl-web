@@ -5,12 +5,11 @@
   import InputChoice from "$lib/inputs/InputChoice.svelte";
   import InputNumber from "$lib/inputs/InputNumber.svelte";
   import InputText from "$lib/inputs/InputText.svelte";
-  import InlineGrid2 from "$lib/InlineGrid2.svelte";
   import type { ModelBuilder } from "$lib/model-editor/modelBuilder";
   import RowApart from "$lib/RowApart.svelte";
   import { untrack } from "svelte";
   import PopoverSaveButton from "../buttons/PopoverSaveButton.svelte";
-  import { type PamGroup, migratePamPhases } from "./protocol";
+  import { migratePamPhases, type PamGroup } from "./protocol";
 
   let {
     parent,
@@ -172,17 +171,16 @@
   label="Time points per step: "
   bind:value={nTimePoints}
 />
-<InlineGrid2>
-  <label for="pam-backend">Backend</label>
-  <select
-    id="pam-backend"
-    bind:value={backend}
-  >
-    {#each allBackends as b}
-      <option value={b}>{b.label}</option>
-    {/each}
-  </select>
-</InlineGrid2>
+
+<InputChoice
+  id="tc-backend"
+  label="Backend"
+  bind:value={backend}
+>
+  {#each allBackends as b}
+    <option value={b}>{b.label}</option>
+  {/each}
+</InputChoice>
 
 <InputChoice
   id="line-display"

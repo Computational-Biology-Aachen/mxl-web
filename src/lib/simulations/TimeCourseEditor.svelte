@@ -5,7 +5,6 @@
   import InputNumber from "$lib/inputs/InputNumber.svelte";
   import InputNumberOptional from "$lib/inputs/InputNumberOptional.svelte";
   import InputText from "$lib/inputs/InputText.svelte";
-  import InlineGrid2 from "$lib/InlineGrid2.svelte";
   import type { ModelBuilder } from "$lib/model-editor/modelBuilder";
   import RowApart from "$lib/RowApart.svelte";
   import { untrack } from "svelte";
@@ -164,17 +163,16 @@
   bind:condition={xMaxAuto}
 />
 
-<InlineGrid2>
-  <label for="tc-backend">Backend</label>
-  <select
-    id="tc-backend"
-    bind:value={backend}
-  >
-    {#each allBackends as b}
-      <option value={b}>{b.label}</option>
-    {/each}
-  </select>
-</InlineGrid2>
+<InputChoice
+  id="tc-backend"
+  label="Backend"
+  bind:value={backend}
+>
+  {#each allBackends as b}
+    <option value={b}>{b.label}</option>
+  {/each}
+</InputChoice>
+
 <InputChoice
   id="line-display"
   label="LineDisplay"

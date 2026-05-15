@@ -5,7 +5,6 @@
   import InputNumber from "$lib/inputs/InputNumber.svelte";
   import InputNumberOptional from "$lib/inputs/InputNumberOptional.svelte";
   import InputText from "$lib/inputs/InputText.svelte";
-  import InlineGrid2 from "$lib/InlineGrid2.svelte";
   import RowApart from "$lib/RowApart.svelte";
   import { untrack } from "svelte";
   import PopoverSaveButton from "../buttons/PopoverSaveButton.svelte";
@@ -174,17 +173,17 @@
   label="Steady-state tolerance (L2): "
   bind:value={tolerance}
 />
-<InlineGrid2>
-  <label for="scan-backend">Backend</label>
-  <select
-    id="scan-backend"
-    bind:value={backend}
-  >
-    {#each allBackends as b}
-      <option value={b}>{b.label}</option>
-    {/each}
-  </select>
-</InlineGrid2>
+
+<InputChoice
+  id="tc-backend"
+  label="Backend"
+  bind:value={backend}
+>
+  {#each allBackends as b}
+    <option value={b}>{b.label}</option>
+  {/each}
+</InputChoice>
+
 <InputChoice
   id="line-display"
   label="LineDisplay"
