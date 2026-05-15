@@ -187,11 +187,12 @@ function runSegment(
       rtol,
       atol,
       0, // h_init = 0 → RADAU5 default
-      100000, // nmax
+      500000, // nmax
     );
 
     if (idid < 0) {
-      return { err: `RADAU5 failed with IDID=${idid}` };
+      console.error(`[wasmWorker] RADAU5 IDID=${idid} at t=[${tStart},${tEnd}] n=${n}`);
+      return { err: `RADAU5 failed with IDID=${idid} (t=[${tStart.toFixed(3)},${tEnd.toFixed(3)}])` };
     }
 
     const outN = mod._get_out_n();
@@ -287,7 +288,7 @@ onmessage = async function (event: MessageEvent) {
     const modelIdx = mod.addFunction(fcn, "vidiii");
 
     const rtol = 1e-6;
-    const atol = 1e-9;
+    const atol = 1e-8;
     const n = initialValues.length;
     const y = new Float64Array(initialValues);
     const parsArr = new Float64Array(pars);
