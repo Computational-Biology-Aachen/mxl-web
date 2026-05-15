@@ -215,9 +215,22 @@ function runSegment(
 
     // Append the true endpoint if the buffer stopped short of tEnd.
     const lastT = time.length > 0 ? time[time.length - 1] : -Infinity;
-    if (time.length === 0 || Math.abs(lastT - tEnd) > 1e-10 * (1 + Math.abs(tEnd))) {
+    const endpointAppended = time.length === 0 || Math.abs(lastT - tEnd) > 1e-10 * (1 + Math.abs(tEnd));
+    if (endpointAppended) {
       time.push(tEnd);
       yOut.push(Array.from(y));
+    }
+
+    if (import.meta.env.DEV) {
+      const yHasNaN = y.some(isNaN);
+      console.debug(
+        `[wasm seg t=[${tStart.toFixed(3)},${tEnd.toFixed(3)}]]`,
+        `outN=${outN}`,
+        `tRange=[${time[0]?.toFixed(6) ?? "–"},${time[time.length - 1]?.toFixed(6) ?? "–"}]`,
+        `endpointAppended=${endpointAppended}`,
+        `yNaN=${yHasNaN}`,
+        `y=[${Array.from(y).map(v => v.toExponential(2)).join(",")}]`,
+      );
     }
 
     mod._free_output();
@@ -326,6 +339,15 @@ onmessage = async function (event: MessageEvent) {
         const skip = allTime.length > 0 ? 1 : 0;
         allTime = allTime.concat(segTime.slice(skip));
         allY = allY.concat(segY.slice(skip));
+        if (import.meta.env.DEV) {
+          console.debug(
+            `[wasm proto seg ${allTime.length > 0 ? "→" : "start"}]`,
+            `seg t_end=${seg.t_end}`,
+            `segTime=[${segTime[0]?.toFixed(4)},${segTime[segTime.length - 1]?.toFixed(4)}] len=${segTime.length}`,
+            `skip=${skip} added=${segTime.slice(skip).length}`,
+            `allTime=[${allTime[0]?.toFixed(4)},${allTime[allTime.length - 1]?.toFixed(4)}] len=${allTime.length}`,
+          );
+        }
         t = seg.t_end;
       }
     } else {
