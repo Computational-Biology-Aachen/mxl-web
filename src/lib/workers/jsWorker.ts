@@ -143,7 +143,7 @@ onmessage = function (event: MessageEvent) {
         const allDerivedFnEval = new Function(`return (${allDerivedFn})`)() as (
           t: number,
           y: number[],
-          pars: number[]
+          pars: number[],
         ) => number[];
         // eslint-disable-next-line no-new-func
         const selectDerivedFnEval = new Function(

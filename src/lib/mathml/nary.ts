@@ -63,7 +63,11 @@ export class Piecewise extends Nary {
         ? this.children[this.children.length - 1].toJs()
         : "NaN";
     let result = otherwise;
-    for (let i = this.children.length - (this.children.length % 2 === 1 ? 3 : 2); i >= 0; i -= 2) {
+    for (
+      let i = this.children.length - (this.children.length % 2 === 1 ? 3 : 2);
+      i >= 0;
+      i -= 2
+    ) {
       const val = this.children[i].toJs();
       const cond = this.children[i + 1].toJs();
       result = `(${cond} ? ${val} : ${result})`;
