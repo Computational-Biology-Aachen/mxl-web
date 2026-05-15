@@ -91,24 +91,30 @@ function makeJsBackend(method: string, label: string): Backend {
   };
 }
 
-export const wasmRadau5: Backend = {
-  id: "wasm-radau5",
-  label: "WASM / RADAU5",
-  method: "radau5",
-  getPool: getWasmPool,
-  buildRequest(model, { derivedSelection } = {}) {
-    const { allDerived, selectDerived } =
-      model.buildJsDerived(derivedSelection);
-    return {
-      rhsWat: model.buildWat(),
-      allDerivedFn: allDerived,
-      selectDerivedFn: selectDerived,
-      pars: model.resolveParameters(),
-      parNames: model.getParameterNames(),
-      method: "radau5",
-    };
-  },
-};
+function makeWasmBackend(method: string, label: string): Backend {
+  return {
+    id: `wasm-${method}`,
+    label: `WASM / ${label}`,
+    method,
+    getPool: getWasmPool,
+    buildRequest(model, { derivedSelection } = {}) {
+      const { allDerived, selectDerived } =
+        model.buildJsDerived(derivedSelection);
+      return {
+        rhsWat: model.buildWat(),
+        allDerivedFn: allDerived,
+        selectDerivedFn: selectDerived,
+        pars: model.resolveParameters(),
+        parNames: model.getParameterNames(),
+        method,
+      };
+    },
+  };
+}
+
+export const wasmRadau5 = makeWasmBackend("radau5", "RADAU5");
+export const wasmDop853 = makeWasmBackend("dop853", "DOP853");
+export const wasmDopri5 = makeWasmBackend("dopri5", "DOPRI5");
 
 export const pyRadau = makePyBackend("Radau", "Radau");
 export const pyLSODA = makePyBackend("LSODA", "LSODA");
@@ -122,6 +128,8 @@ export const jsEuler = makeJsBackend("euler", "Euler");
 
 export const allBackends: Backend[] = [
   wasmRadau5,
+  wasmDop853,
+  wasmDopri5,
   pyRadau,
   pyLSODA,
   pyRK45,
@@ -134,6 +142,8 @@ export const allBackends: Backend[] = [
 
 export const backends = {
   wasmRadau5,
+  wasmDop853,
+  wasmDopri5,
   pyRadau,
   pyLSODA,
   pyRK45,

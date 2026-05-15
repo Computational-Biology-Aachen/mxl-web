@@ -14,7 +14,7 @@
     "lint": "eslint src/",
     "test": "vitest tests/",
     "test:parity:deep": "PARITY_DEPTH=deep vitest tests/mathml/codegen-parity.test.ts",
-    "build:wasm": "emcc src-c/radau5.c src-c/dc_decsol.c src-c/decsol.c src-c/radau5_wrapper.c src-c/libf2c_stubs.c -I src-c/ -o static/wasm/radau5.js -s WASM=1 -s MODULARIZE=1 -s EXPORT_NAME=RadauModule -s ALLOW_TABLE_GROWTH=1 -s RESERVED_FUNCTION_POINTERS=8 -s EXPORTED_FUNCTIONS='[\"_run_radau5\",\"_set_model_fn\",\"_init_output\",\"_free_output\",\"_get_out_n\",\"_get_out_t\",\"_get_out_y\",\"_malloc\",\"_free\"]' -s EXPORTED_RUNTIME_METHODS='[\"addFunction\",\"removeFunction\",\"ccall\",\"cwrap\",\"HEAPF64\",\"wasmMemory\"]' -O2 -Wno-deprecated-non-prototype"
+    "build:wasm": "emcc src-c/radau5.c src-c/dc_decsol.c src-c/decsol.c src-c/dop853.c src-c/dopri5.c src-c/radau5_wrapper.c src-c/libf2c_stubs.c -I src-c/ -o static/wasm/radau5.js -s WASM=1 -s MODULARIZE=1 -s EXPORT_NAME=RadauModule -s ALLOW_TABLE_GROWTH=1 -s RESERVED_FUNCTION_POINTERS=8 -s EXPORTED_FUNCTIONS='[\"_run_radau5\",\"_run_dop853\",\"_run_dopri5\",\"_set_model_fn\",\"_init_output\",\"_free_output\",\"_get_out_n\",\"_get_out_t\",\"_get_out_y\",\"_malloc\",\"_free\"]' -s EXPORTED_RUNTIME_METHODS='[\"addFunction\",\"removeFunction\",\"ccall\",\"cwrap\",\"HEAPF64\",\"wasmMemory\"]' -O2 -Wno-deprecated-non-prototype"
   },
   "devDependencies": {
     "@eslint/compat": ">=2.1.0",

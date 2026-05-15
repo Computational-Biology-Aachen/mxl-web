@@ -1,14 +1,9 @@
 /*
- * radau5_wrapper.c — Clean C API over f2c-generated RADAU5
+ * radau5_wrapper.c — Clean C API over f2c-generated ODE solvers
  *
- * Compiled by Emscripten alongside radau5.c and dc_decsol.c.
- *
- * Design:
- *   - fcn_dispatch:    registered as RADAU5's FCN callback; unpacks Fortran
- *                      ABI pointers and calls g_model_fn with clean args
- *   - solout_dispatch: registered as SOLOUT; stores (t, y[]) into a heap
- *                      buffer so no JS callbacks cross the hot loop
- *   - run_radau5():    exported API called from wasmWorker.ts
+ * Contains wrappers for RADAU5 (stiff), DOP853 (explicit RK8(5,3)) and
+ * DOPRI5 (explicit RK4(5)). All three share a single output buffer and
+ * model-function slot — only one solver runs at a time.
  *
  * Model function signature (WAT side must match):
  *   void model_fn(int n, double t, double* y, double* dydt, double* pars)
@@ -191,6 +186,141 @@ int run_radau5(int n, double t_start, double t_end,
             (U_fp)dummy_jac, &IJAC, &MLJAC, &MUJAC,
             (U_fp)dummy_mas, &IMAS, &MLMAS, &MUMAS,
             (U_fp)solout_dispatch, &IOUT,
+            work, &LWORK, iwork, &LIWORK,
+            rpar, &IPAR, &IDID);
+
+    free(work);
+    free(iwork);
+    return (int)IDID;
+}
+
+/* ================================================================== */
+/* DOP853 — explicit Runge-Kutta 8(5,3) by Hairer & Wanner           */
+/* ================================================================== */
+
+extern int dop853_(integer *n, U_fp fcn, doublereal *x, doublereal *y,
+                   doublereal *xend, doublereal *rtol, doublereal *atol,
+                   integer *itol, U_fp solout, integer *iout,
+                   doublereal *work, integer *lwork, integer *iwork,
+                   integer *liwork, doublereal *rpar, integer *ipar,
+                   integer *idid);
+
+/* DOP853 SOLOUT: (nr,xold,x,y,n,con,icomp,nd,rpar,ipar,irtrn,xout) */
+static int solout_dop853(integer *nr, doublereal *xold, doublereal *x,
+                          doublereal *y, integer *n, doublereal *con,
+                          integer *icomp, integer *nd,
+                          doublereal *rpar, integer *ipar,
+                          integer *irtrn, doublereal *xout) {
+    (void)nr; (void)xold; (void)n; (void)con; (void)icomp; (void)nd;
+    (void)rpar; (void)ipar; (void)xout;
+    if (out_n < out_cap) {
+        out_t[out_n] = *x;
+        /* f2c passes &y[1]; copy out_dim doubles from that pointer */
+        memcpy(out_y + (size_t)out_n * (size_t)out_dim, y,
+               (size_t)out_dim * sizeof(double));
+        out_n++;
+    }
+    *irtrn = 1;
+    return 0;
+}
+
+int run_dop853(int n, double t_start, double t_end,
+               double *y, double *rpar,
+               double rtol, double atol,
+               double h_init, int nmax) {
+
+    integer N    = (integer)n;
+    integer ITOL = 0;
+    integer IOUT = 1;
+    integer IDID = 0;
+    integer IPAR = 0;
+
+    /* LWORK = 11*N + 21  (NRDENS=0) */
+    integer LWORK  = 11 * N + 21;
+    integer LIWORK = 21;
+    doublereal *work  = (doublereal *)calloc((size_t)LWORK,  sizeof(doublereal));
+    integer    *iwork = (integer    *)calloc((size_t)LIWORK, sizeof(integer));
+    if (!work || !iwork) { free(work); free(iwork); return -1; }
+
+    iwork[0] = (nmax > 0) ? (integer)nmax : 100000; /* NMAX */
+    iwork[3] = -1; /* suppress stiffness detection */
+
+    doublereal rtol_d = (doublereal)rtol;
+    doublereal atol_d = (doublereal)atol;
+    doublereal h      = (doublereal)h_init;
+    doublereal xend   = (doublereal)t_end;
+    doublereal xstart = (doublereal)t_start;
+
+    dop853_(&N, (U_fp)fcn_dispatch, &xstart, y, &xend,
+            &rtol_d, &atol_d, &ITOL,
+            (U_fp)solout_dop853, &IOUT,
+            work, &LWORK, iwork, &LIWORK,
+            rpar, &IPAR, &IDID);
+
+    free(work);
+    free(iwork);
+    return (int)IDID;
+}
+
+/* ================================================================== */
+/* DOPRI5 — explicit Runge-Kutta 4(5) (Dormand-Prince) by Hairer     */
+/* ================================================================== */
+
+extern int dopri5_(integer *n, U_fp fcn, doublereal *x, doublereal *y,
+                   doublereal *xend, doublereal *rtol, doublereal *atol,
+                   integer *itol, U_fp solout, integer *iout,
+                   doublereal *work, integer *lwork, integer *iwork,
+                   integer *liwork, doublereal *rpar, integer *ipar,
+                   integer *idid);
+
+/* DOPRI5 SOLOUT: (nr,xold,x,y,n,con,icomp,nd,rpar,ipar,irtrn) */
+static int solout_dopri5(integer *nr, doublereal *xold, doublereal *x,
+                          doublereal *y, integer *n, doublereal *con,
+                          integer *icomp, integer *nd,
+                          doublereal *rpar, integer *ipar,
+                          integer *irtrn) {
+    (void)nr; (void)xold; (void)n; (void)con; (void)icomp; (void)nd;
+    (void)rpar; (void)ipar;
+    if (out_n < out_cap) {
+        out_t[out_n] = *x;
+        memcpy(out_y + (size_t)out_n * (size_t)out_dim, y,
+               (size_t)out_dim * sizeof(double));
+        out_n++;
+    }
+    *irtrn = 1;
+    return 0;
+}
+
+int run_dopri5(int n, double t_start, double t_end,
+               double *y, double *rpar,
+               double rtol, double atol,
+               double h_init, int nmax) {
+
+    integer N    = (integer)n;
+    integer ITOL = 0;
+    integer IOUT = 1;
+    integer IDID = 0;
+    integer IPAR = 0;
+
+    /* LWORK = 8*N + 21  (NRDENS=0) */
+    integer LWORK  = 8 * N + 21;
+    integer LIWORK = 21;
+    doublereal *work  = (doublereal *)calloc((size_t)LWORK,  sizeof(doublereal));
+    integer    *iwork = (integer    *)calloc((size_t)LIWORK, sizeof(integer));
+    if (!work || !iwork) { free(work); free(iwork); return -1; }
+
+    iwork[0] = (nmax > 0) ? (integer)nmax : 100000; /* NMAX */
+    iwork[3] = -1; /* suppress stiffness detection */
+
+    doublereal rtol_d = (doublereal)rtol;
+    doublereal atol_d = (doublereal)atol;
+    doublereal h      = (doublereal)h_init;
+    doublereal xend   = (doublereal)t_end;
+    doublereal xstart = (doublereal)t_start;
+
+    dopri5_(&N, (U_fp)fcn_dispatch, &xstart, y, &xend,
+            &rtol_d, &atol_d, &ITOL,
+            (U_fp)solout_dopri5, &IOUT,
             work, &LWORK, iwork, &LIWORK,
             rpar, &IPAR, &IDID);
 

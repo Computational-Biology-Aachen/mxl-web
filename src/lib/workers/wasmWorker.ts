@@ -1,12 +1,13 @@
 /**
- * wasmWorker.ts — native WASM backend for method === 'radau5'
+ * wasmWorker.ts — native WASM backend (radau5 / dop853 / dopri5)
  *
  * Architecture:
- *   1. On __INIT__: load Emscripten-compiled RADAU5 module from static/wasm/radau5.js
+ *   1. On __INIT__: load Emscripten module from static/wasm/radau5.js
+ *      (contains RADAU5, DOP853, DOPRI5 — all compiled from Fortran via f2c)
  *   2. Per request:
  *      a. JIT-compile WAT string → model WASM (shares Emscripten memory)
- *      b. Register model function in RADAU5's function table
- *      c. Call run_radau5() via Emscripten ccall
+ *      b. Register model function in function table
+ *      c. Call run_<solver>() — dispatched by SimulationRequest.method
  *      d. Read time-series from output buffer
  *      e. Evaluate derived variables in JS
  *      f. Protocol: repeat per segment with updated pars
@@ -60,6 +61,28 @@ interface EmscriptenModule {
   _malloc(size: number): number;
   _free(ptr: number): void;
   _run_radau5(
+    n: number,
+    tStart: number,
+    tEnd: number,
+    yPtr: number,
+    rparPtr: number,
+    rtol: number,
+    atol: number,
+    hInit: number,
+    nmax: number,
+  ): number;
+  _run_dop853(
+    n: number,
+    tStart: number,
+    tEnd: number,
+    yPtr: number,
+    rparPtr: number,
+    rtol: number,
+    atol: number,
+    hInit: number,
+    nmax: number,
+  ): number;
+  _run_dopri5(
     n: number,
     tStart: number,
     tEnd: number,
@@ -157,6 +180,8 @@ function resampleUniform(
 // ------------------------------------------------------------
 // Run one integration segment
 // ------------------------------------------------------------
+type WasmSolver = "radau5" | "dop853" | "dopri5";
+
 function runSegment(
   mod: EmscriptenModule,
   modelIdx: number,
@@ -168,6 +193,7 @@ function runSegment(
   rtol: number,
   atol: number,
   nout: number,
+  solver: WasmSolver = "radau5",
 ): { time: number[]; y: number[][] } | { err: string } {
   const yPtr = mod._malloc(n * 8);
   const rparPtr = mod._malloc(pars.length * 8);
@@ -176,29 +202,22 @@ function runSegment(
     mod.HEAPF64.set(pars, rparPtr / 8);
 
     mod._set_model_fn(modelIdx);
-    // Small buffer — stiff segments can take far more steps than nout.
-    // We always append the true endpoint below, so resampleUniform always
-    // spans tStart→tEnd regardless of overflow.
     mod._init_output(Math.max(nout, 1000), n);
 
-    const idid = mod._run_radau5(
-      n,
-      tStart,
-      tEnd,
-      yPtr,
-      rparPtr,
-      rtol,
-      atol,
-      0, // h_init = 0 → RADAU5 default
-      500000, // nmax
-    );
+    const runFn =
+      solver === "dop853"
+        ? mod._run_dop853
+        : solver === "dopri5"
+          ? mod._run_dopri5
+          : mod._run_radau5;
+    const idid = runFn(n, tStart, tEnd, yPtr, rparPtr, rtol, atol, 0, 500000);
 
     if (idid < 0) {
       console.error(
-        `[wasmWorker] RADAU5 IDID=${idid} at t=[${tStart},${tEnd}] n=${n}`,
+        `[wasmWorker] ${solver.toUpperCase()} IDID=${idid} at t=[${tStart},${tEnd}] n=${n}`,
       );
       return {
-        err: `RADAU5 failed with IDID=${idid} (t=[${tStart.toFixed(3)},${tEnd.toFixed(3)}])`,
+        err: `${solver.toUpperCase()} failed with IDID=${idid} (t=[${tStart.toFixed(3)},${tEnd.toFixed(3)}])`,
       };
     }
 
@@ -291,16 +310,20 @@ onmessage = async function (event: MessageEvent) {
     parNames,
     requestId,
     nTimePoints,
+    method,
     protocol,
     calculateDerived,
   } = event.data as SimulationRequest;
+
+  const solver: WasmSolver =
+    method === "dop853" ? "dop853" : method === "dopri5" ? "dopri5" : "radau5";
 
   if (!rhsWat) {
     postMessage({
       time: [],
       values: [],
       requestId,
-      err: { message: "rhsWat missing for RADAU5 worker", hints: [] },
+      err: { message: "rhsWat missing for WASM solver", hints: [] },
     } as SimulationResult);
     return;
   }
@@ -342,6 +365,7 @@ onmessage = async function (event: MessageEvent) {
           rtol,
           atol,
           nTimePoints,
+          solver,
         );
         if ("err" in result) throw new Error(result.err);
         // Resample each segment to nTimePoints uniform times, matching Python's t_eval per segment.
@@ -377,6 +401,7 @@ onmessage = async function (event: MessageEvent) {
         rtol,
         atol,
         nTimePoints,
+        solver,
       );
       if ("err" in result) throw new Error(result.err);
       const resampled = resampleUniform(result.time, result.y, nTimePoints);
