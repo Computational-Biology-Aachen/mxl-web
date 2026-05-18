@@ -13,9 +13,39 @@
   import Icon from "$lib/Icon.svelte";
   import PrimaryLinkButton from "$lib/links/PrimaryLinkButton.svelte";
   import SecondaryLinkButton from "$lib/links/SecondaryLinkButton.svelte";
+  import FeatureBox from "./FeatureBox.svelte";
+  import LogoBar from "$lib/LogoBar.svelte";
   import ModelGallery from "$lib/ModelGallery.svelte";
   import ModelHighlight from "$lib/ModelHighlight.svelte";
   import Row from "$lib/Row.svelte";
+
+  const logos = [
+    { src: rwth, href: "https://www.rwth-aachen.de", alt: "rwth logo" },
+    {
+      src: cpbl,
+      href: "https://www.cpbl.rwth-aachen.de/",
+      alt: "cpbl logo",
+      height: "6rem",
+    },
+    {
+      src: ccls,
+      href: "https://www.ccls.rwth-aachen.de",
+      alt: "ccls logo",
+      height: "4rem",
+    },
+    {
+      src: mibinet,
+      href: "https://www.sfb1535.hhu.de/en/mibinet",
+      alt: "mibinet logo",
+      height: "5.5rem",
+    },
+    {
+      src: gopmf,
+      href: "https://www.uni-muenster.de/GoPMF/en/index.html",
+      alt: "gopmf logo",
+      height: "5.5rem",
+    },
+  ];
 </script>
 
 <div class="container">
@@ -58,74 +88,30 @@
   </div>
 
   <div class="row-main">
-    <div class="box c1">
-      <Row>
-        <Icon
-          color="c1"
-          style="font-size: 2rem">interactive_space</Icon
-        >
-        <h2
-          class="box-header"
-          style="color: #135bec"
-        >
-          Interactive by design
-        </h2>
-      </Row>
-      <p>
-        Explore models in real time with sliders, switches, and dynamic
-        visualizations
-      </p>
-    </div>
-    <div class="box c2">
-      <Row>
-        <Icon
-          color="c2"
-          style="font-size: 2rem">group</Icon
-        >
-        <h2
-          class="box-header"
-          style="color: #006466"
-        >
-          Built for collaboration
-        </h2>
-      </Row>
-      <p>
-        Share models with your lab or collaborators - no code, no installation,
-        just a link.
-      </p>
-    </div>
-    <div class="box c3">
-      <Row>
-        <Icon
-          color="c3"
-          style="font-size: 2rem">genetics</Icon
-        >
-        <h2
-          class="box-header"
-          style="color: #570066"
-        >
-          Mechanistic & explainable
-        </h2>
-      </Row>
-      <p>
-        Grounded in ODE-based modelling for interpretable biological insight.
-      </p>
-    </div>
-    <div class="box c4">
-      <Row>
-        <Icon
-          color="c4"
-          style="font-size: 2rem">open_in_browser</Icon
-        >
-        <h2
-          class="box-header"
-          style="color: #ed1379"
-        >
-          Browser-native science
-        </h2>
-      </Row>
-      <p>Runs instantly on any device. Your models, anywhere, anytime.</p>
-    </div>
+    <FeatureBox
+      color="#135bec"
+      icon="interactive_space"
+      header="Interactive by design"
+      body="Explore models in real time with sliders, switches, and dynamic visualizations"
+    />
+    <FeatureBox
+      color="#006466"
+      icon="group"
+      header="Built for collaboration"
+      body="Share models with your lab or collaborators - no code, no installation, just a link."
+    />
+    <FeatureBox
+      color="#570066"
+      icon="genetics"
+      header="Mechanistic & explainable"
+      body="Grounded in ODE-based modelling for interpretable biological insight."
+    />
+    <FeatureBox
+      color="#ed1379"
+      icon="open_in_browser"
+      header="Browser-native science"
+      body="Runs instantly on any device. Your models, anywhere, anytime."
+    />
   </div>
 
   <div class="heading">
@@ -164,47 +150,7 @@
     <Icon color="primary">handshake</Icon>
     <h2>Trusted by the scientific community</h2>
   </div>
-  <div class="logo-bar">
-    <a href="https://www.rwth-aachen.de">
-      <img
-        class="logo"
-        src={rwth}
-        alt="rwth logo"
-      />
-    </a>
-    <a href="https://www.cpbl.rwth-aachen.de/">
-      <img
-        class="logo"
-        src={cpbl}
-        style="height: 6rem"
-        alt="cpbl logo"
-      />
-    </a>
-    <a href="https://www.ccls.rwth-aachen.de">
-      <img
-        class="logo"
-        src={ccls}
-        style="height: 4rem"
-        alt="ccls logo"
-      />
-    </a>
-    <a href="https://www.sfb1535.hhu.de/en/mibinet">
-      <img
-        class="logo"
-        src={mibinet}
-        style="height: 5.5rem"
-        alt="mibinet logo"
-      />
-    </a>
-    <a href="https://www.uni-muenster.de/GoPMF/en/index.html">
-      <img
-        class="logo"
-        src={gopmf}
-        style="height: 5.5rem"
-        alt="gopmf logo"
-      />
-    </a>
-  </div>
+  <LogoBar logos={logos} />
   <!-- End container -->
 </div>
 
@@ -276,111 +222,5 @@
       flex-direction: row;
       align-items: center;
     }
-  }
-
-  .box {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    transition:
-      border-color 0.5s ease,
-      background 0.5s ease;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    border-radius: 20px;
-    padding: 1rem;
-    height: 10rem;
-  }
-
-  .c1 {
-    --color: #135bec;
-    border: 1px solid rgba(from var(--color) r g b / 0.5);
-    background: linear-gradient(
-      135deg,
-      rgba(from var(--color) r g b / 0.01),
-      rgba(from var(--color) r g b / 0.05)
-    );
-  }
-  .c1:hover {
-    border-color: rgba(from var(--color) r g b / 0.8);
-    background: linear-gradient(
-      135deg,
-      rgba(from var(--color) r g b / 0.04),
-      rgba(from var(--color) r g b / 0.12)
-    );
-  }
-  .c2 {
-    --color: #006466;
-    border: 1px solid rgba(from var(--color) r g b / 0.5);
-    background: linear-gradient(
-      135deg,
-      rgba(from var(--color) r g b / 0.01),
-      rgba(from var(--color) r g b / 0.05)
-    );
-  }
-  .c2:hover {
-    border-color: rgba(from var(--color) r g b / 0.8);
-    background: linear-gradient(
-      135deg,
-      rgba(from var(--color) r g b / 0.04),
-      rgba(from var(--color) r g b / 0.12)
-    );
-  }
-  .c3 {
-    --color: #570066;
-    border: 1px solid rgba(from var(--color) r g b / 0.5);
-    background: linear-gradient(
-      135deg,
-      rgba(from var(--color) r g b / 0.01),
-      rgba(from var(--color) r g b / 0.05)
-    );
-  }
-  .c3:hover {
-    border-color: rgba(from var(--color) r g b / 0.8);
-    background: linear-gradient(
-      135deg,
-      rgba(from var(--color) r g b / 0.04),
-      rgba(from var(--color) r g b / 0.12)
-    );
-  }
-  .c4 {
-    --color: #ed1379;
-    border: 1px solid rgba(from var(--color) r g b / 0.5);
-    background: linear-gradient(
-      135deg,
-      rgba(from var(--color) r g b / 0.01),
-      rgba(from var(--color) r g b / 0.05)
-    );
-  }
-  .c4:hover {
-    border-color: rgba(from var(--color) r g b / 0.8);
-    background: linear-gradient(
-      135deg,
-      rgba(from var(--color) r g b / 0.04),
-      rgba(from var(--color) r g b / 0.12)
-    );
-  }
-  .box-header {
-    font-size: 1rem;
-  }
-
-  .logo-bar {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-    margin: 1rem 0;
-    height: 6rem;
-  }
-
-  .logo {
-    transition:
-      transform 150ms cubic-bezier(0.4, 0, 0.2, 1),
-      box-shadow 150ms cubic-bezier(0.4, 0, 0.2, 1);
-    height: 5rem;
-  }
-  .logo:hover {
-    transform: translateY(-3px);
-    color: var(--primary);
   }
 </style>
