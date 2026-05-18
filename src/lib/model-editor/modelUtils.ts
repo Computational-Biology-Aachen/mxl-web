@@ -23,6 +23,12 @@ export function renderTerms(
       coeff = value.children[0];
     }
 
+    const isNum = coeff instanceof Num;
+
+    if (!isNum) {
+      return { sign, tex: coeff.toTex(texNames) };
+    }
+
     const isOne = coeff instanceof Num && coeff.value === 1;
     const rendered = isOne ? tex : `${coeff.toTex(texNames)} \\cdot ${tex}`;
     return { sign, tex: rendered };

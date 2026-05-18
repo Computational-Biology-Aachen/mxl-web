@@ -49,6 +49,12 @@
         value: new Minus([new Divide([new Num(1.0), new Name("a")])]),
       },
     ],
+    [{ name: "a", value: new Name("a") }],
+    [{ name: "a", value: new Name("b") }],
+    [
+      { name: "a", value: new Name("a") },
+      { name: "b", value: new Name("b") },
+    ],
   ];
 
   const texNames = new Map();
@@ -56,7 +62,11 @@
   function str(stoich: Stoichiometry): string {
     return stoich
       .map(({ name, value }) => {
-        return `${value.toTex(texNames)}*${name}`;
+        if (value instanceof Num) {
+          return `${value.toTex(texNames)}*${name}`;
+        } else {
+          return value.toTex(texNames);
+        }
       })
       .reduce((previous, next) => {
         return `${previous} + ${next}`;
