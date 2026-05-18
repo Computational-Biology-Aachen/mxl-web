@@ -32,7 +32,7 @@
       <a href="{base}/"> Home </a>
     </li>
     <li>
-      <a href="{base}/"> Models </a>
+      <a href="{base}/models"> Models </a>
     </li>
     <li class="img">
       <a href="https://github.com/Computational-Biology-Aachen/mxl-web"

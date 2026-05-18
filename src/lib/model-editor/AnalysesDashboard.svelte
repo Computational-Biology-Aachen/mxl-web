@@ -111,20 +111,38 @@
   let fileInput = $state<HTMLInputElement | null>(null);
   let loadError = $state<string | null>(null);
   let pendingBox = $state<Box | null>(null);
+  let saveMenuOpen = $state(false);
+  let saveMenuWrapEl = $state<HTMLDivElement | null>(null);
+  let saveMenuCloseTimeout: ReturnType<typeof setTimeout> | undefined;
   let pickerEl = $state<HTMLDivElement | null | undefined>(null);
   let analysisEditorEls = $state<
     Record<number, HTMLDivElement | null | undefined>
   >({});
 
-  function saveModel() {
-    const xml = modelToSbml(model, name);
-    const blob = new Blob([xml], { type: "application/xml" });
+  function downloadText(content: string, filename: string, type: string) {
+    const blob = new Blob([content], { type });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${name.replace(/[^A-Za-z0-9]/g, "_")}.sbml`;
+    a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  function saveModel() {
+    downloadText(
+      modelToSbml(model, name),
+      `${name.replace(/[^A-Za-z0-9]/g, "_")}.sbml`,
+      "application/xml",
+    );
+  }
+
+  function savePython() {
+    downloadText(
+      model.buildPython([]),
+      `${name.replace(/[^A-Za-z0-9]/g, "_")}.py`,
+      "text/x-python",
+    );
   }
 
   async function handleFileLoad(event: Event) {
@@ -237,6 +255,46 @@
     };
     analyses = [...analyses, newScan];
   }
+
+  function closeSaveMenu() {
+    if (saveMenuCloseTimeout !== undefined) {
+      clearTimeout(saveMenuCloseTimeout);
+      saveMenuCloseTimeout = undefined;
+    }
+    saveMenuOpen = false;
+  }
+
+  function openSaveMenu() {
+    if (saveMenuCloseTimeout !== undefined) {
+      clearTimeout(saveMenuCloseTimeout);
+      saveMenuCloseTimeout = undefined;
+    }
+    saveMenuOpen = true;
+  }
+
+  function scheduleCloseSaveMenu() {
+    if (saveMenuCloseTimeout !== undefined) return;
+    saveMenuCloseTimeout = setTimeout(() => {
+      saveMenuCloseTimeout = undefined;
+      saveMenuOpen = false;
+    }, 100);
+  }
+
+  function toggleSaveMenu() {
+    if (saveMenuOpen) {
+      closeSaveMenu();
+      return;
+    }
+    saveMenuOpen = !saveMenuOpen;
+  }
+
+  function handleDocumentClick(event: MouseEvent) {
+    if (!saveMenuOpen) return;
+    const target = event.target as Node | null;
+    if (target && !saveMenuWrapEl?.contains(target)) {
+      closeSaveMenu();
+    }
+  }
 </script>
 
 <RowApart>
@@ -244,7 +302,7 @@
     <a
       class="light"
       style="font-size: var(--text-sm);"
-      href="{base}/">Models</a
+      href={`${base}/`}>Models</a
     >
     <span
       class="light"
@@ -260,10 +318,43 @@
       class="secondary"
       onclick={() => fileInput?.click()}>Load</button
     >
-    <button
-      class="secondary"
-      onclick={saveModel}>Save</button
+    <div
+      class="save-menu-wrap"
+      role="presentation"
+      bind:this={saveMenuWrapEl}
+      onmouseenter={openSaveMenu}
+      onmouseleave={scheduleCloseSaveMenu}
     >
+      <button
+        class="secondary save-trigger"
+        onclick={toggleSaveMenu}
+      >
+        <span>Save</span>
+        <Icon>arrow_drop_down</Icon>
+      </button>
+      {#if saveMenuOpen}
+        <div class="save-menu">
+          <button
+            class="save-option"
+            onclick={() => {
+              saveModel();
+              closeSaveMenu();
+            }}
+          >
+            SBML
+          </button>
+          <button
+            class="save-option"
+            onclick={() => {
+              savePython();
+              closeSaveMenu();
+            }}
+          >
+            Python
+          </button>
+        </div>
+      {/if}
+    </div>
     <ResetButton
       onclick={() => {
         model = initModel();
@@ -283,6 +374,8 @@
 {#if loadError}
   <p class="load-error">{loadError}</p>
 {/if}
+
+<svelte:document onclick={handleDocumentClick} />
 
 <Popover
   size="xs"
@@ -349,7 +442,7 @@
   <div class="centered">
     <Math
       tex={model.buildTex()}
-      fontSize={"0.9rem"}
+      fontSize="0.9rem"
       display
     />
   </div>
@@ -487,11 +580,11 @@
 
 <Popover
   size="lg"
-  popovertarget={`model-editor`}
+  popovertarget="model-editor"
 >
   <ModelEditor
     parent={model}
-    popovertarget={`model-editor`}
+    popovertarget="model-editor"
     onSave={(edited) => {
       model = edited;
       runAllSimulations();
@@ -499,7 +592,7 @@
   />
 </Popover>
 
-{#each analyses as analysis}
+{#each analyses as analysis (analysis.id)}
   <Popover
     size="sm"
     popovertarget={`analysis-editor-${analysis.id}`}
@@ -566,6 +659,43 @@
     margin: 0;
     color: var(--error, #dc2626);
     font-size: 0.875rem;
+  }
+  .save-menu-wrap {
+    display: inline-block;
+    position: relative;
+  }
+  .save-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .save-menu {
+    display: grid;
+    position: absolute;
+    top: calc(100% + 0.25rem);
+    right: 0;
+    gap: 0.25rem;
+    z-index: 20;
+    box-shadow: var(--shadow);
+    border: var(--border);
+    border-radius: var(--border-radius);
+    background: var(--bg-l1);
+    padding: 0.35rem;
+    min-width: 10rem;
+  }
+  .save-option {
+    cursor: pointer;
+    border: 0;
+    border-radius: calc(var(--border-radius) - 0.125rem);
+    background: transparent;
+    padding: 0.6rem 0.75rem;
+    color: var(--text);
+    font-size: 0.875rem;
+    text-align: left;
+  }
+  .save-option:hover {
+    background: color-mix(in srgb, var(--primary) 10%, transparent);
+    color: var(--primary);
   }
   .centered {
     display: flex;

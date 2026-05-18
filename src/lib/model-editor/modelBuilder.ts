@@ -635,10 +635,10 @@ ${fns}
         const rhs = lines.join(" \\\\\n  & ");
         return `\\frac{d ${texNames.get(name) || name}}{dt} &= ${rhs}`;
       })
-      .join("\\\\ \n");
+      .join(" \\\\ \n  ");
 
     return String.raw`\begin{align*}
-      ${rhsString}
-    \end{align*}`;
+  ${rhsString}
+\end{align*}`;
   }
 }

@@ -144,15 +144,6 @@
 
 <div class="heading">
   <Icon>preview</Icon>
-  <h3>Generated Python Code</h3>
-</div>
-
-<div class="card padding">
-  <pre>{pycode}</pre>
-</div>
-
-<div class="heading">
-  <Icon>preview</Icon>
   <h3>Generated LaTeX Code</h3>
 </div>
 
