@@ -3,6 +3,7 @@
   import schemeEbeling from "$lib/assets/ebeling2026-scheme.png";
   import ccls from "$lib/assets/logos/ccls.svg";
   import cpbl from "$lib/assets/logos/cpbl.svg";
+  import gopmf from "$lib/assets/logos/gopmf.png";
   import mibinet from "$lib/assets/logos/mibinet.png";
   import rwth from "$lib/assets/logos/rwth.svg";
   import schemeLotkaVolt from "$lib/assets/lotka-volterra-scheme.png";
@@ -193,6 +194,14 @@
         src={mibinet}
         style="height: 5.5rem"
         alt="mibinet logo"
+      />
+    </a>
+    <a href="https://www.uni-muenster.de/GoPMF/en/index.html">
+      <img
+        class="logo"
+        src={gopmf}
+        style="height: 5.5rem"
+        alt="gopmf logo"
       />
     </a>
   </div>
