@@ -352,7 +352,7 @@
         </div>
       {/if}
     </div>
-    <ResetButton
+    <Button
       onclick={() => {
         model = initModel();
         runAllSimulations();
