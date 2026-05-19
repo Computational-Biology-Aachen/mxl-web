@@ -6,7 +6,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  import PamChart, { type PhaseRegion } from "../chartjs/PamChart.svelte";
+  import { LineChart, type PhaseRegion } from "@computational-biology-aachen/design";
   import type { ModelBuilder } from "../model-editor/modelBuilder";
   import type { Backend } from "../stores/backends";
   import {
@@ -349,7 +349,7 @@
   {#if err}
     <SimErrDisplay err={err} />
   {:else}
-    <PamChart
+    <LineChart
       data={lineData}
       loading={loading}
       yMax={yMax}

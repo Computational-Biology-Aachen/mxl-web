@@ -39,6 +39,7 @@
     "vite-plugin-wasm": ">=3.3.0"
   },
   "dependencies": {
+    "@computational-biology-aachen/design": "*",
     "@fortawesome/free-brands-svg-icons": ">=7.2.0",
     "@fortawesome/free-solid-svg-icons": ">=7.2.0",
     "@picocss/pico": ">=2.1.1",

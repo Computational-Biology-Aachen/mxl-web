@@ -1,7 +1,7 @@
 <script lang="ts">
   import { base } from "$app/paths";
   import { page } from "$app/stores";
-  import Icon from "$lib/Icon.svelte";
+  import { Icon } from "@computational-biology-aachen/design";
 </script>
 
 <svelte:head>

@@ -18,6 +18,14 @@
   import ModelGallery from "$lib/ModelGallery.svelte";
   import ModelHighlight from "$lib/ModelHighlight.svelte";
   import Row from "$lib/Row.svelte";
+  import ModelGallery from "$lib/ModelGallery.svelte";
+  import ModelHighlight from "$lib/ModelHighlight.svelte";
+  import {
+    Button,
+    Icon,
+    Main,
+    Row,
+  } from "@computational-biology-aachen/design";
 
   const logos = [
     { src: rwth, href: "https://www.rwth-aachen.de", alt: "rwth logo" },
@@ -48,7 +56,7 @@
   ];
 </script>
 
-<div class="container">
+<Main>
   <div class="top">
     <div class="top-left">
       <h1 class="banner">
@@ -66,12 +74,14 @@
         Share living biological models your collaborators can manipulate, mutate,
         perturb, and understand instantly.
       </p>
-      <Row>
-        <PrimaryLinkButton href="{base}/lotka-volterra"
-          >Launch live model</PrimaryLinkButton
-        >
-        <SecondaryLinkButton href="{base}/models"
-          >Explore our models</SecondaryLinkButton
+      <Row
+        stack
+        gap="0.5rem"
+      >
+        <Button href="{base}/lotka-volterra">Launch live model</Button>
+        <Button
+          variant="secondary"
+          href="{base}/models">Explore our models</Button
         >
       </Row>
     </div>
@@ -155,17 +165,6 @@
 </div>
 
 <style>
-  .container {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    margin-right: auto;
-    margin-left: auto;
-    padding: 2rem 5rem 10rem;
-    width: 100%;
-    max-width: 100rem;
-  }
-
   .top {
     display: flex;
     flex-direction: column;

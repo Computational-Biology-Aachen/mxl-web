@@ -1,5 +1,5 @@
 <script lang="ts">
-  import LineChart from "$lib/chartjs/LineChart.svelte";
+  import { LineChart } from "@computational-biology-aachen/design";
 
   type LineData = {
     labels: number[];

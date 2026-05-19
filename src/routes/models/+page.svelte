@@ -11,7 +11,7 @@
   import schemeSir from "$lib/assets/sir.png";
   import schemeTripartite from "$lib/assets/tripartite.png";
   import schemeYokota from "$lib/assets/yokota.png";
-  import Icon from "$lib/Icon.svelte";
+  import { Icon } from "@computational-biology-aachen/design";
   import ModelCard from "$lib/ModelCard.svelte";
   import ModelGallery from "$lib/ModelGallery.svelte";
 </script>

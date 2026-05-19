@@ -1,5 +1,5 @@
 <script lang="ts">
-  import InlineGrid2 from "$lib/InlineGrid2.svelte";
+  import InlineGrid from "$lib/InlineGrid.svelte";
 
   type Props = {
     id: string;
@@ -10,7 +10,7 @@
   let { id, label, value = $bindable(), border = "solid" }: Props = $props();
 </script>
 
-<InlineGrid2>
+<InlineGrid>
   {#if label}
     <label for={id}>{label}</label>
   {/if}
@@ -20,7 +20,7 @@
     type="number"
     bind:value={value}
   />
-</InlineGrid2>
+</InlineGrid>
 
 <style>
   input {

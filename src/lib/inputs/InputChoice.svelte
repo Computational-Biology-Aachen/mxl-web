@@ -1,5 +1,5 @@
 <script lang="ts">
-  import InlineGrid2 from "$lib/InlineGrid2.svelte";
+  import InlineGrid from "$lib/InlineGrid.svelte";
   import type { Snippet } from "svelte";
 
   type Props = {
@@ -18,7 +18,7 @@
   }: Props = $props();
 </script>
 
-<InlineGrid2>
+<InlineGrid>
   <label for={id}>{name}</label>
   <select
     id={id}
@@ -27,7 +27,7 @@
   >
     {@render children()}
   </select>
-</InlineGrid2>
+</InlineGrid>
 
 <style>
   select {

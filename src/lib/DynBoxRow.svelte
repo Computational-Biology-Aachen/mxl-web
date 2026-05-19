@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import { MediaQuery } from "svelte/reactivity";
-  import Icon from "./Icon.svelte";
+  import { Icon } from "@computational-biology-aachen/design";
 
   const md = new MediaQuery("min-width: 768px");
 

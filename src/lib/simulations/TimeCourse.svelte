@@ -5,7 +5,7 @@
 
 <script lang="ts">
   import { onMount } from "svelte";
-  import LineChart from "../chartjs/LineChart.svelte";
+  import { LineChart } from "@computational-biology-aachen/design";
   import type { ModelBuilder } from "../model-editor/modelBuilder";
   import type { Backend } from "../stores/backends";
   import {

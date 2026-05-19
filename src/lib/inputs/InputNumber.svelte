@@ -1,6 +1,6 @@
 <script lang="ts">
-  import InlineGrid2 from "$lib/InlineGrid2.svelte";
-  import Row from "$lib/Row.svelte";
+  import InlineGrid from "$lib/InlineGrid.svelte";
+  import { Row } from "@computational-biology-aachen/design";
 
   type Props = {
     id: string;
@@ -12,7 +12,7 @@
 </script>
 
 {#if label}
-  <InlineGrid2>
+  <InlineGrid>
     <label for={id}>{label}</label>
     <input
       id={id}
@@ -20,9 +20,9 @@
       type="number"
       bind:value={value}
     />
-  </InlineGrid2>
+  </InlineGrid>
 {:else}
-  <Row>
+  <Row stack gap="0.5rem">
     <input
       id={id}
       class={border}

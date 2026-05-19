@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Icon from "$lib/Icon.svelte";
+  import { Icon } from "@computational-biology-aachen/design";
   import ArrNum from "./ArrNum.svelte";
   import ArrObj from "./ArrObj.svelte";
   import Deferred from "./Deferred.svelte";

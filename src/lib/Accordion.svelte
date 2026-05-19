@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Icon from "$lib/Icon.svelte";
+  import { Icon } from "@computational-biology-aachen/design";
   import type { Snippet } from "svelte";
 
   let {

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import InlineGrid2 from "$lib/InlineGrid2.svelte";
+  import InlineGrid from "$lib/InlineGrid.svelte";
 
   type Props = {
     id: string;
@@ -15,7 +15,7 @@
   }: Props = $props();
 </script>
 
-<InlineGrid2>
+<InlineGrid>
   <label for={id}>{name}</label>
   <input
     id={id}
@@ -23,7 +23,7 @@
     type="checkbox"
     bind:checked={checked}
   />
-</InlineGrid2>
+</InlineGrid>
 
 <style>
   input {

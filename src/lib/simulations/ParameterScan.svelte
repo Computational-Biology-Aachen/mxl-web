@@ -5,7 +5,7 @@
 
 <script lang="ts">
   import type { ParameterScanAnalysis } from "$lib";
-  import LineChart from "$lib/chartjs/LineChart.svelte";
+  import { LineChart } from "@computational-biology-aachen/design";
   import { onMount } from "svelte";
   import type { ModelBuilder } from "../model-editor/modelBuilder";
   import type { Backend } from "../stores/backends";

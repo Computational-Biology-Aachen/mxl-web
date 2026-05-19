@@ -8,7 +8,7 @@
   Pure algebraic evaluation over Ci range 0–1000 µbar; no ODE worker needed.
 -->
 <script lang="ts">
-  import LineChart from "$lib/chartjs/LineChart.svelte";
+  import { LineChart } from "@computational-biology-aachen/design";
   import Slider from "$lib/Slider.svelte";
   import { onMount } from "svelte";
 
