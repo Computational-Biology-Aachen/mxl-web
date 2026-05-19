@@ -526,7 +526,7 @@
   }
 </script>
 
-<section class="page">
+<section>
   <Row
     stack
     justify="between"

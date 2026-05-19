@@ -191,11 +191,14 @@
     flex-direction: column;
     gap: 1rem;
     width: 100%;
-    height: 30rem;
+    height: 50rem;
 
     @media (min-width: 768px) {
       flex-direction: row;
       justify-content: space-between;
+    }
+    @media (min-width: 1200px) {
+      height: 30rem;
     }
   }
 
