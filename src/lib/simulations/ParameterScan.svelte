@@ -279,7 +279,7 @@
     animation: spin 1s linear infinite;
     border: 3px solid rgba(0, 0, 0, 0.1);
     border-top-color: currentColor;
-    border-radius: var(--round);
+    border-radius: var(--radius-full);
     width: 40px;
     height: 40px;
   }

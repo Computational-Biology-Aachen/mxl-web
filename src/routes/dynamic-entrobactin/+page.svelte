@@ -2,6 +2,7 @@
   import { backends, type Analyses } from "$lib";
   import scheme from "$lib/assets/mibinet-duo.png";
   import AnalysesDashboard from "$lib/model-editor/AnalysesDashboard.svelte";
+  import { Main } from "@computational-biology-aachen/design";
 
   import { initModel } from "./model";
 
@@ -47,20 +48,22 @@
   ]);
 </script>
 
-<AnalysesDashboard
-  name={"Dynamic Entrobaction"}
-  initModel={initModel}
-  bind:analyses={analyses}
-  equationsOpen={true}
->
-  <h1>Dynamic Entrobaction model</h1>
-  <div class="centered">
-    <img
-      src={scheme}
-      alt="model-scheme"
-    />
-  </div>
-</AnalysesDashboard>
+<Main>
+  <AnalysesDashboard
+    name={"Dynamic Entrobaction"}
+    initModel={initModel}
+    bind:analyses={analyses}
+    equationsOpen={true}
+  >
+    <h1>Dynamic Entrobaction model</h1>
+    <div class="centered">
+      <img
+        src={scheme}
+        alt="model-scheme"
+      />
+    </div>
+  </AnalysesDashboard>
+</Main>
 
 <style>
   img {

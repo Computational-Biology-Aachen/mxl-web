@@ -1,5 +1,13 @@
 <script lang="ts">
+  import { Base, Num } from "$lib/mathml";
+  import {
+    Button,
+    ButtonIcon as IconButton,
+    Math,
+    Popover,
+  } from "@computational-biology-aachen/design";
   import { MediaQuery } from "svelte/reactivity";
+  import EqEditor from "./EqEditor.svelte";
   import { defaultTexName, defaultValue } from "./modelUtils";
   import {
     idToTex,
@@ -22,13 +30,6 @@
     assignments: AssView;
     reactions: RxnView;
   } = $props();
-
-  import { Button } from "@computational-biology-aachen/design";
-  import Math from "$lib/Math.svelte";
-  import { Base, Num } from "$lib/mathml";
-  import IconButton from "../buttons/IconButton.svelte";
-  import Popover from "../Popover.svelte";
-  import EqEditor from "./EqEditor.svelte";
 
   function onSaveEq(idx: number, fn: Base) {
     assignments[idx].fn = fn;
@@ -74,7 +75,10 @@
       display={true}
       fontSize={"0.75rem"}
     />
-    <IconButton icon="edit" popovertarget="eq-editor-{idx}" />
+    <IconButton
+      icon="edit"
+      popovertarget="eq-editor-{idx}"
+    />
   </div>
 {/snippet}
 
@@ -160,8 +164,8 @@
           texName: `a_${assignments.length}`,
         },
       ];
-    }}
-  >add new item</Button>
+    }}>add new item</Button
+  >
 </div>
 
 {#each assignments as ass, idx}
@@ -198,7 +202,7 @@
   /* Input styles shared between table and cards */
   input {
     border: var(--border-transparent);
-    border-radius: var(--border-radius);
+    border-radius: var(--radius-lg);
     background-color: transparent;
     padding: 0.35rem 0.5rem;
     width: 100%;
@@ -224,7 +228,7 @@
     box-shadow: var(--shadow);
     border: var(--border);
     border-radius: 0.5rem;
-    background-color: var(--bg-l1);
+    background-color: var(--color-surface);
     padding: 1rem;
   }
 
@@ -293,11 +297,11 @@
     padding: 1rem 1.5rem;
   }
   tr {
-    background-color: var(--bg-l1);
+    background-color: var(--color-surface);
   }
   tr:hover {
     transition-duration: 150ms;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    background-color: lch(from var(--bg-l1) calc(l - 5) c h);
+    background-color: lch(from var(--color-surface) calc(l - 5) c h);
   }
 </style>

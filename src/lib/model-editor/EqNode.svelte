@@ -611,15 +611,15 @@
     align-items: center;
     box-shadow: var(--shadow);
     border: var(--border);
-    border-radius: var(--border-radius);
+    border-radius: var(--radius-lg);
     background: #fafafa;
     padding: 0.75rem;
   }
 
   .node[data-selected="true"] {
     box-shadow: var(--shadow);
-    border-color: var(--primary);
-    background: rgb(from var(--primary) r g b / 5%);
+    border-color: var(--color-surface);
+    background: rgb(from var(--color-surface) r g b / 5%);
   }
 
   .divide {
@@ -672,8 +672,8 @@
     place-items: center;
     cursor: pointer;
     border: var(--border-primary);
-    border-radius: var(--border-radius);
-    background: var(--primary);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
     padding: 0;
     width: 2.5rem;
     height: 2.5rem;
@@ -715,7 +715,7 @@
     justify-content: center;
     align-items: center;
     gap: 0.35rem;
-    border-radius: var(--round);
+    border-radius: var(--radius-full);
     background: #e2e8f0;
     padding: 0.35rem 0.55rem;
     color: #1f2937;

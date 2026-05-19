@@ -2,6 +2,7 @@
   import { backends, type Analyses } from "$lib";
   import AnalysesDashboard from "$lib/model-editor/AnalysesDashboard.svelte";
   import type { PamGroup } from "$lib/simulations/protocol";
+  import { Main } from "@computational-biology-aachen/design";
   import { initModel } from "./model";
 
   const defaultPamProtocol: PamGroup[] = [
@@ -67,11 +68,13 @@
   ]);
 </script>
 
-<AnalysesDashboard
-  name={"Saadat 2021"}
-  initModel={initModel}
-  bind:analyses={analyses}
-  equationsOpen={false}
->
-  <h1>Saadat 2021 model</h1>
-</AnalysesDashboard>
+<Main>
+  <AnalysesDashboard
+    name={"Saadat 2021"}
+    initModel={initModel}
+    bind:analyses={analyses}
+    equationsOpen={false}
+  >
+    <h1>Saadat 2021 model</h1>
+  </AnalysesDashboard>
+</Main>

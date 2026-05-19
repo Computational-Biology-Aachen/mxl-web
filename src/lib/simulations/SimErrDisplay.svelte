@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Accordion from "$lib/Accordion.svelte";
   import type { SimulationError } from "$lib/stores/workerStore";
+  import { Accordion2 as Accordion } from "@computational-biology-aachen/design";
 
   let {
     err,

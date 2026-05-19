@@ -1,8 +1,8 @@
 <script lang="ts">
-  import Math from "$lib/Math.svelte";
   import { Divide, Minus, Name, Num } from "$lib/mathml";
   import { stoichToTex } from "$lib/model-editor/modelUtils";
   import { type Stoichiometry } from "$lib/model-editor/modelView";
+  import { Math } from "@computational-biology-aachen/design";
 
   const stoichs: Array<Stoichiometry> = [
     [{ name: "a", value: new Num(0.0) }],

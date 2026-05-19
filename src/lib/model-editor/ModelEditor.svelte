@@ -1,11 +1,15 @@
 <script lang="ts">
-  import Tab from "$lib/buttons/Tab.svelte";
-  import { Button, Icon, Row } from "@computational-biology-aachen/design";
   import { ModelBuilder } from "$lib/model-editor/modelBuilder";
   import TableAssignments from "$lib/model-editor/TableAssignment.svelte";
   import TableParameters from "$lib/model-editor/TableParameters.svelte";
   import TableReactions from "$lib/model-editor/TableReactions.svelte";
   import TableVariables from "$lib/model-editor/TableVariables.svelte";
+  import {
+    Button,
+    Icon,
+    Row,
+    ButtonTab as Tab,
+  } from "@computational-biology-aachen/design";
   import { defaultTexName, defaultValue } from "./modelUtils";
   import { ModelView } from "./modelView";
 
@@ -104,7 +108,11 @@
   let cur = $state(tabs[0]);
 </script>
 
-<Row stack justify="between" gap="0.5rem">
+<Row
+  stack
+  justify="between"
+  gap="0.5rem"
+>
   <hgroup>
     <h2>Model Details</h2>
     <p>
@@ -116,8 +124,8 @@
   <Button
     onclick={() => onSave(modelView.toBuilder())}
     popovertarget={popovertarget}
-    popovertargetaction="hide"
-  >Save</Button>
+    popovertargetaction="hide">Save</Button
+  >
 </Row>
 
 <ul>
@@ -161,8 +169,8 @@
     flex-direction: column;
     gap: 0.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-    border-radius: var(--border-radius);
-    background-color: var(--bg-l1);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-surface);
   }
   .padding {
     padding: 1rem;

@@ -8,8 +8,11 @@
   Pure algebraic evaluation over Ci range 0–1000 µbar; no ODE worker needed.
 -->
 <script lang="ts">
-  import { LineChart } from "@computational-biology-aachen/design";
-  import Slider from "$lib/Slider.svelte";
+  import {
+    LineChart,
+    Main,
+    Slider2 as Slider,
+  } from "@computational-biology-aachen/design";
   import { onMount } from "svelte";
 
   function c(value: number, opacity: number = 1.0) {
@@ -143,55 +146,57 @@
   });
 </script>
 
-<h1>FvCB</h1>
-<p>
-  The FvCB model, also known as the Farquhar, von Caemmerer, and Berry model, is
-  a widely used theoretical framework in plant biology, first conceptualized in
-  1980. It provides a simplistic view of C3 photosynthesis and is named after
-  its primary contributors: Graham D. Farquhar, Susanne von Caemmerer, and
-  Joseph A. Berry. The model focuses on the carbon fixation stage of
-  photosynthesis and describes carbon assimilation (A) by dividing it into three
-  categories: the RuBisCO limited rate (Ac), the electron transport limited rate
-  (Aj), and the triphosphate limited rate (Ap). These three components can be
-  calculated using equations with measurable biochemical parameters. The minimum
-  value of these three components is declared to showcase our A in specific
-  conditions.
-</p>
+<Main>
+  <h1>FvCB</h1>
+  <p>
+    The FvCB model, also known as the Farquhar, von Caemmerer, and Berry model,
+    is a widely used theoretical framework in plant biology, first
+    conceptualized in 1980. It provides a simplistic view of C3 photosynthesis
+    and is named after its primary contributors: Graham D. Farquhar, Susanne von
+    Caemmerer, and Joseph A. Berry. The model focuses on the carbon fixation
+    stage of photosynthesis and describes carbon assimilation (A) by dividing it
+    into three categories: the RuBisCO limited rate (Ac), the electron transport
+    limited rate (Aj), and the triphosphate limited rate (Ap). These three
+    components can be calculated using equations with measurable biochemical
+    parameters. The minimum value of these three components is declared to
+    showcase our A in specific conditions.
+  </p>
 
-<div>
-  <Slider
-    name="Chloroplast O₂ partial pressure / mbar"
-    bind:val={o}
-    callback={runSimulation}
-    min="100"
-    max="500"
-    step="1"
+  <div>
+    <Slider
+      name="Chloroplast O₂ partial pressure / mbar"
+      bind:val={o}
+      callback={runSimulation}
+      min="100"
+      max="500"
+      step="1"
+    />
+    <Slider
+      name="Electron transport rate (J) / µmol m⁻² s⁻¹"
+      bind:val={j}
+      callback={runSimulation}
+      min="50"
+      max="300"
+      step="1"
+    />
+    <Slider
+      name="Inorganic phosphate supply rate (Tₚ) / µmol m⁻² s⁻¹"
+      bind:val={tp}
+      callback={runSimulation}
+      min="5"
+      max="50"
+      step="1"
+    />
+  </div>
+  <LineChart
+    data={lineData}
+    yMax={yMax}
+    xLabel="Intercellular CO₂ / µbar"
+    yLabel="CO₂ Assimilation / µmol m⁻² s⁻¹"
+    loading={false}
+    lineDisplay="current"
   />
-  <Slider
-    name="Electron transport rate (J) / µmol m⁻² s⁻¹"
-    bind:val={j}
-    callback={runSimulation}
-    min="50"
-    max="300"
-    step="1"
-  />
-  <Slider
-    name="Inorganic phosphate supply rate (Tₚ) / µmol m⁻² s⁻¹"
-    bind:val={tp}
-    callback={runSimulation}
-    min="5"
-    max="50"
-    step="1"
-  />
-</div>
-<LineChart
-  data={lineData}
-  yMax={yMax}
-  xLabel="Intercellular CO₂ / µbar"
-  yLabel="CO₂ Assimilation / µmol m⁻² s⁻¹"
-  loading={false}
-  lineDisplay="current"
-/>
+</Main>
 
 <style>
   div {

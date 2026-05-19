@@ -1,66 +1,65 @@
 <script lang="ts">
-  import Math from "$lib/Math.svelte";
   import {
-    type Base,
-    Add,
-    Divide,
-    Minus,
-    Mul,
-    Name,
-    Num,
-    Pow,
-    Implies,
-    IntDivide,
-    Rem,
-    And,
-    Or,
-    Xor,
-    Not,
-    Eq,
-    NotEqual,
-    GreaterEqual,
-    GreaterThan,
-    LessEqual,
-    LessThan,
-    Max,
-    Min,
-    Piecewise,
     Abs,
+    Acos,
+    Acot,
+    Add,
+    And,
+    ArcCosh,
+    ArcCoth,
+    ArcCsc,
+    ArcCsch,
+    ArcSec,
+    ArcSech,
+    ArcSinh,
+    ArcTanh,
+    Asin,
+    Atan,
     Ceiling,
+    Cos,
+    Cosh,
+    Cot,
+    Coth,
+    Csc,
+    Csch,
+    Divide,
+    Eq,
     Exp,
     Factorial,
     Floor,
+    GreaterEqual,
+    GreaterThan,
+    Implies,
+    IntDivide,
+    LessEqual,
+    LessThan,
     Ln,
-    Sin,
-    Cos,
-    Tan,
-    Sec,
-    Csc,
-    Cot,
-    Asin,
-    Acos,
-    Atan,
-    Acot,
-    ArcSec,
-    ArcCsc,
-    Sinh,
-    Cosh,
-    Tanh,
-    Sech,
-    Csch,
-    Coth,
-    ArcSinh,
-    ArcCosh,
-    ArcTanh,
-    ArcCsch,
-    ArcSech,
-    ArcCoth,
-    RateOf,
     Log,
+    Max,
+    Min,
+    Minus,
+    Mul,
+    Name,
+    Not,
+    NotEqual,
+    Num,
+    Or,
+    Piecewise,
+    Pow,
+    RateOf,
+    Rem,
+    Sec,
+    Sech,
+    Sin,
+    Sinh,
     Sqrt,
+    Tan,
+    Tanh,
+    Xor,
+    type Base,
   } from "$lib/mathml";
   import EqNode from "$lib/model-editor/EqNode.svelte";
-  import { Button, Row } from "@computational-biology-aachen/design";
+  import { Button, Math, Row } from "@computational-biology-aachen/design";
   import { defaultValue } from "./modelUtils";
 
   import {
@@ -528,7 +527,11 @@
 </script>
 
 <section class="page">
-  <Row stack justify="between" gap="0.5rem">
+  <Row
+    stack
+    justify="between"
+    gap="0.5rem"
+  >
     <hgroup>
       <h2>Eq Editor</h2>
       <p class="comment">
@@ -539,8 +542,8 @@
     <Button
       onclick={() => onSave(root)}
       popovertarget={popovertarget}
-      popovertargetaction="hide"
-    >Save</Button>
+      popovertargetaction="hide">Save</Button
+    >
   </Row>
 
   <div class="edit-row">
@@ -691,7 +694,7 @@
       border-color 120ms ease;
     cursor: pointer;
     border: var(--border);
-    border-radius: var(--border-radius);
+    border-radius: var(--radius-lg);
     background: #f9fafb;
     padding: 0.5rem 0.75rem;
     text-align: left;
@@ -700,7 +703,7 @@
   .palette-button:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-    border-color: var(--primary);
+    border-color: var(--color-surface);
   }
 
   .palette-button .label {
@@ -724,7 +727,7 @@
   .window {
     box-shadow: var(--shadow);
     border: var(--border);
-    border-radius: var(--border-radius);
+    border-radius: var(--radius-lg);
     background: #fff;
     overflow: hidden;
   }
@@ -732,8 +735,8 @@
   .window-header {
     background: linear-gradient(
       90deg,
-      var(--primary),
-      lch(from var(--primary) calc(l + 20) c h)
+      var(--color-surface),
+      lch(from var(--color-surface) calc(l + 20) c h)
     );
     padding: 0.75rem 1rem;
     color: white;
@@ -773,7 +776,7 @@
   select,
   input[type="number"] {
     border: var(--border);
-    border-radius: var(--border-radius);
+    border-radius: var(--radius-lg);
     padding: 0.35rem 0.5rem;
     width: 100%;
     font-size: 0.95rem;

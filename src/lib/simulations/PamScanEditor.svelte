@@ -1,11 +1,15 @@
 <script lang="ts">
   import { allBackends, type Backend, type PamAnalysis } from "$lib";
-  import { Button, Icon, Row } from "@computational-biology-aachen/design";
-  import InputCheckbox from "$lib/inputs/InputCheckbox.svelte";
-  import InputChoice from "$lib/inputs/InputChoice.svelte";
-  import InputNumber from "$lib/inputs/InputNumber.svelte";
-  import InputText from "$lib/inputs/InputText.svelte";
   import type { ModelBuilder } from "$lib/model-editor/modelBuilder";
+  import {
+    Button,
+    Icon,
+    InputCheckbox,
+    InputChoice,
+    InputNumber,
+    InputText,
+    Row,
+  } from "@computational-biology-aachen/design";
   import { untrack } from "svelte";
   import { migratePamPhases, type PamGroup } from "./protocol";
 
@@ -122,7 +126,11 @@
   }
 </script>
 
-<Row stack justify="between" gap="0.5rem">
+<Row
+  stack
+  justify="between"
+  gap="0.5rem"
+>
   <h2>Edit PAM analysis</h2>
   <Button
     onclick={() =>
@@ -141,8 +149,8 @@
         lineDisplay,
       })}
     popovertarget={popovertarget}
-    popovertargetaction="hide"
-  >Save</Button>
+    popovertargetaction="hide">Save</Button
+  >
 </Row>
 
 <InputText
@@ -312,7 +320,7 @@
   .group {
     margin-bottom: 1rem;
     border: var(--border);
-    border-radius: var(--border-radius);
+    border-radius: var(--radius-lg);
     padding: 0.5rem 0.75rem;
   }
 
@@ -350,7 +358,7 @@
     align-items: center;
     cursor: pointer;
     border: none;
-    border-radius: var(--border-radius);
+    border-radius: var(--radius-lg);
     background: none;
     padding: 0.25rem;
     color: var(--text-secondary, #888);
@@ -367,7 +375,7 @@
     gap: 0.25rem;
     cursor: pointer;
     border: var(--border);
-    border-radius: var(--border-radius);
+    border-radius: var(--radius-lg);
     background: none;
     padding: 0.35rem 0.75rem;
     font-size: 0.875rem;
@@ -379,7 +387,7 @@
 
   .label-input {
     border: var(--border);
-    border-radius: var(--border-radius);
+    border-radius: var(--radius-lg);
     background-color: transparent;
     padding: 0.35rem 0.5rem;
     width: 100%;

@@ -7,19 +7,26 @@
     type ParameterScanAnalysis,
     type SimulationAnalysis,
   } from "$lib";
-  import Accordion from "$lib/Accordion.svelte";
-  import { Button, Icon, Row } from "@computational-biology-aachen/design";
-  import DynBoxRow, { type Box } from "$lib/DynBoxRow.svelte";
-  import Math from "$lib/Math.svelte";
   import { ModelBuilder } from "$lib/model-editor/modelBuilder";
-  import Pair from "$lib/Pair.svelte";
   import PamSimulator from "$lib/simulations/Pam.svelte";
   import ParameterScanSimulator from "$lib/simulations/ParameterScan.svelte";
   import Simulator from "$lib/simulations/TimeCourse.svelte";
-  import Slider from "$lib/Slider.svelte";
+  import {
+    Accordion2 as Accordion,
+    Button,
+    ButtonMenu,
+    ButtonMenuItem,
+    DynBoxRow,
+    Icon,
+    Math,
+    Pair,
+    Popover,
+    Row,
+    Slider2 as Slider,
+    type Box,
+  } from "@computational-biology-aachen/design";
   import type { Snippet } from "svelte";
   import { tick } from "svelte";
-  import Popover from "../Popover.svelte";
   import PamScanEditor from "../simulations/PamScanEditor.svelte";
   import ParameterScanEditor from "../simulations/ParameterScanEditor.svelte";
   import AnalysisEditor from "../simulations/TimeCourseEditor.svelte";
@@ -108,9 +115,6 @@
   let fileInput = $state<HTMLInputElement | null>(null);
   let loadError = $state<string | null>(null);
   let pendingBox = $state<Box | null>(null);
-  let saveMenuOpen = $state(false);
-  let saveMenuWrapEl = $state<HTMLDivElement | null>(null);
-  let saveMenuCloseTimeout: ReturnType<typeof setTimeout> | undefined;
   let pickerEl = $state<HTMLDivElement | null | undefined>(null);
   let analysisEditorEls = $state<
     Record<number, HTMLDivElement | null | undefined>
@@ -253,48 +257,14 @@
     analyses = [...analyses, newScan];
   }
 
-  function closeSaveMenu() {
-    if (saveMenuCloseTimeout !== undefined) {
-      clearTimeout(saveMenuCloseTimeout);
-      saveMenuCloseTimeout = undefined;
-    }
-    saveMenuOpen = false;
-  }
 
-  function openSaveMenu() {
-    if (saveMenuCloseTimeout !== undefined) {
-      clearTimeout(saveMenuCloseTimeout);
-      saveMenuCloseTimeout = undefined;
-    }
-    saveMenuOpen = true;
-  }
-
-  function scheduleCloseSaveMenu() {
-    if (saveMenuCloseTimeout !== undefined) return;
-    saveMenuCloseTimeout = setTimeout(() => {
-      saveMenuCloseTimeout = undefined;
-      saveMenuOpen = false;
-    }, 100);
-  }
-
-  function toggleSaveMenu() {
-    if (saveMenuOpen) {
-      closeSaveMenu();
-      return;
-    }
-    saveMenuOpen = !saveMenuOpen;
-  }
-
-  function handleDocumentClick(event: MouseEvent) {
-    if (!saveMenuOpen) return;
-    const target = event.target as Node | null;
-    if (target && !saveMenuWrapEl?.contains(target)) {
-      closeSaveMenu();
-    }
-  }
 </script>
 
-<Row stack justify="between" gap="0.5rem">
+<Row
+  stack
+  justify="between"
+  gap="0.5rem"
+>
   <Pair>
     <a
       class="light"
@@ -311,53 +281,21 @@
     >
   </Pair>
   <Pair justify="end">
-    <button
-      class="secondary"
-      onclick={() => fileInput?.click()}>Load</button
+    <Button
+      variant="secondary"
+      onclick={() => fileInput?.click()}>Load</Button
     >
-    <div
-      class="save-menu-wrap"
-      role="presentation"
-      bind:this={saveMenuWrapEl}
-      onmouseenter={openSaveMenu}
-      onmouseleave={scheduleCloseSaveMenu}
-    >
-      <button
-        class="secondary save-trigger"
-        onclick={toggleSaveMenu}
-      >
-        <span>Save</span>
-        <Icon>arrow_drop_down</Icon>
-      </button>
-      {#if saveMenuOpen}
-        <div class="save-menu">
-          <button
-            class="save-option"
-            onclick={() => {
-              saveModel();
-              closeSaveMenu();
-            }}
-          >
-            SBML
-          </button>
-          <button
-            class="save-option"
-            onclick={() => {
-              savePython();
-              closeSaveMenu();
-            }}
-          >
-            Python
-          </button>
-        </div>
-      {/if}
-    </div>
+
+    <ButtonMenu label="Save">
+      <ButtonMenuItem onclick={saveModel}>SBML</ButtonMenuItem>
+      <ButtonMenuItem onclick={savePython}>Python</ButtonMenuItem>
+    </ButtonMenu>
     <Button
       onclick={() => {
         model = initModel();
         runAllSimulations();
-      }}
-    >Reset</Button>
+      }}>Reset</Button
+    >
     <Button popovertarget="model-editor">Edit model</Button>
   </Pair>
 </Row>
@@ -371,8 +309,6 @@
 {#if loadError}
   <p class="load-error">{loadError}</p>
 {/if}
-
-<svelte:document onclick={handleDocumentClick} />
 
 <Popover
   size="xs"
@@ -636,64 +572,12 @@
 {/each}
 
 <style>
-  button.secondary {
-    cursor: pointer;
-    border: 1px solid var(--primary);
-    border-radius: var(--border-radius);
-    background-color: transparent;
-    padding: 0 1rem;
-    height: 2rem;
-    color: var(--primary);
-    font-weight: var(--weight-bold);
-    font-size: 0.875rem;
-    line-height: 1.25rem;
-    letter-spacing: 0.025em;
-  }
-  button.secondary:hover {
-    background-color: color-mix(in srgb, var(--primary) 10%, transparent);
-  }
   .load-error {
     margin: 0;
     color: var(--error, #dc2626);
     font-size: 0.875rem;
   }
-  .save-menu-wrap {
-    display: inline-block;
-    position: relative;
-  }
-  .save-trigger {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-  }
-  .save-menu {
-    display: grid;
-    position: absolute;
-    top: calc(100% + 0.25rem);
-    right: 0;
-    gap: 0.25rem;
-    z-index: 20;
-    box-shadow: var(--shadow);
-    border: var(--border);
-    border-radius: var(--border-radius);
-    background: var(--bg-l1);
-    padding: 0.35rem;
-    min-width: 10rem;
-  }
-  .save-option {
-    cursor: pointer;
-    border: 0;
-    border-radius: calc(var(--border-radius) - 0.125rem);
-    background: transparent;
-    padding: 0.6rem 0.75rem;
-    color: var(--text);
-    font-size: 0.875rem;
-    text-align: left;
-  }
-  .save-option:hover {
-    background: color-mix(in srgb, var(--primary) 10%, transparent);
-    color: var(--primary);
-  }
+
   .centered {
     display: flex;
     justify-content: center;
@@ -704,8 +588,8 @@
     flex-direction: column;
     align-items: inherit;
     box-shadow: var(--shadow);
-    border-radius: var(--border-radius);
-    background-color: var(--bg-l1);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-surface);
     padding: 1.5rem;
 
     @media (min-width: 768px) {
@@ -722,7 +606,7 @@
     font-weight: 400;
   }
   a.light:hover {
-    color: var(--primary);
+    color: var(--color-surface);
   }
   .picker-title {
     margin: 0;
@@ -736,7 +620,7 @@
     transition: background 0.15s ease;
     cursor: pointer;
     border: var(--border);
-    border-radius: var(--border-radius);
+    border-radius: var(--radius-lg);
     background: transparent;
     padding: 0.75rem 1rem;
     width: 100%;
@@ -744,8 +628,8 @@
     text-align: left;
   }
   .picker-option:hover {
-    border-color: var(--primary);
-    background: color-mix(in srgb, var(--primary) 10%, transparent);
-    color: var(--primary);
+    border-color: var(--color-surface);
+    background: color-mix(in srgb, var(--color-surface) 10%, transparent);
+    color: var(--color-surface);
   }
 </style>

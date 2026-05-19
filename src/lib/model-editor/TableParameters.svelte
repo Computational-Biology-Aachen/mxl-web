@@ -1,8 +1,10 @@
 <script lang="ts">
+  import {
+    Button,
+    ButtonIcon as IconButton,
+    Popover,
+  } from "@computational-biology-aachen/design";
   import { MediaQuery } from "svelte/reactivity";
-  import { Button } from "@computational-biology-aachen/design";
-  import IconButton from "../buttons/IconButton.svelte";
-  import Popover from "../Popover.svelte";
   import { defaultTexName, defaultValue } from "./modelUtils";
   import {
     type AssView,
@@ -71,7 +73,10 @@
 {/snippet}
 
 {#snippet actions(idx: number, par: Parameter)}
-  <IconButton icon="edit" popovertarget="var-editor-{idx}" />
+  <IconButton
+    icon="edit"
+    popovertarget="var-editor-{idx}"
+  />
   <IconButton
     icon="close"
     onclick={() => {
@@ -153,8 +158,8 @@
           texName: `p_${parameters.length}`,
         },
       ];
-    }}
-  >add new item</Button>
+    }}>add new item</Button
+  >
 </div>
 
 {#each parameters as par, idx}
@@ -179,7 +184,7 @@
   /* Input styles shared between table and cards */
   input {
     border: var(--border-transparent);
-    border-radius: var(--border-radius);
+    border-radius: var(--radius-lg);
     background-color: transparent;
     padding: 0.35rem 0.5rem;
     width: 100%;
@@ -205,7 +210,7 @@
     box-shadow: var(--shadow);
     border: var(--border);
     border-radius: 0.5rem;
-    background-color: var(--bg-l1);
+    background-color: var(--color-surface);
     padding: 1rem;
   }
 
@@ -273,12 +278,12 @@
     padding: 1rem 1.5rem;
   }
   tr {
-    background-color: var(--bg-l1);
+    background-color: var(--color-surface);
   }
   tr:hover {
     transition-duration: 150ms;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    background-color: lch(from var(--bg-l1) calc(l - 5) c h);
+    background-color: lch(from var(--color-surface) calc(l - 5) c h);
   }
   td.actions {
     display: flex;

@@ -2,6 +2,7 @@
   import { backends, type Analyses } from "$lib";
   import scheme from "$lib/assets/lotka-volterra-scheme.png";
   import AnalysesDashboard from "$lib/model-editor/AnalysesDashboard.svelte";
+  import { Main } from "@computational-biology-aachen/design";
   import { initModel } from "./model";
 
   let analyses: Analyses = $state([
@@ -44,25 +45,27 @@
   ]);
 </script>
 
-<AnalysesDashboard
-  name={"Lotka-Volterra"}
-  initModel={initModel}
-  bind:analyses={analyses}
-  equationsOpen={true}
->
-  <h1>Lotka Volterra model</h1>
-  <p>
-    The Lotka-Volterra equations, developed in the 1920s by Alfred Lotka and
-    Vito Volterra representing the cyclic, phase-shifted population dynamics
-    between a predator and its prey.
-  </p>
-  <div class="centered">
-    <img
-      src={scheme}
-      alt="model-scheme"
-    />
-  </div>
-</AnalysesDashboard>
+<Main>
+  <AnalysesDashboard
+    name={"Lotka-Volterra"}
+    initModel={initModel}
+    bind:analyses={analyses}
+    equationsOpen={true}
+  >
+    <h1>Lotka Volterra model</h1>
+    <p>
+      The Lotka-Volterra equations, developed in the 1920s by Alfred Lotka and
+      Vito Volterra representing the cyclic, phase-shifted population dynamics
+      between a predator and its prey.
+    </p>
+    <div class="centered">
+      <img
+        src={scheme}
+        alt="model-scheme"
+      />
+    </div>
+  </AnalysesDashboard>
+</Main>
 
 <style>
   img {

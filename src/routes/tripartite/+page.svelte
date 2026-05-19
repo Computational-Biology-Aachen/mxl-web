@@ -1,6 +1,7 @@
 <script lang="ts">
   import { backends, type Analyses } from "$lib";
   import AnalysesDashboard from "$lib/model-editor/AnalysesDashboard.svelte";
+  import { Main } from "@computational-biology-aachen/design";
   import { initModel } from "./model";
   let analyses: Analyses = $state([
     {
@@ -43,15 +44,17 @@
   ]);
 </script>
 
-<AnalysesDashboard
-  name={"Tripartite dynamics"}
-  initModel={initModel}
-  bind:analyses={analyses}
-  equationsOpen={true}
->
-  <h1>Tripartite population model</h1>
-  <p>
-    Dynamic model of a tripartite population of <b>P</b>ublic consumers,
-    <b>C</b>heaters and private <b>m</b>etabolisers.
-  </p>
-</AnalysesDashboard>
+<Main>
+  <AnalysesDashboard
+    name={"Tripartite dynamics"}
+    initModel={initModel}
+    bind:analyses={analyses}
+    equationsOpen={true}
+  >
+    <h1>Tripartite population model</h1>
+    <p>
+      Dynamic model of a tripartite population of <b>P</b>ublic consumers,
+      <b>C</b>heaters and private <b>m</b>etabolisers.
+    </p>
+  </AnalysesDashboard>
+</Main>

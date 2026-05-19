@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Any, Literal
 
 import numpy as np
-from scipy.integrate import solve_ivp
+from scipy.integrate import solve_ivp # type: ignore
 
 
 @dataclass(slots=True)

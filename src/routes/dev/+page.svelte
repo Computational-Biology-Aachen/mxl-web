@@ -36,13 +36,13 @@
     gap: 0.5rem;
     box-shadow: var(--shadow);
     border-radius: 0.75rem;
-    background-color: var(--bg-l1);
+    background-color: var(--color-surface);
     padding: 1.5rem;
   }
   li {
     list-style-position: inside;
   }
   li::marker {
-    color: var(--primary);
+    color: var(--color-surface);
   }
 </style>

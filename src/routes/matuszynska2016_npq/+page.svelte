@@ -2,6 +2,7 @@
   import { backends, type Analyses } from "$lib";
   import AnalysesDashboard from "$lib/model-editor/AnalysesDashboard.svelte";
   import type { PamGroup } from "$lib/simulations/protocol";
+  import { Main } from "@computational-biology-aachen/design";
   import { initModel } from "./model";
 
   const defaultPamProtocol: PamGroup[] = [
@@ -69,11 +70,13 @@
   ]);
 </script>
 
-<AnalysesDashboard
-  name={"Matuszyńska 2016"}
-  initModel={initModel}
-  bind:analyses={analyses}
-  equationsOpen={false}
->
-  <h1>Matuszyńska 2016 NPQ model</h1>
-</AnalysesDashboard>
+<Main>
+  <AnalysesDashboard
+    name={"Matuszyńska 2016"}
+    initModel={initModel}
+    bind:analyses={analyses}
+    equationsOpen={false}
+  >
+    <h1>Matuszyńska 2016 NPQ model</h1>
+  </AnalysesDashboard>
+</Main>

@@ -69,7 +69,7 @@
   {/snippet}
   <NavItem href="{base}/">Home</NavItem>
   <NavItem href="{base}/models">Models</NavItem>
-  <NavGH />
+  <NavGH href="https://github.com/Computational-Biology-Aachen/mxl-web" />
 </Navbar>
 
 {@render children()}

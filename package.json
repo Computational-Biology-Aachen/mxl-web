@@ -42,7 +42,6 @@
     "@computational-biology-aachen/design": "*",
     "@fortawesome/free-brands-svg-icons": ">=7.2.0",
     "@fortawesome/free-solid-svg-icons": ">=7.2.0",
-    "@picocss/pico": ">=2.1.1",
     "@sveltejs/adapter-static": ">=3.0.10",
     "chart.js": ">=4.5.0",
     "katex": ">=0.16.47",

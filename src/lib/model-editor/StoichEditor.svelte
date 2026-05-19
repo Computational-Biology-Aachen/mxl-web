@@ -1,8 +1,12 @@
 <script lang="ts">
-  import { Button, Icon, Row } from "@computational-biology-aachen/design";
-  import Math from "$lib/Math.svelte";
   import { Num } from "$lib/mathml";
-  import IconButton from "$lib/buttons/IconButton.svelte";
+  import {
+    Button,
+    Icon,
+    ButtonIcon as IconButton,
+    Math,
+    Row,
+  } from "@computational-biology-aachen/design";
   import { defaultValue, stoichToTex } from "./modelUtils";
   import {
     idToDisplay,
@@ -60,13 +64,17 @@
   }
 </script>
 
-<Row stack justify="between" gap="0.5rem">
+<Row
+  stack
+  justify="between"
+  gap="0.5rem"
+>
   <h2>Stoichiometry Editor</h2>
   <Button
     popovertarget={popovertarget}
     popovertargetaction="hide"
-    onclick={() => onSave(stoichiometry)}
-  >Save</Button>
+    onclick={() => onSave(stoichiometry)}>Save</Button
+  >
 </Row>
 
 <div class="card">
@@ -144,8 +152,8 @@
           ...stoichiometry,
           { name: firstVarNotInUse(), value: new Num(1.0) },
         ];
-      }}
-    >add new item</Button>
+      }}>add new item</Button
+    >
   </div>
 </div>
 
@@ -171,8 +179,8 @@
     flex-direction: column;
     gap: 0.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-    border-radius: var(--border-radius);
-    background-color: var(--bg-l1);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-surface);
   }
   .heading {
     display: flex;
@@ -218,12 +226,12 @@
     padding: 1rem 1.5rem;
   }
   tr {
-    background-color: var(--bg-l1);
+    background-color: var(--color-surface);
   }
   tr:hover {
     transition-duration: 150ms;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    background-color: lch(from var(--bg-l1) calc(l - 5) c h);
+    background-color: lch(from var(--color-surface) calc(l - 5) c h);
   }
   .expr-display {
     color: var(--slate-500, #64748b);
@@ -233,7 +241,7 @@
   table input,
   select {
     border: none;
-    border-radius: var(--border-radius);
+    border-radius: var(--radius-lg);
     background-color: transparent;
     padding: 0.35rem 0.5rem;
     width: 100%;

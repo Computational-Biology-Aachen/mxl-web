@@ -1,11 +1,13 @@
 <script lang="ts">
-  import InputNumber from "$lib/inputs/InputNumber.svelte";
-  import Math from "$lib/Math.svelte";
-  import { Base, Num } from "$lib/mathml";
+  import { Base } from "$lib/mathml";
+  import {
+    Button,
+    ButtonIcon as IconButton,
+    InputNumber,
+    Math,
+    Popover,
+  } from "@computational-biology-aachen/design";
   import { MediaQuery } from "svelte/reactivity";
-  import { Button } from "@computational-biology-aachen/design";
-  import IconButton from "../buttons/IconButton.svelte";
-  import Popover from "../Popover.svelte";
   import EqEditor from "./EqEditor.svelte";
   import { defaultTexName, defaultValue } from "./modelUtils";
   import {
@@ -82,7 +84,10 @@
         display={true}
         fontSize={"0.75rem"}
       />
-      <IconButton icon="edit" popovertarget="var-ia-editor-{idx}" />
+      <IconButton
+        icon="edit"
+        popovertarget="var-ia-editor-{idx}"
+      />
     </div>
   {:else}
     <InputNumber
@@ -100,7 +105,10 @@
 {/snippet}
 
 {#snippet actions(idx: number, vari: Variable)}
-  <IconButton icon="edit" popovertarget="var-editor-{idx}" />
+  <IconButton
+    icon="edit"
+    popovertarget="var-editor-{idx}"
+  />
   <IconButton
     icon="close"
     onclick={() => {
@@ -182,8 +190,8 @@
           texName: `x${variables.length}`,
         },
       ];
-    }}
-  >add new item</Button>
+    }}>add new item</Button
+  >
 </div>
 
 {#each variables as vari, idx}
@@ -235,7 +243,7 @@
   /* Input styles shared between table and cards */
   input {
     border: var(--border-transparent);
-    border-radius: var(--border-radius);
+    border-radius: var(--radius-lg);
     background-color: transparent;
     padding: 0.35rem 0.5rem;
     width: 100%;
@@ -261,7 +269,7 @@
     box-shadow: var(--shadow);
     border: var(--border);
     border-radius: 0.5rem;
-    background-color: var(--bg-l1);
+    background-color: var(--color-surface);
     padding: 1rem;
   }
 
@@ -302,7 +310,7 @@
 
   tr {
     display: table-row;
-    background-color: var(--bg-l1);
+    background-color: var(--color-surface);
   }
 
   th {
@@ -342,7 +350,7 @@
   tr:hover {
     transition-duration: 150ms;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    background-color: lch(from var(--bg-l1) calc(l - 5) c h);
+    background-color: lch(from var(--color-surface) calc(l - 5) c h);
   }
 
   td.actions {

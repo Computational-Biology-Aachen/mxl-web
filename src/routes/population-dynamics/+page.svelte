@@ -1,6 +1,7 @@
 <script lang="ts">
   import { backends, type Analyses } from "$lib";
   import AnalysesDashboard from "$lib/model-editor/AnalysesDashboard.svelte";
+  import { Main } from "@computational-biology-aachen/design";
   import { initModel } from "./model";
 
   let analyses: Analyses = $state([
@@ -24,11 +25,13 @@
   ]);
 </script>
 
-<AnalysesDashboard
-  name={"Population Dynamics"}
-  initModel={initModel}
-  bind:analyses={analyses}
-  equationsOpen={true}
->
-  <h1>Population dynamics</h1>
-</AnalysesDashboard>
+<Main>
+  <AnalysesDashboard
+    name={"Population Dynamics"}
+    initModel={initModel}
+    bind:analyses={analyses}
+    equationsOpen={true}
+  >
+    <h1>Population dynamics</h1>
+  </AnalysesDashboard>
+</Main>

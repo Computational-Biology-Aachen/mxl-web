@@ -1,38 +1,6 @@
 @charset "UTF-8";
 @import "@computational-biology-aachen/design/tokens.css";
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-:root {
-  /* Legacy aliases — existing site components use these names */
-  --primary: var(--color-primary);
-  --bg-l1: var(--color-surface);
-  --border-radius: var(--radius-lg);
-  --round: var(--radius-full);
-
-  /* Text size tokens (site-specific) */
-  --text-title-large: 1.625rem;
-  --text-h1: 1.375rem;
-  --text-h2: 1.0625rem;
-  --text-h3: 0.9375rem;
-  --text-headline: 0.8125rem;
-  --text-body: 0.8125rem;
-  --text-callout: 0.75rem;
-  --text-subheadline: 0.6875rem;
-  --text-footnote: 0.625rem;
-  --text-caption: 0.625rem;
-
-  /* Additional border tokens used by site components */
-  --border-transparent: 1px solid transparent;
-  --border-primary: 1px solid var(--color-primary);
-  --border-dashed: 2px dashed rgba(90, 90, 90, 0.8);
-  --border-heavy: 2px solid var(--slate);
-}
-
 html,
 body {
   margin: 0;
@@ -42,20 +10,9 @@ body {
   height: 100%;
   overflow: scroll;
   color: var(--color-text);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
   font-family: var(--font-sans);
-}
-
-a {
-  color: var(--color-text);
-  text-decoration: none;
-}
-a:hover {
-  color: var(--color-primary);
-}
-
-:hover {
-  transition-duration: 150ms;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .katex-display {

@@ -10,22 +10,21 @@
   import schemeEnterobactin from "$lib/assets/mibinet-duo.png";
   import hero from "$lib/assets/mxlweb-hero.png";
   import schemeSir from "$lib/assets/sir.png";
-  import Icon from "$lib/Icon.svelte";
-  import PrimaryLinkButton from "$lib/links/PrimaryLinkButton.svelte";
-  import SecondaryLinkButton from "$lib/links/SecondaryLinkButton.svelte";
-  import FeatureBox from "./FeatureBox.svelte";
-  import LogoBar from "$lib/LogoBar.svelte";
-  import ModelGallery from "$lib/ModelGallery.svelte";
-  import ModelHighlight from "$lib/ModelHighlight.svelte";
-  import Row from "$lib/Row.svelte";
-  import ModelGallery from "$lib/ModelGallery.svelte";
-  import ModelHighlight from "$lib/ModelHighlight.svelte";
   import {
     Button,
+    CardImageHighlight,
+    FeatureBox,
     Icon,
+    Link,
+    LogoBar,
     Main,
+    ModelGallery,
     Row,
+    Section,
+    Text,
   } from "@computational-biology-aachen/design";
+  import { faGithub } from "@fortawesome/free-brands-svg-icons";
+  import Fa from "svelte-fa";
 
   const logos = [
     { src: rwth, href: "https://www.rwth-aachen.de", alt: "rwth logo" },
@@ -60,8 +59,8 @@
   <div class="top">
     <div class="top-left">
       <h1 class="banner">
-        <strong>Living</strong> models for <br />
-        <span style="color: var(--primary);">collaborative science.</span>
+        Living models for <br />
+        <span style="color: var(--color-primary);">collaborative science.</span>
       </h1>
       <p>
         Stop sending static plots.
@@ -99,25 +98,25 @@
 
   <div class="row-main">
     <FeatureBox
-      color="#135bec"
+      color="c1"
       icon="interactive_space"
       header="Interactive by design"
       body="Explore models in real time with sliders, switches, and dynamic visualizations"
     />
     <FeatureBox
-      color="#006466"
+      color="c2"
       icon="group"
       header="Built for collaboration"
       body="Share models with your lab or collaborators - no code, no installation, just a link."
     />
     <FeatureBox
-      color="#570066"
+      color="c3"
       icon="genetics"
       header="Mechanistic & explainable"
       body="Grounded in ODE-based modelling for interpretable biological insight."
     />
     <FeatureBox
-      color="#ed1379"
+      color="c4"
       icon="open_in_browser"
       header="Browser-native science"
       body="Runs instantly on any device. Your models, anywhere, anytime."
@@ -130,25 +129,25 @@
   </div>
 
   <ModelGallery>
-    <ModelHighlight
+    <CardImageHighlight
       name="Photosynthesis dynamics"
       desc="Light, CO₂ and feedback in a dynamic model."
       href="{base}/ebeling-2026"
       image={schemeEbeling}
     />
-    <ModelHighlight
+    <CardImageHighlight
       name="Race for iron"
       desc="What is the effect of a public good on a microbial community?"
       href="{base}/dynamic-entrobactin"
       image={schemeEnterobactin}
     />
-    <ModelHighlight
+    <CardImageHighlight
       name="Population dynamics"
       desc="Explore how predators and prey survive in a dynamic environment"
       href="{base}/lotka-volterra"
       image={schemeLotkaVolt}
     />
-    <ModelHighlight
+    <CardImageHighlight
       name="Host-Parasite interaction"
       desc="How infection, immune response and outcomes evolve?"
       href="{base}/sir"
@@ -162,9 +161,31 @@
   </div>
   <LogoBar logos={logos} />
   <!-- End container -->
-</div>
+</Main>
+
+<Section variant="dark">
+  <h2 id="imprint">Imprint</h2>
+  <Text color="light">
+    Anbieter i.S.d. TDG/MDStV: Prof. Dr. Anna B. Matuszyńska <br />
+    Worringerweg 1 52074 Aachen <br />
+    Sammelbau Biologie, Bauteil 42 C, Erdgeschoss, Raum 041 <br />
+    Work Phone: +49 241 80 25817 <br />
+
+    Verantwortlich i.S.d. § 6 Abs. 2 MDStV: <br />
+    Prof. Dr. Anna B. Matuszyńska <br />
+    Design und Umsetzung Dr. Marvin van Aalst <Link
+      color="light"
+      href="https://github.com/Computational-Biology-Aachen/mxl-web"
+      ><Fa icon={faGithub} /></Link
+    ><br />
+    (c) 2025 Prof. Dr. Anna B. Matuszyńska, Alle Rechte vorbehalten.
+  </Text>
+</Section>
 
 <style>
+  #imprint {
+    color: var(--color-surface);
+  }
   .top {
     display: flex;
     flex-direction: column;
@@ -181,15 +202,19 @@
   .top-left {
     display: flex;
     flex-direction: column;
-    justify-content: start;
-    gap: 2rem;
+    justify-content: space-between;
     width: 50%;
     max-width: 40rem;
     height: 100%;
+
+    h1 {
+      margin: 2rem 0 0 0;
+    }
   }
 
-  .banner {
+  h1.banner {
     font-size: 3rem;
+    line-height: 1.2;
     letter-spacing: -1px;
   }
 

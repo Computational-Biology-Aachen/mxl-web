@@ -1,5 +1,5 @@
 <script>
-  import DynBoxRow from "$lib/DynBoxRow.svelte";
+  import { DynBoxRow } from "@computational-biology-aachen/design";
 </script>
 
 <DynBoxRow

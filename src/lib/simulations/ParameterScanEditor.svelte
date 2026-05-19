@@ -1,11 +1,14 @@
 <script lang="ts">
   import { allBackends, type Backend, type ParameterScanAnalysis } from "$lib";
-  import InputCheckbox from "$lib/inputs/InputCheckbox.svelte";
-  import InputChoice from "$lib/inputs/InputChoice.svelte";
-  import InputNumber from "$lib/inputs/InputNumber.svelte";
-  import InputNumberOptional from "$lib/inputs/InputNumberOptional.svelte";
-  import InputText from "$lib/inputs/InputText.svelte";
-  import { Button, Row } from "@computational-biology-aachen/design";
+  import {
+    Button,
+    InputCheckbox,
+    InputChoice,
+    InputNumber,
+    InputNumberOptional,
+    InputText,
+    Row,
+  } from "@computational-biology-aachen/design";
   import { untrack } from "svelte";
   import type { ModelBuilder } from "../model-editor/modelBuilder";
 
@@ -94,7 +97,11 @@
   let parameterKeys = $derived([...model.parameters.keys()]);
 </script>
 
-<Row stack justify="between" gap="0.5rem">
+<Row
+  stack
+  justify="between"
+  gap="0.5rem"
+>
   <h2>Edit parameter scan</h2>
   <Button
     onclick={() =>
@@ -119,8 +126,8 @@
         lineDisplay,
       })}
     popovertarget={popovertarget}
-    popovertargetaction="hide"
-  >Save</Button>
+    popovertargetaction="hide">Save</Button
+  >
 </Row>
 
 <InputText
@@ -265,7 +272,7 @@
 
   select {
     border: var(--border);
-    border-radius: var(--border-radius);
+    border-radius: var(--radius-lg);
     background-color: transparent;
     padding: 0.35rem 0.5rem;
     width: 100%;

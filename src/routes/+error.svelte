@@ -23,8 +23,8 @@
 <style>
   .card {
     box-shadow: var(--shadow);
-    border-radius: var(--border-radius);
-    background-color: var(--bg-l1);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-surface);
     padding: 1.5rem;
   }
 

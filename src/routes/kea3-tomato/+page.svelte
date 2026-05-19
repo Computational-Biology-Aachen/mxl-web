@@ -3,6 +3,7 @@
   import scheme from "$lib/assets/ebeling2026-scheme.png";
   import AnalysesDashboard from "$lib/model-editor/AnalysesDashboard.svelte";
   import type { PamGroup } from "$lib/simulations/protocol";
+  import { Main } from "@computational-biology-aachen/design";
   import { initModel } from "./model";
 
   const defaultPamProtocol: PamGroup[] = [
@@ -153,20 +154,22 @@
   ]);
 </script>
 
-<AnalysesDashboard
-  name={"KEA3 - tomato"}
-  initModel={initModel}
-  bind:analyses={analyses}
-  equationsOpen={false}
->
-  <h1>Tomato KEA3 model</h1>
-  <div class="centered">
-    <img
-      src={scheme}
-      alt="model-scheme"
-    />
-  </div>
-</AnalysesDashboard>
+<Main>
+  <AnalysesDashboard
+    name={"KEA3 - tomato"}
+    initModel={initModel}
+    bind:analyses={analyses}
+    equationsOpen={false}
+  >
+    <h1>Tomato KEA3 model</h1>
+    <div class="centered">
+      <img
+        src={scheme}
+        alt="model-scheme"
+      />
+    </div>
+  </AnalysesDashboard>
+</Main>
 
 <style>
   img {
