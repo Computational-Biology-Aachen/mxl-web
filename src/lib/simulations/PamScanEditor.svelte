@@ -1,14 +1,12 @@
 <script lang="ts">
   import { allBackends, type Backend, type PamAnalysis } from "$lib";
-  import Icon from "$lib/Icon.svelte";
+  import { Button, Icon, Row } from "@computational-biology-aachen/design";
   import InputCheckbox from "$lib/inputs/InputCheckbox.svelte";
   import InputChoice from "$lib/inputs/InputChoice.svelte";
   import InputNumber from "$lib/inputs/InputNumber.svelte";
   import InputText from "$lib/inputs/InputText.svelte";
   import type { ModelBuilder } from "$lib/model-editor/modelBuilder";
-  import RowApart from "$lib/RowApart.svelte";
   import { untrack } from "svelte";
-  import PopoverSaveButton from "../buttons/PopoverSaveButton.svelte";
   import { migratePamPhases, type PamGroup } from "./protocol";
 
   let {
@@ -124,9 +122,9 @@
   }
 </script>
 
-<RowApart>
+<Row stack justify="between" gap="0.5rem">
   <h2>Edit PAM analysis</h2>
-  <PopoverSaveButton
+  <Button
     onclick={() =>
       onSave({
         ...parent,
@@ -143,8 +141,9 @@
         lineDisplay,
       })}
     popovertarget={popovertarget}
-  />
-</RowApart>
+    popovertargetaction="hide"
+  >Save</Button>
+</Row>
 
 <InputText
   id="pam-name"

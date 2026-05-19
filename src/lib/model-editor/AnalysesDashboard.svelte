@@ -8,14 +8,11 @@
     type SimulationAnalysis,
   } from "$lib";
   import Accordion from "$lib/Accordion.svelte";
-  import ModelEditButton from "$lib/buttons/ModelEditButton.svelte";
-  import ResetButton from "$lib/buttons/ResetButton.svelte";
+  import { Button, Icon, Row } from "@computational-biology-aachen/design";
   import DynBoxRow, { type Box } from "$lib/DynBoxRow.svelte";
-  import Icon from "$lib/Icon.svelte";
   import Math from "$lib/Math.svelte";
   import { ModelBuilder } from "$lib/model-editor/modelBuilder";
   import Pair from "$lib/Pair.svelte";
-  import RowApart from "$lib/RowApart.svelte";
   import PamSimulator from "$lib/simulations/Pam.svelte";
   import ParameterScanSimulator from "$lib/simulations/ParameterScan.svelte";
   import Simulator from "$lib/simulations/TimeCourse.svelte";
@@ -297,7 +294,7 @@
   }
 </script>
 
-<RowApart>
+<Row stack justify="between" gap="0.5rem">
   <Pair>
     <a
       class="light"
@@ -360,10 +357,10 @@
         model = initModel();
         runAllSimulations();
       }}
-    />
-    <ModelEditButton popovertarget="model-editor" />
+    >Reset</Button>
+    <Button popovertarget="model-editor">Edit model</Button>
   </Pair>
-</RowApart>
+</Row>
 <input
   type="file"
   accept=".sbml,.xml"

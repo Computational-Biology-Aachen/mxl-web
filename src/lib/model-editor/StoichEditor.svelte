@@ -1,11 +1,8 @@
 <script lang="ts">
-  import TableAddButton from "$lib/buttons/TableAddButton.svelte";
-  import TableButtonClose from "$lib/buttons/TableButtonClose.svelte";
-  import Icon from "$lib/Icon.svelte";
+  import { Button, Icon, Row } from "@computational-biology-aachen/design";
   import Math from "$lib/Math.svelte";
   import { Num } from "$lib/mathml";
-  import RowApart from "$lib/RowApart.svelte";
-  import PopoverSaveButton from "../buttons/PopoverSaveButton.svelte";
+  import IconButton from "$lib/buttons/IconButton.svelte";
   import { defaultValue, stoichToTex } from "./modelUtils";
   import {
     idToDisplay,
@@ -63,13 +60,14 @@
   }
 </script>
 
-<RowApart>
+<Row stack justify="between" gap="0.5rem">
   <h2>Stoichiometry Editor</h2>
-  <PopoverSaveButton
+  <Button
     popovertarget={popovertarget}
+    popovertargetaction="hide"
     onclick={() => onSave(stoichiometry)}
-  />
-</RowApart>
+  >Save</Button>
+</Row>
 
 <div class="card">
   <table>
@@ -125,7 +123,8 @@
             {/if}
           </td>
           <td>
-            <TableButtonClose
+            <IconButton
+              icon="close"
               onclick={() => {
                 stoichiometry = stoichiometry.filter((i) => {
                   return i.name !== name;
@@ -139,14 +138,14 @@
   </table>
 
   <div class="padding">
-    <TableAddButton
+    <Button
       onclick={() => {
         stoichiometry = [
           ...stoichiometry,
           { name: firstVarNotInUse(), value: new Num(1.0) },
         ];
       }}
-    />
+    >add new item</Button>
   </div>
 </div>
 

@@ -5,9 +5,8 @@
   import InputNumber from "$lib/inputs/InputNumber.svelte";
   import InputNumberOptional from "$lib/inputs/InputNumberOptional.svelte";
   import InputText from "$lib/inputs/InputText.svelte";
-  import RowApart from "$lib/RowApart.svelte";
+  import { Button, Row } from "@computational-biology-aachen/design";
   import { untrack } from "svelte";
-  import PopoverSaveButton from "../buttons/PopoverSaveButton.svelte";
   import type { ModelBuilder } from "../model-editor/modelBuilder";
 
   let {
@@ -95,9 +94,9 @@
   let parameterKeys = $derived([...model.parameters.keys()]);
 </script>
 
-<RowApart>
+<Row stack justify="between" gap="0.5rem">
   <h2>Edit parameter scan</h2>
-  <PopoverSaveButton
+  <Button
     onclick={() =>
       onSave({
         ...parent,
@@ -120,8 +119,9 @@
         lineDisplay,
       })}
     popovertarget={popovertarget}
-  />
-</RowApart>
+    popovertargetaction="hide"
+  >Save</Button>
+</Row>
 
 <InputText
   id="scan-name"

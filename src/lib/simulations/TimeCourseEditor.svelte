@@ -6,9 +6,8 @@
   import InputNumberOptional from "$lib/inputs/InputNumberOptional.svelte";
   import InputText from "$lib/inputs/InputText.svelte";
   import type { ModelBuilder } from "$lib/model-editor/modelBuilder";
-  import RowApart from "$lib/RowApart.svelte";
+  import { Button, Row } from "@computational-biology-aachen/design";
   import { untrack } from "svelte";
-  import PopoverSaveButton from "../buttons/PopoverSaveButton.svelte";
 
   let {
     parent,
@@ -88,9 +87,9 @@
   }
 </script>
 
-<RowApart>
+<Row stack justify="between" gap="0.5rem">
   <h2>Edit analysis</h2>
-  <PopoverSaveButton
+  <Button
     onclick={() =>
       onSave({
         ...parent,
@@ -109,8 +108,9 @@
         lineDisplay,
       })}
     popovertarget={popovertarget}
-  />
-</RowApart>
+    popovertargetaction="hide"
+  >Save</Button>
+</Row>
 
 <InputText
   id="name"

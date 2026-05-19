@@ -1,13 +1,11 @@
 <script lang="ts">
   import Tab from "$lib/buttons/Tab.svelte";
-  import Icon from "$lib/Icon.svelte";
+  import { Button, Icon, Row } from "@computational-biology-aachen/design";
   import { ModelBuilder } from "$lib/model-editor/modelBuilder";
   import TableAssignments from "$lib/model-editor/TableAssignment.svelte";
   import TableParameters from "$lib/model-editor/TableParameters.svelte";
   import TableReactions from "$lib/model-editor/TableReactions.svelte";
   import TableVariables from "$lib/model-editor/TableVariables.svelte";
-  import RowApart from "$lib/RowApart.svelte";
-  import PopoverSaveButton from "../buttons/PopoverSaveButton.svelte";
   import { defaultTexName, defaultValue } from "./modelUtils";
   import { ModelView } from "./modelView";
 
@@ -106,7 +104,7 @@
   let cur = $state(tabs[0]);
 </script>
 
-<RowApart>
+<Row stack justify="between" gap="0.5rem">
   <hgroup>
     <h2>Model Details</h2>
     <p>
@@ -115,11 +113,12 @@
     </p>
   </hgroup>
 
-  <PopoverSaveButton
+  <Button
     onclick={() => onSave(modelView.toBuilder())}
     popovertarget={popovertarget}
-  />
-</RowApart>
+    popovertargetaction="hide"
+  >Save</Button>
+</Row>
 
 <ul>
   {#each tabs as tab}

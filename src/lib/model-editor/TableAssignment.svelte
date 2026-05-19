@@ -23,11 +23,10 @@
     reactions: RxnView;
   } = $props();
 
+  import { Button } from "@computational-biology-aachen/design";
   import Math from "$lib/Math.svelte";
   import { Base, Num } from "$lib/mathml";
-  import TableAddButton from "../buttons/TableAddButton.svelte";
-  import TableButtonClose from "../buttons/TableButtonClose.svelte";
-  import TableButtonEdit from "../buttons/TableButtonEdit.svelte";
+  import IconButton from "../buttons/IconButton.svelte";
   import Popover from "../Popover.svelte";
   import EqEditor from "./EqEditor.svelte";
 
@@ -75,12 +74,13 @@
       display={true}
       fontSize={"0.75rem"}
     />
-    <TableButtonEdit popovertarget="eq-editor-{idx}" />
+    <IconButton icon="edit" popovertarget="eq-editor-{idx}" />
   </div>
 {/snippet}
 
 {#snippet actions(idx: number, ass: any)}
-  <TableButtonClose
+  <IconButton
+    icon="close"
     onclick={() => {
       assignments = assignments.filter((i) => {
         return i.id !== ass.id;
@@ -150,7 +150,7 @@
   </table>
 {/if}
 <div class="padding">
-  <TableAddButton
+  <Button
     onclick={() => {
       assignments = [
         ...assignments,
@@ -161,7 +161,7 @@
         },
       ];
     }}
-  />
+  >add new item</Button>
 </div>
 
 {#each assignments as ass, idx}

@@ -1,8 +1,7 @@
 <script lang="ts">
   import InputCheckbox from "$lib/inputs/InputCheckbox.svelte";
   import InputNumberStr from "$lib/inputs/InputNumberStr.svelte";
-  import RowApart from "$lib/RowApart.svelte";
-  import PopoverSaveButton from "../buttons/PopoverSaveButton.svelte";
+  import { Button, Row } from "@computational-biology-aachen/design";
   import { type Parameter, type Variable } from "./modelView";
 
   let {
@@ -21,10 +20,11 @@
   let stepVal: string = $derived(target.slider?.step || "0.1");
 </script>
 
-<RowApart>
+<Row stack justify="between" gap="0.5rem">
   <h2>Edit Options</h2>
-  <PopoverSaveButton
+  <Button
     popovertarget={popovertarget}
+    popovertargetaction="hide"
     onclick={() =>
       onSave(
         enabled
@@ -34,8 +34,8 @@
             }
           : target,
       )}
-  />
-</RowApart>
+  >Save</Button>
+</Row>
 
 <InputCheckbox
   id="slider-enabeld"

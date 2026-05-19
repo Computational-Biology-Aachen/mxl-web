@@ -60,8 +60,7 @@
     Sqrt,
   } from "$lib/mathml";
   import EqNode from "$lib/model-editor/EqNode.svelte";
-  import RowApart from "$lib/RowApart.svelte";
-  import PopoverSaveButton from "../buttons/PopoverSaveButton.svelte";
+  import { Button, Row } from "@computational-biology-aachen/design";
   import { defaultValue } from "./modelUtils";
 
   import {
@@ -529,7 +528,7 @@
 </script>
 
 <section class="page">
-  <RowApart>
+  <Row stack justify="between" gap="0.5rem">
     <hgroup>
       <h2>Eq Editor</h2>
       <p class="comment">
@@ -537,11 +536,12 @@
         element, then adjust symbols to the allowed variable names.
       </p>
     </hgroup>
-    <PopoverSaveButton
+    <Button
       onclick={() => onSave(root)}
       popovertarget={popovertarget}
-    />
-  </RowApart>
+      popovertargetaction="hide"
+    >Save</Button>
+  </Row>
 
   <div class="edit-row">
     <label for={`root`}>Template</label>

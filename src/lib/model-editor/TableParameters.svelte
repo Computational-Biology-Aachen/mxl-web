@@ -1,8 +1,7 @@
 <script lang="ts">
   import { MediaQuery } from "svelte/reactivity";
-  import TableAddButton from "../buttons/TableAddButton.svelte";
-  import TableButtonClose from "../buttons/TableButtonClose.svelte";
-  import TableButtonEdit from "../buttons/TableButtonEdit.svelte";
+  import { Button } from "@computational-biology-aachen/design";
+  import IconButton from "../buttons/IconButton.svelte";
   import Popover from "../Popover.svelte";
   import { defaultTexName, defaultValue } from "./modelUtils";
   import {
@@ -72,8 +71,9 @@
 {/snippet}
 
 {#snippet actions(idx: number, par: Parameter)}
-  <TableButtonEdit popovertarget="var-editor-{idx}" />
-  <TableButtonClose
+  <IconButton icon="edit" popovertarget="var-editor-{idx}" />
+  <IconButton
+    icon="close"
     onclick={() => {
       parameters = parameters.filter((i) => {
         return i.id !== par.id;
@@ -143,7 +143,7 @@
   </table>
 {/if}
 <div class="padding">
-  <TableAddButton
+  <Button
     onclick={() => {
       parameters = [
         ...parameters,
@@ -154,7 +154,7 @@
         },
       ];
     }}
-  />
+  >add new item</Button>
 </div>
 
 {#each parameters as par, idx}

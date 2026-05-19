@@ -3,9 +3,8 @@
   import Math from "$lib/Math.svelte";
   import { Base, Num } from "$lib/mathml";
   import { MediaQuery } from "svelte/reactivity";
-  import TableAddButton from "../buttons/TableAddButton.svelte";
-  import TableButtonClose from "../buttons/TableButtonClose.svelte";
-  import TableButtonEdit from "../buttons/TableButtonEdit.svelte";
+  import { Button } from "@computational-biology-aachen/design";
+  import IconButton from "../buttons/IconButton.svelte";
   import Popover from "../Popover.svelte";
   import EqEditor from "./EqEditor.svelte";
   import { defaultTexName, defaultValue } from "./modelUtils";
@@ -83,7 +82,7 @@
         display={true}
         fontSize={"0.75rem"}
       />
-      <TableButtonEdit popovertarget="var-ia-editor-{idx}" />
+      <IconButton icon="edit" popovertarget="var-ia-editor-{idx}" />
     </div>
   {:else}
     <InputNumber
@@ -101,8 +100,9 @@
 {/snippet}
 
 {#snippet actions(idx: number, vari: Variable)}
-  <TableButtonEdit popovertarget="var-editor-{idx}" />
-  <TableButtonClose
+  <IconButton icon="edit" popovertarget="var-editor-{idx}" />
+  <IconButton
+    icon="close"
     onclick={() => {
       variables = variables.filter((i) => {
         return i.id !== vari.id;
@@ -172,7 +172,7 @@
   </table>
 {/if}
 <div class="padding">
-  <TableAddButton
+  <Button
     onclick={() => {
       variables = [
         ...variables,
@@ -183,7 +183,7 @@
         },
       ];
     }}
-  />
+  >add new item</Button>
 </div>
 
 {#each variables as vari, idx}
