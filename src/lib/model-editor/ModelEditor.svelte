@@ -6,9 +6,9 @@
   import TableVariables from "$lib/model-editor/TableVariables.svelte";
   import {
     Button,
+    ButtonTab,
     Icon,
     Row,
-    ButtonTab as Tab,
   } from "@computational-biology-aachen/design";
   import { defaultTexName, defaultValue } from "./modelUtils";
   import { ModelView } from "./modelView";
@@ -130,13 +130,13 @@
 
 <ul>
   {#each tabs as tab}
-    <Tab
+    <ButtonTab
       selected={cur.name === tab.name}
       onclick={() => (cur = tab)}
     >
       <Icon>{tab.icon}</Icon>
       {tab.name}
-    </Tab>
+    </ButtonTab>
   {/each}
 </ul>
 
