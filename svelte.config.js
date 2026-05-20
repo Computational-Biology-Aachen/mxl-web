@@ -35,6 +35,9 @@ const config = {
     paths: {
       base: process.argv.includes("dev") ? "" : "/mxl-web",
     },
+    alias: {
+      "@computational-biology-aachen/design": "./design/src/lib",
+    },
   },
 };
 
