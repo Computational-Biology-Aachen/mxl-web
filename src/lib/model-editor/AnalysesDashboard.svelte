@@ -256,8 +256,6 @@
     };
     analyses = [...analyses, newScan];
   }
-
-
 </script>
 
 <Row
@@ -591,6 +589,7 @@
     border-radius: var(--radius-lg);
     background-color: var(--color-surface);
     padding: 1.5rem;
+    width: 100%;
 
     @media (min-width: 768px) {
       display: grid;
