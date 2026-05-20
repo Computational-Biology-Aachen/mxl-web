@@ -8,6 +8,7 @@ export default defineConfig({
     format: "es",
   },
   optimizeDeps: {
-    exclude: ["pyodide"],
+    exclude: ["pyodide", "@computational-biology-aachen/design"],
   },
+  server: { port: 5175, strictPort: true },
 });
