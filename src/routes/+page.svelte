@@ -186,48 +186,55 @@
   #imprint {
     color: var(--color-surface);
   }
-  .top {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    width: 100%;
-    height: 50rem;
-
-    @media (min-width: 768px) {
-      flex-direction: row;
-      justify-content: space-between;
-    }
-    @media (min-width: 1200px) {
-      height: 30rem;
-    }
-  }
-
-  .top-left {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    width: 50%;
-    max-width: 40rem;
-    height: 100%;
-
-    h1 {
-      margin: 2rem 0 0 0;
-    }
-  }
-
   h1.banner {
     font-size: 3rem;
     line-height: 1.2;
     letter-spacing: -1px;
   }
+  .top {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    width: 100%;
 
-  .top-img {
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    border-radius: 20px;
-    padding: 1rem;
+    @media (min-width: 50rem) {
+      grid-template-columns: 1fr 1fr;
+      justify-content: space-between;
+      height: auto;
+    }
+    @media (min-width: 75rem) {
+      height: 30rem;
+    }
 
-    max-width: 100%;
-    max-height: 100%;
+    .top-left {
+      display: flex;
+      flex-direction: column;
+      gap: var(--gap);
+      width: 100%;
+      height: 100%;
+
+      h1 {
+        margin: 2rem 0 0 0;
+      }
+
+      @media (min-width: 75rem) {
+        justify-content: space-between;
+      }
+    }
+    .top-img {
+      display: none;
+
+      @media (min-width: 50rem) {
+        display: block;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        border-radius: 20px;
+        padding: 1rem;
+        width: 100%;
+      }
+
+      @media (min-width: 75rem) {
+      }
+    }
   }
 
   .heading {
@@ -240,14 +247,16 @@
   .row-main {
     display: flex;
     flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
     gap: 1rem;
     margin-right: auto;
     margin-left: auto;
     width: 100%;
 
-    @media (min-width: 768px) {
+    @media (min-width: 50rem) {
       flex-direction: row;
-      align-items: center;
     }
   }
 </style>
