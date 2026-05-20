@@ -649,13 +649,6 @@
 </section>
 
 <style>
-  .page {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 1.5rem;
-  }
-
   .comment {
     margin: 0;
     color: #4b5563;
