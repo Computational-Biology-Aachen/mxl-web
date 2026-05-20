@@ -17,7 +17,7 @@
     Icon,
     Link,
     LogoBar,
-    Main,
+    SectionMain as Main,
     ModelGallery,
     Row,
     Section,

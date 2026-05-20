@@ -10,7 +10,7 @@
 <script lang="ts">
   import {
     LineChart,
-    Main,
+    SectionMain as Main,
     Slider2 as Slider,
   } from "@computational-biology-aachen/design";
   import { onMount } from "svelte";

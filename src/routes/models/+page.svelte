@@ -13,7 +13,7 @@
   import schemeYokota from "$lib/assets/yokota.png";
   import {
     Icon,
-    Main,
+    SectionMain as Main,
     CardModel as ModelCard,
     ModelGallery,
   } from "@computational-biology-aachen/design";
