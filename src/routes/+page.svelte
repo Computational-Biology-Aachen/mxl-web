@@ -12,8 +12,8 @@
   import schemeSir from "$lib/assets/sir.png";
   import {
     Button,
+    CardFeature,
     CardImageHighlight,
-    FeatureBox,
     Icon,
     Link,
     LogoBar,
@@ -97,25 +97,25 @@
   </div>
 
   <div class="row-main">
-    <FeatureBox
+    <CardFeature
       color="c1"
       icon="interactive_space"
       header="Interactive by design"
       body="Explore models in real time with sliders, switches, and dynamic visualizations"
     />
-    <FeatureBox
+    <CardFeature
       color="c2"
       icon="group"
       header="Built for collaboration"
       body="Share models with your lab or collaborators - no code, no installation, just a link."
     />
-    <FeatureBox
+    <CardFeature
       color="c3"
       icon="genetics"
       header="Mechanistic & explainable"
       body="Grounded in ODE-based modelling for interpretable biological insight."
     />
-    <FeatureBox
+    <CardFeature
       color="c4"
       icon="open_in_browser"
       header="Browser-native science"
