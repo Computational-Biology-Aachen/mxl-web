@@ -2,29 +2,28 @@
 
 ![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)
 
-MxlWeb is an experimental toolbox to run ODE models in the browser.
+Browser-side ODE model explorer. All compute is client-side — no server required. SvelteKit 5, adapter-static. Deployed at `/mxl-web`.
 
-All code execution is client-side which means no giant servers required ❤️.
+Three compute backends run in web workers: pure JS integrators, Pyodide (Python/WASM), and a custom WASM build from C via Emscripten. Integrators include explicit (Euler, RK2, RK45, BOSH3, Tsit5) and implicit (backward Euler, Kvaerno45) solvers.
+
+## Dev
+
+```bash
+npm install
+npm run dev          # dev server on :5173
+npm run build        # static build → build/
+npm run check        # TypeScript + Svelte type checking
+npm run lint         # Prettier + ESLint check
+npm run format       # auto-format with Prettier
+npm run test         # vitest
+```
 
 ## Tool family 🏠
 
-`MxlWeb` is part of a larger family of tools that are designed with a similar set of abstractions. Check them out!
+`MxlWeb` is part of a larger ecosystem:
 
-- [MxlPy](https://github.com/Computational-Biology-Aachen/MxlPy) is a Python package for mechanistic learning (Mxl)
-- [MxlBricks](https://github.com/Computational-Biology-Aachen/mxl-bricks) is built on top of `MxlPy` to build mechanistic models composed of pre-defined reactions (bricks)
-- [MxlModels](https://github.com/Computational-Biology-Aachen/mxl-models) supplies flat, single-file versions of MxlBricks models for easy inspection
-- [pysbml](https://github.com/Computational-Biology-Aachen/pysbml) simplifies SBML models for import/export with MxlPy
-- [Parameteriser](https://gitlab.com/marvin.vanaalst/parameteriser) looks up kinetic parameters from BRENDA and other databases
-
-## Setup
-
-```
-npm install
-npm run dev -- --open
-```
-
-## wasm build
-
-```
-wasm-pack build --release --out-dir src/lib/pkg && npm run dev -- --open
-```
+- [MxlPy](https://github.com/Computational-Biology-Aachen/MxlPy) — Python package for mechanistic learning
+- [MxlBricks](https://github.com/Computational-Biology-Aachen/mxl-bricks) — pre-defined reaction bricks on top of MxlPy
+- [MxlModels](https://github.com/Computational-Biology-Aachen/mxl-models) — flat single-file model versions for easy inspection
+- [pysbml](https://github.com/Computational-Biology-Aachen/pysbml) — SBML import/export for MxlPy
+- [Parameteriser](https://gitlab.com/marvin.vanaalst/parameteriser) — kinetic parameter lookup from BRENDA and other databases
