@@ -39,8 +39,8 @@
     "vite-plugin-wasm": ">=3.3.0"
   },
   "dependencies": {
-    "@computational-biology-aachen/design": "*",
-    "@computational-biology-aachen/mxlweb-core": "*",
+    "@computational-biology-aachen/design": "github:Computational-Biology-Aachen/design",
+    "@computational-biology-aachen/mxlweb-core": "github:Computational-Biology-Aachen/mxlweb-core",
     "@fortawesome/free-brands-svg-icons": ">=7.2.0",
     "@fortawesome/free-solid-svg-icons": ">=7.2.0",
     "@sveltejs/adapter-static": ">=3.0.10",
