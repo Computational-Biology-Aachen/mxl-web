@@ -93,6 +93,19 @@
         alt="model-scheme"
       />
     </div>
+    <p>
+      The adjustable parameters are set to their default value in the model. To
+      simulate knockouts, adjust the slider of the given kinetic constants to 0.
+      To up regulate shift the slider to the right and for down regulation to
+      the left.
+    </p>
+    <p>
+      Default light intensity settings are: 900 ppfd as actinic light and 90
+      ppfd as relaxation light. In the PAM protocol the saturating pulse
+      intensity is set to 5000 ppfd. To adjust light intensities, click the menu
+      tab (three horizontal lines) and you can freely adjust the protocols light
+      intensity and durations of each light phase.
+    </p>
   </AnalysesDashboard>
 </SectionMain>
 
