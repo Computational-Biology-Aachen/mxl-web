@@ -1,7 +1,7 @@
 <script lang="ts">
   import { backends, type Analyses } from "$lib";
-  import AnalysesDashboard from "$lib/model-editor/AnalysesDashboard.svelte";
-  import type { PamGroup } from "$lib/simulations/protocol";
+  import AnalysesDashboard from "$lib/AnalysesDashboard.svelte";
+  import type { PamGroup } from "$lib/protocol";
   import { SectionMain as Main } from "@computational-biology-aachen/design";
   import { initModel } from "./model";
 

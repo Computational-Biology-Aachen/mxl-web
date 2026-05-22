@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { ModelBuilder } from "$lib/model-editor/modelBuilder";
-  import AnalysisEditor from "$lib/simulations/TimeCourseEditor.svelte";
+  import { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+  import AnalysisEditor from "$lib/TimeCourseEditor.svelte";
   import { backends } from "$lib/stores/backends";
 
   const model = new ModelBuilder();

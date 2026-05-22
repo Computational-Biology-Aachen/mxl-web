@@ -1,5 +1,12 @@
-import { Add, Divide, Minus, Mul, Name, Num } from "$lib/mathml";
-import { ModelBuilder } from "$lib/model-editor/modelBuilder";
+import { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+import {
+  Add,
+  Divide,
+  Minus,
+  Mul,
+  Name,
+  Num,
+} from "@computational-biology-aachen/mxlweb-core/mathml";
 
 /**
  * Poolman et al. (2000) Calvin–Benson cycle model.

@@ -1,9 +1,9 @@
 // place files you want to import through the `$lib` alias in this folder.
-import type { PamGroup } from "./simulations/protocol";
+import type { PamGroup } from "./protocol";
 import type { Backend } from "./stores/backends";
 
-export type { Backend };
 export { allBackends, backends } from "./stores/backends";
+export type { Backend };
 
 export type SimulationAnalysis = {
   type: "simulation";

@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { Num } from "$lib/mathml";
   import type {
     AssView,
     ParView,
     RxnView,
     VarView,
-  } from "$lib/model-editor/modelView";
-  import StoichEditor from "$lib/model-editor/StoichEditor.svelte";
+  } from "$lib/modelView";
+  import StoichEditor from "$lib/StoichEditor.svelte";
+  import { Num } from "@computational-biology-aachen/mxlweb-core/mathml";
 
   const variables: VarView = [
     { id: "x", value: 1.0, texName: "x" },

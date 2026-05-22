@@ -1,3 +1,4 @@
+import { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
 import {
   Add,
   Divide,
@@ -9,8 +10,7 @@ import {
   Name,
   Num,
   Pow,
-} from "$lib/mathml";
-import { ModelBuilder } from "$lib/model-editor/modelBuilder";
+} from "@computational-biology-aachen/mxlweb-core/mathml";
 
 /**
  * Saadat et al. (2021) PSI electron transport chain model.

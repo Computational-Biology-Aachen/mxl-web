@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { Divide, Mul, Name, Num } from "$lib/mathml";
-  import ModelEditor from "$lib/model-editor/ModelEditor.svelte";
+  import ModelEditor from "$lib/ModelEditor.svelte";
   import {
     ModelView,
     type AssView,
     type ParView,
     type RxnView,
     type VarView,
-  } from "$lib/model-editor/modelView";
+  } from "$lib/modelView";
+  import { Divide, Mul, Name, Num } from "@computational-biology-aachen/mxlweb-core/mathml";
 
   let userParameters: string[] = [];
 

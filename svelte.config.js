@@ -1,4 +1,3 @@
-import { existsSync } from "fs";
 import adapter from "@sveltejs/adapter-static";
 import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 import { escapeSvelte, mdsvex } from "mdsvex";
@@ -15,6 +14,7 @@ const mdsvexOptions = {
       });
       await highlighter.loadLanguage("javascript", "typescript");
       const html = escapeSvelte(
+        // @ts-ignore
         highlighter.codeToHtml(code, { lang, theme: "poimandres" }),
       );
       return `{@html \`${html}\` }`;
@@ -36,9 +36,7 @@ const config = {
     paths: {
       base: process.argv.includes("dev") ? "" : "/mxl-web",
     },
-    ...(existsSync("./design/src/lib") && {
-      alias: { "@computational-biology-aachen/design": "./design/src/lib" },
-    }),
+
   },
 };
 

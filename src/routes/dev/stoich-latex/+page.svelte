@@ -1,8 +1,13 @@
 <script lang="ts">
-  import { Divide, Minus, Name, Num } from "$lib/mathml";
-  import { stoichToTex } from "$lib/model-editor/modelUtils";
-  import { type Stoichiometry } from "$lib/model-editor/modelView";
+  import { stoichToTex } from "@computational-biology-aachen/mxlweb-core";
+  import { type Stoichiometry } from "$lib/modelView";
   import { Math } from "@computational-biology-aachen/design";
+  import {
+    Divide,
+    Minus,
+    Name,
+    Num,
+  } from "@computational-biology-aachen/mxlweb-core/mathml";
 
   const stoichs: Array<Stoichiometry> = [
     [{ name: "a", value: new Num(0.0) }],

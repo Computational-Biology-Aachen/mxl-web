@@ -1,5 +1,5 @@
-import { Minus, Mul, Name, Num } from "$lib/mathml";
-import { ModelBuilder } from "$lib/model-editor/modelBuilder";
+import { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+import { Minus, Mul, Name, Num } from "@computational-biology-aachen/mxlweb-core/mathml";
 
 /**
  * Lotka-Volterra predator-prey model (Lotka 1925, Volterra 1926).

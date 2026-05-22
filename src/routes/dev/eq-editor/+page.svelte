@@ -1,12 +1,18 @@
 <script lang="ts">
-  import { Add, Divide, Mul, Name, type Base } from "$lib/mathml";
-  import EqEditor from "$lib/model-editor/EqEditor.svelte";
+  import EqEditor from "$lib/EqEditor.svelte";
   import type {
     AssView,
     ParView,
     RxnView,
     VarView,
-  } from "$lib/model-editor/modelView";
+  } from "$lib/modelView";
+  import {
+    Add,
+    Divide,
+    Mul,
+    Name,
+    type Base,
+  } from "@computational-biology-aachen/mxlweb-core/mathml";
 
   function initEq(): Base {
     return new Mul([

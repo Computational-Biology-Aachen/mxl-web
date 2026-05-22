@@ -1,3 +1,4 @@
+import { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
 import {
   Add,
   Divide,
@@ -10,8 +11,7 @@ import {
   Num,
   Piecewise,
   Pow,
-} from "$lib/mathml";
-import { ModelBuilder } from "$lib/model-editor/modelBuilder";
+} from "@computational-biology-aachen/mxlweb-core/mathml";
 
 /**
  * Matuszyńska et al. (2016) Non-Photochemical Quenching (NPQ) model.

@@ -1,5 +1,11 @@
-import { Add, Divide, Mul, Name, Num } from "$lib/mathml";
-import { ModelBuilder } from "$lib/model-editor/modelBuilder";
+import { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+import {
+  Add,
+  Divide,
+  Mul,
+  Name,
+  Num,
+} from "@computational-biology-aachen/mxlweb-core/mathml";
 
 /**
  * Yokota & Canvin (1985) photorespiration model — C2 cycle.

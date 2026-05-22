@@ -4,7 +4,12 @@
 
   import { base } from "$app/paths";
   import favicon from "$lib/assets/cpbl-favicon.svg";
-  import { Navbar, NavGH, NavItem } from "@computational-biology-aachen/design";
+  import {
+    CollapseToBurger,
+    Navbar,
+    NavGH,
+    NavItem,
+  } from "@computational-biology-aachen/design";
 
   let { children } = $props();
 </script>
@@ -67,8 +72,10 @@
       <span>mxlweb</span>
     </div>
   {/snippet}
-  <NavItem href="{base}/">Home</NavItem>
-  <NavItem href="{base}/models">Models</NavItem>
+  <CollapseToBurger collapseAt="512px">
+    <NavItem href="{base}/">Home</NavItem>
+    <NavItem href="{base}/models">Models</NavItem>
+  </CollapseToBurger>
   <NavGH href="https://github.com/Computational-Biology-Aachen/mxl-web" />
 </Navbar>
 

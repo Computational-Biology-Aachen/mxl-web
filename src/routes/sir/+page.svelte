@@ -1,6 +1,6 @@
 <script lang="ts">
   import { backends, type Analyses } from "$lib";
-  import AnalysesDashboard from "$lib/model-editor/AnalysesDashboard.svelte";
+  import AnalysesDashboard from "$lib/AnalysesDashboard.svelte";
   import { SectionMain as Main } from "@computational-biology-aachen/design";
   import { initModel } from "./model";
   let analyses: Analyses = $state([

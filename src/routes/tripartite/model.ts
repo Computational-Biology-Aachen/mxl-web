@@ -1,5 +1,5 @@
-import { Minus, Mul, Name, Num } from "$lib/mathml";
-import { ModelBuilder } from "$lib/model-editor/modelBuilder";
+import { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+import { Minus, Mul, Name, Num } from "@computational-biology-aachen/mxlweb-core/mathml";
 
 /**
  * Tripartite microbial community — cooperation, cheating, and private goods.

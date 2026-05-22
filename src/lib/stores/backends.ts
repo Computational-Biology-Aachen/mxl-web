@@ -1,10 +1,10 @@
 import { browser } from "$app/environment";
-import type { ModelBuilder } from "$lib/model-editor/modelBuilder";
+import type { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
 import { WorkerPool } from "./workerPool";
 
-import jsWorkerUrlString from "../workers/jsWorker.ts?worker&url";
-import pyWorkerUrlString from "../workers/pyWorker.ts?worker&url";
-import wasmWorkerUrlString from "../workers/wasmWorker.ts?worker&url";
+import jsWorkerUrlString from "@computational-biology-aachen/mxlweb-core/backends/js/jsWorker.ts?worker&url";
+import pyWorkerUrlString from "@computational-biology-aachen/mxlweb-core/backends/py/pyWorker.ts?worker&url";
+import wasmWorkerUrlString from "@computational-biology-aachen/mxlweb-core/backends/wasm/wasmWorker.ts?worker&url";
 
 const jsWorkerUrl = browser
   ? new URL(jsWorkerUrlString, import.meta.url)
