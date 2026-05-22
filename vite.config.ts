@@ -40,10 +40,11 @@ function serveAndCopyCoreStatic(): Plugin {
     closeBundle() {
       if (this.environment?.name !== "client") return;
       const wasmSrc = join(coreStatic, "wasm");
-      const wasmDest = join("build", "wasm");
+      // Copy into the client output dir so adapter-static picks them up
+      const wasmDest = join(".svelte-kit", "output", "client", "wasm");
       const files = readdirSync(wasmSrc).filter((f) => f !== ".gitkeep");
       cpSync(wasmSrc, wasmDest, { recursive: true, filter: (f) => !f.endsWith(".gitkeep") });
-      this.warn?.(`copied ${files.length} wasm files → build/wasm`);
+      this.warn?.(`copied ${files.length} wasm files → ${wasmDest}`);
     },
   };
 }
