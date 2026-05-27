@@ -19,7 +19,7 @@
     "@eslint/compat": ">=2.1.0",
     "@eslint/js": ">=10.0.0",
     "@sveltejs/adapter-auto": ">=7.0.1",
-    "@sveltejs/kit": ">=2.59.0",
+    "@sveltejs/kit": ">=2.61.1",
     "@sveltejs/vite-plugin-svelte": ">=7.0.0",
     "@types/node": "^25.9.0",
     "eslint": ">=10.0.0",
@@ -33,7 +33,7 @@
     "svelte": ">=5.55.8",
     "svelte-check": ">=4.4.7",
     "typescript": ">=6.0.3",
-    "typescript-eslint": ">=8.59.4",
+    "typescript-eslint": ">=8.60.0",
     "vite": ">=8.0.12",
     "vite-plugin-static-copy": "^4.1.0",
     "vite-plugin-wasm": ">=3.3.0"
