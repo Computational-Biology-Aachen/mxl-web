@@ -23,3 +23,7 @@ exclude = [
     ".venv",
     "tests/assets",
 ]
+
+[tool.uv]
+package = false
+exclude-newer = "1 week"
