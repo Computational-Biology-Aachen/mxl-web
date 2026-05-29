@@ -4,10 +4,18 @@ import { escapeSvelte, mdsvex } from "mdsvex";
 import { createHighlighter } from "shiki";
 import { existsSync } from "fs";
 
+// In the meta-repo, resolve the workspace packages from source for live edits;
+// standalone installs fall back to the published package via its exports map.
 const designSrc = new URL("../design/src/lib", import.meta.url).pathname;
-const designAlias = existsSync(designSrc)
-  ? { "@computational-biology-aachen/design": designSrc }
-  : {};
+const coreSrc = new URL("../../pkg/mxlweb-core/src", import.meta.url).pathname;
+const workspaceAlias = {
+  ...(existsSync(designSrc)
+    ? { "@computational-biology-aachen/design": designSrc }
+    : {}),
+  ...(existsSync(coreSrc)
+    ? { "@computational-biology-aachen/mxlweb-core": coreSrc }
+    : {}),
+};
 
 /** @type {import('mdsvex').MdsvexOptions} */
 const mdsvexOptions = {
@@ -33,7 +41,7 @@ const config = {
   extensions: [".svelte", ".md"],
   preprocess: [vitePreprocess(), mdsvex(mdsvexOptions)],
   kit: {
-    alias: designAlias,
+    alias: workspaceAlias,
     adapter: adapter({
       pages: "build",
       assets: "build",
