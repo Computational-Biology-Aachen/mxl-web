@@ -24,7 +24,7 @@
   ]);
 </script>
 
-<Main>
+<Main pad="tight">
   <AnalysesDashboard
     name={"Yokota 1985"}
     initModel={initModel}

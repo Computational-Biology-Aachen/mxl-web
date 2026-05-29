@@ -25,7 +25,7 @@
   ]);
 </script>
 
-<Main>
+<Main pad="tight">
   <AnalysesDashboard
     name={"Population Dynamics"}
     initModel={initModel}

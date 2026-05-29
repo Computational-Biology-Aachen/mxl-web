@@ -44,7 +44,7 @@
   ]);
 </script>
 
-<Main>
+<Main pad="tight">
   <AnalysesDashboard
     name={"Tripartite dynamics"}
     initModel={initModel}

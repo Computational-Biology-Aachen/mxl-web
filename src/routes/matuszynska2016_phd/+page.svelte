@@ -70,7 +70,7 @@
   ]);
 </script>
 
-<Main>
+<Main pad="tight">
   <AnalysesDashboard
     name={"Matuszyńska 2016"}
     initModel={initModel}

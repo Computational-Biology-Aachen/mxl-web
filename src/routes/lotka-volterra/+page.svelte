@@ -45,7 +45,7 @@
   ]);
 </script>
 
-<Main>
+<Main pad="tight">
   <AnalysesDashboard
     name={"Lotka-Volterra"}
     initModel={initModel}

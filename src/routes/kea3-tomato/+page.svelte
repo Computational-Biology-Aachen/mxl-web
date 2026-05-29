@@ -154,7 +154,7 @@
   ]);
 </script>
 
-<Main>
+<Main pad="tight">
   <AnalysesDashboard
     name={"KEA3 - tomato"}
     initModel={initModel}

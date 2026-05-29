@@ -79,7 +79,7 @@
   ]);
 </script>
 
-<SectionMain>
+<SectionMain pad="tight">
   <AnalysesDashboard
     name={"Ebeling 2026"}
     initModel={initModel}

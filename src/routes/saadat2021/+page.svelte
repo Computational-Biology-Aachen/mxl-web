@@ -68,7 +68,7 @@
   ]);
 </script>
 
-<Main>
+<Main pad="tight">
   <AnalysesDashboard
     name={"Saadat 2021"}
     initModel={initModel}

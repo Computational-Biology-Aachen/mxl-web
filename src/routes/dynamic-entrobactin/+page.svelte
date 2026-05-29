@@ -48,7 +48,7 @@
   ]);
 </script>
 
-<Main>
+<Main pad="tight">
   <AnalysesDashboard
     name={"Dynamic Entrobaction"}
     initModel={initModel}

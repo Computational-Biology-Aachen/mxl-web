@@ -24,7 +24,7 @@
   ]);
 </script>
 
-<Main>
+<Main pad="tight">
   <AnalysesDashboard
     name={"Compartmental models"}
     initModel={initModel}
