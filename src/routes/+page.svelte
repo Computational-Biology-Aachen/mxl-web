@@ -15,16 +15,12 @@
     CardFeature,
     CardImageHighlight,
     Icon,
-    Link,
+    Imprint,
     LogoBar,
     SectionMain as Main,
     ModelGallery,
     Row,
-    Section,
-    Text,
   } from "@computational-biology-aachen/design";
-  import { faGithub } from "@fortawesome/free-brands-svg-icons";
-  import Fa from "svelte-fa";
 
   const logos = [
     { src: rwth, href: "https://www.rwth-aachen.de", alt: "rwth logo" },
@@ -163,29 +159,9 @@
   <!-- End container -->
 </Main>
 
-<Section variant="dark">
-  <h2 id="imprint">Imprint</h2>
-  <Text color="light">
-    Anbieter i.S.d. TDG/MDStV: Prof. Dr. Anna B. Matuszyńska <br />
-    Worringerweg 1 52074 Aachen <br />
-    Sammelbau Biologie, Bauteil 42 C, Erdgeschoss, Raum 041 <br />
-    Work Phone: +49 241 80 25817 <br />
-
-    Verantwortlich i.S.d. § 6 Abs. 2 MDStV: <br />
-    Prof. Dr. Anna B. Matuszyńska <br />
-    Design und Umsetzung Dr. Marvin van Aalst <Link
-      color="light"
-      href="https://github.com/Computational-Biology-Aachen/mxl-web"
-      ><Fa icon={faGithub} /></Link
-    ><br />
-    (c) 2025 Prof. Dr. Anna B. Matuszyńska, Alle Rechte vorbehalten.
-  </Text>
-</Section>
+<Imprint github="https://github.com/Computational-Biology-Aachen/mxl-web" />
 
 <style>
-  #imprint {
-    color: var(--color-surface);
-  }
   h1.banner {
     font-size: 3rem;
     line-height: 1.2;
