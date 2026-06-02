@@ -51,6 +51,10 @@
   ];
 </script>
 
+<svelte:head>
+  <title>MxlWeb</title>
+</svelte:head>
+
 <Main>
   <div class="top">
     <div class="top-left">

@@ -40,7 +40,6 @@
     name="twitter:card"
     content="summary"
   />
-  <title>MxlWeb</title>
   <link
     rel="icon"
     href={favicon}
