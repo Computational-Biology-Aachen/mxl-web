@@ -1,21 +1,19 @@
-export interface ProtocolStep {
-  t_end: number;
-  [key: string]: number;
-}
+// Shared protocol types + expansion now live in the core package; re-exported
+// here so existing `$lib/protocol` import sites keep working.
+export {
+  expandProtocol,
+  type ProtocolStep,
+  type Protocol,
+  type PamStep,
+  type PamGroup,
+} from "@computational-biology-aachen/mxlweb-core/pam";
 
-export type Protocol = ProtocolStep[];
+import type {
+  PamStep,
+  PamGroup,
+} from "@computational-biology-aachen/mxlweb-core/pam";
 
-export interface PamStep {
-  pfd: number;
-  duration: number;
-  label?: string;
-}
-
-export interface PamGroup {
-  steps: PamStep[];
-  repetitions: number;
-}
-
+// mxlweb-only: migration of the legacy saved-scan "phase" format to PamGroups.
 export interface PamPhase {
   backgroundPFD: number;
   backgroundLength: number;
@@ -34,18 +32,4 @@ export function migratePamPhases(phases: PamPhase[]): PamGroup[] {
     }
     return { steps, repetitions: phase.repetitions };
   });
-}
-
-export function expandProtocol(groups: PamGroup[], ppfdKey: string): Protocol {
-  const steps: ProtocolStep[] = [];
-  let t = 0;
-  for (const group of groups) {
-    for (let i = 0; i < group.repetitions; i++) {
-      for (const step of group.steps) {
-        t += step.duration;
-        steps.push({ t_end: t, [ppfdKey]: step.pfd });
-      }
-    }
-  }
-  return steps;
 }
