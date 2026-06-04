@@ -83,7 +83,6 @@
     new ModelView(parameters, variables, assignments, reactions),
   );
   let builder = $derived(modelView.toBuilder());
-  let pycode = $derived(builder.buildPython(userParameters));
   let latex = $derived(builder.buildTex());
   let tabs = [
     {
