@@ -10,7 +10,7 @@
     LineChart,
     type PhaseRegion,
   } from "@computational-biology-aachen/design";
-  import type { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+  import type { KineticModelBuilder } from "@computational-biology-aachen/mxlweb-core";
   import {
     computeNpq,
     findPeaks,
@@ -41,7 +41,7 @@
     nTimePoints,
     lineDisplay,
   }: {
-    model: ModelBuilder;
+    model: KineticModelBuilder;
     pamProtocol: PamGroup[];
     yMax?: number | undefined;
     timeoutInSeconds: number;
@@ -65,7 +65,7 @@
   let currentRequestId = $state<string | null>(null);
   let timeoutInSecondsId = $state<ReturnType<typeof setTimeout> | null>(null);
 
-  export function runSimulation(model: ModelBuilder) {
+  export function runSimulation(model: KineticModelBuilder) {
     loading = true;
     const requestId = WorkerManager.generateRequestId();
     currentRequestId = requestId;

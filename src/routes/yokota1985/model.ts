@@ -1,4 +1,4 @@
-import { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+import { KineticModelBuilder } from "@computational-biology-aachen/mxlweb-core";
 import {
   Add,
   Divide,
@@ -18,8 +18,8 @@ import {
  * Variables: glycolate, glyoxylate, glycine, serine, hydroxypyruvate, H₂O₂
  * Ref: Yokota & Canvin (1985) Plant Physiol 77:735–739
  */
-export function initModel(): ModelBuilder {
-  return new ModelBuilder()
+export function initModel(): KineticModelBuilder {
+  return new KineticModelBuilder()
     .addParameter("kf_phosphoglycolate_phosphatase", {
       value: 60.0,
       texName: "kf\\_phosphoglycolate\\_phosphatase",

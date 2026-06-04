@@ -1,8 +1,12 @@
-import { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
-import { Mul, Name, Num } from "@computational-biology-aachen/mxlweb-core/mathml";
+import { KineticModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+import {
+  Mul,
+  Name,
+  Num,
+} from "@computational-biology-aachen/mxlweb-core/mathml";
 
-export function initModel(): ModelBuilder {
-  return new ModelBuilder()
+export function initModel(): KineticModelBuilder {
+  return new KineticModelBuilder()
     .addParameter("beta", {
       value: 0.2,
       texName: "beta",

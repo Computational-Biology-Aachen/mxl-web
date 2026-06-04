@@ -1,5 +1,10 @@
-import { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
-import { Minus, Mul, Name, Num } from "@computational-biology-aachen/mxlweb-core/mathml";
+import { KineticModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+import {
+  Minus,
+  Mul,
+  Name,
+  Num,
+} from "@computational-biology-aachen/mxlweb-core/mathml";
 
 /**
  * Lotka-Volterra predator-prey model (Lotka 1925, Volterra 1926).
@@ -11,8 +16,8 @@ import { Minus, Mul, Name, Num } from "@computational-biology-aachen/mxlweb-core
  * Variables: Prey, Predator
  * Parameters: α (prey growth), β (predation loss), γ (predator death), δ (predator gain)
  */
-export function initModel(): ModelBuilder {
-  return new ModelBuilder()
+export function initModel(): KineticModelBuilder {
+  return new KineticModelBuilder()
     .addParameter("Alpha", {
       value: 0.1,
       texName: "\\alpha",

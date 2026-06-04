@@ -1,4 +1,4 @@
-import { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+import { KineticModelBuilder } from "@computational-biology-aachen/mxlweb-core";
 import {
   Add,
   Divide,
@@ -8,8 +8,8 @@ import {
   Num,
 } from "@computational-biology-aachen/mxlweb-core/mathml";
 
-export function initModel(): ModelBuilder {
-  return new ModelBuilder()
+export function initModel(): KineticModelBuilder {
+  return new KineticModelBuilder()
     .addParameter("Y_X1_S", {
       value: 0.45,
       texName: "Y\\_X1\\_S",

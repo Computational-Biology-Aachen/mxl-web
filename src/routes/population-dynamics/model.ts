@@ -1,5 +1,10 @@
-import { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
-import { Minus, Mul, Name, Num } from "@computational-biology-aachen/mxlweb-core/mathml";
+import { KineticModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+import {
+  Minus,
+  Mul,
+  Name,
+  Num,
+} from "@computational-biology-aachen/mxlweb-core/mathml";
 
 /**
  * E. coli / C. glutamicum co-culture population dynamics.
@@ -11,8 +16,8 @@ import { Minus, Mul, Name, Num } from "@computational-biology-aachen/mxlweb-core
  *
  * Variables: e_coli (E), c_gluta (C)
  */
-export function initModel(): ModelBuilder {
-  return new ModelBuilder()
+export function initModel(): KineticModelBuilder {
+  return new KineticModelBuilder()
     .addVariable("e_coli", {
       value: 5.0,
       texName: "E.\ coli",

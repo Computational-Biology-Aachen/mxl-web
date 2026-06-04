@@ -1,4 +1,4 @@
-import { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+import { KineticModelBuilder } from "@computational-biology-aachen/mxlweb-core";
 import {
   Add,
   Divide,
@@ -23,8 +23,8 @@ import {
  * Parameters: PPFD, pH, nadph, E°_PC/P700/FA/Fd/NADP, Carotenoids_tot, LHC_tot…
  * Ref: Matuszyńska PhD thesis (2016), RWTH Aachen University
  */
-export function initModel(): ModelBuilder {
-  return new ModelBuilder()
+export function initModel(): KineticModelBuilder {
+  return new KineticModelBuilder()
     .addParameter("pH", { value: 7.9, texName: "pH" })
     .addParameter("PPFD", {
       value: 100.0,

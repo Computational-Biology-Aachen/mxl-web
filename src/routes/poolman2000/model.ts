@@ -1,4 +1,4 @@
-import { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+import { KineticModelBuilder } from "@computational-biology-aachen/mxlweb-core";
 import {
   Add,
   Divide,
@@ -20,8 +20,8 @@ import {
  * Parameters: kcat/Km for each enzyme; CO₂, NADPH, ATP as boundary inputs
  * Ref: Poolman et al. (2000) J Theor Biol 204:271–282
  */
-export function initModel(): ModelBuilder {
-  return new ModelBuilder()
+export function initModel(): KineticModelBuilder {
+  return new KineticModelBuilder()
     .addParameter("CO2__dissolved_", {
       value: 0.2,
       texName: "CO2 (dissolved)",

@@ -1,4 +1,4 @@
-import { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+import { KineticModelBuilder } from "@computational-biology-aachen/mxlweb-core";
 import {
   Add,
   Divide,
@@ -26,8 +26,8 @@ import {
  * Parameters: PPFD, CO₂, O₂, standard reduction potentials (E°), kinetic constants
  * Ref: Ebeling et al. (2026)
  */
-export function initModel(): ModelBuilder {
-  return new ModelBuilder()
+export function initModel(): KineticModelBuilder {
+  return new KineticModelBuilder()
     .addParameter("PPFD", {
       value: 100.0,
       texName: "PPFD",

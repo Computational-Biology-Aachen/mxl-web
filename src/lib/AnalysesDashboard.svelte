@@ -26,7 +26,7 @@
   } from "@computational-biology-aachen/design";
   import {
     defaultValue,
-    ModelBuilder,
+    KineticModelBuilder,
   } from "@computational-biology-aachen/mxlweb-core";
   import {
     modelToSbml,
@@ -47,7 +47,7 @@
     equationsOpen = true,
   }: {
     name: string;
-    initModel: () => ModelBuilder;
+    initModel: () => KineticModelBuilder;
     analyses: Analyses;
     children?: Snippet;
     equationsOpen?: boolean;

@@ -9,7 +9,7 @@
     InputText,
     Row,
   } from "@computational-biology-aachen/design";
-  import type { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+  import type { KineticModelBuilder } from "@computational-biology-aachen/mxlweb-core";
   import { untrack } from "svelte";
 
   let {
@@ -19,7 +19,7 @@
     popovertarget,
   }: {
     parent: SimulationAnalysis;
-    model: ModelBuilder;
+    model: KineticModelBuilder;
     onSave: (options: SimulationAnalysis) => void;
     popovertarget: string;
   } = $props();

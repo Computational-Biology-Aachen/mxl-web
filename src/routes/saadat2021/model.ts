@@ -1,4 +1,4 @@
-import { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+import { KineticModelBuilder } from "@computational-biology-aachen/mxlweb-core";
 import {
   Add,
   Divide,
@@ -24,8 +24,8 @@ import {
  * Parameters: E°_PC, E°_P700, E°_FA, E°_Fd, E°_NADP, PPFD, CO₂, O₂_lumen
  * Ref: Saadat et al. (2021)
  */
-export function initModel(): ModelBuilder {
-  return new ModelBuilder()
+export function initModel(): KineticModelBuilder {
+  return new KineticModelBuilder()
     .addParameter("PPFD", { value: 100.0, texName: "PPFD" })
     .addParameter("CO2__dissolved_", {
       value: 0.2,

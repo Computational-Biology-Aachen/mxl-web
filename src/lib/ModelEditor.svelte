@@ -12,7 +12,7 @@
   import {
     defaultTexName,
     defaultValue,
-    ModelBuilder,
+    KineticModelBuilder,
   } from "@computational-biology-aachen/mxlweb-core";
   import { ModelView } from "./modelView";
 
@@ -21,8 +21,8 @@
     onSave,
     popovertarget,
   }: {
-    parent: ModelBuilder;
-    onSave: (fn: ModelBuilder) => void;
+    parent: KineticModelBuilder;
+    onSave: (fn: KineticModelBuilder) => void;
     popovertarget: string;
   } = $props();
 

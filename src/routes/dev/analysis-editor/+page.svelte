@@ -1,13 +1,9 @@
-<svelte:head>
-  <title>Analysis Editor - mxlweb</title>
-</svelte:head>
-
 <script lang="ts">
-  import { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+  import { KineticModelBuilder } from "@computational-biology-aachen/mxlweb-core";
   import AnalysisEditor from "$lib/TimeCourseEditor.svelte";
   import { backends } from "$lib/stores/backends";
 
-  const model = new ModelBuilder();
+  const model = new KineticModelBuilder();
 
   let analysis = {
     type: "simulation" as const,
@@ -26,6 +22,10 @@
     lineDisplay: "current" as const,
   };
 </script>
+
+<svelte:head>
+  <title>Analysis Editor - mxlweb</title>
+</svelte:head>
 
 <AnalysisEditor
   parent={analysis}

@@ -1,4 +1,4 @@
-import { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+import { KineticModelBuilder } from "@computational-biology-aachen/mxlweb-core";
 import {
   Add,
   Divide,
@@ -25,8 +25,8 @@ import {
  * Parameters: PSII_tot, PQ_tot, AP_tot, PsbS_tot, X_tot, k_Cytb6f, k_ATPsynth…
  * Ref: Matuszyńska et al. (2016) Biochim Biophys Acta 1857:1948–1960
  */
-export function initModel(): ModelBuilder {
-  return new ModelBuilder()
+export function initModel(): KineticModelBuilder {
+  return new KineticModelBuilder()
     .addParameter("PSII_tot", { value: 2.5, texName: "PSII\\_tot" })
     .addParameter("PQ_tot", { value: 20, texName: "PQ\\_tot" })
     .addParameter("AP_tot", { value: 50, texName: "AP\\_tot" })

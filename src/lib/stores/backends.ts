@@ -1,5 +1,5 @@
 import { browser } from "$app/environment";
-import type { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+import type { KineticModelBuilder } from "@computational-biology-aachen/mxlweb-core";
 import { WorkerPool } from "./workerPool";
 
 import jsWorkerUrlString from "@computational-biology-aachen/mxlweb-core/backends/js/jsWorker.ts?worker&url";
@@ -48,7 +48,7 @@ export interface Backend {
   label: string;
   method: string;
   getPool(): WorkerPool;
-  buildRequest(model: ModelBuilder, opts: BuildOpts): BackendRequest;
+  buildRequest(model: KineticModelBuilder, opts: BuildOpts): BackendRequest;
 }
 
 function makePyBackend(method: string, label: string): Backend {

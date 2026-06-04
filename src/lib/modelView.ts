@@ -1,4 +1,4 @@
-import { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+import { KineticModelBuilder } from "@computational-biology-aachen/mxlweb-core";
 import type { Base } from "@computational-biology-aachen/mxlweb-core/mathml";
 
 export type SliderArgs = {
@@ -131,8 +131,8 @@ export class ModelView {
     this.reactions = reactions;
   }
 
-  toBuilder(): ModelBuilder {
-    let builder = new ModelBuilder();
+  toBuilder(): KineticModelBuilder {
+    const builder = new KineticModelBuilder();
     this.parameters.forEach((el) =>
       builder.addParameter(el.id, {
         value: el.value,

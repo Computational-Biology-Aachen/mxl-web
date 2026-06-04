@@ -6,7 +6,7 @@
 <script lang="ts">
   import type { ParameterScanAnalysis } from "$lib";
   import { LineChart } from "@computational-biology-aachen/design";
-  import type { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+  import type { KineticModelBuilder } from "@computational-biology-aachen/mxlweb-core";
   import { onMount } from "svelte";
   import SimErrDisplay from "./SimErrDisplay.svelte";
   import type { Backend } from "./stores/backends";
@@ -28,7 +28,7 @@
     nTimePoints,
     lineDisplay,
   }: {
-    model: ModelBuilder;
+    model: KineticModelBuilder;
     analysis: ParameterScanAnalysis;
     tEnd: number;
     tolerance?: number;
@@ -72,7 +72,7 @@
   let failedCount = $state(0);
   let totalCount = $state(0);
 
-  export function runScan(currentModel: ModelBuilder) {
+  export function runScan(currentModel: KineticModelBuilder) {
     err = undefined;
     hints = undefined;
 

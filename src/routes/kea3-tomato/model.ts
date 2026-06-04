@@ -1,4 +1,4 @@
-import { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+import { KineticModelBuilder } from "@computational-biology-aachen/mxlweb-core";
 import {
   Add,
   Divide,
@@ -14,8 +14,8 @@ import {
   Pow,
 } from "@computational-biology-aachen/mxlweb-core/mathml";
 
-export function initModel(): ModelBuilder {
-  return new ModelBuilder()
+export function initModel(): KineticModelBuilder {
+  return new KineticModelBuilder()
     .addParameter("PPFD", {
       value: 10.0,
       texName: "PPFD",

@@ -9,7 +9,7 @@
     InputText,
     Row,
   } from "@computational-biology-aachen/design";
-  import type { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+  import type { KineticModelBuilder } from "@computational-biology-aachen/mxlweb-core";
   import { untrack } from "svelte";
   import { migratePamPhases, type PamGroup } from "./protocol";
 
@@ -20,7 +20,7 @@
     popovertarget,
   }: {
     parent: PamAnalysis;
-    model: ModelBuilder;
+    model: KineticModelBuilder;
     onSave: (options: PamAnalysis) => void;
     popovertarget: string;
   } = $props();

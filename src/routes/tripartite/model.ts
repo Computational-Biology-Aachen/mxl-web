@@ -1,5 +1,10 @@
-import { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
-import { Minus, Mul, Name, Num } from "@computational-biology-aachen/mxlweb-core/mathml";
+import { KineticModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+import {
+  Minus,
+  Mul,
+  Name,
+  Num,
+} from "@computational-biology-aachen/mxlweb-core/mathml";
 
 /**
  * Tripartite microbial community — cooperation, cheating, and private goods.
@@ -14,8 +19,8 @@ import { Minus, Mul, Name, Num } from "@computational-biology-aachen/mxlweb-core
  * Variables: Public (P), Cheater (C), Private (M)
  * Parameters: r_P, r_M, α (P→C benefit), β (P↔M competition), η, ν, γ (density terms)
  */
-export function initModel(): ModelBuilder {
-  return new ModelBuilder()
+export function initModel(): KineticModelBuilder {
+  return new KineticModelBuilder()
     .addVariable("Public", {
       value: 1.0,
       texName: String.raw`P`,

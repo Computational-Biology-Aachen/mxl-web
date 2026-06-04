@@ -5,7 +5,7 @@
 
 <script lang="ts">
   import { LineChart } from "@computational-biology-aachen/design";
-  import type { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+  import type { KineticModelBuilder } from "@computational-biology-aachen/mxlweb-core";
   import { onMount } from "svelte";
   import SimErrDisplay from "./SimErrDisplay.svelte";
   import type { Backend } from "./stores/backends";
@@ -28,7 +28,7 @@
     nTimePoints,
     lineDisplay,
   }: {
-    model: ModelBuilder;
+    model: KineticModelBuilder;
     tEnd: number;
     yMax?: number | undefined;
     timeoutInSeconds: number;
@@ -50,7 +50,7 @@
   let currentRequestId = $state<string | null>(null);
   let timeoutInSecondsId = $state<ReturnType<typeof setTimeout> | null>(null);
 
-  export function runSimulation(model: ModelBuilder) {
+  export function runSimulation(model: KineticModelBuilder) {
     loading = true;
     const requestId = WorkerManager.generateRequestId();
     currentRequestId = requestId;
