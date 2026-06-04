@@ -1,6 +1,12 @@
 <script lang="ts">
   import { LineChart } from "@computational-biology-aachen/design";
+</script>
 
+<svelte:head>
+  <title>Charts - mxlweb</title>
+</svelte:head>
+
+<script lang="ts">
   type LineData = {
     labels: number[];
     datasets: {

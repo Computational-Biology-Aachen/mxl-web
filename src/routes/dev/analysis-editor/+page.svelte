@@ -1,3 +1,7 @@
+<svelte:head>
+  <title>Analysis Editor - mxlweb</title>
+</svelte:head>
+
 <script lang="ts">
   import { ModelBuilder } from "@computational-biology-aachen/mxlweb-core";
   import AnalysisEditor from "$lib/TimeCourseEditor.svelte";

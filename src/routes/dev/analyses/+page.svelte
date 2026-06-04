@@ -2,6 +2,10 @@
   import { DynBoxRow } from "@computational-biology-aachen/design";
 </script>
 
+<svelte:head>
+  <title>Analyses - mxlweb</title>
+</svelte:head>
+
 <DynBoxRow
   items={[]}
   onAdd={(box) => {

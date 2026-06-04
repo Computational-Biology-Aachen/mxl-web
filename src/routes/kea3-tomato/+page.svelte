@@ -154,6 +154,10 @@
   ]);
 </script>
 
+<svelte:head>
+  <title>KEA3 Tomato - mxlweb</title>
+</svelte:head>
+
 <Main pad="tight">
   <AnalysesDashboard
     name={"KEA3 - tomato"}

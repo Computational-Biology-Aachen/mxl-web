@@ -70,6 +70,10 @@
   ]);
 </script>
 
+<svelte:head>
+  <title>Matuszyńska 2016 NPQ - mxlweb</title>
+</svelte:head>
+
 <Main pad="tight">
   <AnalysesDashboard
     name={"Matuszyńska 2016"}

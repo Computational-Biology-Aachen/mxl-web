@@ -79,6 +79,10 @@
   ]);
 </script>
 
+<svelte:head>
+  <title>Ebeling 2026 - mxlweb</title>
+</svelte:head>
+
 <SectionMain pad="tight">
   <AnalysesDashboard
     name={"Ebeling 2026"}

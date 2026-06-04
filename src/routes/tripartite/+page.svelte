@@ -3,6 +3,7 @@
   import AnalysesDashboard from "$lib/AnalysesDashboard.svelte";
   import { SectionMain as Main } from "@computational-biology-aachen/design";
   import { initModel } from "./model";
+
   let analyses: Analyses = $state([
     {
       type: "simulation" as const,
@@ -43,6 +44,10 @@
     },
   ]);
 </script>
+
+<svelte:head>
+  <title>Tripartite - mxlweb</title>
+</svelte:head>
 
 <Main pad="tight">
   <AnalysesDashboard

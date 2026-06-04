@@ -19,6 +19,10 @@
   } from "@computational-biology-aachen/design";
 </script>
 
+<svelte:head>
+  <title>Models - mxlweb</title>
+</svelte:head>
+
 <SectionMain align="start">
   <div class="heading">
     <Icon color="primary">bolt</Icon>

@@ -1,3 +1,7 @@
+<svelte:head>
+  <title>Eq Editor - mxlweb</title>
+</svelte:head>
+
 <script lang="ts">
   import EqEditor from "$lib/EqEditor.svelte";
   import type {

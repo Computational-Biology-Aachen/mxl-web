@@ -1,3 +1,7 @@
+<svelte:head>
+  <title>Model Edit - mxlweb</title>
+</svelte:head>
+
 <script lang="ts">
   import ModelEditor from "$lib/ModelEditor.svelte";
   import {

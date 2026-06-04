@@ -1,3 +1,7 @@
+<svelte:head>
+  <title>Stoich Editor - mxlweb</title>
+</svelte:head>
+
 <script lang="ts">
   import type {
     AssView,

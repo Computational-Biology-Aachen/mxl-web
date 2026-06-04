@@ -24,6 +24,10 @@
   ]);
 </script>
 
+<svelte:head>
+  <title>Yokota 1985 - mxlweb</title>
+</svelte:head>
+
 <Main pad="tight">
   <AnalysesDashboard
     name={"Yokota 1985"}

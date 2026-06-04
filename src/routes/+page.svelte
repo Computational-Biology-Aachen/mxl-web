@@ -52,7 +52,7 @@
 </script>
 
 <svelte:head>
-  <title>MxlWeb</title>
+  <title>mxlweb</title>
 </svelte:head>
 
 <Main>

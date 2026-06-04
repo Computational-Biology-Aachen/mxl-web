@@ -24,6 +24,10 @@
   ]);
 </script>
 
+<svelte:head>
+  <title>SIR - mxlweb</title>
+</svelte:head>
+
 <Main pad="tight">
   <AnalysesDashboard
     name={"Compartmental models"}

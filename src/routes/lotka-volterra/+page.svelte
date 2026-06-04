@@ -45,6 +45,10 @@
   ]);
 </script>
 
+<svelte:head>
+  <title>Lotka-Volterra - mxlweb</title>
+</svelte:head>
+
 <Main pad="tight">
   <AnalysesDashboard
     name={"Lotka-Volterra"}

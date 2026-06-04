@@ -48,6 +48,10 @@
   ]);
 </script>
 
+<svelte:head>
+  <title>Dynamic Entrobactin - mxlweb</title>
+</svelte:head>
+
 <Main pad="tight">
   <AnalysesDashboard
     name={"Dynamic Entrobaction"}

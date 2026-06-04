@@ -1,3 +1,7 @@
+<svelte:head>
+  <title>Svelte Cheatsheet - mxlweb</title>
+</svelte:head>
+
 <script lang="ts">
   import { Icon } from "@computational-biology-aachen/design";
   import ArrNum from "./ArrNum.svelte";

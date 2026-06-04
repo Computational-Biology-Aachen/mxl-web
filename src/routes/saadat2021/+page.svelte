@@ -68,6 +68,10 @@
   ]);
 </script>
 
+<svelte:head>
+  <title>Saadat 2021 - mxlweb</title>
+</svelte:head>
+
 <Main pad="tight">
   <AnalysesDashboard
     name={"Saadat 2021"}

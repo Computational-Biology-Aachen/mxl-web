@@ -16,6 +16,7 @@
 
 <!-- SEO -->
 <svelte:head>
+  <title>mxlweb</title>
   <meta
     name="description"
     content={config.description}

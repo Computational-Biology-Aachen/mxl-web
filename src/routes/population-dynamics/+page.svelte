@@ -25,6 +25,10 @@
   ]);
 </script>
 
+<svelte:head>
+  <title>Population Dynamics - mxlweb</title>
+</svelte:head>
+
 <Main pad="tight">
   <AnalysesDashboard
     name={"Population Dynamics"}

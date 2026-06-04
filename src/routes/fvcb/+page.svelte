@@ -146,6 +146,10 @@
   });
 </script>
 
+<svelte:head>
+  <title>FvCB - mxlweb</title>
+</svelte:head>
+
 <Main>
   <h1>FvCB</h1>
   <p>

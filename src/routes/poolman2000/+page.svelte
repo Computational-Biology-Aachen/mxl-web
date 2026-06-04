@@ -25,6 +25,10 @@
   ]);
 </script>
 
+<svelte:head>
+  <title>Poolman 2000 - mxlweb</title>
+</svelte:head>
+
 <Main pad="tight">
   <AnalysesDashboard
     name={"Poolman 2000"}

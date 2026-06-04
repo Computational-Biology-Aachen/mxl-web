@@ -3,6 +3,10 @@
   import { Icon } from "@computational-biology-aachen/design";
 </script>
 
+<svelte:head>
+  <title>Dev - mxlweb</title>
+</svelte:head>
+
 <hgroup>
   <h1>mxlweb - development</h1>
   <p>Build and analyse models directly in the browser</p>
