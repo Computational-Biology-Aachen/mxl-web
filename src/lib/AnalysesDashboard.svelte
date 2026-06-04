@@ -272,7 +272,7 @@
     <a
       class="light"
       style="font-size: var(--text-sm);"
-      href={`${base}/`}>Models</a
+      href={`${base}/models`}>Models</a
     >
     <span
       class="light"
@@ -610,7 +610,7 @@
     font-weight: 400;
   }
   a.light:hover {
-    color: var(--color-surface);
+    color: var(--color-primary);
   }
   .picker-title {
     margin: 0;
