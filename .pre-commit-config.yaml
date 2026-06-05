@@ -1,0 +1,17 @@
+repos:
+  - repo: local
+    hooks:
+      - id: build
+        name: Check whether the build succeeds
+        entry: npm run build
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
+      - id: ci-local
+        name: Emulate the GitHub deploy build (container, clean install)
+        entry: bash scripts/ci-local.sh
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
