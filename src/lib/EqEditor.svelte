@@ -152,10 +152,12 @@
 
   const paletteGroups: {
     name: string;
+    defaultOpen: boolean;
     items: { label: string; default: () => Base; hint: string }[];
   }[] = [
     {
-      name: "Leaves",
+      name: "Arithmetic",
+      defaultOpen: true,
       items: [
         {
           label: "Symbol",
@@ -167,11 +169,6 @@
           default: Num.prototype.default,
           hint: "Constant value",
         },
-      ],
-    },
-    {
-      name: "Arithmetic",
-      items: [
         {
           label: "Add",
           default: () =>
@@ -217,6 +214,7 @@
     },
     {
       name: "Functions",
+      defaultOpen: false,
       items: [
         {
           label: "Exp",
@@ -285,6 +283,7 @@
     },
     {
       name: "Trigonometry",
+      defaultOpen: false,
       items: [
         {
           label: "Sin",
@@ -350,6 +349,7 @@
     },
     {
       name: "Hyperbolic",
+      defaultOpen: false,
       items: [
         {
           label: "Sinh",
@@ -415,6 +415,7 @@
     },
     {
       name: "Comparison",
+      defaultOpen: false,
       items: [
         {
           label: "Equal",
@@ -462,6 +463,7 @@
     },
     {
       name: "Logic",
+      defaultOpen: false,
       items: [
         {
           label: "And",
@@ -564,8 +566,11 @@
 
   <div class="palette-groups">
     {#each paletteGroups as group}
-      <div class="palette-group">
-        <span class="group-label">{group.name}</span>
+      <details
+        class="palette-group"
+        open={group.defaultOpen}
+      >
+        <summary class="group-label">{group.name}</summary>
         <div class="palette">
           {#each group.items as item}
             <button
@@ -577,7 +582,7 @@
             </button>
           {/each}
         </div>
-      </div>
+      </details>
     {/each}
   </div>
 
@@ -660,13 +665,8 @@
     gap: 0.75rem;
   }
 
-  .palette-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-  }
-
   .group-label {
+    cursor: pointer;
     color: #6b7280;
     font-weight: 600;
     font-size: 0.75rem;
@@ -674,10 +674,15 @@
     text-transform: uppercase;
   }
 
+  .group-label:hover {
+    color: #374151;
+  }
+
   .palette {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: 0.5rem;
+    margin-top: 0.35rem;
   }
 
   .palette-button {
