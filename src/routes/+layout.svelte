@@ -92,7 +92,7 @@
 <Imprint github="https://github.com/Computational-Biology-Aachen/mxl-web" />
 
 <!-- Global popup due to nav -->
-<BuildChooser />
+<BuildChooser popover={true} />
 
 <style>
   .brand {

@@ -33,62 +33,62 @@
   <GridGallery title="ODE models">
     <CardModel
       name="Lotka Volterra"
-      href="{base}/lotka-volterra"
+      href="{base}/models/lotka-volterra"
       image={schemeLotkaVolt}
     />
     <CardModel
       name="Population dynamics"
-      href="{base}/population-dynamics"
+      href="{base}/models/population-dynamics"
       image={schemePopDyn}
     />
     <CardModel
       name="Tripartite dynamics"
-      href="{base}/tripartite"
+      href="{base}/models/tripartite"
       image={schemeTripartite}
     />
     <CardModel
       name="Entrobactin"
-      href="{base}/dynamic-entrobactin"
+      href="{base}/models/dynamic-entrobactin"
       image={schemeEnterobactin}
     />
     <CardModel
       name="Yokota 1985"
-      href="{base}/yokota1985"
+      href="{base}/models/yokota1985"
       image={schemeYokota}
     />
     <CardModel
       name="Poolman 2000"
-      href="{base}/poolman2000"
+      href="{base}/models/poolman2000"
       image={scheme2016phd}
     />
     <CardModel
       name="Matuszyńska 2016 (NPQ)"
-      href="{base}/matuszynska2016_npq"
+      href="{base}/models/matuszynska2016_npq"
       image={scheme2016npq}
     />
     <CardModel
       name="Matuszyńska 2016 (PHD)"
-      href="{base}/matuszynska2016_phd"
+      href="{base}/models/matuszynska2016_phd"
       image={scheme2016phd}
     />
     <CardModel
       name="Saadat 2021"
-      href="{base}/saadat2021"
+      href="{base}/models/saadat2021"
       image={schemeSaadat}
     />
     <CardModel
       name="Ebeling 2026"
-      href="{base}/ebeling-2026"
+      href="{base}/models/ebeling-2026"
       image={schemeEbeling}
     />
     <CardModel
       name="Tomato KEA3"
-      href="{base}/kea3-tomato"
+      href="{base}/models/kea3-tomato"
       image={schemeKea3}
     />
     <CardModel
       name="SIR"
-      href="{base}/sir"
+      href="{base}/models/sir"
       image={schemeSir}
     />
   </GridGallery>
@@ -96,7 +96,7 @@
   <GridGallery title="Steady-state models">
     <CardModel
       name="FvCB"
-      href="{base}/fvcb"
+      href="{base}/models/fvcb"
       image={schemeFvcb}
     />
   </GridGallery>

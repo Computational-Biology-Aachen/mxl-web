@@ -76,7 +76,7 @@
         stack
         gap="0.5rem"
       >
-        <Button href="{base}/lotka-volterra">Launch live model</Button>
+        <Button href="{base}/models/lotka-volterra">Launch live model</Button>
         <Button
           variant="secondary"
           href="{base}/models">Explore our models</Button
@@ -135,25 +135,25 @@
     <CardImageHighlight
       name="Photosynthesis dynamics"
       desc="Light, CO₂ and feedback in a dynamic model."
-      href="{base}/ebeling-2026"
+      href="{base}/models/ebeling-2026"
       image={schemeEbeling}
     />
     <CardImageHighlight
       name="Race for iron"
       desc="What is the effect of a public good on a microbial community?"
-      href="{base}/dynamic-entrobactin"
+      href="{base}/models/dynamic-entrobactin"
       image={schemeEnterobactin}
     />
     <CardImageHighlight
       name="Population dynamics"
       desc="Explore how predators and prey survive in a dynamic environment"
-      href="{base}/lotka-volterra"
+      href="{base}/models/lotka-volterra"
       image={schemeLotkaVolt}
     />
     <CardImageHighlight
       name="Host-Parasite interaction"
       desc="How infection, immune response and outcomes evolve?"
-      href="{base}/sir"
+      href="{base}/models/sir"
       image={schemeSir}
     />
   </ModelGallery>
