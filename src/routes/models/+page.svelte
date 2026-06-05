@@ -16,8 +16,71 @@
     CardModel,
     GridGallery,
     Icon,
+    Row,
     SectionMain,
   } from "@computational-biology-aachen/design";
+
+  type Model = { name: string; slug: string; image: string };
+
+  const odeModels: Model[] = [
+    { name: "Lotka Volterra", slug: "lotka-volterra", image: schemeLotkaVolt },
+    {
+      name: "Population dynamics",
+      slug: "population-dynamics",
+      image: schemePopDyn,
+    },
+    {
+      name: "Tripartite dynamics",
+      slug: "tripartite",
+      image: schemeTripartite,
+    },
+    {
+      name: "Entrobactin",
+      slug: "dynamic-entrobactin",
+      image: schemeEnterobactin,
+    },
+    { name: "Yokota 1985", slug: "yokota1985", image: schemeYokota },
+    { name: "Poolman 2000", slug: "poolman2000", image: scheme2016phd },
+    {
+      name: "Matuszyńska 2016 (NPQ)",
+      slug: "matuszynska2016_npq",
+      image: scheme2016npq,
+    },
+    {
+      name: "Matuszyńska 2016 (PHD)",
+      slug: "matuszynska2016_phd",
+      image: scheme2016phd,
+    },
+    { name: "Saadat 2021", slug: "saadat2021", image: schemeSaadat },
+    { name: "Ebeling 2026", slug: "ebeling-2026", image: schemeEbeling },
+    { name: "Tomato KEA3", slug: "kea3-tomato", image: schemeKea3 },
+    { name: "SIR", slug: "sir", image: schemeSir },
+  ];
+
+  const steadyStateModels: Model[] = [
+    { name: "FvCB", slug: "fvcb", image: schemeFvcb },
+  ];
+
+  let query = $state("");
+
+  // Case-insensitive subsequence match: query chars appear in order in the name.
+  function fuzzyMatch(name: string, q: string): boolean {
+    const needle = q.trim().toLowerCase();
+    if (needle === "") return true;
+    let i = 0;
+    for (const ch of name.toLowerCase()) {
+      if (ch === needle[i]) i++;
+      if (i === needle.length) return true;
+    }
+    return false;
+  }
+
+  const filteredOde = $derived(
+    odeModels.filter((m) => fuzzyMatch(m.name, query)),
+  );
+  const filteredSteadyState = $derived(
+    steadyStateModels.filter((m) => fuzzyMatch(m.name, query)),
+  );
 </script>
 
 <svelte:head>
@@ -25,81 +88,46 @@
 </svelte:head>
 
 <SectionMain align="start">
-  <div class="heading">
-    <Icon color="primary">bolt</Icon>
-    <h2>Select a pre-defined model</h2>
-  </div>
+  <Row justify="between">
+    <div class="heading">
+      <Icon color="primary">bolt</Icon>
+      <h2>Select a pre-defined model</h2>
+    </div>
+    <input
+      type="search"
+      class="filter"
+      placeholder="Filter models…"
+      bind:value={query}
+    />
+  </Row>
 
-  <GridGallery title="ODE models">
-    <CardModel
-      name="Lotka Volterra"
-      href="{base}/models/lotka-volterra"
-      image={schemeLotkaVolt}
-    />
-    <CardModel
-      name="Population dynamics"
-      href="{base}/models/population-dynamics"
-      image={schemePopDyn}
-    />
-    <CardModel
-      name="Tripartite dynamics"
-      href="{base}/models/tripartite"
-      image={schemeTripartite}
-    />
-    <CardModel
-      name="Entrobactin"
-      href="{base}/models/dynamic-entrobactin"
-      image={schemeEnterobactin}
-    />
-    <CardModel
-      name="Yokota 1985"
-      href="{base}/models/yokota1985"
-      image={schemeYokota}
-    />
-    <CardModel
-      name="Poolman 2000"
-      href="{base}/models/poolman2000"
-      image={scheme2016phd}
-    />
-    <CardModel
-      name="Matuszyńska 2016 (NPQ)"
-      href="{base}/models/matuszynska2016_npq"
-      image={scheme2016npq}
-    />
-    <CardModel
-      name="Matuszyńska 2016 (PHD)"
-      href="{base}/models/matuszynska2016_phd"
-      image={scheme2016phd}
-    />
-    <CardModel
-      name="Saadat 2021"
-      href="{base}/models/saadat2021"
-      image={schemeSaadat}
-    />
-    <CardModel
-      name="Ebeling 2026"
-      href="{base}/models/ebeling-2026"
-      image={schemeEbeling}
-    />
-    <CardModel
-      name="Tomato KEA3"
-      href="{base}/models/kea3-tomato"
-      image={schemeKea3}
-    />
-    <CardModel
-      name="SIR"
-      href="{base}/models/sir"
-      image={schemeSir}
-    />
-  </GridGallery>
+  {#if filteredOde.length > 0}
+    <GridGallery title="ODE models">
+      {#each filteredOde as model (model.slug)}
+        <CardModel
+          name={model.name}
+          href="{base}/models/{model.slug}"
+          image={model.image}
+        />
+      {/each}
+    </GridGallery>
+  {/if}
 
-  <GridGallery title="Steady-state models">
-    <CardModel
-      name="FvCB"
-      href="{base}/models/fvcb"
-      image={schemeFvcb}
-    />
-  </GridGallery>
+  {#if filteredSteadyState.length > 0}
+    <GridGallery title="Steady-state models">
+      {#each filteredSteadyState as model (model.slug)}
+        <CardModel
+          name={model.name}
+          href="{base}/models/{model.slug}"
+          image={model.image}
+        />
+      {/each}
+    </GridGallery>
+  {/if}
+
+  {#if filteredOde.length === 0 && filteredSteadyState.length === 0}
+    <p class="empty">No models match “{query}”.</p>
+  {/if}
 </SectionMain>
 
 <style>
@@ -107,5 +135,21 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+  }
+
+  .filter {
+    margin-bottom: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    padding: var(--space-2) var(--space-3);
+    width: 100%;
+    max-width: 320px;
+    color: inherit;
+    font: inherit;
+  }
+
+  .empty {
+    color: var(--color-text-muted);
   }
 </style>
