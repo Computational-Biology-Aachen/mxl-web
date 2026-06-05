@@ -6,7 +6,7 @@
 <script lang="ts">
   import type { ParameterScanAnalysis } from "$lib";
   import { LineChart } from "@computational-biology-aachen/design";
-  import type { KineticModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+  import type { ModelBuilderBase } from "@computational-biology-aachen/mxlweb-core";
   import { onMount } from "svelte";
   import SimErrDisplay from "./SimErrDisplay.svelte";
   import type { Backend } from "./stores/backends";
@@ -28,7 +28,7 @@
     nTimePoints,
     lineDisplay,
   }: {
-    model: KineticModelBuilder;
+    model: ModelBuilderBase;
     analysis: ParameterScanAnalysis;
     tEnd: number;
     tolerance?: number;
@@ -72,7 +72,7 @@
   let failedCount = $state(0);
   let totalCount = $state(0);
 
-  export function runScan(currentModel: KineticModelBuilder) {
+  export function runScan(currentModel: ModelBuilderBase) {
     err = undefined;
     hints = undefined;
 
@@ -95,14 +95,8 @@
     const activeDerivedKeys = derivedSelection ?? allDerivedKeys;
 
     const allKeys = [...varKeys, ...activeDerivedKeys];
-    const allLabels = allKeys.map((k) => {
-      return (
-        currentModel.variables.get(k)?.displayName ??
-        currentModel.assignments.get(k)?.displayName ??
-        currentModel.reactions.get(k)?.displayName ??
-        k
-      );
-    });
+    const displayNames = currentModel.getDisplayNames();
+    const allLabels = allKeys.map((k) => displayNames.get(k) ?? k);
 
     // Zero out results immediately so the chart reflects the new scan
     scanResult = {

@@ -10,7 +10,7 @@
     LineChart,
     type PhaseRegion,
   } from "@computational-biology-aachen/design";
-  import type { KineticModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+  import type { ModelBuilderBase } from "@computational-biology-aachen/mxlweb-core";
   import {
     computeNpq,
     findPeaks,
@@ -41,7 +41,7 @@
     nTimePoints,
     lineDisplay,
   }: {
-    model: KineticModelBuilder;
+    model: ModelBuilderBase;
     pamProtocol: PamGroup[];
     yMax?: number | undefined;
     timeoutInSeconds: number;
@@ -65,7 +65,7 @@
   let currentRequestId = $state<string | null>(null);
   let timeoutInSecondsId = $state<ReturnType<typeof setTimeout> | null>(null);
 
-  export function runSimulation(model: KineticModelBuilder) {
+  export function runSimulation(model: ModelBuilderBase) {
     loading = true;
     const requestId = WorkerManager.generateRequestId();
     currentRequestId = requestId;
@@ -164,12 +164,9 @@
       ? allDerived.filter((k) => selectedKeys.includes(k))
       : allDerived;
 
+    const displayNames = model.getDisplayNames();
     const derivedDatasets = activeDerived.map((name, i) => ({
-      label: maybeRename(
-        model.assignments.get(name)?.displayName ??
-          model.reactions.get(name)?.displayName ??
-          name,
-      ),
+      label: maybeRename(displayNames.get(name) ?? name),
       data: maybeNormalize(
         name,
         arrayColumn(result.values, nVars + i) as number[],

@@ -5,7 +5,7 @@
 
 <script lang="ts">
   import { LineChart } from "@computational-biology-aachen/design";
-  import type { KineticModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+  import type { ModelBuilderBase } from "@computational-biology-aachen/mxlweb-core";
   import { onMount } from "svelte";
   import SimErrDisplay from "./SimErrDisplay.svelte";
   import type { Backend } from "./stores/backends";
@@ -28,7 +28,7 @@
     nTimePoints,
     lineDisplay,
   }: {
-    model: KineticModelBuilder;
+    model: ModelBuilderBase;
     tEnd: number;
     yMax?: number | undefined;
     timeoutInSeconds: number;
@@ -50,7 +50,7 @@
   let currentRequestId = $state<string | null>(null);
   let timeoutInSecondsId = $state<ReturnType<typeof setTimeout> | null>(null);
 
-  export function runSimulation(model: KineticModelBuilder) {
+  export function runSimulation(model: ModelBuilderBase) {
     loading = true;
     const requestId = WorkerManager.generateRequestId();
     currentRequestId = requestId;
@@ -125,12 +125,9 @@
       ? allDerived.filter((k) => selectedKeys.includes(k))
       : allDerived;
 
+    const displayNames = model.getDisplayNames();
     const derivedDatasets = activeDerived.map((name, i) => ({
-      label: maybeRename(
-        model.assignments.get(name)?.displayName ??
-          model.reactions.get(name)?.displayName ??
-          name,
-      ),
+      label: maybeRename(displayNames.get(name) ?? name),
       data: maybeNormalize(
         name,
         arrayColumn(result.values, nVars + i) as number[],

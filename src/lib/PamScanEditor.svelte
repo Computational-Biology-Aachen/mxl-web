@@ -9,7 +9,7 @@
     InputText,
     Row,
   } from "@computational-biology-aachen/design";
-  import type { KineticModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+  import type { ModelBuilderBase } from "@computational-biology-aachen/mxlweb-core";
   import { untrack } from "svelte";
   import { migratePamPhases, type PamGroup } from "./protocol";
 
@@ -20,7 +20,7 @@
     popovertarget,
   }: {
     parent: PamAnalysis;
-    model: KineticModelBuilder;
+    model: ModelBuilderBase;
     onSave: (options: PamAnalysis) => void;
     popovertarget: string;
   } = $props();
@@ -60,12 +60,7 @@
   );
 
   function keyLabel(key: string): string {
-    return (
-      model.variables.get(key)?.displayName ??
-      model.assignments.get(key)?.displayName ??
-      model.reactions.get(key)?.displayName ??
-      key
-    );
+    return model.getDisplayNames().get(key) ?? key;
   }
 
   function isSelected(key: string): boolean {
