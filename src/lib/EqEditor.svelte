@@ -590,20 +590,22 @@
     <div class="window">
       <div class="window-header">Equation builder</div>
       <div class="window-body">
-        {#if currentNode instanceof Name}
-          <EqNode
-            node={root}
-            displayName={displayNames.get(currentNode.name)}
-            selectedId={currentNode.id}
-            onSelect={selectNode}
-          />
-        {:else}
-          <EqNode
-            node={root}
-            selectedId={currentNode.id}
-            onSelect={selectNode}
-          />
-        {/if}
+        <div class="builder-canvas">
+          {#if currentNode instanceof Name}
+            <EqNode
+              node={root}
+              displayName={displayNames.get(currentNode.name)}
+              selectedId={currentNode.id}
+              onSelect={selectNode}
+            />
+          {:else}
+            <EqNode
+              node={root}
+              selectedId={currentNode.id}
+              onSelect={selectNode}
+            />
+          {/if}
+        </div>
         <p class="hint-line">
           Tip: click any element to select it, then choose a MathML element
           above or adjust its value.
@@ -654,6 +656,11 @@
 </section>
 
 <style>
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+  }
   .comment {
     margin: 0;
     color: #4b5563;
@@ -727,6 +734,7 @@
     border: var(--border);
     border-radius: var(--radius-lg);
     background: #fff;
+    min-width: 0;
     overflow: hidden;
   }
 
@@ -746,6 +754,14 @@
     flex-direction: column;
     gap: 0.75rem;
     padding: 1rem;
+    min-width: 0;
+  }
+
+  /* Keep wide equations inside the card instead of pushing the page width;
+     swipe to pan on small screens. */
+  .builder-canvas {
+    min-width: 0;
+    overflow-x: auto;
   }
 
   .hint-line {
@@ -756,6 +772,8 @@
 
   .preview {
     gap: 1rem;
+    min-width: 0;
+    overflow-x: auto;
   }
 
   .edit-row {

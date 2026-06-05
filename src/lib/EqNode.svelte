@@ -605,21 +605,49 @@
 </div>
 
 <style>
+  .op {
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    border: var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    padding: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    color: var(--color-primary);
+    font-weight: 700;
+    line-height: 1;
+  }
   .node {
+    /* Width of the square operator button; the mobile guide rail is offset by
+       half of this so it lands on the operator's horizontal centre. */
+    --op-size: 2rem;
     display: flex;
     justify-content: center;
     align-items: center;
+    box-sizing: border-box;
     box-shadow: var(--shadow);
     border: var(--border);
     border-radius: var(--radius-lg);
     background: #fafafa;
     padding: 0.75rem;
+
+    :hover {
+      border-color: var(--color-primary);
+    }
   }
 
   .node[data-selected="true"] {
     box-shadow: var(--shadow);
-    border-color: var(--color-surface);
-    background: rgb(from var(--color-surface) r g b / 5%);
+    border-color: var(--color-primary);
+    background: rgb(from var(--color-primary) r g b / 8%);
+  }
+
+  /* Highlight the operators directly owned by the selected node. */
+  .node[data-selected="true"] > * > .op {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
   }
 
   .divide {
@@ -659,27 +687,13 @@
 
   .child {
     flex: 1;
+    box-sizing: border-box;
   }
 
   .sub-node {
     align-self: flex-end;
     margin-bottom: 0.1rem;
     font-size: 0.7rem;
-  }
-
-  .op {
-    display: grid;
-    place-items: center;
-    cursor: pointer;
-    border: var(--border-primary);
-    border-radius: var(--radius-lg);
-    background: var(--color-surface);
-    padding: 0;
-    width: 2.5rem;
-    height: 2.5rem;
-    color: #fff;
-    font-weight: 700;
-    line-height: 1;
   }
 
   .fn-label {
@@ -731,5 +745,60 @@
 
   .value {
     font-size: 1rem;
+  }
+
+  /* On narrow screens, let the equation grow downward as an indented outline
+     instead of overflowing horizontally: each operator stacks its operands
+     vertically, and nested node cards fill the available width. */
+  @media (max-width: 640px) {
+    .node {
+      justify-content: flex-start;
+      align-items: stretch;
+      padding: 0.4rem;
+    }
+
+    .divide,
+    .mul,
+    .fn-call,
+    .piecewise,
+    .piece {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    /* Indent each nested operand (compounds per depth) and draw a guide rail.
+       The rail sits half an operator-width in, so it aligns with the centre of
+       the operator above it. No explicit width: align-items:stretch sizes the
+       child to fill the remaining space after the margin. */
+    .child {
+      flex: initial;
+      margin-left: calc(var(--op-size) / 2);
+      border-left: 2px solid var(--color-surface);
+      padding-left: 0.5rem;
+    }
+
+    /* Light up the rails of the selected node's direct operands. */
+    .node[data-selected="true"] > * > .child {
+      border-left-color: var(--color-primary);
+    }
+
+    .op {
+      align-self: flex-start;
+      height: var(--op-size);
+    }
+
+    /* Symbol operators are square so their centre is exactly --op-size / 2;
+       word operators (exp, log, max, …) keep their intrinsic width. */
+    .op:not(.fn-label) {
+      padding: 0;
+      width: var(--op-size);
+      min-width: var(--op-size);
+    }
+
+    /* Inline grouping punctuation is redundant once operands are stacked. */
+    .paren,
+    .comma {
+      display: none;
+    }
   }
 </style>
