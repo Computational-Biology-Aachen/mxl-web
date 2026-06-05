@@ -1,4 +1,7 @@
-import { KineticModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+import {
+  KineticModelBuilder,
+  OdeModelBuilder,
+} from "@computational-biology-aachen/mxlweb-core";
 import type { Base } from "@computational-biology-aachen/mxlweb-core/mathml";
 
 export type SliderArgs = {
@@ -44,12 +47,18 @@ export type Reaction = {
   texName?: string;
 };
 
+// A variable in a direct-ODE model carries its own dx/dt expression.
+export type OdeVariable = Variable & {
+  differential: Base;
+};
+
 // Views
 
 export type VarView = Array<Variable>;
 export type ParView = Array<Parameter>;
 export type AssView = Array<Assign>;
 export type RxnView = Array<Reaction>;
+export type OdeVarView = Array<OdeVariable>;
 
 export function idToTex(
   variables: Iterable<Variable>,
@@ -163,6 +172,54 @@ export class ModelView {
         displayName: el.displayName,
         texName: el.texName,
       }),
+    );
+    return builder;
+  }
+}
+
+// Direct-ODE model view: each variable owns its dx/dt; no reactions.
+export class OdeModelView {
+  parameters: ParView = [];
+  variables: OdeVarView = [];
+  assignments: AssView = [];
+
+  constructor(
+    parameters: ParView = [],
+    variables: OdeVarView = [],
+    assignments: AssView = [],
+  ) {
+    this.parameters = parameters;
+    this.variables = variables;
+    this.assignments = assignments;
+  }
+
+  toBuilder(): OdeModelBuilder {
+    const builder = new OdeModelBuilder();
+    this.parameters.forEach((el) =>
+      builder.addParameter(el.id, {
+        value: el.value,
+        displayName: el.displayName,
+        texName: el.texName,
+        slider: el.slider,
+      }),
+    );
+    this.variables.forEach((el) =>
+      builder.addVariable(el.id, {
+        value: el.value,
+        displayName: el.displayName,
+        texName: el.texName,
+        slider: el.slider,
+      }),
+    );
+    this.assignments.forEach((el) =>
+      builder.addAssignment(el.id, {
+        fn: el.fn,
+        displayName: el.displayName,
+        texName: el.texName,
+      }),
+    );
+    this.variables.forEach((el) =>
+      builder.setDifferential(el.id, el.differential),
     );
     return builder;
   }

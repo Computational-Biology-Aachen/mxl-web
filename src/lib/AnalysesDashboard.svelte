@@ -27,6 +27,7 @@
   import {
     defaultValue,
     KineticModelBuilder,
+    OdeModelBuilder,
   } from "@computational-biology-aachen/mxlweb-core";
   import {
     modelToSbml,
@@ -35,6 +36,7 @@
   import type { Snippet } from "svelte";
   import { tick } from "svelte";
   import ModelEditor from "./ModelEditor.svelte";
+  import OdeModelEditor from "./OdeModelEditor.svelte";
   import PamScanEditor from "./PamScanEditor.svelte";
   import ParameterScanEditor from "./ParameterScanEditor.svelte";
   import AnalysisEditor from "./TimeCourseEditor.svelte";
@@ -47,7 +49,7 @@
     equationsOpen = true,
   }: {
     name: string;
-    initModel: () => KineticModelBuilder;
+    initModel: () => KineticModelBuilder | OdeModelBuilder;
     analyses: Analyses;
     children?: Snippet;
     equationsOpen?: boolean;
@@ -136,6 +138,8 @@
   }
 
   function saveModel() {
+    // SBML is a reaction-network format; only kinetic models can be exported.
+    if (!(model instanceof KineticModelBuilder)) return;
     downloadText(
       modelToSbml(model, name),
       `${name.replace(/[^A-Za-z0-9]/g, "_")}.sbml`,
@@ -284,13 +288,17 @@
     >
   </Pair>
   <Pair justify="end">
-    <Button
-      variant="secondary"
-      onclick={() => fileInput?.click()}>Load</Button
-    >
+    {#if model instanceof KineticModelBuilder}
+      <Button
+        variant="secondary"
+        onclick={() => fileInput?.click()}>Load</Button
+      >
+    {/if}
 
     <ButtonMenu label="Save">
-      <ButtonMenuItem onclick={saveModel}>SBML</ButtonMenuItem>
+      {#if model instanceof KineticModelBuilder}
+        <ButtonMenuItem onclick={saveModel}>SBML</ButtonMenuItem>
+      {/if}
       <ButtonMenuItem onclick={savePython}>Python</ButtonMenuItem>
     </ButtonMenu>
     <Button
@@ -518,14 +526,25 @@
   size="lg"
   popovertarget="model-editor"
 >
-  <ModelEditor
-    parent={model}
-    popovertarget="model-editor"
-    onSave={(edited) => {
-      model = edited;
-      runAllSimulations();
-    }}
-  />
+  {#if model instanceof OdeModelBuilder}
+    <OdeModelEditor
+      parent={model}
+      popovertarget="model-editor"
+      onSave={(edited) => {
+        model = edited;
+        runAllSimulations();
+      }}
+    />
+  {:else}
+    <ModelEditor
+      parent={model}
+      popovertarget="model-editor"
+      onSave={(edited) => {
+        model = edited;
+        runAllSimulations();
+      }}
+    />
+  {/if}
 </Popover>
 
 {#each analyses as analysis (analysis.id)}
