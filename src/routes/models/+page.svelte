@@ -1,6 +1,7 @@
 <script lang="ts">
   import { base } from "$app/paths";
   import schemeEbeling from "$lib/assets/ebeling2026-scheme.png";
+  import schemeFvcb from "$lib/assets/fvcb.png";
   import schemeKea3 from "$lib/assets/kea3-tomato.png";
   import schemeLotkaVolt from "$lib/assets/lotka-volterra-scheme.png";
   import scheme2016npq from "$lib/assets/matuszynska2016npq.png";
@@ -96,6 +97,7 @@
     <CardModel
       name="FvCB"
       href="{base}/fvcb"
+      image={schemeFvcb}
     />
   </GridGallery>
 </SectionMain>
