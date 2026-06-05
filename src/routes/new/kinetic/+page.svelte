@@ -20,9 +20,22 @@
         texName: "x_0",
         slider: { min: "0.0", max: "10.0", step: "0.5" },
       })
+      .addVariable("x1", {
+        value: 0.0,
+        texName: "x_1",
+        slider: { min: "0.0", max: "10.0", step: "0.5" },
+      })
+      .addParameter("p1", {
+        value: 0.5,
+        texName: "p_1",
+        slider: { min: "0.0", max: "1.0", step: "0.1" },
+      })
       .addReaction("v0", {
         fn: new Mul([new Name("p1"), new Name("x0")]),
-        stoichiometry: [{ name: "x0", value: new Num(-1.0) }],
+        stoichiometry: [
+          { name: "x0", value: new Num(-1.0) },
+          { name: "x1", value: new Num(1.0) },
+        ],
         texName: "v_0",
       });
   }
