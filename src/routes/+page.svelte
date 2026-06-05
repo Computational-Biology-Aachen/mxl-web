@@ -82,6 +82,10 @@
           variant="secondary"
           href="{base}/models">Explore our models</Button
         >
+        <Button
+          variant="secondary"
+          popovertarget="build-chooser">Build your own</Button
+        >
       </Row>
     </div>
     <img

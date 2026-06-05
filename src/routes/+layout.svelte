@@ -4,7 +4,9 @@
 
   import { base } from "$app/paths";
   import favicon from "$lib/assets/cpbl-favicon.svg";
+  import BuildChooser from "$lib/BuildChooser.svelte";
   import {
+    Button,
     CollapseToBurger,
     Navbar,
     NavGH,
@@ -75,11 +77,19 @@
   <CollapseToBurger collapseAt="512px">
     <NavItem href="{base}/">Home</NavItem>
     <NavItem href="{base}/models">Models</NavItem>
+
+    <Button
+      variant="secondary"
+      popovertarget="build-chooser">Build your own</Button
+    >
   </CollapseToBurger>
   <NavGH href="https://github.com/Computational-Biology-Aachen/mxl-web" />
 </Navbar>
 
 {@render children()}
+
+<!-- Global popup due to nav -->
+<BuildChooser />
 
 <style>
   .brand {
