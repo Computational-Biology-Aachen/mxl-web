@@ -1,14 +1,5 @@
-<svelte:head>
-  <title>Stoich Editor - mxlweb</title>
-</svelte:head>
-
 <script lang="ts">
-  import type {
-    AssView,
-    ParView,
-    RxnView,
-    VarView,
-  } from "$lib/modelView";
+  import type { AssView, ParView, RxnView, VarView } from "$lib/modelView";
   import StoichEditor from "$lib/StoichEditor.svelte";
   import { Num } from "@computational-biology-aachen/mxlweb-core/mathml";
 
@@ -26,6 +17,10 @@
     { name: "y", value: new Num(1.0) },
   ]);
 </script>
+
+<svelte:head>
+  <title>Stoich Editor - mxlweb</title>
+</svelte:head>
 
 <StoichEditor
   stoichiometry={stoichs}

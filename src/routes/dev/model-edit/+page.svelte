@@ -1,7 +1,3 @@
-<svelte:head>
-  <title>Model Edit - mxlweb</title>
-</svelte:head>
-
 <script lang="ts">
   import ModelEditor from "$lib/ModelEditor.svelte";
   import {
@@ -11,7 +7,12 @@
     type RxnView,
     type VarView,
   } from "$lib/modelView";
-  import { Divide, Mul, Name, Num } from "@computational-biology-aachen/mxlweb-core/mathml";
+  import {
+    Divide,
+    Mul,
+    Name,
+    Num,
+  } from "@computational-biology-aachen/mxlweb-core/mathml";
 
   let userParameters: string[] = [];
 
@@ -61,6 +62,10 @@
   });
   let builder = $derived(modelView.toBuilder());
 </script>
+
+<svelte:head>
+  <title>Model Edit - mxlweb</title>
+</svelte:head>
 
 <ModelEditor
   parent={builder}

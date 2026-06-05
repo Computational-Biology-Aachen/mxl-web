@@ -1,7 +1,3 @@
-<svelte:head>
-  <title>Charts - mxlweb</title>
-</svelte:head>
-
 <script lang="ts">
   import { LineChart } from "@computational-biology-aachen/design";
 
@@ -24,6 +20,10 @@
   let yMax = $state(100);
   $inspect(yMax);
 </script>
+
+<svelte:head>
+  <title>Charts - mxlweb</title>
+</svelte:head>
 
 <LineChart
   data={data}

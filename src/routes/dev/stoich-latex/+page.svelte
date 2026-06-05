@@ -1,7 +1,3 @@
-<svelte:head>
-  <title>Stoich LaTeX - mxlweb</title>
-</svelte:head>
-
 <script lang="ts">
   import { stoichToTex } from "@computational-biology-aachen/mxlweb-core";
   import { type Stoichiometry } from "$lib/modelView";
@@ -82,6 +78,10 @@
       });
   }
 </script>
+
+<svelte:head>
+  <title>Stoich LaTeX - mxlweb</title>
+</svelte:head>
 
 <table>
   <thead>

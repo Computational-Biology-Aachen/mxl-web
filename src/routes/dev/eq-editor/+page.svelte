@@ -1,15 +1,6 @@
-<svelte:head>
-  <title>Eq Editor - mxlweb</title>
-</svelte:head>
-
 <script lang="ts">
   import EqEditor from "$lib/EqEditor.svelte";
-  import type {
-    AssView,
-    ParView,
-    RxnView,
-    VarView,
-  } from "$lib/modelView";
+  import type { AssView, ParView, RxnView, VarView } from "$lib/modelView";
   import {
     Add,
     Divide,
@@ -58,6 +49,10 @@
   let root = $state(initEq());
   $inspect(root);
 </script>
+
+<svelte:head>
+  <title>Eq Editor - mxlweb</title>
+</svelte:head>
 
 <EqEditor
   variables={variables}

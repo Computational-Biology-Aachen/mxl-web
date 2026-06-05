@@ -1,7 +1,3 @@
-<svelte:head>
-  <title>Svelte Cheatsheet - mxlweb</title>
-</svelte:head>
-
 <script lang="ts">
   import { Icon } from "@computational-biology-aachen/design";
   import ArrNum from "./ArrNum.svelte";
@@ -15,6 +11,10 @@
   let lo2 = $state([{ inner: { value: 1.0 } }]);
   let ld = $state([{ value: 1.0 }]);
 </script>
+
+<svelte:head>
+  <title>Svelte Cheatsheet - mxlweb</title>
+</svelte:head>
 
 <h1>Svelte reactivity cheat sheet</h1>
 <p>
