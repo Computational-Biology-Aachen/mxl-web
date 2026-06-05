@@ -8,6 +8,7 @@
   import {
     Button,
     CollapseToBurger,
+    Imprint,
     Navbar,
     NavGH,
     NavItem,
@@ -87,6 +88,8 @@
 </Navbar>
 
 {@render children()}
+
+<Imprint github="https://github.com/Computational-Biology-Aachen/mxl-web" />
 
 <!-- Global popup due to nav -->
 <BuildChooser />

@@ -15,7 +15,6 @@
     CardFeature,
     CardImageHighlight,
     Icon,
-    Imprint,
     LogoBar,
     SectionMain as Main,
     ModelGallery,
@@ -166,8 +165,6 @@
   <LogoBar logos={logos} />
   <!-- End container -->
 </Main>
-
-<Imprint github="https://github.com/Computational-Biology-Aachen/mxl-web" />
 
 <style>
   h1.banner {
