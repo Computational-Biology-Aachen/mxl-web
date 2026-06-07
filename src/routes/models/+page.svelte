@@ -20,6 +20,7 @@
     Row,
     SectionMain,
   } from "@computational-biology-aachen/design";
+  import { fuzzyMatch } from "$lib/utils";
 
   type Model = { name: string; slug: string; image: string };
 
@@ -63,18 +64,6 @@
   ];
 
   let query = $state("");
-
-  // Case-insensitive subsequence match: query chars appear in order in the name.
-  function fuzzyMatch(name: string, q: string): boolean {
-    const needle = q.trim().toLowerCase();
-    if (needle === "") return true;
-    let i = 0;
-    for (const ch of name.toLowerCase()) {
-      if (ch === needle[i]) i++;
-      if (i === needle.length) return true;
-    }
-    return false;
-  }
 
   const filteredOde = $derived(
     odeModels.filter((m) => fuzzyMatch(m.name, query)),

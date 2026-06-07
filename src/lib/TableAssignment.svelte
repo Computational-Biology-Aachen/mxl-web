@@ -19,6 +19,8 @@
     type RxnView,
     type VarView,
   } from "./modelView";
+  import TableSearch from "./TableSearch.svelte";
+  import { fuzzyMatch } from "./utils";
 
   const md = new MediaQuery("max-width: 768px");
 
@@ -41,6 +43,15 @@
 
   let texNames: Map<string, string> = $derived(
     idToTex(variables, parameters, assignments, reactions),
+  );
+
+  let query = $state("");
+  let filtered = $derived(
+    assignments
+      .map((ass, idx) => ({ ass, idx }))
+      .filter(({ ass }) =>
+        fuzzyMatch(defaultValue(ass.displayName, ass.id), query),
+      ),
   );
 </script>
 
@@ -96,10 +107,14 @@
   />
 {/snippet}
 
+<div class="padding">
+  <TableSearch bind:value={query} />
+</div>
+
 {#if md.current}
   <!-- Card layout for mobile -->
   <div class="card-container">
-    {#each assignments as ass, idx}
+    {#each filtered as { ass, idx } (ass.id)}
       <div class="card">
         <div class="card-row">
           <span class="card-label">Name</span>
@@ -137,7 +152,7 @@
       </tr>
     </thead>
     <tbody>
-      {#each assignments as ass, idx}
+      {#each filtered as { ass, idx } (ass.id)}
         <tr>
           <td>
             {@render nameInput(idx)}
@@ -155,6 +170,9 @@
       {/each}
     </tbody>
   </table>
+{/if}
+{#if query !== "" && filtered.length === 0}
+  <p class="empty">No items match “{query}”.</p>
 {/if}
 <div class="padding">
   <Button
@@ -192,6 +210,11 @@
   /* General */
   .padding {
     padding: 1rem;
+  }
+
+  .empty {
+    padding: 0 1rem;
+    color: var(--color-text-muted);
   }
 
   .row {

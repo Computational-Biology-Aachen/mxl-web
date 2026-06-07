@@ -26,6 +26,8 @@
     type VarView,
   } from "./modelView";
   import StoichEditor from "./StoichEditor.svelte";
+  import TableSearch from "./TableSearch.svelte";
+  import { fuzzyMatch } from "./utils";
 
   const md = new MediaQuery("max-width: 768px");
 
@@ -52,6 +54,15 @@
 
   let texNames: Map<string, string> = $derived(
     idToTex(variables, parameters, assignments, reactions),
+  );
+
+  let query = $state("");
+  let filtered = $derived(
+    reactions
+      .map((rxn, idx) => ({ rxn, idx }))
+      .filter(({ rxn }) =>
+        fuzzyMatch(defaultValue(rxn.displayName, rxn.id), query),
+      ),
   );
 </script>
 
@@ -121,10 +132,14 @@
   />
 {/snippet}
 
+<div class="padding">
+  <TableSearch bind:value={query} />
+</div>
+
 {#if md.current}
   <!-- Card layout for mobile -->
   <div class="card-container">
-    {#each reactions as rxn, idx}
+    {#each filtered as { rxn, idx } (rxn.id)}
       <div class="card">
         <div class="card-row">
           <span class="card-label">Name</span>
@@ -169,7 +184,7 @@
       </tr>
     </thead>
     <tbody>
-      {#each reactions as rxn, idx}
+      {#each filtered as { rxn, idx } (rxn.id)}
         <tr>
           <td>
             {@render nameInput(idx)}
@@ -190,6 +205,9 @@
       {/each}
     </tbody>
   </table>
+{/if}
+{#if query !== "" && filtered.length === 0}
+  <p class="empty">No items match “{query}”.</p>
 {/if}
 
 <div class="padding">
@@ -244,6 +262,11 @@
   /* General */
   .padding {
     padding: 1rem;
+  }
+
+  .empty {
+    padding: 0 1rem;
+    color: var(--color-text-muted);
   }
 
   .row {

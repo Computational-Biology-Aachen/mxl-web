@@ -18,6 +18,8 @@
     type VarView,
   } from "./modelView";
   import SliderEditor from "./SliderEditor.svelte";
+  import TableSearch from "./TableSearch.svelte";
+  import { fuzzyMatch } from "./utils";
 
   const md = new MediaQuery("max-width: 768px");
 
@@ -37,6 +39,15 @@
     parameters[idx] = update as Parameter;
     parameters = parameters.slice();
   }
+
+  let query = $state("");
+  let filtered = $derived(
+    parameters
+      .map((par, idx) => ({ par, idx }))
+      .filter(({ par }) =>
+        fuzzyMatch(defaultValue(par.displayName, par.id), query),
+      ),
+  );
 </script>
 
 {#snippet nameInput(idx: number)}
@@ -90,10 +101,14 @@
   />
 {/snippet}
 
+<div class="padding">
+  <TableSearch bind:value={query} />
+</div>
+
 {#if md.current}
   <!-- Card layout for mobile -->
   <div class="card-container">
-    {#each parameters as par, idx}
+    {#each filtered as { par, idx } (par.id)}
       <div class="card">
         <div class="card-row">
           <span class="card-label">Name</span>
@@ -131,7 +146,7 @@
       </tr>
     </thead>
     <tbody>
-      {#each parameters as par, idx}
+      {#each filtered as { par, idx } (par.id)}
         <tr>
           <td>
             {@render nameInput(idx)}
@@ -149,6 +164,9 @@
       {/each}
     </tbody>
   </table>
+{/if}
+{#if query !== "" && filtered.length === 0}
+  <p class="empty">No items match “{query}”.</p>
 {/if}
 <div class="padding">
   <Button
@@ -182,6 +200,11 @@
   /* General */
   .padding {
     padding: 1rem;
+  }
+
+  .empty {
+    padding: 0 1rem;
+    color: var(--color-text-muted);
   }
 
   /* Input styles shared between table and cards */
