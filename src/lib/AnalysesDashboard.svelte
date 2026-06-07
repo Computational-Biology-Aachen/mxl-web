@@ -289,7 +289,10 @@
         style="font-size: var(--text-sm);">{name}</span
       >
     </Pair>
-    <Pair justify="end">
+    <Pair
+      justify="end"
+      wrap="nowrap"
+    >
       {#if model instanceof KineticModelBuilder}
         <Button
           variant="secondary"
