@@ -6,6 +6,7 @@
   import {
     Button,
     ButtonTab,
+    Div,
     Icon,
     Row,
   } from "@computational-biology-aachen/design";
@@ -110,55 +111,57 @@
   let cur = $state(tabs[0]);
 </script>
 
-<Row
-  stack
-  justify="between"
-  gap="0.5rem"
->
-  <hgroup>
-    <h2>Model Details</h2>
-    <p>
-      Review and edit model structure, biological variables, and kinetic
-      parameters.
-    </p>
-  </hgroup>
-
-  <Button
-    onclick={() => onSave(modelView.toBuilder())}
-    popovertarget={popovertarget}
-    popovertargetaction="hide">Save</Button
+<Div>
+  <Row
+    stack
+    justify="between"
+    gap="0.5rem"
   >
-</Row>
+    <hgroup>
+      <h2>Model Details</h2>
+      <p>
+        Review and edit model structure, biological variables, and kinetic
+        parameters.
+      </p>
+    </hgroup>
 
-<ul>
-  {#each tabs as tab}
-    <ButtonTab
-      selected={cur.name === tab.name}
-      onclick={() => (cur = tab)}
+    <Button
+      onclick={() => onSave(modelView.toBuilder())}
+      popovertarget={popovertarget}
+      popovertargetaction="hide">Save</Button
     >
-      <Icon>{tab.icon}</Icon>
-      {tab.name}
-    </ButtonTab>
-  {/each}
-</ul>
+  </Row>
 
-<div class="card">
-  <cur.comp
-    bind:variables={variables}
-    bind:parameters={parameters}
-    bind:assignments={assignments}
-    bind:reactions={reactions}
-  />
-</div>
+  <ul>
+    {#each tabs as tab}
+      <ButtonTab
+        selected={cur.name === tab.name}
+        onclick={() => (cur = tab)}
+      >
+        <Icon>{tab.icon}</Icon>
+        {tab.name}
+      </ButtonTab>
+    {/each}
+  </ul>
 
-<div class="heading">
-  <Icon>preview</Icon>
-  <h3>Generated LaTeX Code</h3>
-</div>
+  <div class="card">
+    <cur.comp
+      bind:variables={variables}
+      bind:parameters={parameters}
+      bind:assignments={assignments}
+      bind:reactions={reactions}
+    />
+  </div>
 
-<div class="card padding">
-  <pre>{latex}</pre>
-</div>
+  <div class="heading">
+    <Icon>preview</Icon>
+    <h3>Generated LaTeX Code</h3>
+  </div>
+
+  <div class="card padding">
+    <pre>{latex}</pre>
+  </div>
+</Div>
 
 <style>
   .heading {
@@ -182,6 +185,7 @@
   ul {
     display: flex;
     flex-direction: column;
+    gap: var(--gap);
     width: 100%;
     list-style: none;
 
@@ -192,6 +196,8 @@
     }
   }
   pre {
+    width: 100%;
+    overflow-x: scroll;
     font-size: 0.825rem;
   }
 </style>

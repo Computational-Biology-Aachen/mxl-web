@@ -15,6 +15,7 @@
   import {
     CardModel,
     GridGallery,
+    H2,
     Icon,
     Row,
     SectionMain,
@@ -88,10 +89,13 @@
 </svelte:head>
 
 <SectionMain align="start">
-  <Row justify="between">
+  <Row
+    justify="between"
+    stack
+  >
     <div class="heading">
       <Icon color="primary">bolt</Icon>
-      <h2>Select a pre-defined model</h2>
+      <H2>Select a pre-defined model</H2>
     </div>
     <input
       type="search"
@@ -135,18 +139,22 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    /* container-type: inline-size; */
+    width: 100%;
   }
 
   .filter {
-    margin-bottom: var(--space-4);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     background: var(--color-surface);
     padding: var(--space-2) var(--space-3);
     width: 100%;
-    max-width: 320px;
     color: inherit;
     font: inherit;
+
+    @media (min-width: 768px) {
+      max-width: 320px;
+    }
   }
 
   .empty {

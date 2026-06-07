@@ -15,6 +15,7 @@
     Button,
     ButtonMenu,
     ButtonMenuItem,
+    Div,
     DynBoxRow,
     Icon,
     Math,
@@ -267,59 +268,208 @@
   }
 </script>
 
-<Row
-  stack
-  justify="between"
-  gap="0.5rem"
->
-  <Pair>
-    <a
-      class="light"
-      style="font-size: var(--text-sm);"
-      href={`${base}/models`}>Models</a
-    >
-    <span
-      class="light"
-      style="font-size: var(--text-sm);">/</span
-    >
-    <span
-      class="bold"
-      style="font-size: var(--text-sm);">{name}</span
-    >
-  </Pair>
-  <Pair justify="end">
-    {#if model instanceof KineticModelBuilder}
-      <Button
-        variant="secondary"
-        onclick={() => fileInput?.click()}>Load</Button
+<Div>
+  <Row
+    stack
+    justify="between"
+    gap="0.5rem"
+  >
+    <Pair>
+      <a
+        class="light"
+        style="font-size: var(--text-sm);"
+        href={`${base}/models`}>Models</a
       >
-    {/if}
-
-    <ButtonMenu label="Save">
+      <span
+        class="light"
+        style="font-size: var(--text-sm);">/</span
+      >
+      <span
+        class="bold"
+        style="font-size: var(--text-sm);">{name}</span
+      >
+    </Pair>
+    <Pair justify="end">
       {#if model instanceof KineticModelBuilder}
-        <ButtonMenuItem onclick={saveModel}>SBML</ButtonMenuItem>
+        <Button
+          variant="secondary"
+          onclick={() => fileInput?.click()}>Load</Button
+        >
       {/if}
-      <ButtonMenuItem onclick={savePython}>Python</ButtonMenuItem>
-    </ButtonMenu>
-    <Button
-      onclick={() => {
-        model = initModel();
-        runAllSimulations();
-      }}>Reset</Button
-    >
-    <Button popovertarget="model-editor">Edit model</Button>
+
+      <ButtonMenu label="Save">
+        {#if model instanceof KineticModelBuilder}
+          <ButtonMenuItem onclick={saveModel}>SBML</ButtonMenuItem>
+        {/if}
+        <ButtonMenuItem onclick={savePython}>Python</ButtonMenuItem>
+      </ButtonMenu>
+      <Button
+        onclick={() => {
+          model = initModel();
+          runAllSimulations();
+        }}>Reset</Button
+      >
+      <Button popovertarget="model-editor">Edit model</Button>
+    </Pair>
+  </Row>
+  <input
+    type="file"
+    accept=".sbml,.xml"
+    bind:this={fileInput}
+    onchange={handleFileLoad}
+    style="display:none"
+  />
+  {#if loadError}
+    <p class="load-error">{loadError}</p>
+  {/if}
+  {#if children}
+    {@render children()}
+  {/if}
+
+  <Accordion bind:open={equationsOpen}>
+    {#snippet header()}
+      <Icon>function</Icon>
+      <h3>Model Equations</h3>
+    {/snippet}
+    <div class="centered">
+      <Math
+        tex={model.buildTex()}
+        fontSize="0.9rem"
+        display
+      />
+    </div>
+  </Accordion>
+
+  {#if parSliders.length > 0}
+    <Pair>
+      <Icon>tune</Icon>
+      <h3>Simulation parameters</h3>
+    </Pair>
+    <div class="grid-row">
+      {#each parSliders as par (par.id)}
+        <Slider
+          name={defaultValue(par.name, par.id)}
+          callback={runAllSimulations}
+          bind:val={
+            () => {
+              return model.parameters.get(par.id)!.value;
+            },
+            (val) => {
+              let old = model.parameters.get(par.id)!;
+
+              model.parameters = model.parameters.set(par.id, {
+                ...old,
+                value: val,
+              });
+            }
+          }
+          min={par.min}
+          max={par.max}
+          step={par.step}
+        />
+      {/each}
+    </div>
+  {/if}
+
+  {#if varSliders.length > 0}
+    <Pair>
+      <Icon>tune</Icon>
+      <h3>Initial conditions</h3>
+    </Pair>
+    <div class="grid-row">
+      {#each varSliders as vari (vari.id)}
+        <Slider
+          name={defaultValue(vari.name, vari.id)}
+          callback={runAllSimulations}
+          bind:val={
+            () => {
+              return model.variables.get(vari.id)!.value as number;
+            },
+            (val) => {
+              let old = model.variables.get(vari.id)!;
+              model.variables = model.variables.set(vari.id, {
+                ...old,
+                value: val,
+              });
+            }
+          }
+          min={vari.min}
+          max={vari.max}
+          step={vari.step}
+        />
+      {/each}
+    </div>
+  {/if}
+
+  <Pair>
+    <Icon>analytics</Icon>
+    <h3>Analyses</h3>
   </Pair>
-</Row>
-<input
-  type="file"
-  accept=".sbml,.xml"
-  bind:this={fileInput}
-  onchange={handleFileLoad}
-  style="display:none"
-/>
-{#if loadError}
-  <p class="load-error">{loadError}</p>
-{/if}
+
+  <DynBoxRow
+    items={analyses}
+    onAdd={handleAdd}
+    onRemove={(box) => {
+      analyses = analyses.filter((a) => a.id !== box.id);
+      delete simulatorRefs[box.id];
+      simulatorRefs = { ...simulatorRefs };
+      delete scannerRefs[box.id];
+      scannerRefs = { ...scannerRefs };
+      delete pamRefs[box.id];
+      pamRefs = { ...pamRefs };
+    }}
+  >
+    {#snippet children({ box })}
+      {@const analysis = analysisById.get(box.id)}
+      {#if analysis}
+        {#if analysis.type === "simulation"}
+          <Simulator
+            bind:this={simulatorRefs[box.id]}
+            model={model}
+            tEnd={analysis.tEnd}
+            yMax={analysis.yMax}
+            timeoutInSeconds={analysis.timeoutInSeconds}
+            backend={analysis.backend}
+            showDerived={analysis.showDerived ?? false}
+            selectedKeys={analysis.selectedKeys}
+            normalizedKeys={analysis.normalizedKeys}
+            nTimePoints={analysis.nTimePoints ?? 100}
+            lineDisplay={analysis.lineDisplay}
+          />
+        {:else if analysis.type === "parameterScan"}
+          <ParameterScanSimulator
+            bind:this={scannerRefs[box.id]}
+            model={model}
+            analysis={analysis}
+            tEnd={analysis.tEnd}
+            backend={analysis.backend}
+            showDerived={analysis.showDerived ?? false}
+            selectedKeys={analysis.selectedKeys}
+            normalizedKeys={analysis.normalizedKeys}
+            nTimePoints={1000}
+            lineDisplay={analysis.lineDisplay}
+          />
+        {:else if analysis.type === "pam"}
+          <PamSimulator
+            bind:this={pamRefs[box.id]}
+            model={model}
+            pamProtocol={analysis.pamProtocol}
+            ppfdKey={analysis.ppfdKey}
+            fluoKey={analysis.fluoKey}
+            yMax={analysis.yMax}
+            timeoutInSeconds={analysis.timeoutInSeconds}
+            backend={analysis.backend}
+            showDerived={analysis.showDerived ?? false}
+            selectedKeys={analysis.selectedKeys}
+            normalizedKeys={analysis.normalizedKeys}
+            nTimePoints={analysis.nTimePoints ?? 100}
+            lineDisplay={analysis.lineDisplay}
+          />
+        {/if}
+      {/if}
+    {/snippet}
+  </DynBoxRow>
+</Div>
 
 <Popover
   size="xs"
@@ -373,155 +523,6 @@
     PAM Fluorescence
   </button>
 </Popover>
-
-{#if children}
-  {@render children()}
-{/if}
-
-<Accordion bind:open={equationsOpen}>
-  {#snippet header()}
-    <Icon>function</Icon>
-    <h3>Model Equations</h3>
-  {/snippet}
-  <div class="centered">
-    <Math
-      tex={model.buildTex()}
-      fontSize="0.9rem"
-      display
-    />
-  </div>
-</Accordion>
-
-{#if parSliders.length > 0}
-  <Pair>
-    <Icon>tune</Icon>
-    <h3>Simulation parameters</h3>
-  </Pair>
-  <div class="grid-row">
-    {#each parSliders as par (par.id)}
-      <Slider
-        name={defaultValue(par.name, par.id)}
-        callback={runAllSimulations}
-        bind:val={
-          () => {
-            return model.parameters.get(par.id)!.value;
-          },
-          (val) => {
-            let old = model.parameters.get(par.id)!;
-
-            model.parameters = model.parameters.set(par.id, {
-              ...old,
-              value: val,
-            });
-          }
-        }
-        min={par.min}
-        max={par.max}
-        step={par.step}
-      />
-    {/each}
-  </div>
-{/if}
-
-{#if varSliders.length > 0}
-  <Pair>
-    <Icon>tune</Icon>
-    <h3>Initial conditions</h3>
-  </Pair>
-  <div class="grid-row">
-    {#each varSliders as vari (vari.id)}
-      <Slider
-        name={defaultValue(vari.name, vari.id)}
-        callback={runAllSimulations}
-        bind:val={
-          () => {
-            return model.variables.get(vari.id)!.value as number;
-          },
-          (val) => {
-            let old = model.variables.get(vari.id)!;
-            model.variables = model.variables.set(vari.id, {
-              ...old,
-              value: val,
-            });
-          }
-        }
-        min={vari.min}
-        max={vari.max}
-        step={vari.step}
-      />
-    {/each}
-  </div>
-{/if}
-
-<Pair>
-  <Icon>analytics</Icon>
-  <h3>Analyses</h3>
-</Pair>
-
-<DynBoxRow
-  items={analyses}
-  onAdd={handleAdd}
-  onRemove={(box) => {
-    analyses = analyses.filter((a) => a.id !== box.id);
-    delete simulatorRefs[box.id];
-    simulatorRefs = { ...simulatorRefs };
-    delete scannerRefs[box.id];
-    scannerRefs = { ...scannerRefs };
-    delete pamRefs[box.id];
-    pamRefs = { ...pamRefs };
-  }}
->
-  {#snippet children({ box })}
-    {@const analysis = analysisById.get(box.id)}
-    {#if analysis}
-      {#if analysis.type === "simulation"}
-        <Simulator
-          bind:this={simulatorRefs[box.id]}
-          model={model}
-          tEnd={analysis.tEnd}
-          yMax={analysis.yMax}
-          timeoutInSeconds={analysis.timeoutInSeconds}
-          backend={analysis.backend}
-          showDerived={analysis.showDerived ?? false}
-          selectedKeys={analysis.selectedKeys}
-          normalizedKeys={analysis.normalizedKeys}
-          nTimePoints={analysis.nTimePoints ?? 100}
-          lineDisplay={analysis.lineDisplay}
-        />
-      {:else if analysis.type === "parameterScan"}
-        <ParameterScanSimulator
-          bind:this={scannerRefs[box.id]}
-          model={model}
-          analysis={analysis}
-          tEnd={analysis.tEnd}
-          backend={analysis.backend}
-          showDerived={analysis.showDerived ?? false}
-          selectedKeys={analysis.selectedKeys}
-          normalizedKeys={analysis.normalizedKeys}
-          nTimePoints={1000}
-          lineDisplay={analysis.lineDisplay}
-        />
-      {:else if analysis.type === "pam"}
-        <PamSimulator
-          bind:this={pamRefs[box.id]}
-          model={model}
-          pamProtocol={analysis.pamProtocol}
-          ppfdKey={analysis.ppfdKey}
-          fluoKey={analysis.fluoKey}
-          yMax={analysis.yMax}
-          timeoutInSeconds={analysis.timeoutInSeconds}
-          backend={analysis.backend}
-          showDerived={analysis.showDerived ?? false}
-          selectedKeys={analysis.selectedKeys}
-          normalizedKeys={analysis.normalizedKeys}
-          nTimePoints={analysis.nTimePoints ?? 100}
-          lineDisplay={analysis.lineDisplay}
-        />
-      {/if}
-    {/if}
-  {/snippet}
-</DynBoxRow>
-
 <Popover
   size="lg"
   popovertarget="model-editor"

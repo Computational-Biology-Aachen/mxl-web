@@ -191,6 +191,8 @@
     }
   }
   pre {
+    width: 100%;
+    overflow-x: scroll;
     font-size: 0.825rem;
   }
 </style>

@@ -14,6 +14,7 @@
     Button,
     CardFeature,
     CardImageHighlight,
+    H2,
     Icon,
     LogoBar,
     SectionMain as Main,
@@ -96,7 +97,7 @@
 
   <div class="heading">
     <Icon color="primary">info</Icon>
-    <h2>Why MxlWeb?</h2>
+    <H2>Why MxlWeb?</H2>
   </div>
 
   <div class="row-main">
@@ -128,7 +129,7 @@
 
   <div class="heading">
     <Icon color="primary">bolt</Icon>
-    <h2>Explore biological scenarios in real time</h2>
+    <H2>Explore biological scenarios in real time</H2>
   </div>
 
   <ModelGallery>
@@ -175,7 +176,7 @@
   .top {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: var(--gap);
     width: 100%;
 
     @media (min-width: 50rem) {

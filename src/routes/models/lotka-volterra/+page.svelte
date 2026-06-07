@@ -73,7 +73,7 @@
 
 <style>
   img {
-    max-width: 90rem;
+    max-width: min(90rem, 100%);
     max-height: 25rem;
   }
 
