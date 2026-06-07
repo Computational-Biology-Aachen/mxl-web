@@ -2,6 +2,7 @@
   import { base } from "$app/paths";
   import schemeEbeling from "$lib/assets/ebeling2026-scheme.png";
   import ccls from "$lib/assets/logos/ccls.svg";
+  import ceplasImg from "$lib/assets/logos/ceplas.jpg";
   import cpbl from "$lib/assets/logos/cpbl.svg";
   import gopmf from "$lib/assets/logos/gopmf.png";
   import mibinet from "$lib/assets/logos/mibinet.png";
@@ -18,7 +19,6 @@
     Icon,
     LogoBar,
     SectionMain as Main,
-    ModelGallery,
     Row,
   } from "@computational-biology-aachen/design";
 
@@ -47,6 +47,12 @@
       href: "https://www.uni-muenster.de/GoPMF/en/index.html",
       alt: "gopmf logo",
       height: "5.5rem",
+    },
+    {
+      src: ceplasImg,
+      href: "https://www.ceplas.eu/en/home",
+      alt: "ceplas logo",
+      height: "4rem",
     },
   ];
 </script>
@@ -100,7 +106,7 @@
     <H2>Why MxlWeb?</H2>
   </div>
 
-  <div class="row-main">
+  <div class="model-gallery">
     <CardFeature
       color="c1"
       icon="interactive_space"
@@ -132,7 +138,8 @@
     <H2>Explore biological scenarios in real time</H2>
   </div>
 
-  <ModelGallery>
+  <!-- <ModelGallery> -->
+  <div class="model-gallery">
     <CardImageHighlight
       name="Photosynthesis dynamics"
       desc="Light, CO₂ and feedback in a dynamic model."
@@ -157,7 +164,8 @@
       href="{base}/models/sir"
       image={schemeSir}
     />
-  </ModelGallery>
+  </div>
+  <!-- </ModelGallery> -->
 
   <div class="heading">
     <Icon color="primary">handshake</Icon>
@@ -168,6 +176,23 @@
 </Main>
 
 <style>
+  .model-gallery {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--gap);
+    width: 100%;
+
+    @media (min-width: 42rem) {
+      grid-template-columns: 1fr 1fr;
+    }
+    /* @media (min-width: 60rem) {
+      grid-template-columns: 1fr 1fr 1fr;
+    } */
+    @media (min-width: 80rem) {
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+    }
+  }
+
   h1.banner {
     font-size: 3rem;
     line-height: 1.2;
@@ -224,21 +249,5 @@
     align-items: center;
     gap: 0.5rem;
     margin-top: 2rem;
-  }
-
-  .row-main {
-    display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
-    justify-content: space-around;
-    align-items: center;
-    gap: 1rem;
-    margin-right: auto;
-    margin-left: auto;
-    width: 100%;
-
-    @media (min-width: 50rem) {
-      flex-direction: row;
-    }
   }
 </style>
