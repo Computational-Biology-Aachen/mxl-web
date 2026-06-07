@@ -69,7 +69,7 @@
 </script>
 
 <svelte:head>
-  <title>Saadat 2021 - mxlweb</title>
+  <title>Matuszyńska 2019 - mxlweb</title>
 </svelte:head>
 
 <Main
@@ -77,11 +77,11 @@
   width="full"
 >
   <AnalysesDashboard
-    name={"Saadat 2021"}
+    name={"Matuszyńska 2019"}
     initModel={initModel}
     bind:analyses={analyses}
     equationsOpen={false}
   >
-    <h1>Saadat 2021 model</h1>
+    <h1>Matuszyńska 2019 model</h1>
   </AnalysesDashboard>
 </Main>

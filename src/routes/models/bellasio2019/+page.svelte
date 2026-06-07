@@ -47,29 +47,11 @@
       nTimePoints: 100,
       lineDisplay: "last",
     },
-    {
-      type: "pam" as const,
-      id: 1,
-      idx: 1,
-      title: "PAM Fluorescence",
-      col: 4,
-      span: 3,
-      yMax: undefined,
-      timeoutInSeconds: 120,
-      backend: backends.wasmRadau5,
-      ppfdKey: "PPFD",
-      pamProtocol: defaultPamProtocol,
-      showDerived: true,
-      selectedKeys: ["GAP", "atp"],
-      normalizedKeys: ["GAP", "atp"],
-      nTimePoints: 100,
-      lineDisplay: "last",
-    },
   ]);
 </script>
 
 <svelte:head>
-  <title>Saadat 2021 - mxlweb</title>
+  <title>Bellasio 2019 - mxlweb</title>
 </svelte:head>
 
 <Main
@@ -77,11 +59,11 @@
   width="full"
 >
   <AnalysesDashboard
-    name={"Saadat 2021"}
+    name={"Bellasio 2019"}
     initModel={initModel}
     bind:analyses={analyses}
     equationsOpen={false}
   >
-    <h1>Saadat 2021 model</h1>
+    <h1>Bellasio 2019 model</h1>
   </AnalysesDashboard>
 </Main>

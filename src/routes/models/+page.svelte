@@ -12,6 +12,7 @@
   import schemeSir from "$lib/assets/sir.png";
   import schemeTripartite from "$lib/assets/tripartite.png";
   import schemeYokota from "$lib/assets/yokota.png";
+  import { fuzzyMatch } from "$lib/utils";
   import {
     CardModel,
     GridGallery,
@@ -20,9 +21,8 @@
     Row,
     SectionMain,
   } from "@computational-biology-aachen/design";
-  import { fuzzyMatch } from "$lib/utils";
 
-  type Model = { name: string; slug: string; image: string };
+  type Model = { name: string; slug: string; image?: string };
 
   const odeModels: Model[] = [
     { name: "Lotka Volterra", slug: "lotka-volterra", image: schemeLotkaVolt },
@@ -53,10 +53,16 @@
       slug: "matuszynska2016_phd",
       image: scheme2016phd,
     },
+    { name: "Matuszyńska 2019", slug: "matuszynska2019" },
     { name: "Saadat 2021", slug: "saadat2021", image: schemeSaadat },
     { name: "Ebeling 2026", slug: "ebeling-2026", image: schemeEbeling },
     { name: "Tomato KEA3", slug: "kea3-tomato", image: schemeKea3 },
     { name: "SIR", slug: "sir", image: schemeSir },
+    { name: "Bellasio 2019", slug: "bellasio2019" },
+    { name: "Davis 2017", slug: "davis2017" },
+    { name: "Hahn 1987", slug: "hahn1987" },
+    { name: "Lazar 1997", slug: "lazar1997" },
+    { name: "Li 2021", slug: "li2021" },
   ];
 
   const steadyStateModels: Model[] = [
@@ -66,10 +72,14 @@
   let query = $state("");
 
   const filteredOde = $derived(
-    odeModels.filter((m) => fuzzyMatch(m.name, query)),
+    odeModels
+      .filter((m) => fuzzyMatch(m.name, query))
+      .toSorted((a, b) => a.name.localeCompare(b.name)),
   );
   const filteredSteadyState = $derived(
-    steadyStateModels.filter((m) => fuzzyMatch(m.name, query)),
+    steadyStateModels
+      .filter((m) => fuzzyMatch(m.name, query))
+      .toSorted((a, b) => a.name.localeCompare(b.name)),
   );
 </script>
 
