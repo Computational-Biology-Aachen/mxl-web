@@ -6,6 +6,8 @@ Browser-side ODE model explorer. All compute is client-side — no server requir
 
 Three compute backends run in web workers: pure JS integrators, Pyodide (Python/WASM), and a custom WASM build from C via Emscripten. Integrators include explicit (Euler, RK2, RK45, BOSH3, Tsit5) and implicit (backward Euler, Kvaerno45) solvers.
 
+The model builders, IR, MathML → WAT pipeline, and the three backends live in the shared [`@computational-biology-aachen/mxlweb-core`](https://github.com/Computational-Biology-Aachen/mxlweb-core) package, which this site also drives the development of.
+
 ## Dev
 
 ```bash
@@ -22,6 +24,7 @@ npm run test         # vitest
 
 `MxlWeb` is part of a larger ecosystem:
 
+- [mxlweb-core](https://github.com/Computational-Biology-Aachen/mxlweb-core) — shared model-building and compute engine behind this site
 - [MxlPy](https://github.com/Computational-Biology-Aachen/MxlPy) — Python package for mechanistic learning
 - [MxlBricks](https://github.com/Computational-Biology-Aachen/mxl-bricks) — pre-defined reaction bricks on top of MxlPy
 - [MxlModels](https://github.com/Computational-Biology-Aachen/mxl-models) — flat single-file model versions for easy inspection
