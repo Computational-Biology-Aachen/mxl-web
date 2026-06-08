@@ -25,6 +25,7 @@ npm run test         # vitest
 `MxlWeb` is part of a larger ecosystem:
 
 - [mxlweb-core](https://github.com/Computational-Biology-Aachen/mxlweb-core) — shared model-building and compute engine behind this site
+- [design](https://github.com/Computational-Biology-Aachen/design) — shared CPBL design system: tokens + Svelte components
 - [MxlPy](https://github.com/Computational-Biology-Aachen/MxlPy) — Python package for mechanistic learning
 - [MxlBricks](https://github.com/Computational-Biology-Aachen/mxl-bricks) — pre-defined reaction bricks on top of MxlPy
 - [MxlModels](https://github.com/Computational-Biology-Aachen/mxl-models) — flat single-file model versions for easy inspection
