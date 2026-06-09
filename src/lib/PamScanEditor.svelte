@@ -11,7 +11,13 @@
   } from "@computational-biology-aachen/design";
   import type { ModelBuilderBase } from "@computational-biology-aachen/mxlweb-core";
   import { untrack } from "svelte";
-  import { migratePamPhases, type PamGroup } from "./protocol";
+  import {
+    migratePamPhases,
+    PREDEFINED_PROTOCOLS,
+    type PamGroup,
+  } from "./protocol";
+  import TableSearch from "./TableSearch.svelte";
+  import { fuzzyMatch } from "./utils";
 
   let {
     parent,
@@ -44,6 +50,8 @@
   let showDerived = $state(untrack(() => parent.showDerived ?? false));
   let nTimePoints = $state(untrack(() => parent.nTimePoints ?? 100));
   let lineDisplay = $state(untrack(() => parent.lineDisplay));
+  let selectedPreset = $state("");
+  let varQuery = $state("");
 
   let allAvailableKeys = $derived([
     ...model.variables.keys(),
@@ -62,6 +70,10 @@
   function keyLabel(key: string): string {
     return model.getDisplayNames().get(key) ?? key;
   }
+
+  let filteredKeys = $derived(
+    allAvailableKeys.filter((key) => fuzzyMatch(keyLabel(key), varQuery)),
+  );
 
   function isSelected(key: string): boolean {
     return selectedKeys === undefined || selectedKeys.includes(key);
@@ -196,15 +208,40 @@
 
 <h3>Protocol phases</h3>
 
+<div class="preset-row">
+  <label
+    class="preset-label"
+    for="pam-preset">Load preset:</label
+  >
+  <select
+    id="pam-preset"
+    class="preset-select"
+    bind:value={selectedPreset}
+    onchange={() => {
+      const preset = PREDEFINED_PROTOCOLS.find(
+        (p) => p.name === selectedPreset,
+      );
+      if (preset) {
+        groups = structuredClone(preset.groups);
+      }
+    }}
+  >
+    <option value="">select</option>
+    {#each PREDEFINED_PROTOCOLS as preset}
+      <option value={preset.name}>{preset.name}</option>
+    {/each}
+  </select>
+</div>
+
 {#each groups as group, gi}
   <div class="group">
     <div class="group-header">
-      <span class="group-label">Group {gi + 1} — repeat</span>
+      <span class="group-label">Group {gi + 1} - repeat</span>
       <InputNumber
         id="reps-{gi}"
         bind:value={group.repetitions}
       />
-      <span class="group-label">×</span>
+      <span class="group-label">times</span>
       <button
         class="remove"
         onclick={() => removeGroup(gi)}
@@ -287,12 +324,13 @@
 
 <details>
   <summary class="section-summary">Variable selection</summary>
+  <TableSearch bind:value={varQuery} />
   <div class="key-grid-header">
     <span></span>
     <span>Show</span>
     <span>Normalize</span>
   </div>
-  {#each allAvailableKeys as key (key)}
+  {#each filteredKeys as key (key)}
     <div class="key-row">
       <label for="sel-{key}">{keyLabel(key)}</label>
       <input
@@ -386,6 +424,28 @@
     background-color: transparent;
     padding: 0.35rem 0.5rem;
     width: 100%;
+    font-size: 0.875rem;
+  }
+
+  .preset-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .preset-label {
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+
+  .preset-select {
+    flex: 1;
+    cursor: pointer;
+    border: var(--border);
+    border-radius: var(--radius-lg);
+    background-color: transparent;
+    padding: 0.35rem 0.5rem;
     font-size: 0.875rem;
   }
 

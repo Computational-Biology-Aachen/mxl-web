@@ -11,6 +11,8 @@
   } from "@computational-biology-aachen/design";
   import type { ModelBuilderBase } from "@computational-biology-aachen/mxlweb-core";
   import { untrack } from "svelte";
+  import TableSearch from "./TableSearch.svelte";
+  import { fuzzyMatch } from "./utils";
 
   let {
     parent,
@@ -32,6 +34,7 @@
   let steps = $derived(parent.steps);
   let timeoutInSeconds = $derived(parent.timeoutInSeconds);
   let tolerance = $derived(parent.tolerance);
+  let varQuery = $state("");
 
   let xMin: number = $derived(parent.xMin || 0);
   let xMax: number = $derived(parent.xMax || 10);
@@ -49,6 +52,10 @@
     ...model.variables.keys(),
     ...(showDerived ? model.sortDependencies() : []),
   ]);
+
+  let filteredKeys = $derived(
+    allAvailableKeys.filter((key) => fuzzyMatch(keyLabel(key), varQuery)),
+  );
 
   let selectedKeys = $state<string[] | undefined>(
     untrack(() => parent.selectedKeys),
@@ -233,12 +240,13 @@
 
 <details>
   <summary class="section-summary">Variable selection</summary>
+  <TableSearch bind:value={varQuery} />
   <div class="key-grid-header">
     <span></span>
     <span>Show</span>
     <span>Normalize</span>
   </div>
-  {#each allAvailableKeys as key (key)}
+  {#each filteredKeys as key (key)}
     <div class="key-row">
       <label for="sel-{key}">{keyLabel(key)}</label>
       <input
