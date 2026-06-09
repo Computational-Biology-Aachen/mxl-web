@@ -41,7 +41,7 @@ fi
 
 printf "${BOLD}=== CI build: %s (BASE_PATH=/%s) ===${RESET}\n" "$repo" "$repo"
 
-# Mirror the deploy.yml: Node 25, upgrade npm, `npm install --legacy-peer-deps`,
+# Mirror the deploy.yml: Node 25, upgrade npm, `npm ci`,
 # then `npm run build` with BASE_PATH. The source tree is copied in (minus
 # node_modules/build) so the install is truly fresh and the host's node_modules
 # is never touched.
@@ -58,7 +58,7 @@ printf "${BOLD}=== CI build: %s (BASE_PATH=/%s) ===${RESET}\n" "$repo" "$repo"
             | tar -C /app -xf -
         cd /app
         npm install -g "npm@>=12.0.0-pre.0.0" >/dev/null 2>&1
-        npm install --legacy-peer-deps
+        npm ci
         npm run build
     '
 
