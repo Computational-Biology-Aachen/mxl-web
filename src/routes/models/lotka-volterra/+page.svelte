@@ -51,7 +51,7 @@
 
 <Main pad="tight">
   <AnalysesDashboard
-    name={"Lotka-Volterra"}
+    name="Lotka-Volterra"
     initModel={initModel}
     bind:analyses={analyses}
     equationsOpen={true}

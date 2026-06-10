@@ -65,6 +65,8 @@
   let pamRefs = $state<Record<number, PamSimulator | undefined>>({});
 
   let analysisById = $derived.by(() => {
+    // transient lookup rebuilt by this derived, not reactive state
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const map = new Map<number, Analyses[number]>();
     for (const analysis of analyses) {
       map.set(analysis.id, analysis);

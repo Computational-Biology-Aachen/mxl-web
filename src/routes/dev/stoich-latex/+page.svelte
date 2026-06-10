@@ -91,7 +91,7 @@
     </tr>
   </thead>
   <tbody>
-    {#each stoichs as stoich}
+    {#each stoichs as stoich, i (i)}
       <tr>
         <td>{str(stoich)}</td>
         <td

@@ -14,8 +14,6 @@
     Num,
   } from "@computational-biology-aachen/mxlweb-core/mathml";
 
-  let userParameters: string[] = [];
-
   let variables: VarView = $state([
     { id: "x0", value: 1.0, texName: "x_0" },
     { id: "x1", value: 1.0, texName: "x_1" },

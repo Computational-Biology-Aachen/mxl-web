@@ -8,12 +8,12 @@
 
 <DynBoxRow
   items={[]}
-  onAdd={(box) => {
+  onAdd={(_box) => {
     return 1;
   }}
-  onRemove={(box) => {}}
+  onRemove={(_box) => {}}
 >
-  {#snippet children({ box })}
+  {#snippet children({ box: _box })}
     <h1>Test</h1>
   {/snippet}
 </DynBoxRow>

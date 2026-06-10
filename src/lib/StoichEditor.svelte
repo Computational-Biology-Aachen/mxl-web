@@ -57,7 +57,7 @@
   function firstVarNotInUse(): string {
     const inUse = new Set(stoichiometry.map(({ name }) => name));
 
-    for (const [id, name] of argNames) {
+    for (const [id] of argNames) {
       if (!inUse.has(id)) {
         return id;
       }
@@ -90,7 +90,7 @@
       </tr>
     </thead>
     <tbody>
-      {#each stoichiometry as { name }, idx}
+      {#each stoichiometry as { name }, idx (name)}
         <tr>
           <td>
             <select
@@ -104,7 +104,7 @@
                 }
               }
             >
-              {#each argNames as [id, name]}
+              {#each argNames as [id, name] (id)}
                 <option
                   value={id}
                   selected={id === name}>{name}</option

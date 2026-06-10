@@ -47,7 +47,6 @@
   const assignments: AssView = [];
   const reactions: RxnView = [];
   let root = $state(initEq());
-  $inspect(root);
 </script>
 
 <svelte:head>

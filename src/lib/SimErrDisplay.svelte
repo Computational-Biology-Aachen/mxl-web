@@ -16,7 +16,7 @@
   {#if hints && hints.length > 0}
     <p class="try-label">Try:</p>
     <ul>
-      {#each hints as hint}
+      {#each hints as hint, i (i)}
         <li>{hint}</li>
       {/each}
     </ul>
@@ -35,7 +35,7 @@
             <tr><th>Name</th><th>Value</th></tr>
           </thead>
           <tbody>
-            {#each dxdt as { name, val }}
+            {#each dxdt as { name, val } (name)}
               <tr><td>{name}</td><td>{val}</td></tr>
             {/each}
           </tbody>
@@ -49,7 +49,7 @@
             <tr><th>Name</th><th>Value</th></tr>
           </thead>
           <tbody>
-            {#each args as { name, val }}
+            {#each args as { name, val } (name)}
               <tr><td>{name}</td><td>{val}</td></tr>
             {/each}
           </tbody>

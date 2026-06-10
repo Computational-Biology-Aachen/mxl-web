@@ -87,7 +87,7 @@
     <Math
       tex={assignments[idx].fn.toTex(texNames)}
       display={true}
-      fontSize={"0.75rem"}
+      fontSize="0.75rem"
     />
     <IconButton
       icon="edit"
@@ -96,7 +96,7 @@
   </div>
 {/snippet}
 
-{#snippet actions(idx: number, ass: any)}
+{#snippet actions(_idx: number, ass: AssView[number])}
   <IconButton
     icon="close"
     onclick={() => {
@@ -189,7 +189,7 @@
   >
 </div>
 
-{#each assignments as ass, idx}
+{#each assignments as ass, idx (ass.id)}
   <Popover
     size="md"
     popovertarget={`eq-editor-${idx}`}

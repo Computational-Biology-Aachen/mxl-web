@@ -28,7 +28,7 @@ const mdsvexOptions = {
       });
       await highlighter.loadLanguage("javascript", "typescript");
       const html = escapeSvelte(
-        // @ts-ignore
+        // @ts-expect-error shiki's lang param type is narrower than our dynamic value
         highlighter.codeToHtml(code, { lang, theme: "poimandres" }),
       );
       return `{@html \`${html}\` }`;

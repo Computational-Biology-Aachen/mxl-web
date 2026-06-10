@@ -1,33 +1,8 @@
 <script lang="ts">
   import { backends, type Analyses } from "$lib";
   import AnalysesDashboard from "$lib/AnalysesDashboard.svelte";
-  import type { PamGroup } from "$lib/protocol";
   import { SectionMain as Main } from "@computational-biology-aachen/design";
   import { initModel } from "./model";
-
-  const defaultPamProtocol: PamGroup[] = [
-    {
-      steps: [
-        { pfd: 100, duration: 9.2 },
-        { pfd: 5000, duration: 0.8 },
-      ],
-      repetitions: 3,
-    },
-    {
-      steps: [
-        { pfd: 500, duration: 9.2 },
-        { pfd: 5000, duration: 0.8 },
-      ],
-      repetitions: 3,
-    },
-    {
-      steps: [
-        { pfd: 100, duration: 9.2 },
-        { pfd: 5000, duration: 0.8 },
-      ],
-      repetitions: 3,
-    },
-  ];
 
   let analyses: Analyses = $state([
     {
@@ -59,7 +34,7 @@
   width="full"
 >
   <AnalysesDashboard
-    name={"Hahn 1987"}
+    name="Hahn 1987"
     initModel={initModel}
     bind:analyses={analyses}
     equationsOpen={false}

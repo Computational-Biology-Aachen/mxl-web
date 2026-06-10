@@ -160,7 +160,7 @@
 
 <Main pad="tight">
   <AnalysesDashboard
-    name={"KEA3 - tomato"}
+    name="KEA3 - tomato"
     initModel={initModel}
     bind:analyses={analyses}
     equationsOpen={false}

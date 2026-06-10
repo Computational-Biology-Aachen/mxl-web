@@ -20,12 +20,12 @@ export function initModel(): KineticModelBuilder {
   return new KineticModelBuilder()
     .addVariable("e_coli", {
       value: 5.0,
-      texName: "E.\ coli",
+      texName: "E.\\ coli",
       slider: { min: "0.0", max: "1000.0", step: "1.0" },
     })
     .addVariable("c_gluta", {
       value: 5.0,
-      texName: "C.\ gluta",
+      texName: "C.\\ gluta",
       slider: {
         min: "0.0",
         max: "1000.0",

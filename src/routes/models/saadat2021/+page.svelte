@@ -77,7 +77,7 @@
   width="full"
 >
   <AnalysesDashboard
-    name={"Saadat 2021"}
+    name="Saadat 2021"
     initModel={initModel}
     bind:analyses={analyses}
     equationsOpen={false}

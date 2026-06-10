@@ -9,6 +9,8 @@
     callback: (arg0: Data) => void;
   } = $props();
 
+  // Cheatsheet: deliberately demonstrates the $state + $effect copy pattern.
+  // eslint-disable-next-line svelte/prefer-writable-derived
   let internal = $state<Data>([]);
   $effect(() => {
     internal = parent.slice();
@@ -17,7 +19,7 @@
 
 <div class="row">
   <span>In container</span>
-  {#each internal as _, idx}
+  {#each internal as _, idx (idx)}
     <span>value = {internal[idx].value}</span>
     <button onclick={() => (internal[idx] = { value: internal[idx].value + 1 })}
       >Assign internally</button

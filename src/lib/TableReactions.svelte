@@ -98,7 +98,7 @@
     <Math
       tex={reactions[idx].fn.toTex(texNames)}
       display={true}
-      fontSize={"0.75rem"}
+      fontSize="0.75rem"
     />
     <IconButton
       icon="edit"
@@ -112,7 +112,7 @@
     <Math
       tex={stoichToTex(reactions[idx].stoichiometry, texNames)}
       display={true}
-      fontSize={"0.75rem"}
+      fontSize="0.75rem"
     />
     <IconButton
       icon="edit"
@@ -121,7 +121,7 @@
   </div>
 {/snippet}
 
-{#snippet actions(idx: number, rxn: any)}
+{#snippet actions(_idx: number, rxn: RxnView[number])}
   <IconButton
     icon="close"
     onclick={() => {
@@ -226,7 +226,7 @@
   >
 </div>
 
-{#each reactions as rxn, idx}
+{#each reactions as rxn, idx (rxn.id)}
   <Popover
     size="md"
     popovertarget={`eq-editor-${idx}`}

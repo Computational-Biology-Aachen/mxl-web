@@ -51,7 +51,7 @@
 
 <Main pad="tight">
   <AnalysesDashboard
-    name={"Tripartite dynamics"}
+    name="Tripartite dynamics"
     initModel={initModel}
     bind:analyses={analyses}
     equationsOpen={true}

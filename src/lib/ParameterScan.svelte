@@ -56,7 +56,6 @@
   }
 
   let err: SimulationError | undefined = $state(undefined);
-  let hints = $state<string[] | undefined>(undefined);
   let scanResult = $state<ScanResult>({
     paramValues: [],
     labels: [],
@@ -66,6 +65,7 @@
 
   // Batch tracking — plain (non-reactive) fields, safe to mutate in handlers
   let activeScanId = 0;
+  // eslint-disable-next-line svelte/prefer-svelte-reactivity
   const requestMap = new Map<string, { paramIdx: number; scanId: number }>();
 
   let completedCount = $state(0);
@@ -74,7 +74,6 @@
 
   export function runScan(currentModel: ModelBuilderBase) {
     err = undefined;
-    hints = undefined;
 
     if (!currentModel.parameters.has(analysis.parameter)) {
       throw new Error(

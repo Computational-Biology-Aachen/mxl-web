@@ -191,7 +191,7 @@
   label="Backend"
   bind:value={backend}
 >
-  {#each allBackends as b}
+  {#each allBackends as b (b.id)}
     <option value={b}>{b.label}</option>
   {/each}
 </InputChoice>
@@ -227,13 +227,13 @@
     }}
   >
     <option value="">select</option>
-    {#each PREDEFINED_PROTOCOLS as preset}
+    {#each PREDEFINED_PROTOCOLS as preset (preset.name)}
       <option value={preset.name}>{preset.name}</option>
     {/each}
   </select>
 </div>
 
-{#each groups as group, gi}
+{#each groups as group, gi (gi)}
   <div class="group">
     <div class="group-header">
       <span class="group-label">Group {gi + 1} - repeat</span>
@@ -260,7 +260,7 @@
       <span class="header">Label</span>
       <span></span>
 
-      {#each group.steps as step, si}
+      {#each group.steps as step, si (si)}
         <InputNumber
           id="step-pfd-{gi}-{si}"
           bind:value={step.pfd}

@@ -8,10 +8,7 @@
   "objectWrap": "preserve",
   "arrowParens": "always",
   "singleAttributePerLine": true,
-  "plugins": [
-    "prettier-plugin-svelte",
-    "prettier-plugin-css-order"
-  ],
+  "plugins": ["prettier-plugin-svelte", "prettier-plugin-css-order"],
   "svelteAllowShorthand": false,
   "svelteIndentScriptAndStyle": true,
   "overrides": [

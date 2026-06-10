@@ -156,8 +156,6 @@
     if (node instanceof RateOf) return "d/dt";
     return "fn";
   }
-
-  $inspect(displayName);
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -371,7 +369,7 @@
     {@const op = getNaryInfixOp(node)!}
     {@const nary = node as Nary}
     <div class="mul">
-      {#each nary.children as child, i}
+      {#each nary.children as child, i (i)}
         {#if i > 0}
           <button
             class="op"
@@ -406,7 +404,7 @@
       >
         ¬
       </button>
-      {#each (node as Not).children as child}
+      {#each (node as Not).children as child, i (i)}
         <div class="child">
           <EquationNode
             node={child}
@@ -431,7 +429,7 @@
         {label}
       </button>
       <span class="paren">(</span>
-      {#each (node as Nary).children as child, i}
+      {#each (node as Nary).children as child, i (i)}
         {#if i > 0}<span class="comma">,</span>{/if}
         <div class="child">
           <EquationNode
@@ -458,7 +456,7 @@
         cases
       </button>
       <div class="pieces">
-        {#each pw.children as child, i}
+        {#each pw.children as child, i (i)}
           {#if i % 2 === 0}
             <div class="piece">
               <div class="child">

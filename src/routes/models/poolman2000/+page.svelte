@@ -31,7 +31,7 @@
 
 <Main pad="tight">
   <AnalysesDashboard
-    name={"Poolman 2000"}
+    name="Poolman 2000"
     initModel={initModel}
     bind:analyses={analyses}
     equationsOpen={false}

@@ -30,7 +30,7 @@
 
 <Main pad="tight">
   <AnalysesDashboard
-    name={"Yokota 1985"}
+    name="Yokota 1985"
     initModel={initModel}
     bind:analyses={analyses}
     equationsOpen={false}

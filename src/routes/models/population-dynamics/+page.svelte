@@ -31,7 +31,7 @@
 
 <Main pad="tight">
   <AnalysesDashboard
-    name={"Population Dynamics"}
+    name="Population Dynamics"
     initModel={initModel}
     bind:analyses={analyses}
     equationsOpen={true}

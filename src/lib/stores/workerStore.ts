@@ -26,7 +26,7 @@ export interface SimulationRequest {
 
 export interface SimulationError {
   message: string;
-  hints: Array<String>;
+  hints: Array<string>;
   dxdt?: Array<{ name: string; val: number }>;
   args?: Array<{ name: string; val: number }>;
 }

@@ -18,7 +18,6 @@
     ],
   };
   let yMax = $state(100);
-  $inspect(yMax);
 </script>
 
 <svelte:head>

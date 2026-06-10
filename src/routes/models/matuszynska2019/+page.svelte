@@ -77,7 +77,7 @@
   width="full"
 >
   <AnalysesDashboard
-    name={"Matuszyńska 2019"}
+    name="Matuszyńska 2019"
     initModel={initModel}
     bind:analyses={analyses}
     equationsOpen={false}

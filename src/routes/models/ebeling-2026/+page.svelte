@@ -85,7 +85,7 @@
 
 <SectionMain pad="tight">
   <AnalysesDashboard
-    name={"Ebeling 2026"}
+    name="Ebeling 2026"
     initModel={initModel}
     bind:analyses={analyses}
     equationsOpen={false}

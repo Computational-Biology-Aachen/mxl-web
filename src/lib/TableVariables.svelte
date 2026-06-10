@@ -96,7 +96,7 @@
       <Math
         tex={variables[idx].value.toTex(texNames)}
         display={true}
-        fontSize={"0.75rem"}
+        fontSize="0.75rem"
       />
       <IconButton
         icon="edit"
@@ -215,7 +215,7 @@
   >
 </div>
 
-{#each variables as vari, idx}
+{#each variables as vari, idx (vari.id)}
   <Popover
     size="sm"
     popovertarget={`var-editor-${idx}`}
@@ -228,7 +228,7 @@
   </Popover>
 {/each}
 
-{#each variables as vari, idx}
+{#each variables as vari, idx (vari.id)}
   {#if vari.value instanceof Base}
     <Popover
       size="md"

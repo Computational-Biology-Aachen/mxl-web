@@ -586,13 +586,13 @@
   </Row>
 
   <div class="edit-row">
-    <label for={`root`}>Template</label>
+    <label for="root">Template</label>
     <select
-      id={`root`}
+      id="root"
       value="---"
       onchange={handleTemplateChoice}
     >
-      {#each templates as template, idx}
+      {#each templates as template, idx (template.name)}
         <option
           selected={false}
           value={idx}>{template.name}</option
@@ -602,14 +602,14 @@
   </div>
 
   <div class="palette-groups">
-    {#each paletteGroups as group}
+    {#each paletteGroups as group (group.name)}
       <details
         class="palette-group"
         open={group.defaultOpen}
       >
         <summary class="group-label">{group.name}</summary>
         <div class="palette">
-          {#each group.items as item}
+          {#each group.items as item (item.label)}
             <button
               class="palette-button"
               disabled={wrapRoot && item.leaf}
@@ -668,7 +668,7 @@
               value={(currentNode as Name).name}
               onchange={handleSymbolChange}
             >
-              {#each argNames as [id, name]}
+              {#each argNames as [id, name] (id)}
                 <option
                   value={id}
                   selected={id === (currentNode as Name).name}>{name}</option

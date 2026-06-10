@@ -54,7 +54,7 @@
 
 <Main pad="tight">
   <AnalysesDashboard
-    name={"Dynamic Enterobactin"}
+    name="Dynamic Enterobactin"
     initModel={initModel}
     bind:analyses={analyses}
     equationsOpen={true}

@@ -144,7 +144,7 @@
     id="scan-parameter"
     bind:value={parameter}
   >
-    {#each parameterKeys as key}
+    {#each parameterKeys as key (key)}
       <option value={key}
         >{model.parameters.get(key)?.displayName ?? key}</option
       >
@@ -188,7 +188,7 @@
   label="Backend"
   bind:value={backend}
 >
-  {#each allBackends as b}
+  {#each allBackends as b (b.id)}
     <option value={b}>{b.label}</option>
   {/each}
 </InputChoice>

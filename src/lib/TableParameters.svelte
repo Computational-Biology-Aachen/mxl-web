@@ -23,10 +23,15 @@
 
   const md = new MediaQuery("max-width: 768px");
 
+  // The four model views are received for a uniform table API (see
+  // OdeModelEditor), but this table only reads/edits `parameters`.
   let {
+    // eslint-disable-next-line no-useless-assignment
     variables = $bindable(),
     parameters = $bindable(),
+    // eslint-disable-next-line no-useless-assignment
     assignments = $bindable(),
+    // eslint-disable-next-line no-useless-assignment
     reactions = $bindable(),
   }: {
     variables: VarView;
@@ -183,7 +188,7 @@
   >
 </div>
 
-{#each parameters as par, idx}
+{#each parameters as par, idx (par.id)}
   <Popover
     size="sm"
     popovertarget={`var-editor-${idx}`}

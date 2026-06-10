@@ -177,7 +177,7 @@
   label="Backend"
   bind:value={backend}
 >
-  {#each allBackends as b}
+  {#each allBackends as b (b.id)}
     <option value={b}>{b.label}</option>
   {/each}
 </InputChoice>

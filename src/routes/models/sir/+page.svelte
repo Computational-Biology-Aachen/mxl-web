@@ -30,7 +30,7 @@
 
 <Main pad="tight">
   <AnalysesDashboard
-    name={"Compartmental models"}
+    name="Compartmental models"
     initModel={initModel}
     bind:analyses={analyses}
     equationsOpen={true}

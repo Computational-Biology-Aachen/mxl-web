@@ -76,7 +76,7 @@
 
 <Main pad="tight">
   <AnalysesDashboard
-    name={"Matuszyńska 2016"}
+    name="Matuszyńska 2016"
     initModel={initModel}
     bind:analyses={analyses}
     equationsOpen={false}

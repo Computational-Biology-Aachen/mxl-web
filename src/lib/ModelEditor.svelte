@@ -27,7 +27,6 @@
     popovertarget: string;
   } = $props();
 
-  let userParameters: string[] = [];
   let parameters = $derived(
     parent.parameters
       .entries()
@@ -133,7 +132,7 @@
   </Row>
 
   <ul>
-    {#each tabs as tab}
+    {#each tabs as tab (tab.name)}
       <ButtonTab
         selected={cur.name === tab.name}
         onclick={() => (cur = tab)}
