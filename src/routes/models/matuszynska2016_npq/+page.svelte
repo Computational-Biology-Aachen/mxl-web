@@ -82,5 +82,19 @@
     equationsOpen={false}
   >
     <h1>Matuszyńska 2016 NPQ model</h1>
+    <p>
+      The Matuszyńska 2016 NPQ model is an ODE model of photoprotection in plant
+      photosystem II. It tracks the PSII open and closed states, the
+      plastoquinone (PQ/PQH₂) redox pool, lumenal proton buffering, ATP
+      synthesis, PsbS protonation and xanthophyll de-epoxidation (zeaxanthin
+      formation) — the molecular machinery underlying non-photochemical
+      quenching.
+    </p>
+    <p>
+      The model can be run under PAM fluorescence protocols, reproducing the
+      Fm/Fm′ quenching observed experimentally and linking the fast
+      photoprotective response to the redox state of the electron transport
+      chain.
+    </p>
   </AnalysesDashboard>
 </Main>

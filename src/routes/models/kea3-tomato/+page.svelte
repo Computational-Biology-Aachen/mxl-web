@@ -166,6 +166,18 @@
     equationsOpen={false}
   >
     <h1>Tomato KEA3 model</h1>
+    <p>
+      The tomato KEA3 model is a non-photochemical quenching (NPQ) model adapted
+      for tomato (<i>Solanum lycopersicum</i>) from the original Arabidopsis NPQ
+      model. It tracks the photosystem II reaction-centre states, plastoquinone
+      redox, lumenal proton and potassium balance, ATP synthesis, PsbS
+      protonation and the xanthophyll cycle.
+    </p>
+    <p>
+      The KEA3 K⁺/H⁺ antiporter shapes the proton motive force and thus the
+      kinetics of photoprotection, and the model supports PAM fluorescence
+      protocols to reproduce the resulting quenching dynamics.
+    </p>
     <div class="centered">
       <img
         src={scheme}

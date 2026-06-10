@@ -49,17 +49,33 @@
 </script>
 
 <svelte:head>
-  <title>Dynamic Entrobactin - mxlweb</title>
+  <title>Dynamic Enterobactin - mxlweb</title>
 </svelte:head>
 
 <Main pad="tight">
   <AnalysesDashboard
-    name={"Dynamic Entrobaction"}
+    name={"Dynamic Enterobactin"}
     initModel={initModel}
     bind:analyses={analyses}
     equationsOpen={true}
   >
-    <h1>Dynamic Entrobaction model</h1>
+    <h1>Dynamic Enterobactin model</h1>
+    <p>
+      The dynamic enterobactin model describes siderophore-mediated
+      cross-feeding between <i>E. coli</i> and <i>C. glutamicum</i>, developed
+      within the SFB MibiNet community to study how iron competition shapes
+      synthetic microbial communities. Enterobactin is a catecholate siderophore
+      produced only by
+      <i>E. coli</i> under iron limitation; once secreted it chelates ferric
+      iron and can be taken up by both species, so <i>C. glutamicum</i> exploits
+      the iron captured by <i>E. coli</i> without paying the production cost — enterobactin
+      therefore acts as a public good.
+    </p>
+    <p>
+      The model tracks four state variables — the two biomasses, a shared carbon
+      substrate and extracellular enterobactin — with double-Monod growth
+      kinetics that require both substrate and siderophore simultaneously.
+    </p>
     <div class="centered">
       <img
         src={scheme}

@@ -37,7 +37,7 @@
       image: schemeTripartite,
     },
     {
-      name: "Entrobactin",
+      name: "Enterobactin",
       slug: "dynamic-entrobactin",
       image: schemeEnterobactin,
     },

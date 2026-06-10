@@ -65,5 +65,17 @@
     equationsOpen={false}
   >
     <h1>Lazar 1997 model</h1>
+    <p>
+      The Lazár 1997 model is a mathematical description of chlorophyll
+      <i>a</i> fluorescence induction in plants, built to capture how herbicides alter
+      the fluorescence transient. It represents photosystem II as a network of fifteen
+      redox and protonation states whose interconversions reproduce the characteristic
+      rise of the fluorescence signal.
+    </p>
+    <p>
+      By blocking electron transport at specific steps, PSII-targeting
+      herbicides reshape this transient, and the model allows their effect on
+      the fluorescence induction curve to be studied in silico.
+    </p>
   </AnalysesDashboard>
 </Main>

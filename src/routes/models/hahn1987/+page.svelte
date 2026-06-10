@@ -65,5 +65,19 @@
     equationsOpen={false}
   >
     <h1>Hahn 1987 model</h1>
+    <p>
+      The Hahn 1987 model is a comprehensive description of C3 leaf carbon
+      metabolism that combines the Calvin cycle with the glycolate and glycerate
+      pathways of photorespiration, formulated as a large system of non-linear
+      differential equations. It extends Hahn's earlier Calvin-cycle models by
+      adding the competitive inhibition of ribulose-bisphosphate carboxylase by
+      oxygen.
+    </p>
+    <p>
+      The model settles to an effectively stable steady state and responds
+      realistically to changes in external CO₂ and O₂: photosynthesis is
+      inhibited by higher oxygen levels, while photorespiration is suppressed by
+      higher carbon dioxide levels.
+    </p>
   </AnalysesDashboard>
 </Main>

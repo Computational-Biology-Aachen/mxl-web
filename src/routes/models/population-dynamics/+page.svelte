@@ -37,5 +37,17 @@
     equationsOpen={true}
   >
     <h1>Population dynamics</h1>
+    <p>
+      This model describes the population dynamics of an <i>E. coli</i> /
+      <i>C. glutamicum</i> co-culture as a two-species competition with
+      Monod-type growth. Each species grows according to its substrate affinity
+      and maximum growth rate, and <i>C. glutamicum</i> additionally carries a density-dependent
+      death term.
+    </p>
+    <p>
+      It is a simpler precursor to the dynamic enterobactin model, with no
+      shared siderophore variable, and illustrates the baseline competition
+      dynamics of the two organisms.
+    </p>
   </AnalysesDashboard>
 </Main>

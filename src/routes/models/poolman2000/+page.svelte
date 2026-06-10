@@ -37,5 +37,17 @@
     equationsOpen={false}
   >
     <h1>Poolman 2000 CBB model</h1>
+    <p>
+      The Poolman 2000 model is a kinetic model of the Calvin–Benson cycle, the
+      carbon-fixation pathway of C3 plant chloroplasts. Rubisco carboxylase and
+      oxygenase compete for ribulose-1,5-bisphosphate, while downstream enzymes
+      such as FBPase and SBPase regenerate it, with the whole cycle driven by
+      dissolved CO₂, NADPH and ATP.
+    </p>
+    <p>
+      Enzyme activities scale with their maximal turnover and are subject to
+      product inhibition, letting the model reproduce the steady-state behaviour
+      and regulation of carbon assimilation.
+    </p>
   </AnalysesDashboard>
 </Main>

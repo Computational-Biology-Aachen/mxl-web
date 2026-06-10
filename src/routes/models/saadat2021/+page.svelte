@@ -83,5 +83,16 @@
     equationsOpen={false}
   >
     <h1>Saadat 2021 model</h1>
+    <p>
+      The Saadat 2021 model describes linear electron flow through photosystem I
+      (PSI) in the chloroplast. Electrons pass from plastocyanin through P700
+      and the iron–sulfur cluster FA to ferredoxin and on to NADPH, driven by
+      light (PPFD) and governed by Nernst equilibrium potentials.
+    </p>
+    <p>
+      The model also includes the Mehler reaction, in which O₂ is reduced at
+      PSI, providing a focused, redox-resolved view of the PSI segment of the
+      photosynthetic electron transport chain.
+    </p>
   </AnalysesDashboard>
 </Main>

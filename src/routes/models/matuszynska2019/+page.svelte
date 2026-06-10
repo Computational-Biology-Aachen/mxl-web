@@ -83,5 +83,18 @@
     equationsOpen={false}
   >
     <h1>Matuszyńska 2019 model</h1>
+    <p>
+      The Matuszyńska 2019 model is a supply–demand model of photosynthesis that
+      merges two previously developed models — a photosynthetic electron
+      transport chain model originally built for non-photochemical quenching,
+      and a dynamic Calvin–Benson–Bassham cycle model for C3 carbon fixation —
+      into a single ODE system.
+    </p>
+    <p>
+      It is used to study how the energy and redox supplied by the light
+      reactions matches downstream demand, and notably illustrates the dark
+      stand-by mode the cycle requires in order to restart carbon fixation after
+      dark–light transitions.
+    </p>
   </AnalysesDashboard>
 </Main>

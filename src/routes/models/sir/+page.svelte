@@ -36,5 +36,17 @@
     equationsOpen={true}
   >
     <h1>SIR Compartmental models</h1>
+    <p>
+      The SIR model is the classic compartmental model of infectious-disease
+      spread, dividing a population into Susceptible, Infected and Recovered
+      groups. Susceptible individuals become infected at a rate set by the
+      transmission coefficient β through contact with the infected, and infected
+      individuals recover at rate γ.
+    </p>
+    <p>
+      Despite its simplicity, the model captures the characteristic epidemic
+      curve and the threshold behaviour governed by the basic reproduction
+      number.
+    </p>
   </AnalysesDashboard>
 </Main>

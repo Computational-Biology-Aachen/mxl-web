@@ -82,5 +82,17 @@
     equationsOpen={false}
   >
     <h1>Matuszyńska 2016 PhD model</h1>
+    <p>
+      The Matuszyńska 2016 PhD model extends the NPQ model into a fuller
+      chloroplast description by adding photosystem I electron transport (P700,
+      ferredoxin, NADPH) and explicit lumenal pH dynamics. A carotenoid pool and
+      LHC antenna switching couple photoprotection to the redox state of both
+      photosystems.
+    </p>
+    <p>
+      Like its predecessor it supports PAM fluorescence protocols, thereby
+      linking the fast photoprotective response to the broader
+      electron-transport state of the thylakoid.
+    </p>
   </AnalysesDashboard>
 </Main>

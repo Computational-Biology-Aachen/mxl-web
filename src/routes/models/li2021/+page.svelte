@@ -65,5 +65,19 @@
     equationsOpen={false}
   >
     <h1>Li 2021 model</h1>
+    <p>
+      The Li 2021 model is a kinetic model of photosynthesis centred on ion
+      fluxes across the thylakoid membrane and their effect on the proton motive
+      force (pmf). Built upon the Davis 2017 model, it gives a detailed account
+      of the pmf-generating reactions — water splitting at photosystem II and
+      plastoquinone oxidation at cytochrome b6f — while representing other steps
+      with minimal complexity.
+    </p>
+    <p>
+      It adds two potassium and two chloride transport pathways to the thylakoid
+      membrane and was validated against wild-type behaviour and several
+      knockout mutants (VCCN1, CLCE, KEA3), making it a tool to dissect how ion
+      fluxes regulate photosynthetic electron transport and photoprotection.
+    </p>
   </AnalysesDashboard>
 </Main>
