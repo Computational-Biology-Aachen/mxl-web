@@ -43,6 +43,7 @@
     Minus,
     Mul,
     Name,
+    Nary,
     Not,
     NotEqual,
     Num,
@@ -58,6 +59,7 @@
     Sqrt,
     Tan,
     Tanh,
+    Unary,
     Xor,
     type Base,
   } from "@computational-biology-aachen/mxlweb-core/mathml";
@@ -111,6 +113,10 @@
 
   let currentNode: Base = $derived(root);
 
+  // When true, the next palette insert wraps the whole tree instead of
+  // replacing the selected node. Entered by clicking the builder-canvas.
+  let wrapRoot = $state(false);
+
   const templates = [
     {
       name: "Proportional",
@@ -153,7 +159,12 @@
   const paletteGroups: {
     name: string;
     defaultOpen: boolean;
-    items: { label: string; default: () => Base; hint: string }[];
+    items: {
+      label: string;
+      default: () => Base;
+      hint: string;
+      leaf?: boolean;
+    }[];
   }[] = [
     {
       name: "Arithmetic",
@@ -163,11 +174,13 @@
           label: "Symbol",
           default: Name.prototype.default,
           hint: "Variable placeholder",
+          leaf: true,
         },
         {
           label: "Number",
           default: Num.prototype.default,
           hint: "Constant value",
+          leaf: true,
         },
         {
           label: "Add",
@@ -504,7 +517,31 @@
     currentNode = toInsert;
   }
 
+  // The first immediate child slot of a freshly-built node, used as the
+  // landing spot when wrapping the current tree. Nullary nodes (Symbol,
+  // Number) have no slot and return null.
+  function firstSlotId(node: Base): number | null {
+    if (node instanceof Log || node instanceof Sqrt) return node.child.id;
+    if (node instanceof Pow || node instanceof Implies) return node.left.id;
+    if (node instanceof Unary) return node.child.id;
+    if (node instanceof Nary)
+      return node.children.length > 0 ? node.children[0].id : null;
+    return null;
+  }
+
+  // Nest the whole current tree into a new node's first child slot, e.g.
+  // root → -(root) or exp(root). No-op for slotless (nullary) nodes.
+  function wrapRootIn(fn: () => Base) {
+    const wrapper = fn();
+    const slotId = firstSlotId(wrapper);
+    if (slotId === null) return;
+    root = wrapper.replace(slotId, root).node;
+    currentNode = wrapper;
+    wrapRoot = false;
+  }
+
   function selectNode(node: Base) {
+    wrapRoot = false;
     currentNode = node;
   }
   function handleTemplateChoice(event: Event) {
@@ -575,7 +612,9 @@
           {#each group.items as item}
             <button
               class="palette-button"
-              onclick={() => insertNode(item.default)}
+              disabled={wrapRoot && item.leaf}
+              onclick={() =>
+                wrapRoot ? wrapRootIn(item.default) : insertNode(item.default)}
             >
               <span class="label">{item.label}</span>
               <span class="hint">{item.hint}</span>
@@ -590,29 +629,38 @@
     <div class="window">
       <div class="window-header">Equation builder</div>
       <div class="window-body">
-        <div class="builder-canvas">
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
+        <div
+          class="builder-canvas"
+          data-wrap-active={wrapRoot}
+          onclick={() => (wrapRoot = true)}
+        >
           {#if currentNode instanceof Name}
             <EqNode
               node={root}
               displayName={displayNames.get(currentNode.name)}
-              selectedId={currentNode.id}
+              selectedId={wrapRoot ? -1 : currentNode.id}
               onSelect={selectNode}
             />
           {:else}
             <EqNode
               node={root}
-              selectedId={currentNode.id}
+              selectedId={wrapRoot ? -1 : currentNode.id}
               onSelect={selectNode}
             />
           {/if}
         </div>
         <p class="hint-line">
           Tip: click any element to select it, then choose a MathML element
-          above or adjust its value.
+          above or adjust its value. Click the surrounding canvas to wrap the
+          whole expression in a new element.
         </p>
 
         <!-- Edit rows -->
-        {#if currentNode instanceof Name}
+        {#if wrapRoot}
+          <!-- no node selected while wrapping the whole expression -->
+        {:else if currentNode instanceof Name}
           <div class="edit-row">
             <label for={`symbol-${currentNode.id}`}>Name</label>
             <select
@@ -705,10 +753,17 @@
     text-align: left;
   }
 
-  .palette-button:hover {
+  .palette-button:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
     border-color: var(--color-surface);
+  }
+
+  .palette-button:disabled {
+    transform: none;
+    opacity: 0.45;
+    cursor: not-allowed;
+    box-shadow: none;
   }
 
   .palette-button .label {
@@ -760,8 +815,31 @@
   /* Keep wide equations inside the card instead of pushing the page width;
      swipe to pan on small screens. */
   .builder-canvas {
+    display: flex;
+    transition:
+      border-color 120ms ease,
+      background 120ms ease;
+    cursor: pointer;
+    border: var(--border);
+    border-radius: var(--radius-lg);
+    padding: 0.75rem;
     min-width: 0;
     overflow-x: auto;
+  }
+
+  /* Active wrap mode: reuse the selected-node visual language. */
+  .builder-canvas[data-wrap-active="true"] {
+    border-style: solid;
+    border-color: var(--color-primary);
+    background: rgb(from var(--color-primary) r g b / 8%);
+  }
+
+  /* On narrow screens EqNode renders the root as a full-width indented
+     outline, so revert to block flow and let it stretch again. */
+  @media (max-width: 640px) {
+    .builder-canvas {
+      display: block;
+    }
   }
 
   .hint-line {

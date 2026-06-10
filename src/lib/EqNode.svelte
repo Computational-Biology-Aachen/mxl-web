@@ -627,6 +627,7 @@
     justify-content: center;
     align-items: center;
     box-sizing: border-box;
+    margin: 0 auto;
     box-shadow: var(--shadow);
     border: var(--border);
     border-radius: var(--radius-lg);
