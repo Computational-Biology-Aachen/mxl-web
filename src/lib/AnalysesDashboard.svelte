@@ -156,6 +156,15 @@
     );
   }
 
+  function saveMxlpy() {
+    if (!(model instanceof KineticModelBuilder)) return;
+    downloadText(
+      model.buildMxlpy(),
+      `${name.replace(/[^A-Za-z0-9]/g, "_")}.py`,
+      "text/x-python",
+    );
+  }
+
   async function handleFileLoad(event: Event) {
     loadError = null;
     const input = event.target as HTMLInputElement;
@@ -305,6 +314,9 @@
           <ButtonMenuItem onclick={saveModel}>SBML</ButtonMenuItem>
         {/if}
         <ButtonMenuItem onclick={savePython}>Python</ButtonMenuItem>
+        {#if model instanceof KineticModelBuilder}
+          <ButtonMenuItem onclick={saveMxlpy}>MxlPy</ButtonMenuItem>
+        {/if}
       </ButtonMenu>
       <Button
         onclick={() => {
