@@ -91,8 +91,9 @@
     onSave: (fn: Base) => void;
   } = $props();
 
-  let argNames = $derived.by(() => {
+  let argNames: string[][] = $derived.by(() => {
     return [
+      ["time", "time"],
       ...variables.map((el) => [el.id, defaultValue(el.displayName, el.id)]),
       ...parameters.map((el) => [el.id, defaultValue(el.displayName, el.id)]),
       ...assignments.map((el) => [el.id, defaultValue(el.displayName, el.id)]),
