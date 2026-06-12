@@ -64,6 +64,7 @@
     { name: "Lazar 1997", slug: "lazar1997" },
     { name: "Li 2021", slug: "li2021" },
     { name: "Zhu 2009", slug: "zhu2009" },
+    { name: "Fuente 2024", slug: "fuente2024" },
   ];
 
   const steadyStateModels: Model[] = [
