@@ -1,10 +1,8 @@
 <script lang="ts">
-  import * as config from "$lib/config";
-  import "../app.css";
-
   import { base } from "$app/paths";
   import favicon from "$lib/assets/cpbl-favicon.svg";
   import BuildChooser from "$lib/BuildChooser.svelte";
+  import * as config from "$lib/config";
   import {
     Button,
     CollapseToBurger,
@@ -13,6 +11,7 @@
     NavGH,
     NavItem,
   } from "@computational-biology-aachen/design";
+  import "../app.css";
 
   let { children } = $props();
 </script>
