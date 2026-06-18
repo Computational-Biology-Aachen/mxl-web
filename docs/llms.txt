@@ -1,0 +1,115 @@
+# MxlWeb
+
+> MxlWeb is a browser-side ODE model explorer for systems biology. All compute runs client-side in web workers — no server required. Built with SvelteKit 5, adapter-static, and deployed at /mxl-web. Provides interactive equation editing, parameter scanning, and real-time visualization for kinetic and ODE models. Maintained by the Computational Biology group at RWTH Aachen.
+
+Targets modern browsers (Chrome, Firefox, Safari, Edge). Part of a tool family with [MxlPy](https://github.com/Computational-Biology-Aachen/mxl-py) (Python mechanistic learning), [MxlBricks](https://github.com/Computational-Biology-Aachen/mxl-bricks) (composable reaction bricks), and [MxlWeb Core](https://github.com/Computational-Biology-Aachen/mxl-web-core) (shared compute engine).
+
+## Architecture
+
+```
+Route page (src/routes/models/<name>/+page.svelte)
+  → AnalysesDashboard (main simulation UI)
+    → ModelEditor (equation / stoichiometry / parameter tables)
+      → WorkerManager (jsWorker / pyWorker)
+        → ODE integrators (Euler, RK45, BOSH3, Tsit5, Radau5, ...)
+          → Chart.js visualization
+```
+
+- **Route pages** define `Model` and `Analyses` configs for each model.
+- **AnalysesDashboard** is the main UI shell: simulation controls, result tabs, parameter sweeps.
+- **ModelEditor** lets users edit variables, parameters, reactions, and derived quantities inline.
+- **WorkerManager** dispatches computation to web workers (JS or Pyodide).
+- **Core engine** lives in `@computational-biology-aachen/mxlweb-core`: model builders, IR, MathML→WAT pipeline, and all integrators.
+
+## Available models
+
+Each model has its own route at `/mxl-web/models/<name>/`:
+
+- `lotka-volterra` — Classic predator-prey
+- `sir` — SIR epidemiology model
+- `poolman2000` — Cyanobacterial photosynthesis
+- `yokota1985` — C4 photosynthesis
+- `ebenhoeh2014` — Photosynthetic electron transport
+- `matuszynska2016_npq` — Non-photochemical quenching
+- `matuszynska2016_phd` — Photosynthetic electron transport (PhD model)
+- `matuszynska2019` — Expanded photosynthesis model
+- `saadat2021` — Photosynthesis with NPQ
+- `ebeling-2026` — Electron transport chain
+- `hahn1987` — Rubisco kinetics
+- `lazar1997` — Photosynthetic regulation
+- `davis2017` — Photosynthetic electron transport
+- `bellasio2019` — Stomatal conductance
+- `fuente2024` — Leaf-level photosynthesis
+- `li2021` — Photosynthetic electron transport
+- `zhu2009` — Photoinhibition
+- `fvcb` — FvCB photosynthesis model
+- `kea3-tomato` — KEA3 transport in tomato
+- `population-dynamics` — Population dynamics
+- `tripartite` — Tripartite interaction
+- `dynamic-entrobactin` — Entrobactin dynamics
+
+## Compute backends
+
+Three compute backends run in web workers:
+
+- **Pure JS** — Euler, RK2, RK45, BOSH3, Tsit5, backward Euler, Kvaerno45
+- **Pyodide** — Full Python/WASM runtime for arbitrary model code
+- **Custom WASM** — Radau5, DOP853, DOPRI5 (C compiled via Emscripten)
+
+The default backend is pure JS. WASM integrators offer stiff-solver support. Pyodide enables running Python-defined models directly in the browser.
+
+## Quick start
+
+> Clone and run locally:
+
+```bash
+git clone https://github.com/Computational-Biology-Aachen/mxl-web.git
+cd mxl-web
+npm install
+npm run dev
+```
+
+Open http://localhost:5173/models/lotka-volterra to run the Lotka-Volterra model interactively.
+
+> For programmatic use, import from `@computational-biology-aachen/mxlweb-core`:
+
+```typescript
+import { KineticModelBuilder } from '@computational-biology-aachen/mxlweb-core'
+import { simulate } from '@computational-biology-aachen/mxlweb-core/backends/js'
+
+const builder = new KineticModelBuilder()
+builder
+  .addVariable('S', 1.0)
+  .addVariable('P', 0.0)
+  .addParameter('k1', 0.5)
+  .addReaction('v1', 'k1 * S', { S: -1, P: 1 })
+
+const ir = builder.toIR()
+const result = await simulate(ir, { tEnd: 10, nSteps: 100 })
+```
+
+## Dev commands
+
+```bash
+npm install              # Install dependencies
+npm run dev              # Dev server on :5173
+npm run build            # Static build → build/
+npm run check            # TypeScript + Svelte type checking
+npm run lint             # Prettier + ESLint check
+npm run format           # Auto-format with Prettier
+npm run test             # Run vitest
+```
+
+## MCP tool reference
+
+For AI-assisted modeling, see the [mxl-mcp](https://computational-biology-aachen.github.io/mxl-mcp/mxlpy/latest) documentation.
+
+## Tool family
+
+- [MxlPy](https://github.com/Computational-Biology-Aachen/mxl-py) — Python mechanistic learning (ODEs + ML)
+- [MxlBricks](https://github.com/Computational-Biology-Aachen/mxl-bricks) — Composable reaction building blocks
+- [MxlModels](https://github.com/Computational-Biology-Aachen/mxl-models) — Flat single-file model versions (generated from MxlBricks)
+- [Mxl-Schemas](https://github.com/Computational-Biology-Aachen/mxl-schemas) — JSON schemas for model formats
+- [MxlWeb Core](https://github.com/Computational-Biology-Aachen/mxl-web-core) — Shared compute engine (TypeScript)
+- [pysbml](https://github.com/Computational-Biology-Aachen/pysbml) — SBML import/export bridge
+- [parameteriser](https://github.com/Computational-Biology-Aachen/parameteriser) — Kinetic parameter lookup (BRENDA DB)
