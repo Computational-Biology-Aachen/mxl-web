@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import BuildChooser from "$lib/BuildChooser.svelte";
   import { Div, SectionMain } from "@computational-biology-aachen/design";
 </script>

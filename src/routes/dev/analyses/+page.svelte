@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { DynBoxRow } from "@computational-biology-aachen/design";
 </script>
 
