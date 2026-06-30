@@ -167,6 +167,14 @@
     );
   }
 
+  function saveMxlweb() {
+    downloadText(
+      model.buildMxlweb(),
+      `${name.replace(/[^A-Za-z0-9]/g, "_")}.ts`,
+      "text/typescript",
+    );
+  }
+
   async function handleFileLoad(event: Event) {
     loadError = null;
     const input = event.target as HTMLInputElement;
@@ -319,6 +327,7 @@
         {#if model instanceof KineticModelBuilder}
           <ButtonMenuItem onclick={saveMxlpy}>MxlPy</ButtonMenuItem>
         {/if}
+        <ButtonMenuItem onclick={saveMxlweb}>mxlweb</ButtonMenuItem>
       </ButtonMenu>
       <Button
         onclick={() => {

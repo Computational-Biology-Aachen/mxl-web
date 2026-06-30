@@ -91,6 +91,14 @@
     );
   }
 
+  function saveMxlweb() {
+    downloadText(
+      model.buildMxlweb(),
+      `${name.replace(/[^A-Za-z0-9]/g, "_")}.ts`,
+      "text/typescript",
+    );
+  }
+
   async function handleAdd(box: Box) {
     const firstParam = model.parameters.keys().next().value ?? "";
     const newSweep: SteadyStateAnalysis = {
@@ -142,6 +150,7 @@
     >
       <ButtonMenu label="Save">
         <ButtonMenuItem onclick={savePython}>Python</ButtonMenuItem>
+        <ButtonMenuItem onclick={saveMxlweb}>mxlweb</ButtonMenuItem>
       </ButtonMenu>
       <Button onclick={() => (model = initModel())}>Reset</Button>
       <Button popovertarget="model-editor">Edit model</Button>

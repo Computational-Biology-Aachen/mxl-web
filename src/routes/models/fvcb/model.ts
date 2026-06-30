@@ -11,7 +11,7 @@ import {
   Piecewise,
 } from "@computational-biology-aachen/mxlweb-core/mathml";
 
-function initModel(): SteadyStateModelBuilder {
+export function initModel(): SteadyStateModelBuilder {
   // (1 + 3·α) — the triose-phosphate term, with α = 0.
   const alphaTerm = new Add([
     new Num(1),
