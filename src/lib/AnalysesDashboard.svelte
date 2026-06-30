@@ -175,6 +175,14 @@
     );
   }
 
+  function saveMxlJson() {
+    downloadText(
+      model.buildMxlJson(name),
+      `${name.replace(/[^A-Za-z0-9]/g, "_")}.json`,
+      "text/json",
+    );
+  }
+
   async function handleFileLoad(event: Event) {
     loadError = null;
     const input = event.target as HTMLInputElement;
@@ -322,12 +330,11 @@
       <ButtonMenu label="Save">
         {#if model instanceof KineticModelBuilder}
           <ButtonMenuItem onclick={saveModel}>SBML</ButtonMenuItem>
-        {/if}
-        <ButtonMenuItem onclick={savePython}>Python</ButtonMenuItem>
-        {#if model instanceof KineticModelBuilder}
           <ButtonMenuItem onclick={saveMxlpy}>MxlPy</ButtonMenuItem>
         {/if}
+        <ButtonMenuItem onclick={saveMxlJson}>mxl.json</ButtonMenuItem>
         <ButtonMenuItem onclick={saveMxlweb}>mxlweb</ButtonMenuItem>
+        <ButtonMenuItem onclick={savePython}>Python</ButtonMenuItem>
       </ButtonMenu>
       <Button
         onclick={() => {
