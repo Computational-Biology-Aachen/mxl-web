@@ -1,6 +1,10 @@
 <script lang="ts">
   import { base } from "$app/paths";
   import { Popover } from "@computational-biology-aachen/design";
+  import {
+    default as H3,
+    default as H4,
+  } from "@computational-biology-aachen/design/H3.svelte";
 
   let { popover = false }: { popover?: boolean } = $props();
 
@@ -9,9 +13,11 @@
 
 {#snippet cards()}
   <hgroup>
-    <h3>Build your own model</h3>
+    <H3>Build your own model</H3>
     <p>Choose how you want to define your system.</p>
   </hgroup>
+
+  <H4>ODE models</H4>
   <div class="card-row">
     <a
       href="{base}/models/new/ode"
@@ -165,6 +171,76 @@
       <p>Reactions &amp; stoichiometry</p>
     </a>
   </div>
+
+  <H4>Steady-state models</H4>
+  <div class="card-row">
+    <a
+      href="{base}/models/new/steady-state"
+      class="model-card"
+      onclick={() => el?.hidePopover()}
+    >
+      <figure
+        class="graphic"
+        aria-hidden="true"
+      >
+        <!-- Saturating response curve y = f(x), no time axis -->
+        <svg
+          viewBox="0 0 120 80"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <line
+            x1="14"
+            y1="64"
+            x2="14"
+            y2="8"
+            stroke="currentColor"
+            stroke-width="1.5"
+          />
+          <line
+            x1="14"
+            y1="64"
+            x2="106"
+            y2="64"
+            stroke="currentColor"
+            stroke-width="1.5"
+          />
+          <polyline
+            points="11,11 14,8 17,11"
+            stroke="currentColor"
+            stroke-width="1.5"
+          />
+          <polyline
+            points="103,61 106,64 103,67"
+            stroke="currentColor"
+            stroke-width="1.5"
+          />
+          <path
+            d="M16,60 C40,60 56,26 104,22"
+            stroke="var(--color-primary)"
+            stroke-width="2.5"
+            stroke-linecap="round"
+          />
+          <text
+            x="3"
+            y="12"
+            font-size="11"
+            fill="currentColor"
+            font-style="italic">y</text
+          >
+          <text
+            x="100"
+            y="76"
+            font-size="11"
+            fill="currentColor"
+            font-style="italic">x</text
+          >
+        </svg>
+      </figure>
+      <h4>Steady-state model</h4>
+      <p>Algebraic <em>y = f(x)</em></p>
+    </a>
+  </div>
 {/snippet}
 
 {#if popover}
@@ -190,7 +266,7 @@
 
   .card-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
   }
 

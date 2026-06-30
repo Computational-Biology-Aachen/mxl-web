@@ -70,3 +70,27 @@ export type PamAnalysis = {
 
 export type Analysis = SimulationAnalysis | ParameterScanAnalysis | PamAnalysis;
 export type Analyses = Analysis[];
+
+// Steady-state (algebraic) models have their own analysis: a closed-form sweep
+// of one parameter axis. No solver, no time — kept out of the `Analysis` union
+// since `AnalysesDashboard` never handles it.
+export type SteadyStateAnalysis = {
+  type: "steadyState";
+  id: number;
+  idx: number;
+  title: string;
+  span: number;
+  parameter: string;
+  min: number;
+  max: number;
+  steps: number;
+  xMin: number | undefined;
+  xMax: number | undefined;
+  yMin: number | undefined;
+  yMax: number | undefined;
+  selectedKeys?: string[];
+  normalizedKeys?: string[];
+  lineDisplay: "current" | "last" | "first";
+};
+
+export type SteadyStateAnalyses = SteadyStateAnalysis[];
