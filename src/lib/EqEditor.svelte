@@ -118,6 +118,122 @@
   // replacing the selected node. Entered by clicking the builder-canvas.
   let wrapRoot = $state(false);
 
+  // Undo/redo history behind every `root` mutation.
+  let history: Base[] = $state([]);
+  let future: Base[] = $state([]);
+
+  function pushHistory(): void {
+    history = [...history, root];
+    future = [];
+  }
+
+  function undo(): void {
+    if (history.length === 0) return;
+    const previous = history[history.length - 1];
+    history = history.slice(0, -1);
+    future = [root, ...future];
+    root = previous;
+    currentNode = previous;
+    wrapRoot = false;
+  }
+
+  function redo(): void {
+    if (future.length === 0) return;
+    const next = future[0];
+    future = future.slice(1);
+    history = [...history, root];
+    root = next;
+    currentNode = next;
+    wrapRoot = false;
+  }
+
+  // The node currently picked up by a drag, if any.
+  let draggedNode: Base | null = $state(null);
+
+  // Every id in the dragged subtree — invalid drop targets, since dropping a
+  // node onto itself or a descendant would create a cycle.
+  let invalidDropIds: Set<number> = $derived(
+    draggedNode === null ? new Set() : collectIds(draggedNode, new Set()),
+  );
+
+  function collectIds(node: Base, ids: Set<number>): Set<number> {
+    ids.add(node.id);
+    if (node instanceof Log || node instanceof Sqrt) {
+      collectIds(node.child, ids);
+      collectIds(node.base, ids);
+    } else if (node instanceof Pow || node instanceof Implies) {
+      collectIds(node.left, ids);
+      collectIds(node.right, ids);
+    } else if (node instanceof Unary) {
+      collectIds(node.child, ids);
+    } else if (node instanceof Nary) {
+      for (const child of node.children) collectIds(child, ids);
+    }
+    return ids;
+  }
+
+  function handleDragStart(node: Base): void {
+    draggedNode = node;
+    wrapRoot = false;
+  }
+
+  function handleDragEnd(): void {
+    draggedNode = null;
+  }
+
+  function handleDrop(targetId: number): void {
+    const dragged = draggedNode;
+    if (dragged === null || invalidDropIds.has(targetId)) {
+      draggedNode = null;
+      return;
+    }
+    draggedNode = null;
+    pushHistory();
+    const backfilled = root.replace(dragged.id, Name.prototype.default()).node;
+    root = backfilled.replace(targetId, dragged).node;
+    currentNode = dragged;
+  }
+
+  // Several EqEditor instances can be mounted at once (e.g. one per table
+  // row, inside a closed Popover each). Gate the undo/redo shortcut on this
+  // instance's own popover actually being open, so Ctrl+Z doesn't also
+  // rewrite hidden editors elsewhere on the page.
+  let sectionEl: HTMLElement | undefined = $state();
+  let popoverOpen = $state(false);
+
+  $effect(() => {
+    const popoverEl = sectionEl?.closest("[popover]");
+    if (!popoverEl) {
+      // Not inside a Popover (e.g. the dev playground route) — always active.
+      popoverOpen = true;
+      return;
+    }
+    const update = () => {
+      popoverOpen = popoverEl.matches(":popover-open");
+    };
+    update();
+    popoverEl.addEventListener("toggle", update);
+    return () => popoverEl.removeEventListener("toggle", update);
+  });
+
+  $effect(() => {
+    function onKeydown(event: KeyboardEvent) {
+      if (!popoverOpen) return;
+      if (!(event.ctrlKey || event.metaKey)) return;
+      if (event.key.toLowerCase() !== "z") return;
+      const target = event.target as HTMLElement | null;
+      if (target?.tagName === "INPUT" || target?.tagName === "SELECT") return;
+      event.preventDefault();
+      if (event.shiftKey) {
+        redo();
+      } else {
+        undo();
+      }
+    }
+    window.addEventListener("keydown", onKeydown);
+    return () => window.removeEventListener("keydown", onKeydown);
+  });
+
   const templates = [
     {
       name: "Proportional",
@@ -514,6 +630,7 @@
 
   function insertNode(fn: () => Base) {
     const toInsert = fn();
+    pushHistory();
     root = root.replace(currentNode.id, toInsert).node;
     currentNode = toInsert;
   }
@@ -536,6 +653,7 @@
     const wrapper = fn();
     const slotId = firstSlotId(wrapper);
     if (slotId === null) return;
+    pushHistory();
     root = wrapper.replace(slotId, root).node;
     currentNode = wrapper;
     wrapRoot = false;
@@ -549,6 +667,7 @@
     const target = event.target as HTMLSelectElement;
     const template = templates.at(parseInt(target.value));
     if (template !== undefined) {
+      pushHistory();
       root = template.code();
     }
   }
@@ -566,7 +685,7 @@
   }
 </script>
 
-<section>
+<section bind:this={sectionEl}>
   <Row
     stack
     justify="between"
@@ -643,19 +762,30 @@
               displayName={displayNames.get(currentNode.name)}
               selectedId={wrapRoot ? -1 : currentNode.id}
               onSelect={selectNode}
+              draggedId={draggedNode?.id ?? null}
+              invalidDropIds={invalidDropIds}
+              onDragStart={handleDragStart}
+              onDrop={handleDrop}
+              onDragEnd={handleDragEnd}
             />
           {:else}
             <EqNode
               node={root}
               selectedId={wrapRoot ? -1 : currentNode.id}
               onSelect={selectNode}
+              draggedId={draggedNode?.id ?? null}
+              invalidDropIds={invalidDropIds}
+              onDragStart={handleDragStart}
+              onDrop={handleDrop}
+              onDragEnd={handleDragEnd}
             />
           {/if}
         </div>
         <p class="hint-line">
           Tip: click any element to select it, then choose a MathML element
           above or adjust its value. Click the surrounding canvas to wrap the
-          whole expression in a new element.
+          whole expression in a new element. Drag any element onto another to
+          move it there; Ctrl+Z / Ctrl+Shift+Z undo and redo.
         </p>
 
         <!-- Edit rows -->

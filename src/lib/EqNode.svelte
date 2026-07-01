@@ -68,14 +68,29 @@
     displayName,
     selectedId,
     onSelect,
+    draggedId,
+    invalidDropIds,
+    onDragStart,
+    onDrop,
+    onDragEnd,
   }: {
     node: Base;
     displayName?: string;
     selectedId: number;
     onSelect: (node: Base) => void;
+    draggedId: number | null;
+    invalidDropIds: Set<number>;
+    onDragStart: (node: Base) => void;
+    onDrop: (targetId: number) => void;
+    onDragEnd: () => void;
   } = $props();
 
   const selectSelf = () => onSelect(node);
+
+  let dragOverSelf = $state(false);
+  let isValidDropTarget = $derived(
+    draggedId !== null && !invalidDropIds.has(node.id),
+  );
 
   function getNodeClassName(node: Base): string {
     if (node instanceof Divide) return "Divide";
@@ -163,9 +178,39 @@
 <div
   class={`node node-${getNodeClassName(node)}`}
   data-selected={selectedId === node.id}
+  data-dragging={draggedId === node.id}
+  data-drop-target={dragOverSelf && isValidDropTarget}
+  draggable="true"
   onclick={(e) => {
     e.stopPropagation();
     selectSelf();
+  }}
+  ondragstart={(e) => {
+    e.stopPropagation();
+    onDragStart(node);
+  }}
+  ondragover={(e) => {
+    if (!isValidDropTarget) return;
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer!.dropEffect = "move";
+    dragOverSelf = true;
+  }}
+  ondragleave={(e) => {
+    e.stopPropagation();
+    dragOverSelf = false;
+  }}
+  ondrop={(e) => {
+    if (!isValidDropTarget) return;
+    e.preventDefault();
+    e.stopPropagation();
+    dragOverSelf = false;
+    onDrop(node.id);
+  }}
+  ondragend={(e) => {
+    e.stopPropagation();
+    dragOverSelf = false;
+    onDragEnd();
   }}
 >
   {#if node instanceof Divide}
@@ -176,6 +221,11 @@
           selectedId={selectedId}
           displayName={displayName}
           onSelect={onSelect}
+          draggedId={draggedId}
+          invalidDropIds={invalidDropIds}
+          onDragStart={onDragStart}
+          onDrop={onDrop}
+          onDragEnd={onDragEnd}
         />
       </div>
       <button
@@ -194,6 +244,11 @@
           selectedId={selectedId}
           displayName={displayName}
           onSelect={onSelect}
+          draggedId={draggedId}
+          invalidDropIds={invalidDropIds}
+          onDragStart={onDragStart}
+          onDrop={onDrop}
+          onDragEnd={onDragEnd}
         />
       </div>
     </div>
@@ -205,6 +260,11 @@
           selectedId={selectedId}
           displayName={displayName}
           onSelect={onSelect}
+          draggedId={draggedId}
+          invalidDropIds={invalidDropIds}
+          onDragStart={onDragStart}
+          onDrop={onDrop}
+          onDragEnd={onDragEnd}
         />
       </div>
       <button
@@ -223,6 +283,11 @@
           selectedId={selectedId}
           displayName={displayName}
           onSelect={onSelect}
+          draggedId={draggedId}
+          invalidDropIds={invalidDropIds}
+          onDragStart={onDragStart}
+          onDrop={onDrop}
+          onDragEnd={onDragEnd}
         />
       </div>
     </div>
@@ -234,6 +299,11 @@
           selectedId={selectedId}
           displayName={displayName}
           onSelect={onSelect}
+          draggedId={draggedId}
+          invalidDropIds={invalidDropIds}
+          onDragStart={onDragStart}
+          onDrop={onDrop}
+          onDragEnd={onDragEnd}
         />
       </div>
       <button
@@ -252,6 +322,11 @@
           selectedId={selectedId}
           displayName={displayName}
           onSelect={onSelect}
+          draggedId={draggedId}
+          invalidDropIds={invalidDropIds}
+          onDragStart={onDragStart}
+          onDrop={onDrop}
+          onDragEnd={onDragEnd}
         />
       </div>
     </div>
@@ -274,6 +349,11 @@
             selectedId={selectedId}
             displayName={displayName}
             onSelect={onSelect}
+            draggedId={draggedId}
+            invalidDropIds={invalidDropIds}
+            onDragStart={onDragStart}
+            onDrop={onDrop}
+            onDragEnd={onDragEnd}
           />
         </div>
       </div>
@@ -285,6 +365,11 @@
             selectedId={selectedId}
             displayName={displayName}
             onSelect={onSelect}
+            draggedId={draggedId}
+            invalidDropIds={invalidDropIds}
+            onDragStart={onDragStart}
+            onDrop={onDrop}
+            onDragEnd={onDragEnd}
           />
         </div>
         <button
@@ -303,6 +388,11 @@
             selectedId={selectedId}
             displayName={displayName}
             onSelect={onSelect}
+            draggedId={draggedId}
+            invalidDropIds={invalidDropIds}
+            onDragStart={onDragStart}
+            onDrop={onDrop}
+            onDragEnd={onDragEnd}
           />
         </div>
       </div>
@@ -315,6 +405,11 @@
           selectedId={selectedId}
           displayName={displayName}
           onSelect={onSelect}
+          draggedId={draggedId}
+          invalidDropIds={invalidDropIds}
+          onDragStart={onDragStart}
+          onDrop={onDrop}
+          onDragEnd={onDragEnd}
         />
       </div>
       <button
@@ -333,6 +428,11 @@
           selectedId={selectedId}
           displayName={displayName}
           onSelect={onSelect}
+          draggedId={draggedId}
+          invalidDropIds={invalidDropIds}
+          onDragStart={onDragStart}
+          onDrop={onDrop}
+          onDragEnd={onDragEnd}
         />
       </div>
     </div>
@@ -344,6 +444,11 @@
           selectedId={selectedId}
           displayName={displayName}
           onSelect={onSelect}
+          draggedId={draggedId}
+          invalidDropIds={invalidDropIds}
+          onDragStart={onDragStart}
+          onDrop={onDrop}
+          onDragEnd={onDragEnd}
         />
       </div>
       <button
@@ -362,6 +467,11 @@
           selectedId={selectedId}
           displayName={displayName}
           onSelect={onSelect}
+          draggedId={draggedId}
+          invalidDropIds={invalidDropIds}
+          onDragStart={onDragStart}
+          onDrop={onDrop}
+          onDragEnd={onDragEnd}
         />
       </div>
     </div>
@@ -388,6 +498,11 @@
             selectedId={selectedId}
             displayName={displayName}
             onSelect={onSelect}
+            draggedId={draggedId}
+            invalidDropIds={invalidDropIds}
+            onDragStart={onDragStart}
+            onDrop={onDrop}
+            onDragEnd={onDragEnd}
           />
         </div>
       {/each}
@@ -411,6 +526,11 @@
             selectedId={selectedId}
             displayName={displayName}
             onSelect={onSelect}
+            draggedId={draggedId}
+            invalidDropIds={invalidDropIds}
+            onDragStart={onDragStart}
+            onDrop={onDrop}
+            onDragEnd={onDragEnd}
           />
         </div>
       {/each}
@@ -437,6 +557,11 @@
             selectedId={selectedId}
             displayName={displayName}
             onSelect={onSelect}
+            draggedId={draggedId}
+            invalidDropIds={invalidDropIds}
+            onDragStart={onDragStart}
+            onDrop={onDrop}
+            onDragEnd={onDragEnd}
           />
         </div>
       {/each}
@@ -465,6 +590,11 @@
                   selectedId={selectedId}
                   displayName={displayName}
                   onSelect={onSelect}
+                  draggedId={draggedId}
+                  invalidDropIds={invalidDropIds}
+                  onDragStart={onDragStart}
+                  onDrop={onDrop}
+                  onDragEnd={onDragEnd}
                 />
               </div>
               <span class="if-label">
@@ -477,6 +607,11 @@
                     selectedId={selectedId}
                     displayName={displayName}
                     onSelect={onSelect}
+                    draggedId={draggedId}
+                    invalidDropIds={invalidDropIds}
+                    onDragStart={onDragStart}
+                    onDrop={onDrop}
+                    onDragEnd={onDragEnd}
                   />
                 </div>
               {/if}
@@ -503,6 +638,11 @@
           selectedId={selectedId}
           displayName={displayName}
           onSelect={onSelect}
+          draggedId={draggedId}
+          invalidDropIds={invalidDropIds}
+          onDragStart={onDragStart}
+          onDrop={onDrop}
+          onDragEnd={onDragEnd}
         />
       </div>
       <span class="paren">(</span>
@@ -512,6 +652,11 @@
           selectedId={selectedId}
           displayName={displayName}
           onSelect={onSelect}
+          draggedId={draggedId}
+          invalidDropIds={invalidDropIds}
+          onDragStart={onDragStart}
+          onDrop={onDrop}
+          onDragEnd={onDragEnd}
         />
       </div>
       <span class="paren">)</span>
@@ -534,6 +679,11 @@
           selectedId={selectedId}
           displayName={displayName}
           onSelect={onSelect}
+          draggedId={draggedId}
+          invalidDropIds={invalidDropIds}
+          onDragStart={onDragStart}
+          onDrop={onDrop}
+          onDragEnd={onDragEnd}
         />
       </div>
       <span class="paren">(</span>
@@ -543,6 +693,11 @@
           selectedId={selectedId}
           displayName={displayName}
           onSelect={onSelect}
+          draggedId={draggedId}
+          invalidDropIds={invalidDropIds}
+          onDragStart={onDragStart}
+          onDrop={onDrop}
+          onDragEnd={onDragEnd}
         />
       </div>
       <span class="paren">)</span>
@@ -570,6 +725,11 @@
           selectedId={selectedId}
           displayName={displayName}
           onSelect={onSelect}
+          draggedId={draggedId}
+          invalidDropIds={invalidDropIds}
+          onDragStart={onDragStart}
+          onDrop={onDrop}
+          onDragEnd={onDragEnd}
         />
       </div>
       {#if isPostfix}
@@ -624,6 +784,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    cursor: grab;
     box-sizing: border-box;
     margin: 0 auto;
     box-shadow: var(--shadow);
@@ -641,6 +802,18 @@
     box-shadow: var(--shadow);
     border-color: var(--color-primary);
     background: rgb(from var(--color-primary) r g b / 8%);
+  }
+
+  /* The node currently picked up by a drag. */
+  .node[data-dragging="true"] {
+    opacity: 0.4;
+  }
+
+  /* A node currently hovered as a valid drop target for the active drag. */
+  .node[data-drop-target="true"] {
+    border-style: dashed;
+    border-color: var(--color-primary);
+    background: rgb(from var(--color-primary) r g b / 15%);
   }
 
   /* Highlight the operators directly owned by the selected node. */
