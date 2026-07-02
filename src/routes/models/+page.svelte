@@ -68,7 +68,9 @@
   ];
 
   const steadyStateModels: Model[] = [
-    { name: "FvCB", slug: "fvcb", image: schemeFvcb },
+    { name: "Bernacchi 2023", slug: "bernacchi2023", image: schemeFvcb },
+    { name: "FvCB 1980", slug: "fvcb", image: schemeFvcb },
+    { name: "Johnson 2021", slug: "johnson2021", image: schemeFvcb },
   ];
 
   let query = $state("");
