@@ -98,6 +98,13 @@
       "text/typescript",
     );
   }
+  function saveMxlJson() {
+    downloadText(
+      model.buildMxlJson(name),
+      `${name.replace(/[^A-Za-z0-9]/g, "_")}.json`,
+      "text/json",
+    );
+  }
 
   async function handleAdd(box: Box) {
     const firstParam = model.parameters.keys().next().value ?? "";
@@ -144,13 +151,11 @@
         style="font-size: var(--text-sm);">{name}</span
       >
     </Pair>
-    <Pair
-      justify="end"
-      wrap="nowrap"
-    >
+    <Pair justify="end">
       <ButtonMenu label="Save">
-        <ButtonMenuItem onclick={savePython}>Python</ButtonMenuItem>
+        <ButtonMenuItem onclick={saveMxlJson}>mxl.json</ButtonMenuItem>
         <ButtonMenuItem onclick={saveMxlweb}>mxlweb</ButtonMenuItem>
+        <ButtonMenuItem onclick={savePython}>Python</ButtonMenuItem>
       </ButtonMenu>
       <Button onclick={() => (model = initModel())}>Reset</Button>
       <Button popovertarget="model-editor">Edit model</Button>
