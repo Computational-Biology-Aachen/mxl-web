@@ -90,12 +90,18 @@
       "text/x-python",
     );
   }
-
   function saveMxlweb() {
     downloadText(
       model.buildMxlweb(),
       `${name.replace(/[^A-Za-z0-9]/g, "_")}.ts`,
       "text/typescript",
+    );
+  }
+  function saveMxlPy() {
+    downloadText(
+      model.buildMxlpy(),
+      `${name.replace(/[^A-Za-z0-9]/g, "_")}.py`,
+      "text/x-python",
     );
   }
   function saveMxlJson() {
@@ -155,6 +161,7 @@
       <ButtonMenu label="Save">
         <ButtonMenuItem onclick={saveMxlJson}>mxl.json</ButtonMenuItem>
         <ButtonMenuItem onclick={saveMxlweb}>mxlweb</ButtonMenuItem>
+        <ButtonMenuItem onclick={saveMxlPy}>MxlPy</ButtonMenuItem>
         <ButtonMenuItem onclick={savePython}>Python</ButtonMenuItem>
       </ButtonMenu>
       <Button onclick={() => (model = initModel())}>Reset</Button>
