@@ -721,7 +721,10 @@
     </select>
   </div>
 
-  <div class="palette-groups">
+  <div
+    class="palette-groups"
+    data-tour="eq-palette"
+  >
     {#each paletteGroups as group (group.name)}
       <details
         class="palette-group"
@@ -753,6 +756,7 @@
         <!-- svelte-ignore a11y_no_static_element_interactions -->
         <div
           class="builder-canvas"
+          data-tour="eq-canvas"
           data-wrap-active={wrapRoot}
           onclick={() => (wrapRoot = true)}
         >

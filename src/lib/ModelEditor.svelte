@@ -15,7 +15,9 @@
     defaultValue,
     KineticModelBuilder,
   } from "@computational-biology-aachen/mxlweb-core";
+  import EditorTutorial from "./EditorTutorial.svelte";
   import { ModelView } from "./modelView";
+  import { buildEditorTutorial } from "./tutorial";
 
   let {
     parent,
@@ -108,6 +110,18 @@
   ];
 
   let cur = $state(tabs[0]);
+
+  let tour = $state<EditorTutorial>();
+  const tutorial = buildEditorTutorial({
+    hasVariables: true,
+    hasReactions: true,
+    selectTab: (name) => {
+      const tab = tabs.find((t) => t.name === name);
+      if (tab) cur = tab;
+    },
+    getAssignments: () => assignments,
+    setAssignments: (next) => (assignments = next as typeof assignments),
+  });
 </script>
 
 <Div>
@@ -124,14 +138,22 @@
       </p>
     </hgroup>
 
-    <Button
-      onclick={() => onSave(modelView.toBuilder())}
-      popovertarget={popovertarget}
-      popovertargetaction="hide">Save</Button
-    >
+    <div class="actions">
+      <Button
+        variant="secondary"
+        onclick={() => tour?.start()}>Tutorial</Button
+      >
+      <span data-tour="save">
+        <Button
+          onclick={() => onSave(modelView.toBuilder())}
+          popovertarget={popovertarget}
+          popovertargetaction="hide">Save</Button
+        >
+      </span>
+    </div>
   </Row>
 
-  <ul>
+  <ul data-tour="tabs">
     {#each tabs as tab (tab.name)}
       <ButtonTab
         selected={cur.name === tab.name}
@@ -143,7 +165,10 @@
     {/each}
   </ul>
 
-  <div class="card">
+  <div
+    class="card"
+    data-tour="table"
+  >
     <cur.comp
       bind:variables={variables}
       bind:parameters={parameters}
@@ -162,7 +187,18 @@
   </div>
 </Div>
 
+<EditorTutorial
+  bind:this={tour}
+  steps={tutorial.steps}
+  openEqEditor={tutorial.openEqEditor}
+  closeEqEditor={tutorial.closeEqEditor}
+/>
+
 <style>
+  .actions {
+    display: flex;
+    gap: 0.5rem;
+  }
   .heading {
     display: flex;
     align-items: center;
