@@ -54,7 +54,7 @@
     "wat-compiler": "^1.1.1"
   },
   "overrides": {
-    "cookie": ">=1.1.1",
+    "cookie": "^1.1.1",
     "eslint": ">=10.0.0",
     "ajv": ">=8.18",
     "minimatch": ">=10.2"
