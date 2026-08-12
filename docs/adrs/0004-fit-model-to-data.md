@@ -1,6 +1,6 @@
 # ADR 0004: Fit Model to Uploaded Data
 
-**Status:** Proposed
+**Status:** Implemented
 **Scope:** `AnalysesDashboard`, `ModelEditor` (this repo); `src-c/`, `build:wasm`,
 `src/backends/wasm/` (sibling `mxlweb-core` repo)
 
@@ -104,6 +104,23 @@ chunk. `iflag < 0` (the abort mechanism) is reserved for this cancel path, not f
 integration failures (see 2.8). `worker.terminate()` remains available as a blunt
 fallback if a single chunk hangs.
 
+The per-chunk budget (`chunkMaxfev`) defaults to **5**, not a larger number — with a
+default in the tens, a fit that converges within its very first chunk call produces a
+convergence plot (2.11) with only one or two points, which is not a meaningfully
+readable curve. A small default trades a few more worker round-trips (cheap — each
+chunk's `postMessage` overhead is negligible next to the WASM-side work it did) for a
+convergence plot that's actually a curve on the very first run, not just for fits that
+happen to need several chunks anyway.
+
+Two additional, JS-side-only stop conditions layer on top of the chunk loop, both
+checked in `Fit.svelte`'s `onProgress` handler (no WASM/C changes — JS already owns the
+"should I request another chunk" decision, so this is the natural place):
+`targetResidualNorm` (optional; stop once the residual norm drops to or below it) and
+`maxFunctionEvaluations` (required, default 1000; a hard cap on total evaluations across
+every chunk, and the progress bar's denominator — see 2.11). Each chunk's own `maxfev`
+is capped at `min(chunkMaxfev, maxFunctionEvaluations - nfevSoFar)` so a fit doesn't
+overshoot the total budget by a whole chunk's worth.
+
 ### 2.8 Solver failure mid-fit
 
 If a trial parameter set causes an integration failure (e.g. Radau5 `IDID < 0`) during a
@@ -127,6 +144,14 @@ A new mode/tab within `AnalysesDashboard.svelte` (not a new route), since fittin
 the same model config, parameter table, and chart the dashboard already assembles — a
 separate route would duplicate or awkwardly share that state.
 
+The fit analysis box defaults to a `span` of 6 (`DynBoxRow`'s full `GRID_COLS` width),
+not the 3 every other analysis type defaults to — fitting's own UI (upload, column
+mapping, parameter table, two charts) is denser than a single time-course chart, and
+needs the room. The trajectory-vs-data chart and the convergence plot (2.11) sit side by
+side in a flex row above 768px, stacking back to a column below it (matching the
+existing mobile-breakpoint convention elsewhere in this file, e.g. `TableParameters`'s
+card layout).
+
 ### 2.11 Results display: fitted values and a convergence plot
 
 The parameter table (2.4) gains a live "Fitted value" column next to "Initial guess",
@@ -140,6 +165,25 @@ by orders of magnitude as a fit converges, and a linear axis flattens the late-s
 improvement to invisibility). One point per chunk response, since that's the resolution
 `fit_chunk` actually reports at (2.7 already established there's no per-inner-iteration
 signal without `SharedArrayBuffer`). History resets at the start of each run.
+
+The plot's first point is the residual **at the initial guess**, evaluated once inside
+`fit_init` itself (not the first chunk's result) — without it, the plot starts wherever
+the first chunk happened to land, which hides exactly the "how much did this improve"
+context the plot exists to show. This evaluation is accounting-invisible: it populates
+`fit_get_residual_norm()` immediately after `fit_init` returns, but doesn't increment
+`fit_get_nfev()` (stays 0), so it reports as the `(nfev=0, residual=initial)` anchor
+point rather than consuming any of the optimizer's own budget.
+
+A progress bar (`nfev / maxFunctionEvaluations`, see 2.7) sits directly below the
+run/stop/apply controls, visible once any progress has landed — the only place in this
+feature with a well-defined "how much is left" denominator, since `lmdif`'s own
+convergence has none. On a run that stops because it's genuinely finished (converged,
+hit the residual target, or hit the max-evaluations cap), the bar is forced to 100%
+regardless of the raw `nfev / maxFunctionEvaluations` ratio — a fit that converges well
+under the cap (the common case, given `maxFunctionEvaluations` defaults to a generous 1000) would otherwise leave the bar showing a small, misleadingly "unfinished" fraction
+even though nothing further will happen. A run stopped by cancellation is **not** forced
+to 100% — it shows the real, honest fraction of the budget actually spent, since forcing
+it there would misrepresent a deliberately-interrupted run as complete.
 
 ### 2.12 Applying fitted parameters back to the model
 

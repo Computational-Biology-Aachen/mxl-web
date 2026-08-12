@@ -304,8 +304,9 @@
       id: box.id,
       idx: analyses.length,
       title: "Fit to data",
-      span: box.span,
-      chunkMaxfev: 30,
+      span: 6,
+      chunkMaxfev: 5,
+      maxFunctionEvaluations: 1000,
       yMax: undefined,
     };
     analyses = [...analyses, newFit];
@@ -547,6 +548,8 @@
               }
             }
             chunkMaxfev={analysis.chunkMaxfev}
+            targetResidualNorm={analysis.targetResidualNorm}
+            maxFunctionEvaluations={analysis.maxFunctionEvaluations}
             yMax={analysis.yMax}
             onApply={runAllSimulations}
           />

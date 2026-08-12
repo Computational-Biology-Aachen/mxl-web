@@ -21,6 +21,11 @@
 
   let title = $derived(parent.title);
   let chunkMaxfev = $derived(parent.chunkMaxfev);
+  let maxFunctionEvaluations = $derived(parent.maxFunctionEvaluations);
+  let targetResidualNorm: number = $derived(parent.targetResidualNorm || 1e-6);
+  let targetResidualNormAuto: boolean = $derived(
+    untrack(() => parent.targetResidualNorm) ? false : true,
+  );
   let yMax: number = $derived(parent.yMax || 10);
   let yMaxAuto: boolean = $derived(untrack(() => parent.yMax) ? false : true);
 </script>
@@ -37,6 +42,10 @@
         ...parent,
         title,
         chunkMaxfev,
+        maxFunctionEvaluations,
+        targetResidualNorm: targetResidualNormAuto
+          ? undefined
+          : targetResidualNorm,
         yMax: yMaxAuto ? undefined : yMax,
       })}
     popovertarget={popovertarget}
@@ -53,6 +62,18 @@
   id="chunk-maxfev"
   label="Function evaluations per progress update: "
   bind:value={chunkMaxfev}
+/>
+<InputNumber
+  id="max-fev"
+  label="Maximum total function evaluations: "
+  bind:value={maxFunctionEvaluations}
+/>
+<InputNumberOptional
+  id="target-residual"
+  valueLabel="Stop once residual norm reaches: "
+  condLabel="Disabled?"
+  bind:value={targetResidualNorm}
+  bind:condition={targetResidualNormAuto}
 />
 
 <h3>Plot options</h3>

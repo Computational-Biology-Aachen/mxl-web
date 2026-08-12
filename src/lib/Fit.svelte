@@ -29,6 +29,8 @@
     targets = $bindable([]),
     fitParameters = $bindable([]),
     chunkMaxfev,
+    targetResidualNorm,
+    maxFunctionEvaluations,
     yMax,
     onApply,
   }: {
@@ -37,6 +39,11 @@
     targets?: FitTargetMapping[];
     fitParameters?: FitParameterConfig[];
     chunkMaxfev: number;
+    /** Stop once the residual norm drops to or below this — undefined
+     * disables the check. */
+    targetResidualNorm?: number;
+    /** Hard cap on total function evaluations across every chunk. */
+    maxFunctionEvaluations: number;
     yMax?: number;
     /** Called after "Apply fitted parameters" writes into model.parameters —
      * wired by AnalysesDashboard to re-run every other analysis box. */
@@ -143,6 +150,15 @@
   let fittedValues = $state<Record<string, number> | null>(null);
   // One entry per chunk response, reset at the start of each run (§2.11).
   let residualHistory = $state<{ nfev: number; residualNorm: number }[]>([]);
+  let progressFraction = $derived(
+    Math.min(nfev / Math.max(maxFunctionEvaluations, 1), 1),
+  );
+  // True once a run has stopped because it's genuinely finished (converged,
+  // hit the residual target, or hit the max-evaluations cap) — as opposed to
+  // still running or cancelled. Forces the progress bar to 100%: nfev/max
+  // alone is misleading on completion, since a fit that converges well
+  // under the cap would otherwise show a small, seemingly-unfinished bar.
+  let fitComplete = $state(false);
 
   let trajectory = $state<{ time: number[]; values: number[][] }>({
     time: [],
@@ -187,6 +203,12 @@
       });
     return unsub;
   });
+
+  // Caps a chunk's own maxfev so a fit doesn't overshoot the total
+  // maxFunctionEvaluations budget by a whole chunk's worth.
+  function nextChunkBudget(currentNfev: number): number {
+    return Math.min(chunkMaxfev, maxFunctionEvaluations - currentNfev);
+  }
 
   function fitTargets(): { fitIdx: number[]; ok: boolean } {
     const parNames = model.getParameterNames();
@@ -235,6 +257,7 @@
 
     errorMsg = null;
     running = true;
+    fitComplete = false;
     nfev = 0;
     residualNorm = null;
     fittedValues = null;
@@ -282,7 +305,14 @@
         session = null;
         return;
       }
-      session?.chunk(chunkMaxfev);
+      // Anchor the convergence plot at nfev=0 with the pre-fit residual,
+      // rather than starting from wherever the first chunk happens to land.
+      if (result.initialResidualNorm !== undefined) {
+        residualHistory = [
+          { nfev: 0, residualNorm: result.initialResidualNorm },
+        ];
+      }
+      session?.chunk(nextChunkBudget(0));
     });
     session.onProgress((progress) => {
       nfev = progress.nfev;
@@ -302,10 +332,17 @@
         parNames.map((id, i) => [id, progress.params[i]]),
       );
       previewTrajectory(progress.params, sortedT[sortedT.length - 1]);
-      if (!progress.done) {
-        session?.chunk(chunkMaxfev);
+
+      const reachedTarget =
+        targetResidualNorm !== undefined &&
+        progress.residualNorm <= targetResidualNorm;
+      const reachedMaxEvals = progress.nfev >= maxFunctionEvaluations;
+      const budget = nextChunkBudget(progress.nfev);
+      if (!progress.done && !reachedTarget && !reachedMaxEvals && budget > 0) {
+        session?.chunk(budget);
       } else {
         running = false;
+        fitComplete = true;
         session?.free();
         session = null;
       }
@@ -540,30 +577,49 @@
         >
       {/if}
     </div>
+    {#if nfev > 0}
+      <div
+        class="progress-bar-track"
+        title="{nfev} / {maxFunctionEvaluations} evaluations"
+      >
+        <div
+          class="progress-bar-fill"
+          style="width: {(fitComplete ? 100 : progressFraction * 100).toFixed(
+            1,
+          )}%"
+        ></div>
+      </div>
+    {/if}
     {#if errorMsg}
       <p class="error">{errorMsg}</p>
     {/if}
 
-    {#if trajectoryErr}
-      <SimErrDisplay err={trajectoryErr} />
-    {:else}
-      <LineChart
-        data={lineData}
-        loading={false}
-        yMax={yMax}
-      />
-    {/if}
+    <div class="charts-row">
+      {#if trajectoryErr}
+        <SimErrDisplay err={trajectoryErr} />
+      {:else}
+        <div class="chart-cell">
+          <LineChart
+            data={lineData}
+            loading={false}
+            yMax={yMax}
+          />
+        </div>
+      {/if}
 
-    {#if residualHistory.length > 0}
-      <LineChart
-        data={residualHistoryData}
-        loading={false}
-        yScale="logarithmic"
-        yMin={undefined}
-        xLabel="Function evaluations"
-        yLabel="Residual norm"
-      />
-    {/if}
+      {#if residualHistory.length > 0}
+        <div class="chart-cell">
+          <LineChart
+            data={residualHistoryData}
+            loading={false}
+            yScale="logarithmic"
+            yMin={undefined}
+            xLabel="Function evaluations"
+            yLabel="Residual norm"
+          />
+        </div>
+      {/if}
+    </div>
   {/if}
 </div>
 
@@ -578,6 +634,33 @@
     display: flex;
     align-items: center;
     gap: 1rem;
+  }
+  .charts-row {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+
+    @media (min-width: 768px) {
+      flex-direction: row;
+      align-items: flex-start;
+    }
+  }
+  .chart-cell {
+    width: 100%;
+    min-width: 0;
+  }
+  .progress-bar-track {
+    border-radius: var(--radius-full, 999px);
+    background: #e5e7eb;
+    width: 100%;
+    height: 0.5rem;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    transition: width 200ms ease;
+    background: var(--color-primary);
+    height: 100%;
   }
   .upload-button {
     cursor: pointer;
