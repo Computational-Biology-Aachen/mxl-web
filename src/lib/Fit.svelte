@@ -1,0 +1,583 @@
+<!--
+ @component
+ Fit a model's parameters to uploaded data (ADR 0004).
+
+ Runs entirely against the WASM backend (radau5): fitWorker.ts vendors
+ cminpack's lmdif alongside the integrators so the fit's inner loop never
+ leaves WASM. Fitting is chunked — see docs/adrs/0004-fit-model-to-data.md —
+ so progress can be shown and the run cancelled mid-fit.
+-->
+
+<script lang="ts">
+  import { LineChart } from "@computational-biology-aachen/design";
+  import type { ModelBuilderBase } from "@computational-biology-aachen/mxlweb-core";
+  import { parseCsvFile, type ParsedCsv } from "./csvParse";
+  import type { FitParameterConfig, FitTargetMapping } from "./index";
+  import SimErrDisplay from "./SimErrDisplay.svelte";
+  import { backends } from "./stores/backends";
+  import { FitSession } from "./stores/fitStore";
+  import {
+    WorkerManager,
+    type SimulationError,
+    type SimulationResult,
+  } from "./stores/workerStore";
+  import { arrayColumn } from "./utils";
+
+  let {
+    model,
+    timeColumn = $bindable(undefined),
+    targets = $bindable([]),
+    fitParameters = $bindable([]),
+    chunkMaxfev,
+    yMax,
+  }: {
+    model: ModelBuilderBase;
+    timeColumn?: string;
+    targets?: FitTargetMapping[];
+    fitParameters?: FitParameterConfig[];
+    chunkMaxfev: number;
+    yMax?: number;
+  } = $props();
+
+  // ---- Upload + column mapping -------------------------------------------
+
+  let csv = $state<ParsedCsv | null>(null);
+  let fileError = $state<string | null>(null);
+
+  // Candidate fit targets: state variables + derived quantities — the same
+  // source TimeCourse.svelte uses for its "select derived" UI.
+  let candidateKeys = $derived([
+    ...model.getNames().map((key) => ({ key, kind: "state" as const })),
+    ...model
+      .sortDependencies()
+      .map((key) => ({ key, kind: "derived" as const })),
+  ]);
+
+  function autoMapColumns() {
+    if (!csv) return;
+    if (!timeColumn) {
+      const guess = csv.headers.find((h) => /^t(ime)?$/i.test(h));
+      timeColumn = guess ?? csv.headers[0];
+    }
+    const displayNames = model.getDisplayNames();
+    const mapped: FitTargetMapping[] = [];
+    for (const header of csv.headers) {
+      if (header === timeColumn) continue;
+      const match = candidateKeys.find(
+        ({ key }) =>
+          key.toLowerCase() === header.toLowerCase() ||
+          (displayNames.get(key) ?? "").toLowerCase() === header.toLowerCase(),
+      );
+      if (match) {
+        mapped.push({ column: header, key: match.key, kind: match.kind });
+      }
+    }
+    targets = mapped;
+  }
+
+  async function handleFile(event: Event) {
+    fileError = null;
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    try {
+      csv = await parseCsvFile(file);
+      autoMapColumns();
+    } catch (e) {
+      fileError = e instanceof Error ? e.message : "Failed to parse file";
+    }
+    input.value = "";
+  }
+
+  function setTargetColumn(column: string, key: string) {
+    const match = candidateKeys.find((c) => c.key === key);
+    if (!match) return;
+    // A key can only be mapped from one column at a time — remapping it here
+    // implicitly un-maps whichever other column previously used it, rather
+    // than silently duplicating a residual row for the same model quantity.
+    const rest = targets.filter((t) => t.column !== column && t.key !== key);
+    targets = [...rest, { column, key, kind: match.kind }];
+  }
+
+  function unmapColumn(column: string) {
+    targets = targets.filter((t) => t.column !== column);
+  }
+
+  // ---- Parameter selection -------------------------------------------
+
+  // Not all parameters fit by default (ADR 0004 §2.4) — a parameter not yet
+  // in fitParameters defaults to unchecked.
+  let paramRows = $derived(
+    [...model.parameters.keys()].map((id) => {
+      const existing = fitParameters.find((p) => p.id === id);
+      return existing ?? { id, fit: false, logSpace: true };
+    }),
+  );
+
+  function updateParamRow(id: string, update: Partial<FitParameterConfig>) {
+    const current = fitParameters.find((p) => p.id === id) ?? {
+      id,
+      fit: false,
+      logSpace: true,
+    };
+    fitParameters = [
+      ...fitParameters.filter((p) => p.id !== id),
+      { ...current, ...update },
+    ];
+  }
+
+  // ---- Fit run ---------------------------------------------------------
+
+  let session: FitSession | null = null;
+  let running = $state(false);
+  let errorMsg = $state<string | null>(null);
+  let nfev = $state(0);
+  let residualNorm = $state<number | null>(null);
+
+  let trajectory = $state<{ time: number[]; values: number[][] }>({
+    time: [],
+    values: [],
+  });
+  let trajectoryErr = $state<SimulationError | undefined>(undefined);
+  let previewRequestId: string | null = null;
+
+  function previewTrajectory(parValues: number[], tEnd: number) {
+    const requestId = WorkerManager.generateRequestId();
+    previewRequestId = requestId;
+    const order = model.sortDependencies();
+    const req = backends.wasmRadau5.buildRequest(model, {
+      derivedSelection: order,
+    });
+    backends.wasmRadau5.getPool().postMessage({
+      ...req,
+      pars: parValues,
+      parNames: model.getParameterNames(),
+      initialValues: model.resolveInitialValues(),
+      rhsNames: model.getNames(),
+      allDerivedNames: order,
+      selectDerivedNames: order,
+      tEnd,
+      requestId,
+      calculateDerived: true,
+      nTimePoints: 200,
+    });
+  }
+
+  $effect(() => {
+    const unsub = backends.wasmRadau5
+      .getPool()
+      .onMessage((data: SimulationResult) => {
+        if (data.requestId !== previewRequestId) return;
+        if (data.err) {
+          trajectoryErr = data.err;
+        } else {
+          trajectoryErr = undefined;
+          trajectory = { time: data.time, values: data.values };
+        }
+      });
+    return unsub;
+  });
+
+  function fitTargets(): { fitIdx: number[]; ok: boolean } {
+    const parNames = model.getParameterNames();
+    const fitIdx = fitParameters
+      .filter((p) => p.fit)
+      .map((p) => parNames.indexOf(p.id))
+      .filter((i) => i >= 0);
+    return { fitIdx, ok: fitIdx.length > 0 };
+  }
+
+  export function runFit() {
+    if (!csv || !timeColumn || targets.length === 0) {
+      errorMsg = "Upload a data file and map at least one column first.";
+      return;
+    }
+    const { fitIdx, ok } = fitTargets();
+    if (!ok) {
+      errorMsg = "Select at least one parameter to fit.";
+      return;
+    }
+
+    // A mapping can go stale (e.g. the model was reloaded from a new SBML
+    // file) without the mapping table being touched — reject rather than
+    // let an unresolved key reach the WASM heap as a bogus buffer index.
+    const knownKeys = new Set(candidateKeys.map((c) => c.key));
+    const staleTarget = targets.find((t) => !knownKeys.has(t.key));
+    if (staleTarget) {
+      errorMsg = `"${staleTarget.key}" is no longer a valid target — re-map column "${staleTarget.column}".`;
+      return;
+    }
+
+    const columns = csv.columns;
+    const dataT = columns[timeColumn];
+    const order = dataT.map((t, i) => i).sort((a, b) => dataT[a] - dataT[b]);
+    const sortedT = order.map((i) => dataT[i]);
+    if (sortedT.some((t) => Number.isNaN(t))) {
+      errorMsg = `Column "${timeColumn}" has a non-numeric value.`;
+      return;
+    }
+    for (const t of targets) {
+      if (order.some((i) => Number.isNaN(columns[t.column][i]))) {
+        errorMsg = `Column "${t.column}" has a non-numeric value.`;
+        return;
+      }
+    }
+
+    errorMsg = null;
+    running = true;
+    nfev = 0;
+    residualNorm = null;
+
+    const derivedTargets = targets.filter((t) => t.kind === "derived");
+    const derivedKeys = derivedTargets.map((t) => t.key);
+
+    let derivedWat: string | undefined;
+    try {
+      derivedWat =
+        derivedKeys.length > 0 ? model.buildWatDerived(derivedKeys) : undefined;
+    } catch (e) {
+      errorMsg =
+        e instanceof Error ? e.message : "Failed to build the fit model.";
+      running = false;
+      return;
+    }
+
+    const fitTargetsList = targets.map((t) => {
+      const values = order.map((i) => columns[t.column][i]);
+      const scale = Math.max(...values.map(Math.abs), 1e-12);
+      return {
+        kind: t.kind,
+        index:
+          t.kind === "state"
+            ? model.getNames().indexOf(t.key)
+            : derivedKeys.indexOf(t.key),
+        scale,
+        values,
+      };
+    });
+
+    const parNames = model.getParameterNames();
+    const logFlags = fitIdx.map(
+      (i) => fitParameters.find((p) => p.id === parNames[i])?.logSpace ?? true,
+    );
+
+    session = new FitSession();
+    session.onInitResult((result) => {
+      if (!result.ok) {
+        errorMsg = result.error ?? "Failed to start the fit.";
+        running = false;
+        session?.cancel();
+        session = null;
+        return;
+      }
+      session?.chunk(chunkMaxfev);
+    });
+    session.onProgress((progress) => {
+      nfev = progress.nfev;
+      residualNorm = progress.residualNorm;
+      if (progress.err) {
+        errorMsg = progress.err.message;
+        running = false;
+        session?.free();
+        session = null;
+        return;
+      }
+      previewTrajectory(progress.params, sortedT[sortedT.length - 1]);
+      if (!progress.done) {
+        session?.chunk(chunkMaxfev);
+      } else {
+        running = false;
+        session?.free();
+        session = null;
+      }
+    });
+
+    session.init({
+      rhsWat: model.buildWat(),
+      derivedWat,
+      nDerived: derivedKeys.length,
+      y0: model.resolveInitialValues(),
+      pars: model.resolveParameters(),
+      fitIdx,
+      logFlags,
+      targets: fitTargetsList.map(({ kind, index, scale }) => ({
+        kind,
+        index,
+        scale,
+      })),
+      dataT: sortedT,
+      dataY: fitTargetsList.flatMap((t) => t.values),
+      tEnd: sortedT[sortedT.length - 1],
+      solver: "radau5",
+      rtol: 1e-8,
+      atol: 1e-10,
+    });
+  }
+
+  export function cancelFit() {
+    session?.cancel();
+    session = null;
+    running = false;
+  }
+
+  // ---- Chart -------------------------------------------------------------
+
+  let lineData = $derived.by(() => {
+    const displayNames = model.getDisplayNames();
+    const nVars = model.getNames().length;
+    const order = model.sortDependencies();
+
+    const modelDatasets = targets.map((t) => {
+      const idx =
+        t.kind === "state"
+          ? model.getNames().indexOf(t.key)
+          : nVars + order.indexOf(t.key);
+      return {
+        label: `${displayNames.get(t.key) ?? t.key} (model)`,
+        data: arrayColumn(trajectory.values, idx) as number[],
+      };
+    });
+
+    const dataDatasets =
+      csv && timeColumn
+        ? targets.map((t) => ({
+            label: `${displayNames.get(t.key) ?? t.key} (data)`,
+            data: csv!.columns[timeColumn!].map((x, i) => ({
+              x,
+              y: csv!.columns[t.column][i],
+            })),
+            showLine: false,
+            pointRadius: 4,
+          }))
+        : [];
+
+    return {
+      labels: trajectory.time as number[],
+      datasets: [...modelDatasets, ...dataDatasets],
+    };
+  });
+</script>
+
+<div class="fit-panel">
+  <div class="upload-row">
+    <label class="upload-button">
+      Upload data (CSV/TSV)
+      <input
+        type="file"
+        accept=".csv,.tsv,.txt"
+        onchange={handleFile}
+        style="display:none"
+      />
+    </label>
+    {#if csv}
+      <span class="file-info"
+        >{csv.rowCount} rows, {csv.headers.length} columns</span
+      >
+    {/if}
+  </div>
+  {#if fileError}
+    <p class="error">{fileError}</p>
+  {/if}
+
+  {#if csv}
+    <table class="mapping-table">
+      <thead>
+        <tr>
+          <th>Column</th>
+          <th>Maps to</th>
+        </tr>
+      </thead>
+      <tbody>
+        {#each csv.headers as header (header)}
+          {@const mapping = targets.find((t) => t.column === header)}
+          <tr>
+            <td>{header}</td>
+            <td>
+              {#if header === timeColumn}
+                <span class="time-badge">time axis</span>
+              {:else}
+                <select
+                  value={mapping?.key ?? ""}
+                  onchange={(e) => {
+                    const value = (e.target as HTMLSelectElement).value;
+                    if (value === "") unmapColumn(header);
+                    else setTargetColumn(header, value);
+                  }}
+                >
+                  <option value="">(ignore)</option>
+                  {#each candidateKeys as c (c.key)}
+                    <option value={c.key}>{c.key} ({c.kind})</option>
+                  {/each}
+                </select>
+                <button
+                  type="button"
+                  class="time-link"
+                  onclick={() => (timeColumn = header)}>use as time</button
+                >
+              {/if}
+            </td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+
+    <table class="param-table">
+      <thead>
+        <tr>
+          <th>Parameter</th>
+          <th>Fit</th>
+          <th>Log-space</th>
+          <th>Initial guess</th>
+        </tr>
+      </thead>
+      <tbody>
+        {#each paramRows as row (row.id)}
+          <tr>
+            <td>{model.getDisplayNames().get(row.id) ?? row.id}</td>
+            <td>
+              <input
+                type="checkbox"
+                checked={row.fit}
+                onchange={(e) =>
+                  updateParamRow(row.id, {
+                    fit: (e.target as HTMLInputElement).checked,
+                  })}
+              />
+            </td>
+            <td>
+              <input
+                type="checkbox"
+                checked={row.logSpace}
+                disabled={!row.fit}
+                onchange={(e) =>
+                  updateParamRow(row.id, {
+                    logSpace: (e.target as HTMLInputElement).checked,
+                  })}
+              />
+            </td>
+            <td>{model.parameters.get(row.id)?.value}</td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+
+    <div class="run-row">
+      {#if !running}
+        <button
+          type="button"
+          class="run-button"
+          onclick={runFit}>Run fit</button
+        >
+      {:else}
+        <button
+          type="button"
+          class="cancel-button"
+          onclick={cancelFit}>Stop</button
+        >
+      {/if}
+      {#if residualNorm !== null}
+        <span class="progress-info"
+          >evals: {nfev} · residual norm: {residualNorm.toExponential(3)}</span
+        >
+      {/if}
+    </div>
+    {#if errorMsg}
+      <p class="error">{errorMsg}</p>
+    {/if}
+
+    {#if trajectoryErr}
+      <SimErrDisplay err={trajectoryErr} />
+    {:else}
+      <LineChart
+        data={lineData}
+        loading={false}
+        yMax={yMax}
+      />
+    {/if}
+  {/if}
+</div>
+
+<style>
+  .fit-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+  }
+  .upload-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .upload-button {
+    cursor: pointer;
+    border: var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+  .file-info {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+  .error {
+    margin: 0;
+    color: var(--error, #dc2626);
+    font-size: 0.875rem;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    text-align: left;
+  }
+  th,
+  td {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  th {
+    background-color: #e5e7eb;
+    font-weight: var(--weight-bold);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+  }
+  .time-badge {
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+  .time-link {
+    cursor: pointer;
+    margin-left: 0.5rem;
+    border: none;
+    background: none;
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    text-decoration: underline;
+  }
+  .run-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .run-button,
+  .cancel-button {
+    cursor: pointer;
+    border: var(--border);
+    border-radius: var(--radius-lg);
+    padding: 0.5rem 1.25rem;
+    font-size: 0.875rem;
+  }
+  .run-button {
+    background: var(--color-primary);
+    color: white;
+  }
+  .cancel-button {
+    background: var(--error, #dc2626);
+    color: white;
+  }
+  .progress-info {
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+  }
+</style>

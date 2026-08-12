@@ -19,6 +19,14 @@ sourced from an external community. See `greensloth`'s ADRs for the contrasting 
 → [ADR 0002 — Route → Dashboard → Editor → WorkerManager layering](0002-route-component-architecture.md)
 → [ADR 0003 — Shared `design` package for CPBL branding](0003-shared-design-package.md)
 
+## Features
+
+→ [ADR 0004 — Fit model to uploaded data](0004-fit-model-to-data.md)
+
+Spans this repo and `mxlweb-core`: fitting reuses the WASM backend's in-WASM
+function-pointer pattern (vendoring `cminpack`'s `lmdif` alongside the existing
+Radau5/DOP853/DOPRI5 build) rather than adding a JS-side optimization library.
+
 ## Inherited from mxlweb-core
 
 This site does not re-decide: the no-server/all-client-side stance, the three compute

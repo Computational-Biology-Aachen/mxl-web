@@ -68,7 +68,39 @@ export type PamAnalysis = {
   lineDisplay: "current" | "last" | "first";
 };
 
-export type Analysis = SimulationAnalysis | ParameterScanAnalysis | PamAnalysis;
+export type FitTargetMapping = {
+  /** CSV column header this target reads from. */
+  column: string;
+  /** Model state-variable id or derived-quantity id this column is fit against. */
+  key: string;
+  kind: "state" | "derived";
+};
+
+export type FitParameterConfig = {
+  id: string;
+  fit: boolean;
+  /** Fit in log-space (guarantees positivity) — requires the parameter's
+   * current value to be > 0. */
+  logSpace: boolean;
+};
+
+export type FitAnalysis = {
+  type: "fit";
+  id: number;
+  idx: number;
+  title: string;
+  span: number;
+  /** CSV column used as the time axis; unset until a file is mapped. */
+  timeColumn?: string;
+  targets?: FitTargetMapping[];
+  fitParameters?: FitParameterConfig[];
+  /** Function evaluations per chunk — see ADR 0004 §2.7 in the mxlweb repo. */
+  chunkMaxfev: number;
+  yMax: number | undefined;
+};
+
+export type Analysis =
+  SimulationAnalysis | ParameterScanAnalysis | PamAnalysis | FitAnalysis;
 export type Analyses = Analysis[];
 
 // Steady-state (algebraic) models have their own analysis: a closed-form sweep

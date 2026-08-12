@@ -3,10 +3,12 @@
   import {
     backends,
     type Analyses,
+    type FitAnalysis,
     type PamAnalysis,
     type ParameterScanAnalysis,
     type SimulationAnalysis,
   } from "$lib";
+  import FitSimulator from "$lib/Fit.svelte";
   import PamSimulator from "$lib/Pam.svelte";
   import ParameterScanSimulator from "$lib/ParameterScan.svelte";
   import Simulator from "$lib/TimeCourse.svelte";
@@ -36,6 +38,7 @@
   } from "@computational-biology-aachen/mxlweb-core/sbml";
   import type { Snippet } from "svelte";
   import { tick } from "svelte";
+  import FitEditor from "./FitEditor.svelte";
   import ModelEditor from "./ModelEditor.svelte";
   import OdeModelEditor from "./OdeModelEditor.svelte";
   import PamScanEditor from "./PamScanEditor.svelte";
@@ -63,6 +66,7 @@
     {},
   );
   let pamRefs = $state<Record<number, PamSimulator | undefined>>({});
+  let fitRefs = $state<Record<number, FitSimulator | undefined>>({});
 
   let analysisById = $derived.by(() => {
     // transient lookup rebuilt by this derived, not reactive state
@@ -293,6 +297,19 @@
     };
     analyses = [...analyses, newScan];
   }
+
+  function addFit(box: Box) {
+    const newFit: FitAnalysis = {
+      type: "fit",
+      id: box.id,
+      idx: analyses.length,
+      title: "Fit to data",
+      span: box.span,
+      chunkMaxfev: 30,
+      yMax: undefined,
+    };
+    analyses = [...analyses, newFit];
+  }
 </script>
 
 <Div>
@@ -447,6 +464,12 @@
       scannerRefs = { ...scannerRefs };
       delete pamRefs[box.id];
       pamRefs = { ...pamRefs };
+      // A running fit owns a dedicated Worker (unlike the pooled workers
+      // above) that keeps calling itself via FIT_CHUNK independently of this
+      // component's lifecycle — cancel it explicitly or it runs forever.
+      fitRefs[box.id]?.cancelFit();
+      delete fitRefs[box.id];
+      fitRefs = { ...fitRefs };
     }}
   >
     {#snippet children({ box })}
@@ -494,6 +517,37 @@
             normalizedKeys={analysis.normalizedKeys}
             nTimePoints={analysis.nTimePoints ?? 100}
             lineDisplay={analysis.lineDisplay}
+          />
+        {:else if analysis.type === "fit"}
+          <FitSimulator
+            bind:this={fitRefs[box.id]}
+            model={model}
+            bind:timeColumn={
+              () => analysis.timeColumn,
+              (v) => {
+                analyses = analyses.map((a) =>
+                  a.id === analysis.id ? { ...a, timeColumn: v } : a,
+                ) as Analyses;
+              }
+            }
+            bind:targets={
+              () => analysis.targets ?? [],
+              (v) => {
+                analyses = analyses.map((a) =>
+                  a.id === analysis.id ? { ...a, targets: v } : a,
+                ) as Analyses;
+              }
+            }
+            bind:fitParameters={
+              () => analysis.fitParameters ?? [],
+              (v) => {
+                analyses = analyses.map((a) =>
+                  a.id === analysis.id ? { ...a, fitParameters: v } : a,
+                ) as Analyses;
+              }
+            }
+            chunkMaxfev={analysis.chunkMaxfev}
+            yMax={analysis.yMax}
           />
         {/if}
       {/if}
@@ -551,6 +605,21 @@
   >
     <Icon>pulse_alert</Icon>
     PAM Fluorescence
+  </button>
+  <button
+    class="picker-option"
+    onclick={async () => {
+      if (!pendingBox) return;
+      addFit(pendingBox);
+      const id = pendingBox.id;
+      pendingBox = null;
+      pickerEl?.hidePopover();
+      await tick();
+      analysisEditorEls[id]?.showPopover();
+    }}
+  >
+    <Icon>target</Icon>
+    Fit to data
   </button>
 </Popover>
 <Popover
@@ -617,6 +686,16 @@
             a.id === analysis.id ? updated : a,
           ) as Analyses;
           pamRefs[analysis.id]?.runSimulation(model);
+        }}
+        popovertarget={`analysis-editor-${analysis.id}`}
+      />
+    {:else if analysis.type === "fit"}
+      <FitEditor
+        parent={analysis}
+        onSave={(updated) => {
+          analyses = analyses.map((a) =>
+            a.id === analysis.id ? updated : a,
+          ) as Analyses;
         }}
         popovertarget={`analysis-editor-${analysis.id}`}
       />
