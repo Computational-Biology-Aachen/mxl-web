@@ -548,6 +548,7 @@
             }
             chunkMaxfev={analysis.chunkMaxfev}
             yMax={analysis.yMax}
+            onApply={runAllSimulations}
           />
         {/if}
       {/if}

@@ -41,7 +41,7 @@ function call — no JS↔WASM boundary crossing per trial parameter set, which 
 the actual cost of a fit lives (hundreds of integrator calls per fit: iterations ×
 (params + 1) for each finite-difference Jacobian).
 
-### 2.2 Fit targets: state variables *and* derived quantities, entirely in WASM
+### 2.2 Fit targets: state variables _and_ derived quantities, entirely in WASM
 
 `wat-codegen.ts`'s `expr.toWat(ctx)` is already generic per-AST-node codegen;
 `buildModelWat` is a thin wrapper around it for the RHS case. Add a parallel
@@ -84,8 +84,8 @@ weights. No manual per-target weight input in v1.
 
 Radau5/DOP853/DOPRI5 already produce dense output; `wasmWorker.ts`'s `resampleUniform()`
 already does linear interpolation for chart display, but in JS. A small C port
-(~20-30 LOC) of the same interpolation, operating on the *user's actual data
-timestamps* (irregular, not uniform), keeps residual computation inside WASM during the
+(~20-30 LOC) of the same interpolation, operating on the _user's actual data
+timestamps_ (irregular, not uniform), keeps residual computation inside WASM during the
 fit.
 
 ### 2.7 Interactivity: chunked `maxfev`, not `nprint` + `SharedArrayBuffer`
@@ -127,6 +127,41 @@ A new mode/tab within `AnalysesDashboard.svelte` (not a new route), since fittin
 the same model config, parameter table, and chart the dashboard already assembles — a
 separate route would duplicate or awkwardly share that state.
 
+### 2.11 Results display: fitted values and a convergence plot
+
+The parameter table (2.4) gains a live "Fitted value" column next to "Initial guess",
+updating on every chunk's progress — sourced from `Fit.svelte`'s own transient state,
+not persisted into `FitParameterConfig` (that type holds saved _choices_ — which
+parameters to fit, log-space or not — not a run's _results_).
+
+A second chart, separate from the trajectory-vs-data chart, plots residual norm against
+cumulative function evaluations (linear x, logarithmic y — residual norm typically drops
+by orders of magnitude as a fit converges, and a linear axis flattens the late-stage
+improvement to invisibility). One point per chunk response, since that's the resolution
+`fit_chunk` actually reports at (2.7 already established there's no per-inner-iteration
+signal without `SharedArrayBuffer`). History resets at the start of each run.
+
+### 2.12 Applying fitted parameters back to the model
+
+An "Apply fitted parameters" button writes the current best-fit values into
+`model.parameters` — the same `SvelteMap.set()` pattern `AnalysesDashboard.svelte`'s
+parameter sliders already use to mutate the shared, reactive `model` object — then calls
+a new `onApply?: () => void` prop that `AnalysesDashboard` wires to its existing
+`runAllSimulations()`, so every other analysis box (Simulation/ParameterScan/PAM) re-runs
+against the newly-applied values exactly as it would after a manual slider edit.
+
+The button is available as soon as the first chunk's progress has landed, not gated on
+full convergence — a cancelled or still-running fit's current values are still real,
+useful numbers a user may want to keep. No confirmation dialog: applying a fitted value
+is not treated differently from any other parameter edit in this app, none of which
+confirm today.
+
+Applying only ever touches parameters currently marked "fit" (2.4) — fixed parameters
+are never written, and initial conditions are untouched (fitting has never targeted
+them, per 2.4's scope). Because the parameter table's "Initial guess" column already
+reads live from `model.parameters`, applying updates it for free — the next fit run
+(on this data or new data) starts from the just-applied values.
+
 ## 3. Rationale
 
 Every piece of this reuses an existing pattern in the codebase rather than introducing a
@@ -161,3 +196,9 @@ general rejection of the mechanism.
 - Restarting `lmdif` per chunk means convergence diagnostics (`info` code) are only
   meaningful for the final chunk; progress reporting between chunks is limited to
   residual norm and current parameters, not full MINPACK convergence state.
+- Applying fitted parameters (2.12) mutates the same `model` object every other analysis
+  box on the dashboard references — there is no per-analysis "sandboxed" parameter set.
+  This matches how every other parameter edit in this app already works (sliders,
+  direct value edits), but means Fit is not a safe place to explore "what if" parameter
+  values without affecting the rest of the dashboard; `AnalysesDashboard`'s existing
+  "Reset" button (re-runs `initModel()`) is the escape hatch.

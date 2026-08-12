@@ -30,6 +30,7 @@
     fitParameters = $bindable([]),
     chunkMaxfev,
     yMax,
+    onApply,
   }: {
     model: ModelBuilderBase;
     timeColumn?: string;
@@ -37,6 +38,9 @@
     fitParameters?: FitParameterConfig[];
     chunkMaxfev: number;
     yMax?: number;
+    /** Called after "Apply fitted parameters" writes into model.parameters —
+     * wired by AnalysesDashboard to re-run every other analysis box. */
+    onApply?: () => void;
   } = $props();
 
   // ---- Upload + column mapping -------------------------------------------
@@ -133,6 +137,12 @@
   let errorMsg = $state<string | null>(null);
   let nfev = $state(0);
   let residualNorm = $state<number | null>(null);
+  // Current best-fit full parameter vector, id -> value — a run result, not
+  // a saved config choice, so it lives here rather than in FitParameterConfig
+  // (ADR 0004 §2.11). null until the first chunk's progress has landed.
+  let fittedValues = $state<Record<string, number> | null>(null);
+  // One entry per chunk response, reset at the start of each run (§2.11).
+  let residualHistory = $state<{ nfev: number; residualNorm: number }[]>([]);
 
   let trajectory = $state<{ time: number[]; values: number[][] }>({
     time: [],
@@ -227,6 +237,8 @@
     running = true;
     nfev = 0;
     residualNorm = null;
+    fittedValues = null;
+    residualHistory = [];
 
     const derivedTargets = targets.filter((t) => t.kind === "derived");
     const derivedKeys = derivedTargets.map((t) => t.key);
@@ -282,6 +294,13 @@
         session = null;
         return;
       }
+      residualHistory = [
+        ...residualHistory,
+        { nfev: progress.nfev, residualNorm: progress.residualNorm },
+      ];
+      fittedValues = Object.fromEntries(
+        parNames.map((id, i) => [id, progress.params[i]]),
+      );
       previewTrajectory(progress.params, sortedT[sortedT.length - 1]);
       if (!progress.done) {
         session?.chunk(chunkMaxfev);
@@ -320,6 +339,23 @@
     running = false;
   }
 
+  // Writes the current best-fit values into model.parameters — the same
+  // SvelteMap.set() pattern AnalysesDashboard's parameter sliders already
+  // use to mutate the shared, reactive model — then lets the dashboard
+  // re-run every other analysis box (ADR 0004 §2.12).
+  function applyFittedParameters() {
+    if (!fittedValues) return;
+    for (const row of paramRows) {
+      if (!row.fit) continue;
+      const value = fittedValues[row.id];
+      if (value === undefined) continue;
+      const current = model.parameters.get(row.id);
+      if (!current) continue;
+      model.parameters = model.parameters.set(row.id, { ...current, value });
+    }
+    onApply?.();
+  }
+
   // ---- Chart -------------------------------------------------------------
 
   let lineData = $derived.by(() => {
@@ -355,6 +391,16 @@
       labels: trajectory.time as number[],
       datasets: [...modelDatasets, ...dataDatasets],
     };
+  });
+
+  let residualHistoryData = $derived({
+    labels: residualHistory.map((h) => h.nfev),
+    datasets: [
+      {
+        label: "Residual norm",
+        data: residualHistory.map((h) => h.residualNorm),
+      },
+    ],
   });
 </script>
 
@@ -428,6 +474,7 @@
           <th>Fit</th>
           <th>Log-space</th>
           <th>Initial guess</th>
+          <th>Fitted value</th>
         </tr>
       </thead>
       <tbody>
@@ -456,6 +503,11 @@
               />
             </td>
             <td>{model.parameters.get(row.id)?.value}</td>
+            <td
+              >{row.fit && fittedValues
+                ? fittedValues[row.id]?.toPrecision(6)
+                : "—"}</td
+            >
           </tr>
         {/each}
       </tbody>
@@ -475,6 +527,13 @@
           onclick={cancelFit}>Stop</button
         >
       {/if}
+      {#if fittedValues}
+        <button
+          type="button"
+          class="apply-button"
+          onclick={applyFittedParameters}>Apply fitted parameters</button
+        >
+      {/if}
       {#if residualNorm !== null}
         <span class="progress-info"
           >evals: {nfev} · residual norm: {residualNorm.toExponential(3)}</span
@@ -492,6 +551,17 @@
         data={lineData}
         loading={false}
         yMax={yMax}
+      />
+    {/if}
+
+    {#if residualHistory.length > 0}
+      <LineChart
+        data={residualHistoryData}
+        loading={false}
+        yScale="logarithmic"
+        yMin={undefined}
+        xLabel="Function evaluations"
+        yLabel="Residual norm"
       />
     {/if}
   {/if}
@@ -561,7 +631,8 @@
     gap: 1rem;
   }
   .run-button,
-  .cancel-button {
+  .cancel-button,
+  .apply-button {
     cursor: pointer;
     border: var(--border);
     border-radius: var(--radius-lg);
@@ -575,6 +646,11 @@
   .cancel-button {
     background: var(--error, #dc2626);
     color: white;
+  }
+  .apply-button {
+    border-color: var(--color-primary);
+    background: var(--color-surface);
+    color: var(--color-primary);
   }
   .progress-info {
     color: var(--color-text-muted);
