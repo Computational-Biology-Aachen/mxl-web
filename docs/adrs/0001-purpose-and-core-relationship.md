@@ -31,7 +31,7 @@ MxlWeb serves two roles simultaneously:
 Because MxlWeb's models are added as an integral part of developing `mxlweb-core`
 itself (new builder features, new backends, new UI capabilities), they don't need the
 safety net a generalized, externally-facing contribution pipeline provides — the person
-adding a model *is* the person who understands the current state of the core library,
+adding a model _is_ the person who understands the current state of the core library,
 unlike GreenSloth's community contributors. Building a generator/validation pipeline
 here would be solving a problem MxlWeb doesn't actually have.
 

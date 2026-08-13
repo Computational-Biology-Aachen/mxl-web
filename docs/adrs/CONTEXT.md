@@ -1,6 +1,6 @@
 # MxlWeb: Architecture Context
 
-Entry point for *why* this site is shaped the way it is, written ahead of a maintainer
+Entry point for _why_ this site is shaped the way it is, written ahead of a maintainer
 handoff. See the sibling `mxlweb-core` repo's `docs/adrs/CONTEXT.md` for the shared
 engine this site is built on and drives development of, and `mxlpy`'s
 `docs/adrs/CONTEXT.md` for the Python side of the tool family.

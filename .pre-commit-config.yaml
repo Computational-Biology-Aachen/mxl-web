@@ -1,6 +1,13 @@
 repos:
   - repo: local
     hooks:
+      - id: format-lint
+        name: Format and lint
+        entry: bash -c 'npx prettier --write . && npx eslint .'
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
       - id: image-budget
         name: Enforce image size/dimension budget
         entry: node scripts/check-image-budget.mjs
