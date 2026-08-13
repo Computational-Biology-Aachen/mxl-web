@@ -324,6 +324,7 @@
       solver: "radau5",
       rtol: 1e-8,
       atol: 1e-10,
+      targetResidualNorm,
     });
   }
 
