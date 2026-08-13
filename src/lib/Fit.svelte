@@ -109,6 +109,14 @@
   // alone is misleading on completion, since a fit that converges well
   // under the cap would otherwise show a small, seemingly-unfinished bar.
   let fitComplete = $state(false);
+  // A finished fit can stop short of targetResidualNorm — e.g. lmdif's own
+  // convergence criteria decide there's no further improvement to be had, or
+  // maxFunctionEvaluations runs out first — without that being an error.
+  // Surfaced in the UI rather than silently showing a residual norm that
+  // looks like it should have kept improving.
+  let targetMissed = $derived(
+    fitComplete && residualNorm !== null && residualNorm > targetResidualNorm,
+  );
 
   let trajectory = $state<{ time: number[]; values: number[][] }>({
     time: [],
@@ -485,6 +493,15 @@
         >
       {/if}
     </div>
+    {#if targetMissed}
+      <p class="target-missed">
+        Stopped before reaching the target residual norm ({targetResidualNorm.toExponential(
+          1,
+        )}) — {nfev >= maxFunctionEvaluations
+          ? "hit the maximum function evaluations."
+          : "the fit converged and couldn't improve further."}
+      </p>
+    {/if}
     {#if nfev > 0}
       <div
         class="progress-bar-track"
@@ -619,5 +636,10 @@
   .progress-info {
     color: var(--color-text-muted);
     font-size: 0.8rem;
+  }
+  .target-missed {
+    margin: 0;
+    color: var(--color-accent, #f6a800);
+    font-size: 0.875rem;
   }
 </style>
