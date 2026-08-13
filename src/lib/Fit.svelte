@@ -11,7 +11,7 @@
 <script lang="ts">
   import { LineChart } from "@computational-biology-aachen/design";
   import type { ModelBuilderBase } from "@computational-biology-aachen/mxlweb-core";
-  import { parseCsvFile, type ParsedCsv } from "./csvParse";
+  import type { ParsedCsv } from "./csvParse";
   import type { FitParameterConfig, FitTargetMapping } from "./index";
   import SimErrDisplay from "./SimErrDisplay.svelte";
   import { backends } from "./stores/backends";
@@ -28,6 +28,7 @@
     timeColumn = $bindable(undefined),
     targets = $bindable([]),
     fitParameters = $bindable([]),
+    csv = $bindable(null),
     chunkMaxfev,
     targetResidualNorm,
     maxFunctionEvaluations,
@@ -38,10 +39,12 @@
     timeColumn?: string;
     targets?: FitTargetMapping[];
     fitParameters?: FitParameterConfig[];
+    /** Uploaded data file — parsed and mapped from FitEditor's "Upload
+     * data" button. */
+    csv?: ParsedCsv | null;
     chunkMaxfev: number;
-    /** Stop once the residual norm drops to or below this — undefined
-     * disables the check. */
-    targetResidualNorm?: number;
+    /** Stop once the residual norm drops to or below this. */
+    targetResidualNorm: number;
     /** Hard cap on total function evaluations across every chunk. */
     maxFunctionEvaluations: number;
     yMax?: number;
@@ -50,10 +53,7 @@
     onApply?: () => void;
   } = $props();
 
-  // ---- Upload + column mapping -------------------------------------------
-
-  let csv = $state<ParsedCsv | null>(null);
-  let fileError = $state<string | null>(null);
+  // ---- Column mapping ------------------------------------------------
 
   // Candidate fit targets: state variables + derived quantities — the same
   // source TimeCourse.svelte uses for its "select derived" UI.
@@ -63,42 +63,6 @@
       .sortDependencies()
       .map((key) => ({ key, kind: "derived" as const })),
   ]);
-
-  function autoMapColumns() {
-    if (!csv) return;
-    if (!timeColumn) {
-      const guess = csv.headers.find((h) => /^t(ime)?$/i.test(h));
-      timeColumn = guess ?? csv.headers[0];
-    }
-    const displayNames = model.getDisplayNames();
-    const mapped: FitTargetMapping[] = [];
-    for (const header of csv.headers) {
-      if (header === timeColumn) continue;
-      const match = candidateKeys.find(
-        ({ key }) =>
-          key.toLowerCase() === header.toLowerCase() ||
-          (displayNames.get(key) ?? "").toLowerCase() === header.toLowerCase(),
-      );
-      if (match) {
-        mapped.push({ column: header, key: match.key, kind: match.kind });
-      }
-    }
-    targets = mapped;
-  }
-
-  async function handleFile(event: Event) {
-    fileError = null;
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file) return;
-    try {
-      csv = await parseCsvFile(file);
-      autoMapColumns();
-    } catch (e) {
-      fileError = e instanceof Error ? e.message : "Failed to parse file";
-    }
-    input.value = "";
-  }
 
   function setTargetColumn(column: string, key: string) {
     const match = candidateKeys.find((c) => c.key === key);
@@ -333,9 +297,7 @@
       );
       previewTrajectory(progress.params, sortedT[sortedT.length - 1]);
 
-      const reachedTarget =
-        targetResidualNorm !== undefined &&
-        progress.residualNorm <= targetResidualNorm;
+      const reachedTarget = progress.residualNorm <= targetResidualNorm;
       const reachedMaxEvals = progress.nfev >= maxFunctionEvaluations;
       const budget = nextChunkBudget(progress.nfev);
       if (!progress.done && !reachedTarget && !reachedMaxEvals && budget > 0) {
@@ -442,26 +404,6 @@
 </script>
 
 <div class="fit-panel">
-  <div class="upload-row">
-    <label class="upload-button">
-      Upload data (CSV/TSV)
-      <input
-        type="file"
-        accept=".csv,.tsv,.txt"
-        onchange={handleFile}
-        style="display:none"
-      />
-    </label>
-    {#if csv}
-      <span class="file-info"
-        >{csv.rowCount} rows, {csv.headers.length} columns</span
-      >
-    {/if}
-  </div>
-  {#if fileError}
-    <p class="error">{fileError}</p>
-  {/if}
-
   {#if csv}
     <table class="mapping-table">
       <thead>
@@ -630,11 +572,6 @@
     gap: 1rem;
     width: 100%;
   }
-  .upload-row {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
   .charts-row {
     display: flex;
     flex-direction: column;
@@ -661,18 +598,6 @@
     transition: width 200ms ease;
     background: var(--color-primary);
     height: 100%;
-  }
-  .upload-button {
-    cursor: pointer;
-    border: var(--border);
-    border-radius: var(--radius-lg);
-    background: var(--color-surface);
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-  }
-  .file-info {
-    color: var(--color-text-muted);
-    font-size: 0.875rem;
   }
   .error {
     margin: 0;

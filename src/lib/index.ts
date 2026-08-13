@@ -96,9 +96,8 @@ export type FitAnalysis = {
   fitParameters?: FitParameterConfig[];
   /** Function evaluations per chunk — see ADR 0004 §2.7 in the mxlweb repo. */
   chunkMaxfev: number;
-  /** Stop once the residual norm drops to or below this — undefined disables
-   * the check (rely on lmdif's own convergence criteria only). */
-  targetResidualNorm?: number;
+  /** Stop once the residual norm drops to or below this. */
+  targetResidualNorm: number;
   /** Hard cap on total function evaluations across every chunk — also the
    * progress bar's denominator. */
   maxFunctionEvaluations: number;

@@ -38,6 +38,7 @@
   } from "@computational-biology-aachen/mxlweb-core/sbml";
   import type { Snippet } from "svelte";
   import { tick } from "svelte";
+  import type { ParsedCsv } from "./csvParse";
   import FitEditor from "./FitEditor.svelte";
   import ModelEditor from "./ModelEditor.svelte";
   import OdeModelEditor from "./OdeModelEditor.svelte";
@@ -67,6 +68,11 @@
   );
   let pamRefs = $state<Record<number, PamSimulator | undefined>>({});
   let fitRefs = $state<Record<number, FitSimulator | undefined>>({});
+  // Uploaded fit data, keyed by analysis id — ephemeral (not persisted with
+  // the analysis config) since raw CSV data shouldn't round-trip through
+  // saved settings. Shared between FitEditor (upload button) and
+  // FitSimulator (mapping table + fit run).
+  let csvById = $state<Record<number, ParsedCsv | null>>({});
 
   let analysisById = $derived.by(() => {
     // transient lookup rebuilt by this derived, not reactive state
@@ -306,6 +312,7 @@
       title: "Fit to data",
       span: 6,
       chunkMaxfev: 5,
+      targetResidualNorm: 1e-6,
       maxFunctionEvaluations: 1000,
       yMax: undefined,
     };
@@ -471,6 +478,8 @@
       fitRefs[box.id]?.cancelFit();
       delete fitRefs[box.id];
       fitRefs = { ...fitRefs };
+      delete csvById[box.id];
+      csvById = { ...csvById };
     }}
   >
     {#snippet children({ box })}
@@ -545,6 +554,12 @@
                 analyses = analyses.map((a) =>
                   a.id === analysis.id ? { ...a, fitParameters: v } : a,
                 ) as Analyses;
+              }
+            }
+            bind:csv={
+              () => csvById[box.id] ?? null,
+              (v) => {
+                csvById = { ...csvById, [box.id]: v };
               }
             }
             chunkMaxfev={analysis.chunkMaxfev}
@@ -696,6 +711,26 @@
     {:else if analysis.type === "fit"}
       <FitEditor
         parent={analysis}
+        model={model}
+        bind:csv={
+          () => csvById[analysis.id] ?? null,
+          (v) => {
+            csvById = { ...csvById, [analysis.id]: v };
+          }
+        }
+        bind:timeColumn={
+          () => analysis.timeColumn,
+          (v) => {
+            analyses = analyses.map((a) =>
+              a.id === analysis.id ? { ...a, timeColumn: v } : a,
+            ) as Analyses;
+          }
+        }
+        onTargetsChange={(v) => {
+          analyses = analyses.map((a) =>
+            a.id === analysis.id ? { ...a, targets: v } : a,
+          ) as Analyses;
+        }}
         onSave={(updated) => {
           analyses = analyses.map((a) =>
             a.id === analysis.id ? updated : a,
