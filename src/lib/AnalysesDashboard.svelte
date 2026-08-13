@@ -726,11 +726,14 @@
             ) as Analyses;
           }
         }
-        onTargetsChange={(v) => {
-          analyses = analyses.map((a) =>
-            a.id === analysis.id ? { ...a, targets: v } : a,
-          ) as Analyses;
-        }}
+        bind:targets={
+          () => analysis.targets ?? [],
+          (v) => {
+            analyses = analyses.map((a) =>
+              a.id === analysis.id ? { ...a, targets: v } : a,
+            ) as Analyses;
+          }
+        }
         onSave={(updated) => {
           analyses = analyses.map((a) =>
             a.id === analysis.id ? updated : a,

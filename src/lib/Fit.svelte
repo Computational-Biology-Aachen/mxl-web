@@ -64,20 +64,6 @@
       .map((key) => ({ key, kind: "derived" as const })),
   ]);
 
-  function setTargetColumn(column: string, key: string) {
-    const match = candidateKeys.find((c) => c.key === key);
-    if (!match) return;
-    // A key can only be mapped from one column at a time — remapping it here
-    // implicitly un-maps whichever other column previously used it, rather
-    // than silently duplicating a residual row for the same model quantity.
-    const rest = targets.filter((t) => t.column !== column && t.key !== key);
-    targets = [...rest, { column, key, kind: match.kind }];
-  }
-
-  function unmapColumn(column: string) {
-    targets = targets.filter((t) => t.column !== column);
-  }
-
   // ---- Parameter selection -------------------------------------------
 
   // Not all parameters fit by default (ADR 0004 §2.4) — a parameter not yet
@@ -259,6 +245,15 @@
     const logFlags = fitIdx.map(
       (i) => fitParameters.find((p) => p.id === parNames[i])?.logSpace ?? true,
     );
+    // A per-row "initial guess" override (edited in the param table) starts
+    // the fit from a value other than the model's current live parameter —
+    // falls back to that live value where no override was set.
+    const pars = model
+      .resolveParameters()
+      .map(
+        (v, i) =>
+          fitParameters.find((p) => p.id === parNames[i])?.initialGuess ?? v,
+      );
 
     session = new FitSession();
     session.onInitResult((result) => {
@@ -315,7 +310,7 @@
       derivedWat,
       nDerived: derivedKeys.length,
       y0: model.resolveInitialValues(),
-      pars: model.resolveParameters(),
+      pars,
       fitIdx,
       logFlags,
       targets: fitTargetsList.map(({ kind, index, scale }) => ({
@@ -405,47 +400,6 @@
 
 <div class="fit-panel">
   {#if csv}
-    <table class="mapping-table">
-      <thead>
-        <tr>
-          <th>Column</th>
-          <th>Maps to</th>
-        </tr>
-      </thead>
-      <tbody>
-        {#each csv.headers as header (header)}
-          {@const mapping = targets.find((t) => t.column === header)}
-          <tr>
-            <td>{header}</td>
-            <td>
-              {#if header === timeColumn}
-                <span class="time-badge">time axis</span>
-              {:else}
-                <select
-                  value={mapping?.key ?? ""}
-                  onchange={(e) => {
-                    const value = (e.target as HTMLSelectElement).value;
-                    if (value === "") unmapColumn(header);
-                    else setTargetColumn(header, value);
-                  }}
-                >
-                  <option value="">(ignore)</option>
-                  {#each candidateKeys as c (c.key)}
-                    <option value={c.key}>{c.key} ({c.kind})</option>
-                  {/each}
-                </select>
-                <button
-                  type="button"
-                  class="time-link"
-                  onclick={() => (timeColumn = header)}>use as time</button
-                >
-              {/if}
-            </td>
-          </tr>
-        {/each}
-      </tbody>
-    </table>
-
     <table class="param-table">
       <thead>
         <tr>
@@ -481,7 +435,18 @@
                   })}
               />
             </td>
-            <td>{model.parameters.get(row.id)?.value}</td>
+            <td>
+              <input
+                type="number"
+                step="any"
+                value={row.initialGuess ?? model.parameters.get(row.id)?.value}
+                disabled={!row.fit}
+                onchange={(e) =>
+                  updateParamRow(row.id, {
+                    initialGuess: Number((e.target as HTMLInputElement).value),
+                  })}
+              />
+            </td>
             <td
               >{row.fit && fittedValues
                 ? fittedValues[row.id]?.toPrecision(6)
@@ -620,18 +585,8 @@
     font-size: 0.7rem;
     text-transform: uppercase;
   }
-  .time-badge {
-    color: var(--color-primary);
-    font-weight: 600;
-  }
-  .time-link {
-    cursor: pointer;
-    margin-left: 0.5rem;
-    border: none;
-    background: none;
-    color: var(--color-text-muted);
-    font-size: 0.75rem;
-    text-decoration: underline;
+  .param-table input[type="number"] {
+    width: 8rem;
   }
   .run-row {
     display: flex;

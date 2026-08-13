@@ -18,7 +18,7 @@
     popovertarget,
     csv = $bindable(null),
     timeColumn = $bindable(undefined),
-    onTargetsChange,
+    targets = $bindable([]),
   }: {
     parent: FitAnalysis;
     model: ModelBuilderBase;
@@ -26,8 +26,7 @@
     popovertarget: string;
     csv?: ParsedCsv | null;
     timeColumn?: string;
-    /** Column->key mapping produced by auto-mapping an uploaded file. */
-    onTargetsChange: (targets: FitTargetMapping[]) => void;
+    targets?: FitTargetMapping[];
   } = $props();
 
   let title = $derived(parent.title);
@@ -67,7 +66,21 @@
         mapped.push({ column: header, key: match.key, kind: match.kind });
       }
     }
-    onTargetsChange(mapped);
+    targets = mapped;
+  }
+
+  function setTargetColumn(column: string, key: string) {
+    const match = candidateKeys.find((c) => c.key === key);
+    if (!match) return;
+    // A key can only be mapped from one column at a time — remapping it here
+    // implicitly un-maps whichever other column previously used it, rather
+    // than silently duplicating a residual row for the same model quantity.
+    const rest = targets.filter((t) => t.column !== column && t.key !== key);
+    targets = [...rest, { column, key, kind: match.kind }];
+  }
+
+  function unmapColumn(column: string) {
+    targets = targets.filter((t) => t.column !== column);
   }
 
   let fileInput = $state<HTMLInputElement | null>(null);
@@ -135,6 +148,49 @@
   <p class="error">{fileError}</p>
 {/if}
 
+{#if csv}
+  <table class="mapping-table">
+    <thead>
+      <tr>
+        <th>Column</th>
+        <th>Maps to</th>
+      </tr>
+    </thead>
+    <tbody>
+      {#each csv.headers as header (header)}
+        {@const mapping = targets.find((t) => t.column === header)}
+        <tr>
+          <td>{header}</td>
+          <td>
+            {#if header === timeColumn}
+              <span class="time-badge">time axis</span>
+            {:else}
+              <select
+                value={mapping?.key ?? ""}
+                onchange={(e) => {
+                  const value = (e.target as HTMLSelectElement).value;
+                  if (value === "") unmapColumn(header);
+                  else setTargetColumn(header, value);
+                }}
+              >
+                <option value="">(ignore)</option>
+                {#each candidateKeys as c (c.key)}
+                  <option value={c.key}>{c.key} ({c.kind})</option>
+                {/each}
+              </select>
+              <button
+                type="button"
+                class="time-link"
+                onclick={() => (timeColumn = header)}>use as time</button
+              >
+            {/if}
+          </td>
+        </tr>
+      {/each}
+    </tbody>
+  </table>
+{/if}
+
 <InputText
   id="fit-name"
   label="Name: "
@@ -174,5 +230,34 @@
     margin: 0;
     color: var(--error, #dc2626);
     font-size: 0.875rem;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    text-align: left;
+  }
+  th,
+  td {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  th {
+    background-color: #e5e7eb;
+    font-weight: var(--weight-bold);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+  }
+  .time-badge {
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+  .time-link {
+    cursor: pointer;
+    margin-left: 0.5rem;
+    border: none;
+    background: none;
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    text-decoration: underline;
   }
 </style>

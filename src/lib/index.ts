@@ -82,6 +82,9 @@ export type FitParameterConfig = {
   /** Fit in log-space (guarantees positivity) — requires the parameter's
    * current value to be > 0. */
   logSpace: boolean;
+  /** Starting value the fit runs from — undefined falls back to the model's
+   * current live parameter value. */
+  initialGuess?: number;
 };
 
 export type FitAnalysis = {
