@@ -251,6 +251,17 @@
     color: var(--color-primary);
     font-weight: 600;
   }
+  .mapping-table select {
+    border: var(--border);
+    border-radius: var(--radius-lg);
+    background-color: transparent;
+    padding: 0.35rem 0.5rem;
+    width: auto;
+    font-size: 0.875rem;
+  }
+  .mapping-table select:hover {
+    border: var(--border-primary);
+  }
   .time-link {
     cursor: pointer;
     margin-left: 0.5rem;
