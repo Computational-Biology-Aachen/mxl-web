@@ -312,7 +312,7 @@
       title: "Fit to data",
       span: 6,
       chunkMaxfev: 5,
-      targetResidualNorm: 1e-6,
+      targetResidualNorm: 1e-1,
       maxFunctionEvaluations: 1000,
       yMax: undefined,
     };
