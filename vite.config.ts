@@ -1,4 +1,4 @@
-import { cpSync, readdirSync, readFileSync } from "fs";
+import { cpSync, existsSync, readdirSync, readFileSync } from "fs";
 import { createRequire } from "module";
 import { dirname, extname, join } from "path";
 import { enhancedImages } from "@sveltejs/enhanced-img";
@@ -13,6 +13,16 @@ const coreStatic = join(
   ),
   "static",
 );
+
+// In the meta-repo, svelte.config.js aliases the design package to its
+// source under ../design/src/lib for live edits (see workspaceAlias there).
+// That makes imports resolve relative to ../design, so a package it depends
+// on (e.g. katex, for its fonts) can resolve to ../design's own nested
+// node_modules rather than this project's — which SvelteKit's dev server
+// doesn't allow serving from by default. Allow it explicitly when present.
+const designNodeModules = new URL("../design/node_modules", import.meta.url)
+  .pathname;
+const designSrc = new URL("../design/src/lib", import.meta.url).pathname;
 
 const MIME: Record<string, string> = {
   ".js": "application/javascript",
@@ -65,5 +75,11 @@ export default defineConfig({
       "@computational-biology-aachen/mxlweb-core",
     ],
   },
-  server: { port: 5175, strictPort: true },
+  server: {
+    port: 5175,
+    strictPort: true,
+    fs: {
+      allow: existsSync(designSrc) ? [designNodeModules] : undefined,
+    },
+  },
 });
