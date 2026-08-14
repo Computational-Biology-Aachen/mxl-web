@@ -36,7 +36,7 @@
     "svelte": ">=5.56.8",
     "svelte-check": ">=4.7.4",
     "typescript": ">=6.0.3",
-    "typescript-eslint": ">=8.66.0",
+    "typescript-eslint": ">=8.67.0",
     "vite": ">=8.2.0",
     "vite-plugin-static-copy": "^4.1.1",
     "vite-plugin-wasm": ">=3.3.0"
@@ -48,7 +48,7 @@
     "@fortawesome/free-solid-svg-icons": ">=7.3.0",
     "@sveltejs/adapter-static": ">=3.0.10",
     "chart.js": ">=4.5.0",
-    "katex": "^0.18.1",
+    "katex": "^0.18.4",
     "papaparse": "^5.5.4",
     "pyodide": ">=314.0.3",
     "shiki": ">=4.4.1",
