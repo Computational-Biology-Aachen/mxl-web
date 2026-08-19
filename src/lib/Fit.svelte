@@ -10,9 +10,10 @@
 
 <script lang="ts">
   import { LineChart } from "@computational-biology-aachen/design";
-  import type {
-    FitBackend,
-    ModelBuilderBase,
+  import {
+    isNNBlockOwnedParamName,
+    type FitBackend,
+    type ModelBuilderBase,
   } from "@computational-biology-aachen/mxlweb-core";
   import type { ParsedCsv } from "./csvParse";
   import type { FitParameterConfig, FitTargetMapping } from "./index";
@@ -283,10 +284,8 @@
     const nnBlockParamNames: string[] = [];
     for (const [key, config] of model.nnBlocks) {
       if (!config.trained) continue;
-      const wPrefix = `${key}_w`;
-      const bPrefix = `${key}_b`;
       for (const name of parNames) {
-        if (name.startsWith(wPrefix) || name.startsWith(bPrefix)) {
+        if (isNNBlockOwnedParamName(name, key)) {
           nnBlockParamNames.push(name);
         }
       }
@@ -432,10 +431,8 @@
     // written back separately, for every trained block, unconditionally.
     for (const [key, config] of model.nnBlocks) {
       if (!config.trained) continue;
-      const wPrefix = `${key}_w`;
-      const bPrefix = `${key}_b`;
       for (const [name, value] of Object.entries(fittedValues)) {
-        if (!name.startsWith(wPrefix) && !name.startsWith(bPrefix)) continue;
+        if (!isNNBlockOwnedParamName(name, key)) continue;
         const current = model.parameters.get(name);
         if (!current) continue;
         model.parameters = model.parameters.set(name, { ...current, value });
