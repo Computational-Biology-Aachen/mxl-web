@@ -14,7 +14,6 @@
     FitBackend,
     ModelBuilderBase,
   } from "@computational-biology-aachen/mxlweb-core";
-  import { SvelteSet } from "svelte/reactivity";
   import type { ParsedCsv } from "./csvParse";
   import type { FitParameterConfig, FitTargetMapping } from "./index";
   import SimErrDisplay from "./SimErrDisplay.svelte";
@@ -74,19 +73,7 @@
   // parameter, but are never individual table rows (ADR 0005 §2.1.3) — a
   // 6×64 block is ≈20,800 of them. Fitting them is the block's own
   // "trained" toggle (TableNNBlocks), not a per-row checkbox here.
-  let nnBlockOwnedParams = $derived.by(() => {
-    const owned = new SvelteSet<string>();
-    for (const key of model.nnBlocks.keys()) {
-      const wPrefix = `${key}_w`;
-      const bPrefix = `${key}_b`;
-      for (const name of model.parameters.keys()) {
-        if (name.startsWith(wPrefix) || name.startsWith(bPrefix)) {
-          owned.add(name);
-        }
-      }
-    }
-    return owned;
-  });
+  let nnBlockOwnedParams = $derived(model.nnBlockOwnedParameterNames());
   let hasTrainedNNBlock = $derived(
     [...model.nnBlocks.values()].some((b) => b.trained),
   );
