@@ -30,7 +30,6 @@
     parameters = $bindable(),
     assignments = $bindable(),
     reactions = $bindable(),
-    // eslint-disable-next-line no-useless-assignment
     nnBlocks = $bindable(),
   }: {
     variables: VarView;
@@ -204,6 +203,7 @@
       parameters={parameters}
       assignments={assignments}
       reactions={reactions}
+      nnBlocks={nnBlocks}
       onSave={(root) => onSaveEq(idx, root)}
       popovertarget={`eq-editor-${idx}`}
     />

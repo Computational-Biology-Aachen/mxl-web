@@ -1,7 +1,10 @@
 <script lang="ts">
   import EqNode from "$lib/EqNode.svelte";
   import { Button, Math, Row } from "@computational-biology-aachen/design";
-  import { defaultValue } from "@computational-biology-aachen/mxlweb-core";
+  import {
+    defaultValue,
+    isNNBlockOwnedParamName,
+  } from "@computational-biology-aachen/mxlweb-core";
   import {
     Abs,
     Acos,
@@ -68,6 +71,7 @@
     idToDisplay,
     idToTex,
     type AssView,
+    type NNBlockView,
     type ParView,
     type RxnView,
     type VarView,
@@ -79,6 +83,7 @@
     parameters,
     assignments,
     reactions,
+    nnBlocks,
     onSave,
     popovertarget,
   }: {
@@ -87,15 +92,26 @@
     parameters: ParView;
     assignments: AssView;
     reactions: RxnView;
+    nnBlocks: NNBlockView;
     popovertarget: string;
     onSave: (fn: Base) => void;
   } = $props();
 
+  // NN block weights/biases must never be a pickable symbol here (ADR 0005
+  // §2.1.3) — a hand-written equation referencing one would silently break
+  // whenever the block is resized/refitted, since a block is authored as
+  // one opaque unit, not individual named parameters.
   let argNames: string[][] = $derived.by(() => {
+    const selectableParams = parameters.filter(
+      (el) => !nnBlocks.some((b) => isNNBlockOwnedParamName(el.id, b.id)),
+    );
     return [
       ["time", "time"],
       ...variables.map((el) => [el.id, defaultValue(el.displayName, el.id)]),
-      ...parameters.map((el) => [el.id, defaultValue(el.displayName, el.id)]),
+      ...selectableParams.map((el) => [
+        el.id,
+        defaultValue(el.displayName, el.id),
+      ]),
       ...assignments.map((el) => [el.id, defaultValue(el.displayName, el.id)]),
     ];
   });
