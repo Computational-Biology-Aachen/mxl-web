@@ -10,7 +10,11 @@
 
 <script lang="ts">
   import { LineChart } from "@computational-biology-aachen/design";
-  import type { ModelBuilderBase } from "@computational-biology-aachen/mxlweb-core";
+  import type {
+    FitBackend,
+    ModelBuilderBase,
+  } from "@computational-biology-aachen/mxlweb-core";
+  import { SvelteSet } from "svelte/reactivity";
   import type { ParsedCsv } from "./csvParse";
   import type { FitParameterConfig, FitTargetMapping } from "./index";
   import SimErrDisplay from "./SimErrDisplay.svelte";
@@ -66,13 +70,36 @@
 
   // ---- Parameter selection -------------------------------------------
 
+  // NN block weights/biases live in model.parameters like any other
+  // parameter, but are never individual table rows (ADR 0005 §2.1.3) — a
+  // 6×64 block is ≈20,800 of them. Fitting them is the block's own
+  // "trained" toggle (TableNNBlocks), not a per-row checkbox here.
+  let nnBlockOwnedParams = $derived.by(() => {
+    const owned = new SvelteSet<string>();
+    for (const key of model.nnBlocks.keys()) {
+      const wPrefix = `${key}_w`;
+      const bPrefix = `${key}_b`;
+      for (const name of model.parameters.keys()) {
+        if (name.startsWith(wPrefix) || name.startsWith(bPrefix)) {
+          owned.add(name);
+        }
+      }
+    }
+    return owned;
+  });
+  let hasTrainedNNBlock = $derived(
+    [...model.nnBlocks.values()].some((b) => b.trained),
+  );
+
   // Not all parameters fit by default (ADR 0004 §2.4) — a parameter not yet
   // in fitParameters defaults to unchecked.
   let paramRows = $derived(
-    [...model.parameters.keys()].map((id) => {
-      const existing = fitParameters.find((p) => p.id === id);
-      return existing ?? { id, fit: false, logSpace: true };
-    }),
+    [...model.parameters.keys()]
+      .filter((id) => !nnBlockOwnedParams.has(id))
+      .map((id) => {
+        const existing = fitParameters.find((p) => p.id === id);
+        return existing ?? { id, fit: false, logSpace: true };
+      }),
   );
 
   function updateParamRow(id: string, update: Partial<FitParameterConfig>) {
@@ -183,8 +210,9 @@
       return;
     }
     const { fitIdx, ok } = fitTargets();
-    if (!ok) {
-      errorMsg = "Select at least one parameter to fit.";
+    if (!ok && !hasTrainedNNBlock) {
+      errorMsg =
+        "Select at least one parameter to fit, or enable training on an NN block.";
       return;
     }
 
@@ -224,6 +252,16 @@
     const derivedTargets = targets.filter((t) => t.kind === "derived");
     const derivedKeys = derivedTargets.map((t) => t.key);
 
+    // v1's "adjoint" backend only supports state-variable targets (see
+    // FitInitRequest.adjointWat's doc comment) — reject up front rather than
+    // let fit_init fail deep in the WASM boundary.
+    if (hasTrainedNNBlock && derivedTargets.length > 0) {
+      errorMsg =
+        "Training an NN block requires every fit target to be a state variable, not a derived quantity.";
+      running = false;
+      return;
+    }
+
     let derivedWat: string | undefined;
     try {
       derivedWat =
@@ -250,18 +288,63 @@
     });
 
     const parNames = model.getParameterNames();
-    const logFlags = fitIdx.map(
-      (i) => fitParameters.find((p) => p.id === parNames[i])?.logSpace ?? true,
-    );
+
+    // Every weight/bias of every *trained* NN block joins the fitted set —
+    // always in linear space, never log-space (ADR 0005 §2.1.2: weights must
+    // range over all reals). Untrained blocks keep their current weights
+    // fixed and are simply left out of fitIdx.
+    const nnBlockParamNames: string[] = [];
+    for (const [key, config] of model.nnBlocks) {
+      if (!config.trained) continue;
+      const wPrefix = `${key}_w`;
+      const bPrefix = `${key}_b`;
+      for (const name of parNames) {
+        if (name.startsWith(wPrefix) || name.startsWith(bPrefix)) {
+          nnBlockParamNames.push(name);
+        }
+      }
+    }
+    const nnBlockFitIdx = nnBlockParamNames.map((name) => parNames.indexOf(name));
+    const combinedFitIdx = [...fitIdx, ...nnBlockFitIdx];
+
+    const logFlags = [
+      ...fitIdx.map(
+        (i) =>
+          fitParameters.find((p) => p.id === parNames[i])?.logSpace ?? true,
+      ),
+      ...nnBlockFitIdx.map(() => false),
+    ];
     // A per-row "initial guess" override (edited in the param table) starts
     // the fit from a value other than the model's current live parameter —
-    // falls back to that live value where no override was set.
+    // falls back to that live value where no override was set. NN weights
+    // have no such override — they start from their current (Glorot-
+    // initialized or previously-fitted) value, like any un-overridden row.
     const pars = model
       .resolveParameters()
       .map(
         (v, i) =>
           fitParameters.find((p) => p.id === parNames[i])?.initialGuess ?? v,
       );
+
+    // Any trained NN block forces the adjoint backend unconditionally — a
+    // 6×64 block's ≈20,800 finite-difference forward solves under "lm" are
+    // intractable regardless of measured per-solve cost (ADR 0005 §2.4).
+    // A purely mechanistic fit leaves `backend` undefined, defaulting to "lm".
+    const backend: FitBackend | undefined =
+      nnBlockFitIdx.length > 0 ? "adjoint" : undefined;
+    let adjointWat: string | undefined;
+    if (backend === "adjoint") {
+      try {
+        adjointWat = model.buildAdjointWat(
+          combinedFitIdx.map((i) => parNames[i]),
+        );
+      } catch (e) {
+        errorMsg =
+          e instanceof Error ? e.message : "Failed to build the adjoint model.";
+        running = false;
+        return;
+      }
+    }
 
     session = new FitSession();
     session.onInitResult((result) => {
@@ -319,7 +402,7 @@
       nDerived: derivedKeys.length,
       y0: model.resolveInitialValues(),
       pars,
-      fitIdx,
+      fitIdx: combinedFitIdx,
       logFlags,
       targets: fitTargetsList.map(({ kind, index, scale }) => ({
         kind,
@@ -333,6 +416,8 @@
       rtol: 1e-8,
       atol: 1e-10,
       targetResidualNorm,
+      backend,
+      adjointWat,
     });
   }
 
@@ -355,6 +440,19 @@
       const current = model.parameters.get(row.id);
       if (!current) continue;
       model.parameters = model.parameters.set(row.id, { ...current, value });
+    }
+    // Trained NN blocks' weights/biases have no paramRows entry (§2.1.3) —
+    // written back separately, for every trained block, unconditionally.
+    for (const [key, config] of model.nnBlocks) {
+      if (!config.trained) continue;
+      const wPrefix = `${key}_w`;
+      const bPrefix = `${key}_b`;
+      for (const [name, value] of Object.entries(fittedValues)) {
+        if (!name.startsWith(wPrefix) && !name.startsWith(bPrefix)) continue;
+        const current = model.parameters.get(name);
+        if (!current) continue;
+        model.parameters = model.parameters.set(name, { ...current, value });
+      }
     }
     onApply?.();
   }
@@ -466,6 +564,12 @@
       </tbody>
     </table>
 
+    {#if hasTrainedNNBlock}
+      <p class="nn-note">
+        Also training {[...model.nnBlocks.values()].filter((b) => b.trained)
+          .length} NN block(s) — this fit uses the adjoint backend.
+      </p>
+    {/if}
     <div class="run-row">
       {#if !running}
         <button
@@ -640,6 +744,11 @@
   .target-missed {
     margin: 0;
     color: var(--color-accent, #f6a800);
+    font-size: 0.875rem;
+  }
+  .nn-note {
+    margin: 0;
+    color: var(--color-text-muted);
     font-size: 0.875rem;
   }
 </style>

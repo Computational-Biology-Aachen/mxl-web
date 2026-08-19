@@ -1,5 +1,6 @@
 <script lang="ts">
   import TableAssignments from "$lib/TableAssignment.svelte";
+  import TableNNBlocks from "$lib/TableNNBlocks.svelte";
   import TableParameters from "$lib/TableParameters.svelte";
   import TableReactions from "$lib/TableReactions.svelte";
   import TableVariables from "$lib/TableVariables.svelte";
@@ -80,9 +81,17 @@
       })
       .toArray(),
   );
+  let nnBlocks = $derived(
+    parent.nnBlocks
+      .entries()
+      .map(([name, block]) => {
+        return { ...block, id: name };
+      })
+      .toArray(),
+  );
 
   let modelView = $derived(
-    new ModelView(parameters, variables, assignments, reactions),
+    new ModelView(parameters, variables, assignments, reactions, nnBlocks),
   );
   let builder = $derived(modelView.toBuilder());
   let latex = $derived(builder.buildTex());
@@ -106,6 +115,11 @@
       name: "Reactions",
       comp: TableReactions,
       icon: "rebase_edit",
+    },
+    {
+      name: "NN Blocks",
+      comp: TableNNBlocks,
+      icon: "model_training",
     },
   ];
 
@@ -174,6 +188,7 @@
       bind:parameters={parameters}
       bind:assignments={assignments}
       bind:reactions={reactions}
+      bind:nnBlocks={nnBlocks}
     />
   </div>
 
@@ -226,7 +241,7 @@
 
     @media (min-width: 768px) {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
       padding: 0;
     }
   }
