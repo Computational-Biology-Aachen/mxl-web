@@ -7,8 +7,9 @@
   import {
     defaultTexName,
     defaultValue,
+    isNNBlockOwnedParamName,
   } from "@computational-biology-aachen/mxlweb-core";
-  import { MediaQuery } from "svelte/reactivity";
+  import { MediaQuery, SvelteSet } from "svelte/reactivity";
   import {
     type AssView,
     type NNBlockView,
@@ -34,7 +35,6 @@
     assignments = $bindable(),
     // eslint-disable-next-line no-useless-assignment
     reactions = $bindable(),
-    // eslint-disable-next-line no-useless-assignment
     nnBlocks = $bindable(),
   }: {
     variables: VarView;
@@ -49,10 +49,26 @@
     parameters = parameters.slice();
   }
 
+  // NN block weights/biases must never surface as individual rows here
+  // (ADR 0005 §2.1.3) — `parameters` itself stays the full, unfiltered
+  // array (ModelEditor.svelte round-trips it through toBuilder() on Save,
+  // which needs every entry's live value, fitted or not), so the exclusion
+  // happens only in what this table renders/edits.
+  let ownedParamIds = $derived.by(() => {
+    const owned = new SvelteSet<string>();
+    for (const par of parameters) {
+      if (nnBlocks.some((b) => isNNBlockOwnedParamName(par.id, b.id))) {
+        owned.add(par.id);
+      }
+    }
+    return owned;
+  });
+
   let query = $state("");
   let filtered = $derived(
     parameters
       .map((par, idx) => ({ par, idx }))
+      .filter(({ par }) => !ownedParamIds.has(par.id))
       .filter(({ par }) =>
         fuzzyMatch(defaultValue(par.displayName, par.id), query),
       ),

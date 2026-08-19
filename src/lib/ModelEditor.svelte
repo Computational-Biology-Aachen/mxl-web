@@ -32,16 +32,16 @@
 
   // NN block weights/biases and generated reactions live in the same
   // `parent.parameters`/`parent.reactions` maps as ordinary entries (no
-  // other marker distinguishes them), but must never surface as individual
-  // table rows here (ADR 0005 §2.1.3) — a block is authored/resized as one
-  // unit in its own "NN Blocks" tab only.
-  let ownedParams = $derived(parent.nnBlockOwnedParameterNames());
-  let ownedReactions = $derived(parent.nnBlockOwnedReactionNames());
-
+  // other marker distinguishes them) — but this array feeds `ModelView.
+  // toBuilder()` on Save, which must round-trip every entry's *current*
+  // value (including a fitted weight) untouched. Excluding block-owned
+  // entries here would silently drop those values from the rebuilt model
+  // instead of just hiding their rows, so the exclusion happens downstream,
+  // inside TableParameters/TableReactions themselves (ADR 0005 §2.1.3 is a
+  // display/editability rule, not a data-flow one).
   let parameters = $derived(
     parent.parameters
       .entries()
-      .filter(([name]) => !ownedParams.has(name))
       .map(([name, par]) => {
         return {
           ...par,
@@ -81,7 +81,6 @@
   let reactions = $derived(
     parent.reactions
       .entries()
-      .filter(([name]) => !ownedReactions.has(name))
       .map(([name, rxn]) => {
         return {
           ...rxn,

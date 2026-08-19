@@ -97,9 +97,13 @@
   }
 
   let parSliders = $derived.by(() => {
+    // NN block weights/biases must never surface as sliders (ADR 0005
+    // §2.1.3) — the generator itself never sets `.slider`, so this only
+    // matters defensively against a loaded .mxl.json with a hand-set one.
+    const owned = model.nnBlockOwnedParameterNames();
     return model.parameters
       .entries()
-      .filter((k) => k[1].slider !== undefined)
+      .filter((k) => k[1].slider !== undefined && !owned.has(k[0]))
       .map(([id, par]) => {
         return {
           id: id,
