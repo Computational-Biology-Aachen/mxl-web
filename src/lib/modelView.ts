@@ -153,6 +153,21 @@ export class ModelView {
 
   toBuilder(): KineticModelBuilder {
     const builder = new KineticModelBuilder();
+    // NN blocks first, deliberately: addNNBlock always Glorot-reinitializes
+    // its weights fresh from `seed`, so it would clobber any fitting-updated
+    // values already sitting in `this.parameters` if it ran after the
+    // parameter loop below (see ModelBuilderBase.buildMxlweb's identical
+    // ordering and doc comment for the same hazard).
+    this.nnBlocks.forEach((el) =>
+      builder.addNNBlock(el.id, {
+        inputs: el.inputs,
+        depth: el.depth,
+        width: el.width,
+        seed: el.seed,
+        targets: el.targets,
+        trained: el.trained,
+      }),
+    );
     this.parameters.forEach((el) =>
       builder.addParameter(el.id, {
         value: el.value,
@@ -184,21 +199,6 @@ export class ModelView {
         texName: el.texName,
       }),
     );
-    // Last, deliberately: addNNBlock adds Parameters of its own (the block's
-    // weights/biases), and those need this model's other parameters/
-    // variables/reactions already in place to be meaningful once simulated —
-    // matches ADR 0005 §2.1's "a block is wired in like any other reaction"
-    // framing, authored after the rest of the model exists.
-    this.nnBlocks.forEach((el) =>
-      builder.addNNBlock(el.id, {
-        inputs: el.inputs,
-        depth: el.depth,
-        width: el.width,
-        seed: el.seed,
-        targets: el.targets,
-        trained: el.trained,
-      }),
-    );
     return builder;
   }
 }
@@ -224,6 +224,20 @@ export class OdeModelView {
 
   toBuilder(): OdeModelBuilder {
     const builder = new OdeModelBuilder();
+    // NN blocks first, deliberately — see ModelView.toBuilder's identical
+    // ordering and doc comment: addNNBlock always Glorot-reinitializes its
+    // weights fresh from `seed`, which would clobber fitting-updated values
+    // already sitting in `this.parameters` if it ran after that loop.
+    this.nnBlocks.forEach((el) =>
+      builder.addNNBlock(el.id, {
+        inputs: el.inputs,
+        depth: el.depth,
+        width: el.width,
+        seed: el.seed,
+        targets: el.targets,
+        trained: el.trained,
+      }),
+    );
     this.parameters.forEach((el) =>
       builder.addParameter(el.id, {
         value: el.value,
@@ -249,16 +263,6 @@ export class OdeModelView {
     );
     this.variables.forEach((el) =>
       builder.setDifferential(el.id, el.differential),
-    );
-    this.nnBlocks.forEach((el) =>
-      builder.addNNBlock(el.id, {
-        inputs: el.inputs,
-        depth: el.depth,
-        width: el.width,
-        seed: el.seed,
-        targets: el.targets,
-        trained: el.trained,
-      }),
     );
     return builder;
   }

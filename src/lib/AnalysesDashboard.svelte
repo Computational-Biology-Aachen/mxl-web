@@ -280,7 +280,12 @@
   }
 
   function addParameterScan(box: Box) {
-    const firstParam = model.parameters.keys().next().value ?? "";
+    // Skip NN-block-owned weights/biases (ADR 0005 §2.1.3) — otherwise a
+    // model with a trained block could default to a scan target that
+    // ParameterScanEditor's own dropdown then excludes as an option.
+    const owned = model.nnBlockOwnedParameterNames();
+    const firstParam =
+      model.parameters.keys().find((k) => !owned.has(k)) ?? "";
     const newScan: ParameterScanAnalysis = {
       type: "parameterScan",
       id: box.id,
