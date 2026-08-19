@@ -1,5 +1,6 @@
 import {
   KineticModelBuilder,
+  type NNBlockConfig,
   OdeModelBuilder,
   SteadyStateModelBuilder,
 } from "@computational-biology-aachen/mxlweb-core";
@@ -48,6 +49,11 @@ export type Reaction = {
   texName?: string;
 };
 
+// A UDE/NODE correction term (ADR 0005 in the mxlweb repo, §2.1/§2.1.3) —
+// `id` alongside NNBlockConfig's fields, matching every other *View type's
+// own "list entry needs its own id, the builder-side type doesn't" shape.
+export type NNBlock = NNBlockConfig & { id: string };
+
 // A variable in a direct-ODE model carries its own dx/dt expression.
 export type OdeVariable = Variable & {
   differential: Base;
@@ -60,6 +66,7 @@ export type ParView = Array<Parameter>;
 export type AssView = Array<Assign>;
 export type RxnView = Array<Reaction>;
 export type OdeVarView = Array<OdeVariable>;
+export type NNBlockView = Array<NNBlock>;
 
 export function idToTex(
   variables: Iterable<Variable>,
@@ -128,17 +135,20 @@ export class ModelView {
   variables: VarView = [];
   assignments: AssView = [];
   reactions: RxnView = [];
+  nnBlocks: NNBlockView = [];
 
   constructor(
     parameters: ParView = [],
     variables: VarView = [],
     assignments: AssView = [],
     reactions: RxnView = [],
+    nnBlocks: NNBlockView = [],
   ) {
     this.parameters = parameters;
     this.variables = variables;
     this.assignments = assignments;
     this.reactions = reactions;
+    this.nnBlocks = nnBlocks;
   }
 
   toBuilder(): KineticModelBuilder {
@@ -174,6 +184,21 @@ export class ModelView {
         texName: el.texName,
       }),
     );
+    // Last, deliberately: addNNBlock adds Parameters of its own (the block's
+    // weights/biases), and those need this model's other parameters/
+    // variables/reactions already in place to be meaningful once simulated —
+    // matches ADR 0005 §2.1's "a block is wired in like any other reaction"
+    // framing, authored after the rest of the model exists.
+    this.nnBlocks.forEach((el) =>
+      builder.addNNBlock(el.id, {
+        inputs: el.inputs,
+        depth: el.depth,
+        width: el.width,
+        seed: el.seed,
+        targets: el.targets,
+        trained: el.trained,
+      }),
+    );
     return builder;
   }
 }
@@ -183,15 +208,18 @@ export class OdeModelView {
   parameters: ParView = [];
   variables: OdeVarView = [];
   assignments: AssView = [];
+  nnBlocks: NNBlockView = [];
 
   constructor(
     parameters: ParView = [],
     variables: OdeVarView = [],
     assignments: AssView = [],
+    nnBlocks: NNBlockView = [],
   ) {
     this.parameters = parameters;
     this.variables = variables;
     this.assignments = assignments;
+    this.nnBlocks = nnBlocks;
   }
 
   toBuilder(): OdeModelBuilder {
@@ -221,6 +249,16 @@ export class OdeModelView {
     );
     this.variables.forEach((el) =>
       builder.setDifferential(el.id, el.differential),
+    );
+    this.nnBlocks.forEach((el) =>
+      builder.addNNBlock(el.id, {
+        inputs: el.inputs,
+        depth: el.depth,
+        width: el.width,
+        seed: el.seed,
+        targets: el.targets,
+        trained: el.trained,
+      }),
     );
     return builder;
   }

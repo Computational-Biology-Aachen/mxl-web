@@ -11,6 +11,7 @@
   import { MediaQuery } from "svelte/reactivity";
   import {
     type AssView,
+    type NNBlockView,
     type Parameter,
     type ParView,
     type RxnView,
@@ -23,7 +24,7 @@
 
   const md = new MediaQuery("max-width: 768px");
 
-  // The four model views are received for a uniform table API (see
+  // All five model views are received for a uniform table API (see
   // OdeModelEditor), but this table only reads/edits `parameters`.
   let {
     // eslint-disable-next-line no-useless-assignment
@@ -33,11 +34,14 @@
     assignments = $bindable(),
     // eslint-disable-next-line no-useless-assignment
     reactions = $bindable(),
+    // eslint-disable-next-line no-useless-assignment
+    nnBlocks = $bindable(),
   }: {
     variables: VarView;
     parameters: ParView;
     assignments: AssView;
     reactions: RxnView;
+    nnBlocks: NNBlockView;
   } = $props();
 
   function onSaveSlider(idx: number, update: Variable | Parameter) {

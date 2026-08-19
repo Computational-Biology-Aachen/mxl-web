@@ -1,6 +1,7 @@
 <script lang="ts">
   import TableAssignments from "$lib/TableAssignment.svelte";
   import TableDifferentials from "$lib/TableDifferentials.svelte";
+  import TableNNBlocks from "$lib/TableNNBlocks.svelte";
   import TableParameters from "$lib/TableParameters.svelte";
   import {
     Button,
@@ -72,8 +73,17 @@
       .toArray(),
   );
 
+  let nnBlocks = $derived(
+    parent.nnBlocks
+      .entries()
+      .map(([name, block]) => {
+        return { ...block, id: name };
+      })
+      .toArray(),
+  );
+
   let modelView = $derived(
-    new OdeModelView(parameters, variables, assignments),
+    new OdeModelView(parameters, variables, assignments, nnBlocks),
   );
   let latex = $derived(modelView.toBuilder().buildTex());
 
@@ -89,6 +99,10 @@
     {
       name: "Assignments",
       icon: "expand",
+    },
+    {
+      name: "NN Blocks",
+      icon: "model_training",
     },
   ];
 
@@ -157,6 +171,7 @@
       parameters={parameters}
       assignments={assignments}
       reactions={reactions}
+      nnBlocks={nnBlocks}
     />
   {:else if cur.name === "Parameters"}
     <TableParameters
@@ -164,13 +179,23 @@
       bind:parameters={parameters}
       assignments={assignments}
       reactions={reactions}
+      nnBlocks={nnBlocks}
     />
-  {:else}
+  {:else if cur.name === "Assignments"}
     <TableAssignments
       variables={variables}
       parameters={parameters}
       bind:assignments={assignments}
       reactions={reactions}
+      nnBlocks={nnBlocks}
+    />
+  {:else}
+    <TableNNBlocks
+      variables={variables}
+      parameters={parameters}
+      assignments={assignments}
+      reactions={reactions}
+      bind:nnBlocks={nnBlocks}
     />
   {/if}
 </div>
@@ -222,7 +247,7 @@
 
     @media (min-width: 768px) {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
       padding: 0;
     }
   }

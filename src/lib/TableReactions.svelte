@@ -20,6 +20,7 @@
   import {
     idToTex,
     type AssView,
+    type NNBlockView,
     type ParView,
     type RxnView,
     type Stoichiometry,
@@ -36,11 +37,14 @@
     parameters = $bindable(),
     assignments = $bindable(),
     reactions = $bindable(),
+    // eslint-disable-next-line no-useless-assignment
+    nnBlocks = $bindable(),
   }: {
     variables: VarView;
     parameters: ParView;
     assignments: AssView;
     reactions: RxnView;
+    nnBlocks: NNBlockView;
   } = $props();
 
   function onSaveEq(idx: number, fn: Base) {

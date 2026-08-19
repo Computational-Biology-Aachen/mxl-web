@@ -15,6 +15,7 @@
   import EditorTutorial from "./EditorTutorial.svelte";
   import {
     SteadyStateModelView,
+    type NNBlockView,
     type RxnView,
     type VarView,
   } from "./modelView";
@@ -30,10 +31,13 @@
     popovertarget: string;
   } = $props();
 
-  // Steady-state models have neither state variables nor reactions; the reused
-  // tables still expect the props.
+  // Steady-state models have neither state variables nor reactions, and
+  // can't have NN blocks either (no dx/dt for a correction term to feed
+  // into — ModelBuilderBase.wireNNBlockOutputs throws for this builder);
+  // the reused tables still expect the props.
   let variables: VarView = $state([]);
   let reactions: RxnView = $state([]);
+  let nnBlocks: NNBlockView = $state([]);
 
   let parameters = $derived(
     parent.parameters
@@ -142,6 +146,7 @@
       bind:parameters={parameters}
       assignments={assignments}
       reactions={reactions}
+      nnBlocks={nnBlocks}
     />
   {:else}
     <TableAssignments
@@ -149,6 +154,7 @@
       parameters={parameters}
       bind:assignments={assignments}
       reactions={reactions}
+      nnBlocks={nnBlocks}
     />
   {/if}
 </div>

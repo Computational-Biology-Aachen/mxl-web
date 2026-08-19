@@ -16,6 +16,7 @@
   import {
     idToTex,
     type AssView,
+    type NNBlockView,
     type OdeVariable,
     type OdeVarView,
     type ParView,
@@ -32,11 +33,14 @@
     parameters = $bindable(),
     assignments = $bindable(),
     reactions = $bindable(),
+    // eslint-disable-next-line no-useless-assignment
+    nnBlocks = $bindable(),
   }: {
     variables: OdeVarView;
     parameters: ParView;
     assignments: AssView;
     reactions: RxnView;
+    nnBlocks: NNBlockView;
   } = $props();
 
   function onSaveSlider(idx: number, update: OdeVariable) {
