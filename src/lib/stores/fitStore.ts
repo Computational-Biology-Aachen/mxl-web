@@ -71,11 +71,11 @@ export class FitSession {
     });
   }
 
-  chunk(maxfev: number) {
+  chunk(maxIterations: number) {
     const req: FitChunkRequest & { type: string } = {
       type: "FIT_CHUNK",
       requestId: this.requestId,
-      maxfev,
+      maxIterations,
     };
     this.worker?.postMessage(req);
   }
