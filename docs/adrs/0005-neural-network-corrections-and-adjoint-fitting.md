@@ -120,10 +120,16 @@ what this is otherwise mistaken for).
 
 ADR 0004 §2.4's fit-parameter default is log-space, "since... virtually every fittable
 parameter... must stay positive." That default is wrong for NN weights and biases, which
-must range over all reals to represent anything nontrivial. The generator must set ADR
-0004's existing per-parameter "fit in linear space" toggle for every weight/bias it
-creates — this needs to happen at generation time, not left as a trap for whoever wires
-generated parameters into the existing fit-parameter table.
+must range over all reals to represent anything nontrivial.
+
+Checked while implementing §2.1's generator: the "fit in linear space" toggle
+(`FitParameterConfig.logSpace`) is a `mxl-web`-side concept — `mxlweb-core`'s own
+`Parameter` type (`modelBuilderBase.ts`) has no such field, only `value`/`displayName`/
+`texName`/`slider`. So the generator itself has nothing to set here; it only ever produces
+plain `Parameter` entries. The obligation lands on whichever `mxl-web` code turns a
+block's "train this block" toggle (§2.1.3) into `FitParameterConfig` entries for its
+weights — that code must default `logSpace: false` for every one of them. Not yet
+implemented (§2.1.3's UI is unstarted); noted here so it isn't lost when that UI is built.
 
 #### 2.1.3 Weights are a separate concept from parameters — never individual table rows
 
