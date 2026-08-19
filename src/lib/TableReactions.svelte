@@ -255,6 +255,7 @@
       parameters={parameters}
       assignments={assignments}
       reactions={reactions}
+      nnBlocks={nnBlocks}
       onSave={(root) => onSaveEq(idx, root)}
       popovertarget={`eq-editor-${idx}`}
     />

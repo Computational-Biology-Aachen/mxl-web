@@ -1,6 +1,12 @@
 <script lang="ts">
   import EqEditor from "$lib/EqEditor.svelte";
-  import type { AssView, ParView, RxnView, VarView } from "$lib/modelView";
+  import type {
+    AssView,
+    NNBlockView,
+    ParView,
+    RxnView,
+    VarView,
+  } from "$lib/modelView";
   import {
     Add,
     Divide,
@@ -46,6 +52,7 @@
   const parameters: ParView = [];
   const assignments: AssView = [];
   const reactions: RxnView = [];
+  const nnBlocks: NNBlockView = [];
   let root = $state(initEq());
 </script>
 
@@ -58,6 +65,7 @@
   parameters={parameters}
   assignments={assignments}
   reactions={reactions}
+  nnBlocks={nnBlocks}
   bind:root={root}
   popovertarget="/"
   onSave={() => null}

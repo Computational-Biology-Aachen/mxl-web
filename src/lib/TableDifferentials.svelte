@@ -33,7 +33,6 @@
     parameters = $bindable(),
     assignments = $bindable(),
     reactions = $bindable(),
-    // eslint-disable-next-line no-useless-assignment
     nnBlocks = $bindable(),
   }: {
     variables: OdeVarView;
@@ -273,6 +272,7 @@
       parameters={parameters}
       assignments={assignments}
       reactions={reactions}
+      nnBlocks={nnBlocks}
       onSave={(fn) => onSaveDifferential(idx, fn)}
       popovertarget={`diff-editor-${idx}`}
     />
@@ -291,6 +291,7 @@
         parameters={parameters}
         assignments={assignments}
         reactions={reactions}
+        nnBlocks={nnBlocks}
         onSave={(fn) => onSaveInitialAssignment(idx, fn)}
         popovertarget={`diff-ia-editor-${idx}`}
       />

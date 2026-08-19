@@ -33,7 +33,6 @@
     parameters = $bindable(),
     assignments = $bindable(),
     reactions = $bindable(),
-    // eslint-disable-next-line no-useless-assignment
     nnBlocks = $bindable(),
   }: {
     variables: VarView;
@@ -244,6 +243,7 @@
         parameters={parameters}
         assignments={assignments}
         reactions={reactions}
+        nnBlocks={nnBlocks}
         onSave={(fn) => onSaveInitialAssignment(idx, fn)}
         popovertarget={`var-ia-editor-${idx}`}
       />
