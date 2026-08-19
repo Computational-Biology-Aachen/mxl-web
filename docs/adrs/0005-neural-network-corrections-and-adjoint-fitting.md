@@ -70,9 +70,18 @@ same reason it evaluates correctly, because nothing downstream can tell it apart
 hand-authored expression.
 
 Concretely, a `KineticModelBuilder`-side generator function (mirroring `reactionTerm()`'s
-shape) takes an architecture spec (n inputs → h hidden units → m outputs) and produces (a)
-new `Parameter` entries for every weight and bias and (b) the nested expression per output
-— generated once when the block is authored or resized, never hand-typed.
+shape) takes an architecture spec (n inputs → depth × width hidden layers → m outputs) and
+produces (a) new `Parameter` entries for every weight and bias and (b) the nested
+expression per output — generated once when the block is authored or resized, never
+hand-typed.
+
+**Depth is arbitrary/configurable from v1, not capped at one hidden layer.** A single
+hidden layer is theoretically sufficient (the universal approximation theorem is stated for
+exactly that case), but real prior work in this problem domain needed more: 3 layers deep
+in `2026-ps-model-comp`, 6 layers deep (`flux_width=64`) in `2026-chilling-nights`. Capping
+v1 at one layer would make it unable to reproduce work already done. A block at that scale
+(6 × 64 ≈ 20,800 parameters) is exactly the regime §2.1.3 and §2.4 are designed around —
+this is not a hypothetical edge case.
 
 **This generator is builder-agnostic and must be, since it isn't only consumed by
 `KineticModelBuilder`.** `OdeModelBuilder` (`odeModelBuilder.ts`) has no reactions or
@@ -116,6 +125,21 @@ must range over all reals to represent anything nontrivial. The generator must s
 creates — this needs to happen at generation time, not left as a trap for whoever wires
 generated parameters into the existing fit-parameter table.
 
+#### 2.1.3 Weights are a separate concept from parameters — never individual table rows
+
+ADR 0004 §2.4's parameter table is built around a human looking at and hand-tuning each
+row: current value doubles as initial guess, one fit checkbox per row. That model doesn't
+survive a 6×64 block's ≈20,800 weights. NN weights and ODE parameters are kept as
+deliberately separate concepts: a block is authored/resized as one unit in its own UI
+(architecture spec, which variable/reaction it corrects), never expanded into individual
+rows in `ModelEditor`'s existing parameter table. Weights are seeded via standard
+randomized init (Xavier/Glorot-style) and from then on change *only* through fitting —
+never hand-edited. Fitting itself becomes a **per-block toggle** ("train this block: yes/
+no"), not per-weight checkboxes; there's no real scenario where half a block's weights
+should be frozen while the rest train. This also makes §2.1.2's log-space trap purely an
+internal-representation correctness question rather than a UX-surfacing one, since a weight
+is never visible through the UI path that default applies to.
+
 ### 2.2 Reverse-mode sensitivity as one more `Base` visitor method — no CAS required
 
 `Base` gains one more abstract method for backward/VJP accumulation, implemented once per
@@ -130,19 +154,54 @@ do.
 This must run live, in-browser: `ModelEditor.svelte` recompiles the AST at runtime on
 every edit, and `misc/mxl-codegen` (the offline Python pipeline, sibling `mxlpy`) only
 pre-generates initial model pages, not runtime edits — so there is no sympy/CAS shortcut
-available here even in principle. It does introduce a real constraint: derivative-graph
-codegen latency is now a live-UX cost on the edit-recompile loop, not a batch-job cost,
-most binding for large NN blocks (§4).
+available here even in principle. This is substantially less of a live-UX risk than it
+first appears, though: `buildModelWat`'s signature (`equations`, `varNames`, `parNames`)
+depends only on model *structure* — values (including weight values during fitting) flow
+in separately at runtime via `y_ptr`/`rpar_ptr`, never baked into the compiled WAT. Both
+the forward and backward codegen passes therefore only re-run on structural edits (adding a
+reaction, resizing an NN block), never on value edits (a fit iteration, dragging a
+parameter slider) — the cost of differentiating a large block is paid once per deliberate
+architecture decision, not per fit-iteration or per keystroke.
+
+#### 2.2.1 Non-smooth node types: zero gradient by convention, documented at each site
+
+Most of the ~48 node types are ordinary calculus (`Exp' = Exp`, `Sin' = Cos`, ...) with no
+design decision to make. The exceptions:
+
+- **`Floor`/`Ceiling`**: piecewise-constant, so the honest derivative is `0` almost
+  everywhere (undefined exactly at integer boundaries — measure zero). Implemented as
+  literal zero, the same convention every AD system uses. Consequence worth documenting
+  loudly at the implementation site, not just here: if a fitted parameter's only path to
+  the loss runs through one of these, Adam sees zero gradient and that parameter simply
+  won't move — correct behavior, but easy to mistake for a bug without a comment explaining
+  it.
+- **Comparison/boolean nodes** (`Eq`, `GreaterThan`, `And`, etc.): same reasoning, same
+  convention — a truth value doesn't vary smoothly with its operands. In practice these are
+  almost always a `Piecewise` condition, not a value flowing further into arithmetic.
+- **`Factorial`**: a proper derivative needs the digamma function, which isn't among the
+  existing WAT math imports (`exp`/`log`/`sin`/`...`/`pow`/`max`/`min`/`rem` — no digamma).
+  Declined to add it: `Factorial` is never emitted by the NN-block generator and is rare in
+  hand-written kinetic rate laws, so it isn't worth expanding the primitive math surface
+  for. Treated as gradient-zero, same as the discrete nodes above.
+- **`Piecewise`/`Max`/`Min`**: not actually a problem, despite not being smooth at their
+  branch/tie boundaries — route the adjoint only into whichever branch or argument was
+  actually selected during the forward pass (the standard `lax.cond`/`jnp.where`-style
+  rule). Zero into every branch not taken.
+- **`RateOf`**: needs no rule at all — it's already a literal zero stub in every numeric
+  backend (`toJs`/`toPy`/`toWat` all emit `"0"`; only `toTex`/`toSBML` render it
+  meaningfully, for SBML-roundtrip display), an artifact of importing SBML's `rateOf`
+  csymbol into a system that only solves explicit ODEs. Its backward rule is trivially
+  zero, consistent with the rest of it.
+
+Every zero-emitting rule above must carry an explicit code comment stating *why* it's zero
+— a documented convention, not a silent stub that reads as an oversight.
 
 ### 2.3 Continuous adjoint, reusing the existing black-box solver for both passes
 
 Forward-solve as today, unmodified. For the backward pass, do **not** reconstruct y(t) by
 re-integrating the forward vector field backward in time (`BacksolveAdjoint` — see §1).
 Instead, obtain y(t) at whatever points the backward pass needs directly from the forward
-solve: Hairer's built-in dense-output/continuous-extension routines (`CONTR5`/`CONTD8`/
-`CONTD5`), or checkpointed accepted-step values with local interpolation as a fallback if
-dense output isn't currently exposed through the WASM bindings (open question, §4). Only
-the adjoint variable λ (plus a parameter-gradient quadrature accumulator) is
+solve. Only the adjoint variable λ (plus a parameter-gradient quadrature accumulator) is
 backward-integrated. λ's ODE is linear given y(t) and inherits the *same* stiffness ratio
 as the forward problem (transposed, not worse) — it needs an implicit integrator too, but
 being linear, its per-step "Newton iteration" is a single linear solve, cheaper than the
@@ -153,6 +212,61 @@ reaching into and differentiating Hairer's vendored Fortran step routines was co
 and rejected as a categorically larger, higher-risk undertaking than interpolating a
 trajectory the solver already knows how to produce.
 
+#### 2.3.1 Getting y(t): checkpoint + local Hermite interpolation, not Hairer's dense output
+
+Checked, not assumed: real dense output is **not** currently reachable. All three wrappers
+(`radau5_wrapper.c`) call their solver with `IOUT = 1` (Hairer's "call `solout` every
+accepted step, but skip computing the dense-output polynomial" mode). `contr5_`/`contd8_`/
+`contd5_` exist in the vendored source but their `CONT` coefficient arrays are never
+populated in this mode — ADR 0004 §2.6's "already produce dense output" meant "produce
+enough step points for linear interpolation to look smooth," not Hairer's literal
+continuous extension.
+
+Two ways to get real y(t) at the backward pass's query points: (A) flip `IOUT` to 2,
+store the `CONT` array per step, export the `contr5_`/`contd8_`/`contd5_` query functions
+— higher accuracy, matching each solver's own order, but reaches into Hairer's vendored
+solver-driver internals in three places and grows memory per step (a coefficient array, not
+two numbers); or (B) reuse the `(t, y)` checkpoint data **already collected today** for
+chart plotting (`_get_out_t`/`_get_out_y`) and do local cubic Hermite interpolation within
+the bracketing step, using `y` and `f = dy/dt` at both endpoints (one extra RHS evaluation
+per endpoint, already have the RHS) — third-order accurate, zero changes to the vendored
+solver-driver code.
+
+**Decision: B.** This ADR already rejects reaching into Hairer's vendored internals once,
+for exactly this reason (§2.3's `RecursiveCheckpointAdjoint` rejection) — option A would
+quietly break that same principle for a secondary accuracy gain. Revisit only if B's
+accuracy is a measured problem later, not a theoretical one. A direct consequence: **the
+forward pass needs zero C changes** — `run_radau5`/`_get_out_t`/`_get_out_y` already
+produce exactly the checkpoint data B needs.
+
+#### 2.3.2 Backward integrator: reuse whichever solver ran forward
+
+No separate backend-solver choice — the backward pass uses whichever of
+radau5/dop853/dopri5 `FitInitRequest.solver` already selected. Stiffness is a property of
+the system, not of which method was picked: if the forward pass needed Radau5's implicit
+solve, the backward adjoint ODE (same eigenvalue structure, transposed) needs it too; if
+dop853 sufficed forward, it suffices backward.
+
+#### 2.3.3 New C entry points, not an extension of `fit_init`/`fit_chunk`
+
+The adjoint backend gets its own `adjoint_init`/`adjoint_chunk`/`adjoint_free`, dispatched
+from `fitWorker.ts` on `session.backend` (already exists per §2.4), rather than growing
+`fit_init`/`fit_chunk` in place. `fit_init`'s current signature (`y0, pars, fitIdx,
+logFlags, targets, dataT, dataY, tEnd, nDerived, solver, rtol, atol, targetResidualNorm`)
+has no room for `gradNormTol`/`plateau`, and shares essentially no algorithm with an
+ODE-based backward integration — MINPACK's QR/trust-region machinery and Adam-on-an-
+augmented-adjoint-ODE have nothing in common to factor out.
+
+#### 2.3.4 The backward/VJP WAT is generated lazily — only when actually needed
+
+Mirrors an existing pattern rather than inventing one: `FitInitRequest.derivedWat` is
+already optional, generated by the caller only when some fit target needs a derived
+quantity — the WASM side never computes it otherwise. The backward graph does the same:
+a new `FitInitRequest.adjointWat?: string`, generated by a new backward-codegen method on
+`KineticModelBuilder`/`OdeModelBuilder`, called by `mxl-web` **only** when it's about to
+request `backend: "adjoint"`. Plain simulation (`wasmWorker.ts`) never touches it, and
+neither does an `"lm"` fit, which has no use for analytic derivatives at all.
+
 ### 2.4 Two fit backends, auto-selected once at `FIT_INIT` — invisible to the user
 
 `lmdif` (ADR 0004) remains the default, unchanged: for a handful of fitted mechanistic
@@ -162,19 +276,34 @@ its Jacobian estimate is inexact, but because it needs the full Jacobian of the 
 vector*, and reverse-mode/adjoint is only cheap for the *opposite* shape (gradient of one
 scalar loss, cost independent of parameter count). So a second backend is needed, not a
 drop-in replacement of `lmdif`'s Jacobian step: it runs the adjoint (§2.3) to get ∇_θL for
-the summed-residual loss each iteration, then takes a first-order optimizer step (exact
-algorithm: open question, §4).
+the summed-residual loss each iteration, then takes an **Adam** step (learning rate
+`1e-4`, matching prior real usage across adam/adamw/adabelief in this problem domain — v1
+ships plain Adam only, the others deferred). L-BFGS was considered and rejected outright,
+not just deprioritized: its line-search-driven, full-batch quasi-Newton approach assumes a
+smoother, more locally-quadratic loss surface than deep, non-convex ODE/UDE landscapes
+actually have — the same reason Adam-family optimizers displaced L-BFGS for NN training
+generally, reinforced here by direct prior experience with these specific loss landscapes,
+not just general folklore.
 
 Backend choice is made once inside `fit_init`, before either backend's session state is
 allocated, and is never exposed as a user-facing setting — mxlweb's audience should never
 need to know an optimizer choice exists. `FitInitRequest` may carry an undocumented
 `backend?: FitBackend` override (not wired into `FitEditor.svelte`) strictly for tests and
-debugging. The trigger is a measured cost estimate, not a purely structural one:
-`FIT_INIT` already performs one forward solve to compute `initialResidualNorm` (ADR 0004
-§2.11); that measured wall-clock cost, multiplied by `fitIdx.length`, is compared against a
-time budget. This captures stiffness-driven cost directly — a slow PETC/PAM solve trips
-the switch sooner even with few NN weights — which a purely structural proxy like
-`#reactions × #fittedParams` cannot. Exact threshold: open question, §4.
+debugging.
+
+The trigger simplifies given §2.1.3's per-block toggle: **any active NN block forces
+`"adjoint"` unconditionally** — no cost computation needed, since a 6×64 block's ≈20,800
+finite-difference forward solves are obviously intractable regardless of measured per-solve
+cost. The measured-cost heuristic is only needed for the narrower case it was always
+better suited to: a purely mechanistic model with many fitted kinetic parameters and no NN
+block at all. There, `FIT_INIT` already performs one forward solve to compute
+`initialResidualNorm` (ADR 0004 §2.11); that measured wall-clock cost, multiplied by
+`fitIdx.length`, is compared against a time budget — capturing stiffness-driven cost
+directly (a slow PETC/PAM solve trips the switch sooner even with few fitted parameters),
+which a purely structural proxy like `#reactions × #fittedParams` cannot. The exact budget
+number is deliberately left uncalibrated — not something to responsibly guess without
+benchmarking against real models; start with a conservative placeholder (e.g. 200ms) and
+tune once real models exist to measure against.
 
 ### 2.5 Backend-agnostic stopping criteria and progress reporting
 
@@ -250,24 +379,22 @@ that recommendation.
 
 ## 4. Consequences / Open Questions
 
-- Backward rules for the ~48 existing node types (§2.2) — not yet designed; this is the
-  actual remaining differentiation work, since §2.1 needs no NN-specific rules.
-- NN block architecture limits for v1 — single hidden layer only, or deeper? Affects both
-  generated-expression size (codegen latency, §2.2) and how many new `Parameter` rows the
-  generator dumps into `ModelEditor`'s parameter table per block. Not yet decided.
-- How a generated NN block's parameters are presented/grouped in `ModelEditor`'s parameter
-  table — one row per weight (could be dozens per block) vs. some collapsed group view —
-  not yet designed.
-- Optimizer for the "adjoint" backend (Adam vs. L-BFGS) and its hyperparameters — not yet
-  decided.
-- Exact auto-selection time-budget threshold (§2.4) — not yet calibrated; needs
-  benchmarking against real PETC/PAM models, not guessed.
-- Whether Hairer's dense-output routines are already reachable through the current WASM
-  bindings, or need new exposure — not yet checked.
-- How the augmented adjoint state (λ plus the quadrature accumulator) is wired into a new
-  C-side integration path alongside `radau5_wrapper.c` — not yet designed.
-- Codegen latency for the backward graph on live `ModelEditor.svelte` edits is a real UX
-  risk for large NN blocks — not yet benchmarked.
-- Implementation spans both repos, per ADR 0004's precedent; the backend-agnostic types in
-  §2.5 are the only piece of this ADR specified precisely enough to implement without
-  further design work.
+Every major branch of this design is now resolved (§2.1–§2.5, via a dedicated design
+session — see the ADR history for what was reconsidered along the way, e.g. the original
+"new AST node types" and "single hidden layer" framings, both superseded). What remains is
+implementation, plus two things that are deliberately *not* design decisions to make from
+first principles:
+
+- The exact auto-selection time-budget threshold (§2.4) — a placeholder (200ms) ships
+  first; the real number needs calibration against real PETC/PAM models, not a guess.
+- Whether local Hermite interpolation's accuracy (§2.3.1, option B) is ever actually a
+  problem in practice — revisit toward Hairer's true dense output (option A) only if
+  measured, not preemptively.
+- Implementation spans both repos, per ADR 0004's precedent. Suggested order: (1) the
+  per-node backward/VJP rule (§2.2, §2.2.1) — foundational, self-contained, testable against
+  finite differences in isolation; (2) the NN-block generator (§2.1) — pure AST generation
+  using node types that already codegen correctly; (3) the graph-level backward-WAT
+  orchestration tying (1) into a full model (topological walk, intermediate-sharing scheme
+  — not yet designed at that level of detail, deliberately deferred past this ADR); (4) the
+  C-side adjoint entry points and Hermite interpolation (§2.3.1–§2.3.4); (5) `ModelEditor`
+  UI for authoring/toggling blocks (§2.1.3).
