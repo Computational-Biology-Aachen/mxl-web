@@ -32,14 +32,14 @@
   // ODE models have no reactions; the reused tables still expect the prop.
   let reactions: RxnView = $state([]);
 
-  // NN block weights/biases must never surface as individual parameter-table
-  // rows (ADR 0005 §2.1.3) — see ModelEditor.svelte's identical filter.
-  let ownedParams = $derived(parent.nnBlockOwnedParameterNames());
-
+  // This array feeds OdeModelView.toBuilder() on Save, which must
+  // round-trip every entry's *current* value (including a fitted NN-block
+  // weight) untouched — see ModelEditor.svelte's identical comment for why
+  // the block-owned-row exclusion happens downstream in TableParameters
+  // instead of here.
   let parameters = $derived(
     parent.parameters
       .entries()
-      .filter(([name]) => !ownedParams.has(name))
       .map(([name, par]) => {
         return {
           ...par,

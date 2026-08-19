@@ -1,5 +1,6 @@
 <script lang="ts">
   import { Button, ButtonIcon as IconButton } from "@computational-biology-aachen/design";
+  import { isNNBlockOwnedParamName } from "@computational-biology-aachen/mxlweb-core";
   import { MediaQuery } from "svelte/reactivity";
   import {
     type AssView,
@@ -34,10 +35,15 @@
     nnBlocks: NNBlockView;
   } = $props();
 
-  // Every name a block could legitimately reference as an input.
+  // Every name a block could legitimately reference as an input — excludes
+  // any block's own generated weights/biases (including this block's own,
+  // mid-edit): a block reads existing model quantities, never another
+  // block's raw internal parameters.
   let availableInputs = $derived([
     ...variables.map((v) => v.id),
-    ...parameters.map((p) => p.id),
+    ...parameters
+      .filter((p) => !nnBlocks.some((b) => isNNBlockOwnedParamName(p.id, b.id)))
+      .map((p) => p.id),
     ...assignments.map((a) => a.id),
   ]);
   let availableTargets = $derived(variables.map((v) => v.id));

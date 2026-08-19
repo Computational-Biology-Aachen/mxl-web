@@ -8,6 +8,7 @@
   import {
     defaultTexName,
     defaultValue,
+    nnBlockReactionKey,
     stoichToTex,
   } from "@computational-biology-aachen/mxlweb-core";
   import {
@@ -15,7 +16,7 @@
     Name,
     Num,
   } from "@computational-biology-aachen/mxlweb-core/mathml";
-  import { MediaQuery } from "svelte/reactivity";
+  import { MediaQuery, SvelteSet } from "svelte/reactivity";
   import EqEditor from "./EqEditor.svelte";
   import {
     idToTex,
@@ -37,7 +38,6 @@
     parameters = $bindable(),
     assignments = $bindable(),
     reactions = $bindable(),
-    // eslint-disable-next-line no-useless-assignment
     nnBlocks = $bindable(),
   }: {
     variables: VarView;
@@ -60,10 +60,24 @@
     idToTex(variables, parameters, assignments, reactions),
   );
 
+  // An NN block's generated reaction lives in this same `reactions` array
+  // (ModelEditor.svelte's copy is unfiltered, so Save round-trips it
+  // correctly), but must never be an editable/deletable row here (ADR 0005
+  // §2.1.3) — its rate law is machine-generated and changes only through
+  // fitting, never by hand.
+  let ownedReactionIds = $derived.by(() => {
+    const owned = new SvelteSet<string>();
+    for (const b of nnBlocks) {
+      b.targets.forEach((_, i) => owned.add(nnBlockReactionKey(b.id, i)));
+    }
+    return owned;
+  });
+
   let query = $state("");
   let filtered = $derived(
     reactions
       .map((rxn, idx) => ({ rxn, idx }))
+      .filter(({ rxn }) => !ownedReactionIds.has(rxn.id))
       .filter(({ rxn }) =>
         fuzzyMatch(defaultValue(rxn.displayName, rxn.id), query),
       ),
