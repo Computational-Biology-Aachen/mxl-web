@@ -27,13 +27,14 @@ Spans this repo and `mxlweb-core`: fitting reuses the WASM backend's in-WASM
 function-pointer pattern (vendoring `cminpack`'s `lmdif` alongside the existing
 Radau5/DOP853/DOPRI5 build) rather than adding a JS-side optimization library.
 
-→ [ADR 0005 — Neural network corrections via AST nodes, and adjoint-based fitting](0005-neural-network-corrections-and-adjoint-fitting.md)
+→ [ADR 0005 — Neural network corrections as generated model terms, and adjoint-based fitting](0005-neural-network-corrections-and-adjoint-fitting.md)
 
-Spans this repo and `mxlweb-core`: makes every model a potential UDE by adding neural
-network blocks as ordinary `mathml` AST nodes, adds a continuous-adjoint sensitivity
-backend (reusing the existing solver for both passes, avoiding the backsolve instability
-on stiff PETC/PAM models) alongside `lmdif`, and generalizes ADR 0004's fit stopping
-criteria/progress reporting to be backend-agnostic.
+Spans this repo and `mxlweb-core`: makes every model a potential UDE by generating neural
+network blocks as ordinary expressions from existing `mathml` node types (no new AST
+surface — same trick `KineticModelBuilder`'s reactions already use), adds a
+continuous-adjoint sensitivity backend (reusing the existing solver for both passes,
+avoiding the backsolve instability on stiff PETC/PAM models) alongside `lmdif`, and
+generalizes ADR 0004's fit stopping criteria/progress reporting to be backend-agnostic.
 
 ## Inherited from mxlweb-core
 
