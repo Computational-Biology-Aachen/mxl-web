@@ -277,10 +277,11 @@
 
     const parNames = model.getParameterNames();
 
-    // Every weight/bias of every *trained* NN block joins the fitted set —
-    // always in linear space, never log-space (ADR 0005 §2.1.2: weights must
-    // range over all reals). Untrained blocks keep their current weights
-    // fixed and are simply left out of fitIdx.
+    // Every weight/bias, and the block's own trainable scale factor, of
+    // every *trained* NN block joins the fitted set — always in linear
+    // space, never log-space (ADR 0005 §2.1.2: weights must range over all
+    // reals, and scale can go negative too). Untrained blocks keep their
+    // current weights/scale fixed and are simply left out of fitIdx.
     const nnBlockParamNames: string[] = [];
     for (const [key, config] of model.nnBlocks) {
       if (!config.trained) continue;

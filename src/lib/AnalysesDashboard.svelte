@@ -138,6 +138,10 @@
 
   let fileInput = $state<HTMLInputElement | null>(null);
   let loadError = $state<string | null>(null);
+  // SBML/MxlPy export both throw for a model with any NN block (neither
+  // format can represent one) -- surfaced here rather than left as an
+  // uncaught exception the export button's onclick would otherwise produce.
+  let exportError = $state<string | null>(null);
   let pendingBox = $state<Box | null>(null);
   let pickerEl = $state<HTMLDivElement | null | undefined>(null);
   let analysisEditorEls = $state<
@@ -157,11 +161,16 @@
   function saveModel() {
     // SBML is a reaction-network format; only kinetic models can be exported.
     if (!(model instanceof KineticModelBuilder)) return;
-    downloadText(
-      modelToSbml(model, name),
-      `${name.replace(/[^A-Za-z0-9]/g, "_")}.sbml`,
-      "application/xml",
-    );
+    exportError = null;
+    try {
+      downloadText(
+        modelToSbml(model, name),
+        `${name.replace(/[^A-Za-z0-9]/g, "_")}.sbml`,
+        "application/xml",
+      );
+    } catch (e) {
+      exportError = e instanceof Error ? e.message : "Failed to export SBML";
+    }
   }
 
   function savePython() {
@@ -174,11 +183,16 @@
 
   function saveMxlpy() {
     if (!(model instanceof KineticModelBuilder)) return;
-    downloadText(
-      model.buildMxlpy(),
-      `${name.replace(/[^A-Za-z0-9]/g, "_")}.py`,
-      "text/x-python",
-    );
+    exportError = null;
+    try {
+      downloadText(
+        model.buildMxlpy(),
+        `${name.replace(/[^A-Za-z0-9]/g, "_")}.py`,
+        "text/x-python",
+      );
+    } catch (e) {
+      exportError = e instanceof Error ? e.message : "Failed to export MxlPy";
+    }
   }
 
   function saveMxlweb() {
@@ -385,6 +399,9 @@
   />
   {#if loadError}
     <p class="load-error">{loadError}</p>
+  {/if}
+  {#if exportError}
+    <p class="load-error">{exportError}</p>
   {/if}
   {#if children}
     {@render children()}
