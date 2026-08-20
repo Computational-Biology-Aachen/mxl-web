@@ -78,14 +78,15 @@
         seed: Date.now() + nextSeed,
         targets: [...allVariableNames],
         trained: true,
-        // dx/dt = f(x,p,t) + scale * NN(x,θ) — starts small so a bigger
-        // freshly-initialized network doesn't blow up the first fit
+        // dx/dt = f(x,p,t) * (1 + scale * NN(x,θ)) — starts small so a
+        // bigger freshly-initialized network doesn't blow up the first fit
         // iteration; the scale itself is trainable too, same as any weight.
-        scale: 0.1,
+        scale: 0.01,
         // additive: dx/dt = f + scale*NN. relative_multiply: dx/dt =
-        // f*(1 + scale*NN). multiply: dx/dt = f*scale*NN — defaults to
-        // additive, the only mechanism that existed before this selector.
-        mechanism: "additive",
+        // f*(1 + scale*NN) — default, since an untrained network then
+        // leaves f unchanged regardless of scale. multiply: dx/dt =
+        // f*scale*NN.
+        mechanism: "relative_multiply",
       },
     ];
   }
