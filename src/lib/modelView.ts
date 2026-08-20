@@ -166,6 +166,7 @@ export class ModelView {
         seed: el.seed,
         targets: el.targets,
         trained: el.trained,
+        scale: el.scale,
       }),
     );
     this.parameters.forEach((el) =>
@@ -236,6 +237,7 @@ export class OdeModelView {
         seed: el.seed,
         targets: el.targets,
         trained: el.trained,
+        scale: el.scale,
       }),
     );
     this.parameters.forEach((el) =>
