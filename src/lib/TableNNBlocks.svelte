@@ -1,6 +1,5 @@
 <script lang="ts">
   import { Button, ButtonIcon as IconButton } from "@computational-biology-aachen/design";
-  import { isNNBlockOwnedParamName } from "@computational-biology-aachen/mxlweb-core";
   import { MediaQuery } from "svelte/reactivity";
   import {
     type AssView,
@@ -16,13 +15,14 @@
 
   // The four other model views are received for the same uniform table API
   // every other table component gets (see ModelEditor.svelte) — this one
-  // reads `variables`/`parameters`/`assignments` (valid NN-block inputs) and
-  // `variables` again (valid targets — a block corrects a variable's
-  // dynamics, so it can't target a parameter or assignment), but only edits
-  // `nnBlocks`.
+  // only actually reads `variables` (a block's fixed input *and* target set:
+  // it reads every state variable and corrects every state variable, no
+  // parameters/assignments involved) and only edits `nnBlocks`.
   let {
     variables = $bindable(),
+    // eslint-disable-next-line no-useless-assignment
     parameters = $bindable(),
+    // eslint-disable-next-line no-useless-assignment
     assignments = $bindable(),
     // eslint-disable-next-line no-useless-assignment
     reactions = $bindable(),
@@ -35,35 +35,29 @@
     nnBlocks: NNBlockView;
   } = $props();
 
-  // Every name a block could legitimately reference as an input — excludes
-  // any block's own generated weights/biases (including this block's own,
-  // mid-edit): a block reads existing model quantities, never another
-  // block's raw internal parameters.
-  let availableInputs = $derived([
-    ...variables.map((v) => v.id),
-    ...parameters
-      .filter((p) => !nnBlocks.some((b) => isNNBlockOwnedParamName(p.id, b.id)))
-      .map((p) => p.id),
-    ...assignments.map((a) => a.id),
-  ]);
-  let availableTargets = $derived(variables.map((v) => v.id));
+  // A block always reads every state variable as input and corrects every
+  // state variable as output — no per-block picker (not even for the inputs/
+  // targets themselves, which used to be free-text fields; those are gone
+  // too, not just hidden). Letting a user hand-select a subset, or parameters
+  // into the input set, produced confusing, easy-to-break configurations (a
+  // block silently going stale against the model it's meant to track).
+  let allVariableNames = $derived(variables.map((v) => v.id));
 
-  /** Parses a comma-separated name list, dropping blanks — used for the
-   * inputs/targets fields below, which are plain text rather than a
-   * validated multi-select (no such picker component exists yet in this
-   * app; typed names are checked against `availableInputs`/
-   * `availableTargets` and flagged, not silently accepted either way). */
-  function parseNames(text: string): string[] {
-    return text
-      .split(",")
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0);
+  function sameNames(a: string[], b: string[]): boolean {
+    return a.length === b.length && a.every((name, i) => name === b[i]);
   }
 
-  function unknownNames(names: string[], available: string[]): string[] {
-    const known = new Set(available);
-    return names.filter((n) => !known.has(n));
-  }
+  // Keeps every block's inputs/targets equal to "every state variable" even
+  // when the model's variable set changes on some other tab without this
+  // one being touched at all.
+  $effect(() => {
+    const next = nnBlocks.map((b) =>
+      sameNames(b.inputs, allVariableNames) && sameNames(b.targets, allVariableNames)
+        ? b
+        : { ...b, inputs: [...allVariableNames], targets: [...allVariableNames] },
+    );
+    if (next.some((b, i) => b !== nnBlocks[i])) nnBlocks = next;
+  });
 
   let query = $state("");
   let filtered = $derived(
@@ -79,57 +73,16 @@
       ...nnBlocks,
       {
         id: `block${nnBlocks.length}`,
-        inputs: [],
+        inputs: [...allVariableNames],
         depth: 1,
         width: 4,
         seed: Date.now() + nextSeed,
-        targets: [],
+        targets: [...allVariableNames],
         trained: true,
       },
     ];
   }
 </script>
-
-{#snippet inputsField(idx: number)}
-  <input
-    type="text"
-    placeholder="e.g. x, y"
-    bind:value={
-      () => nnBlocks[idx].inputs.join(", "),
-      (value) => {
-        nnBlocks[idx].inputs = parseNames(value);
-        nnBlocks = nnBlocks.slice();
-      }
-    }
-  />
-  {#if unknownNames(nnBlocks[idx].inputs, availableInputs).length > 0}
-    <p class="warning">
-      Not in this model: {unknownNames(nnBlocks[idx].inputs, availableInputs).join(", ")}
-    </p>
-  {/if}
-{/snippet}
-
-{#snippet targetsField(idx: number)}
-  <input
-    type="text"
-    placeholder="e.g. x"
-    bind:value={
-      () => nnBlocks[idx].targets.join(", "),
-      (value) => {
-        nnBlocks[idx].targets = parseNames(value);
-        nnBlocks = nnBlocks.slice();
-      }
-    }
-  />
-  {#if unknownNames(nnBlocks[idx].targets, availableTargets).length > 0}
-    <p class="warning">
-      Not a variable in this model: {unknownNames(
-        nnBlocks[idx].targets,
-        availableTargets,
-      ).join(", ")}
-    </p>
-  {/if}
-{/snippet}
 
 {#snippet depthWidthField(idx: number)}
   <div class="pair">
@@ -199,16 +152,8 @@
           {block.id}
         </div>
         <div class="card-row">
-          <span class="card-label">Inputs</span>
-          <div class="card-input">{@render inputsField(idx)}</div>
-        </div>
-        <div class="card-row">
           <span class="card-label">Architecture</span>
           <div class="card-input">{@render depthWidthField(idx)}</div>
-        </div>
-        <div class="card-row">
-          <span class="card-label">Targets</span>
-          <div class="card-input">{@render targetsField(idx)}</div>
         </div>
         <div class="card-row">
           <span class="card-label">Train when fitting</span>
@@ -226,9 +171,7 @@
     <thead>
       <tr>
         <th>Name</th>
-        <th>Inputs</th>
         <th>Layers</th>
-        <th>Targets</th>
         <th>Train</th>
         <th>Actions</th>
       </tr>
@@ -237,9 +180,7 @@
       {#each filtered as { block, idx } (block.id)}
         <tr>
           <td>{block.id}</td>
-          <td>{@render inputsField(idx)}</td>
           <td>{@render depthWidthField(idx)}</td>
-          <td>{@render targetsField(idx)}</td>
           <td>{@render trainedField(idx)}</td>
           <td class="actions">{@render actions(idx, block.id)}</td>
         </tr>
@@ -261,11 +202,6 @@
   .empty {
     padding: 0 1rem;
     color: var(--color-text-muted);
-  }
-  .warning {
-    margin: 0.25rem 0 0;
-    color: var(--color-warning, #b45309);
-    font-size: 0.75rem;
   }
   .pair {
     display: flex;
