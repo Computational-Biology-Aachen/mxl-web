@@ -82,6 +82,10 @@
         // freshly-initialized network doesn't blow up the first fit
         // iteration; the scale itself is trainable too, same as any weight.
         scale: 0.1,
+        // additive: dx/dt = f + scale*NN. multiplicative: dx/dt =
+        // f*(1 + scale*NN) — defaults to additive, the only mechanism that
+        // existed before this selector.
+        mechanism: "additive",
       },
     ];
   }
@@ -159,6 +163,22 @@
   />
 {/snippet}
 
+{#snippet mechanismField(idx: number)}
+  <select
+    aria-label="Mechanism"
+    bind:value={
+      () => nnBlocks[idx].mechanism,
+      (value) => {
+        nnBlocks[idx].mechanism = value;
+        nnBlocks = nnBlocks.slice();
+      }
+    }
+  >
+    <option value="additive">Additive: f + s·NN(x)</option>
+    <option value="multiplicative">Multiplicative: f · (1 + s·NN(x))</option>
+  </select>
+{/snippet}
+
 {#snippet trainedField(idx: number)}
   <input
     type="checkbox"
@@ -203,6 +223,10 @@
           <div class="card-input">{@render scaleField(idx)}</div>
         </div>
         <div class="card-row">
+          <span class="card-label">Mechanism</span>
+          <div class="card-input">{@render mechanismField(idx)}</div>
+        </div>
+        <div class="card-row">
           <span class="card-label">Train when fitting</span>
           {@render trainedField(idx)}
         </div>
@@ -220,6 +244,7 @@
         <th>Name</th>
         <th>Layers</th>
         <th>Output scale</th>
+        <th>Mechanism</th>
         <th>Train</th>
         <th>Actions</th>
       </tr>
@@ -230,6 +255,7 @@
           <td>{block.id}</td>
           <td>{@render depthWidthField(idx)}</td>
           <td>{@render scaleField(idx)}</td>
+          <td>{@render mechanismField(idx)}</td>
           <td>{@render trainedField(idx)}</td>
           <td class="actions">{@render actions(idx, block.id)}</td>
         </tr>
@@ -261,7 +287,8 @@
     width: 4rem;
   }
 
-  input {
+  input,
+  select {
     border: var(--border-transparent);
     border-radius: var(--radius-lg);
     background-color: transparent;
@@ -269,7 +296,8 @@
     width: 100%;
     font-size: 0.875rem;
   }
-  input:hover {
+  input:hover,
+  select:hover {
     border: var(--border-primary);
   }
 

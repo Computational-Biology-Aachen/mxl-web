@@ -8,7 +8,6 @@
   import {
     defaultTexName,
     defaultValue,
-    nnBlockReactionKey,
     stoichToTex,
   } from "@computational-biology-aachen/mxlweb-core";
   import {
@@ -16,7 +15,7 @@
     Name,
     Num,
   } from "@computational-biology-aachen/mxlweb-core/mathml";
-  import { MediaQuery, SvelteSet } from "svelte/reactivity";
+  import { MediaQuery } from "svelte/reactivity";
   import EqEditor from "./EqEditor.svelte";
   import {
     idToTex,
@@ -60,24 +59,15 @@
     idToTex(variables, parameters, assignments, reactions),
   );
 
-  // An NN block's generated reaction lives in this same `reactions` array
-  // (ModelEditor.svelte's copy is unfiltered, so Save round-trips it
-  // correctly), but must never be an editable/deletable row here (ADR 0005
-  // §2.1.3) — its rate law is machine-generated and changes only through
-  // fitting, never by hand.
-  let ownedReactionIds = $derived.by(() => {
-    const owned = new SvelteSet<string>();
-    for (const b of nnBlocks) {
-      b.targets.forEach((_, i) => owned.add(nnBlockReactionKey(b.id, i)));
-    }
-    return owned;
-  });
-
+  // NN blocks no longer create a reaction at all (ADR 0005's mechanism
+  // selector — a multiplicative block can't be expressed as one more
+  // stoichiometric term, so composition moved to a shared step in
+  // mxlweb-core's ModelBuilderBase.lower() instead) — every row here is
+  // always a genuine hand-authored reaction, no exclusion needed.
   let query = $state("");
   let filtered = $derived(
     reactions
       .map((rxn, idx) => ({ rxn, idx }))
-      .filter(({ rxn }) => !ownedReactionIds.has(rxn.id))
       .filter(({ rxn }) =>
         fuzzyMatch(defaultValue(rxn.displayName, rxn.id), query),
       ),
