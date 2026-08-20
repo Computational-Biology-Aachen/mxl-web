@@ -25,6 +25,7 @@ const block: NNBlockConfig = {
   targets: ["x"],
   trained: true,
   scale: 0.1,
+  mechanism: "additive",
 };
 
 // Mirrors ModelEditor.svelte's own `parameters`/`nnBlocks` derivations
