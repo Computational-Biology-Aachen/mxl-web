@@ -82,9 +82,9 @@
         // freshly-initialized network doesn't blow up the first fit
         // iteration; the scale itself is trainable too, same as any weight.
         scale: 0.1,
-        // additive: dx/dt = f + scale*NN. multiplicative: dx/dt =
-        // f*(1 + scale*NN) — defaults to additive, the only mechanism that
-        // existed before this selector.
+        // additive: dx/dt = f + scale*NN. relative_multiply: dx/dt =
+        // f*(1 + scale*NN). multiply: dx/dt = f*scale*NN — defaults to
+        // additive, the only mechanism that existed before this selector.
         mechanism: "additive",
       },
     ];
@@ -175,7 +175,8 @@
     }
   >
     <option value="additive">Additive: f + s·NN(x)</option>
-    <option value="multiplicative">Multiplicative: f · (1 + s·NN(x))</option>
+    <option value="relative_multiply">Relative multiply: f · (1 + s·NN(x))</option>
+    <option value="multiply">Multiply: f · s·NN(x)</option>
   </select>
 {/snippet}
 
