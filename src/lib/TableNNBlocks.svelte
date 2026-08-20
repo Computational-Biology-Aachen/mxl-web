@@ -20,7 +20,6 @@
   // parameters/assignments involved) and only edits `nnBlocks`.
   let {
     variables = $bindable(),
-    // eslint-disable-next-line no-useless-assignment
     parameters = $bindable(),
     // eslint-disable-next-line no-useless-assignment
     assignments = $bindable(),
@@ -79,8 +78,43 @@
         seed: Date.now() + nextSeed,
         targets: [...allVariableNames],
         trained: true,
+        // dx/dt = f(x,p,t) + scale * NN(x,θ) — starts small so a bigger
+        // freshly-initialized network doesn't blow up the first fit
+        // iteration; the scale itself is trainable too, same as any weight.
+        scale: 0.1,
       },
     ];
+  }
+
+  // The block's scale is `${blockId}_scale` in `this.parameters` — an
+  // ordinary, trainable Parameter, per nnBlock.ts — but only once the block
+  // has actually been through a Save (`ModelView.toBuilder()` is what first
+  // calls `addNNBlock`, materializing it there). Before that first Save,
+  // `parameters` (unfiltered but sourced from `parent.parameters`, per
+  // ModelEditor.svelte's comment on why it stays that way) doesn't have an
+  // entry for a block added in *this* session yet, so editing falls back to
+  // `nnBlocks[idx].scale` — exactly the value that first Save will use to
+  // seed the real parameter.
+  function scaleParamName(blockId: string): string {
+    return `${blockId}_scale`;
+  }
+  function currentScale(idx: number): number {
+    const existing = parameters.find(
+      (p) => p.id === scaleParamName(nnBlocks[idx].id),
+    );
+    return existing?.value ?? nnBlocks[idx].scale;
+  }
+  function setScale(idx: number, value: number) {
+    const paramIdx = parameters.findIndex(
+      (p) => p.id === scaleParamName(nnBlocks[idx].id),
+    );
+    if (paramIdx >= 0) {
+      parameters[paramIdx] = { ...parameters[paramIdx], value };
+      parameters = parameters.slice();
+    } else {
+      nnBlocks[idx].scale = value;
+      nnBlocks = nnBlocks.slice();
+    }
   }
 </script>
 
@@ -114,6 +148,15 @@
       }
     />
   </div>
+{/snippet}
+
+{#snippet scaleField(idx: number)}
+  <input
+    type="number"
+    step="any"
+    aria-label="Output scale"
+    bind:value={() => currentScale(idx), (value) => setScale(idx, value)}
+  />
 {/snippet}
 
 {#snippet trainedField(idx: number)}
@@ -156,6 +199,10 @@
           <div class="card-input">{@render depthWidthField(idx)}</div>
         </div>
         <div class="card-row">
+          <span class="card-label">Output scale</span>
+          <div class="card-input">{@render scaleField(idx)}</div>
+        </div>
+        <div class="card-row">
           <span class="card-label">Train when fitting</span>
           {@render trainedField(idx)}
         </div>
@@ -172,6 +219,7 @@
       <tr>
         <th>Name</th>
         <th>Layers</th>
+        <th>Output scale</th>
         <th>Train</th>
         <th>Actions</th>
       </tr>
@@ -181,6 +229,7 @@
         <tr>
           <td>{block.id}</td>
           <td>{@render depthWidthField(idx)}</td>
+          <td>{@render scaleField(idx)}</td>
           <td>{@render trainedField(idx)}</td>
           <td class="actions">{@render actions(idx, block.id)}</td>
         </tr>
