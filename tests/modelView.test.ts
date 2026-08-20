@@ -15,7 +15,11 @@ import {
   type NNBlockConfig,
 } from "@computational-biology-aachen/mxlweb-core";
 import { describe, expect, it } from "vitest";
-import { ModelView, OdeModelView, type NNBlockView } from "../src/lib/modelView";
+import {
+  ModelView,
+  OdeModelView,
+  type NNBlockView,
+} from "../src/lib/modelView";
 
 const block: NNBlockConfig = {
   inputs: ["x"],

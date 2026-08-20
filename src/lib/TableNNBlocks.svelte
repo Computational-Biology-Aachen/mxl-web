@@ -1,5 +1,8 @@
 <script lang="ts">
-  import { Button, ButtonIcon as IconButton } from "@computational-biology-aachen/design";
+  import {
+    Button,
+    ButtonIcon as IconButton,
+  } from "@computational-biology-aachen/design";
   import { MediaQuery } from "svelte/reactivity";
   import {
     type AssView,
@@ -51,9 +54,14 @@
   // one being touched at all.
   $effect(() => {
     const next = nnBlocks.map((b) =>
-      sameNames(b.inputs, allVariableNames) && sameNames(b.targets, allVariableNames)
+      sameNames(b.inputs, allVariableNames) &&
+      sameNames(b.targets, allVariableNames)
         ? b
-        : { ...b, inputs: [...allVariableNames], targets: [...allVariableNames] },
+        : {
+            ...b,
+            inputs: [...allVariableNames],
+            targets: [...allVariableNames],
+          },
     );
     if (next.some((b, i) => b !== nnBlocks[i])) nnBlocks = next;
   });
@@ -176,7 +184,9 @@
     }
   >
     <option value="additive">Additive: f + s·NN(x)</option>
-    <option value="relative_multiply">Relative multiply: f · (1 + s·NN(x))</option>
+    <option value="relative_multiply"
+      >Relative multiply: f · (1 + s·NN(x))</option
+    >
     <option value="multiply">Multiply: f · s·NN(x)</option>
   </select>
 {/snippet}

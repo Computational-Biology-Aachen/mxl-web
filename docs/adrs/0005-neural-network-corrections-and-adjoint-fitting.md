@@ -25,7 +25,7 @@ Two constraints rule out the obvious approaches:
   trajectory by re-integrating the forward vector field backward in time, alongside the
   adjoint variable) is explicitly documented as unstable on stiff problems by both
   ecosystems, independent of implementation quality: a forward-dissipative vector field
-  is an *expanding*, error-amplifying process when run backward, and that corrupts the
+  is an _expanding_, error-amplifying process when run backward, and that corrupts the
   coupled adjoint variable regardless of its own dynamics.
 - **Opaque forward solver.** diffrax's own preferred default
   (`RecursiveCheckpointAdjoint`, discretize-then-optimize) sidesteps that instability by
@@ -37,13 +37,13 @@ Two constraints rule out the obvious approaches:
   either, because none can differentiate through opaque compiled machine code.
 
 The reframe that unblocks both constraints: the adjoint method doesn't require
-differentiating the *solver*, only computing vector-Jacobian products of the *RHS*. The
+differentiating the _solver_, only computing vector-Jacobian products of the _RHS_. The
 RHS is already a `mathml` AST — a closed, finite set of node types (`Base`'s
 `Nullary`/`Unary`/`Binary`/`Nary` hierarchy, ~48 concrete classes across
 `mathml/{unary,unary-special,binary,nary}.ts`) evaluated through a shared visitor pattern
 (`Base.toWat`/`toJs`/`toPy`/`toTex`/`toSBML`/`toTs`/`toJson`). A VJP for that graph is one
 more visitor method, generated at compile time — no CAS, no `simplify()`/CSE step, no new
-dependency. And once an NN correction term is just an *instance* of that same AST built
+dependency. And once an NN correction term is just an _instance_ of that same AST built
 from existing node types (§2.1) rather than a distinct kind of thing, "UDE" stops being a
 separate model class: a plain mechanistic model is simply the case where no generated NN
 term is present. Adjoint-based fitting is therefore useful beyond NN-augmented models —
@@ -53,7 +53,7 @@ those parameters came from.
 
 ## 2. Decision
 
-### 2.1 Neural network blocks as *generated* expressions — zero new `mathml` node types
+### 2.1 Neural network blocks as _generated_ expressions — zero new `mathml` node types
 
 A UDE correction term needs **no new `mathml` node types at all**. `KineticModelBuilder`
 already establishes the precedent: `Reaction` isn't its own AST node — `reactionTerm()`
@@ -61,7 +61,7 @@ already establishes the precedent: `Reaction` isn't its own AST node — `reacti
 Num(coeff), new Name(rxnName)])` instances, summed via `new Add(terms)`, using the
 existing `Mul`/`Add`/`Num`/`Name` classes. An NN block follows the same shape: an affine
 combination is `Add` of `Mul(Name(weight), Name(input))` terms plus a bias `Name`, wrapped
-in an activation node that — per §2.1.1 below — is *also* built from existing primitives.
+in an activation node that — per §2.1.1 below — is _also_ built from existing primitives.
 The whole block is an ordinary, if larger, expression tree indistinguishable from any
 hand-written rate law once generated. Consequently, §2.2's per-node backward rule only
 ever needs to cover the ~48 node types that already exist — there is no NN-specific
@@ -93,7 +93,7 @@ builder; only how it's wired in differs, and both wiring points already exist wi
 concept needed:
 
 - **`KineticModelBuilder`**: the generated expression becomes an ordinary reaction's `fn`,
-  with stoichiometry `{ variable: 1 }` — a UDE correction term *is* a reaction whose rate
+  with stoichiometry `{ variable: 1 }` — a UDE correction term _is_ a reaction whose rate
   law happens to be machine-generated instead of hand-typed. Nothing about the
   reaction/stoichiometry abstraction changes.
 - **`OdeModelBuilder`**: the generated expression is added into the existing differential —
@@ -139,7 +139,7 @@ survive a 6×64 block's ≈20,800 weights. NN weights and ODE parameters are kep
 deliberately separate concepts: a block is authored/resized as one unit in its own UI
 (architecture spec, which variable/reaction it corrects), never expanded into individual
 rows in `ModelEditor`'s existing parameter table. Weights are seeded via standard
-randomized init (Xavier/Glorot-style) and from then on change *only* through fitting —
+randomized init (Xavier/Glorot-style) and from then on change _only_ through fitting —
 never hand-edited. Fitting itself becomes a **per-block toggle** ("train this block: yes/
 no"), not per-weight checkboxes; there's no real scenario where half a block's weights
 should be frozen while the rest train. This also makes §2.1.2's log-space trap purely an
@@ -162,7 +162,7 @@ every edit, and `misc/mxl-codegen` (the offline Python pipeline, sibling `mxlpy`
 pre-generates initial model pages, not runtime edits — so there is no sympy/CAS shortcut
 available here even in principle. This is substantially less of a live-UX risk than it
 first appears, though: `buildModelWat`'s signature (`equations`, `varNames`, `parNames`)
-depends only on model *structure* — values (including weight values during fitting) flow
+depends only on model _structure_ — values (including weight values during fitting) flow
 in separately at runtime via `y_ptr`/`rpar_ptr`, never baked into the compiled WAT. Both
 the forward and backward codegen passes therefore only re-run on structural edits (adding a
 reaction, resizing an NN block), never on value edits (a fit iteration, dragging a
@@ -199,7 +199,7 @@ design decision to make. The exceptions:
   csymbol into a system that only solves explicit ODEs. Its backward rule is trivially
   zero, consistent with the rest of it.
 
-Every zero-emitting rule above must carry an explicit code comment stating *why* it's zero
+Every zero-emitting rule above must carry an explicit code comment stating _why_ it's zero
 — a documented convention, not a silent stub that reads as an oversight.
 
 ### 2.3 Continuous adjoint, reusing the existing black-box solver for both passes
@@ -208,7 +208,7 @@ Forward-solve as today, unmodified. For the backward pass, do **not** reconstruc
 re-integrating the forward vector field backward in time (`BacksolveAdjoint` — see §1).
 Instead, obtain y(t) at whatever points the backward pass needs directly from the forward
 solve. Only the adjoint variable λ (plus a parameter-gradient quadrature accumulator) is
-backward-integrated. λ's ODE is linear given y(t) and inherits the *same* stiffness ratio
+backward-integrated. λ's ODE is linear given y(t) and inherits the _same_ stiffness ratio
 as the forward problem (transposed, not worse) — it needs an implicit integrator too, but
 being linear, its per-step "Newton iteration" is a single linear solve, cheaper than the
 forward nonlinear one.
@@ -278,8 +278,8 @@ neither does an `"lm"` fit, which has no use for analytic derivatives at all.
 `lmdif` (ADR 0004) remains the default, unchanged: for a handful of fitted mechanistic
 parameters its finite-difference Jacobian is cheap and its Gauss-Newton convergence beats
 a first-order method. It cannot scale to NN-sized parameter counts, though — not because
-its Jacobian estimate is inexact, but because it needs the full Jacobian of the *residual
-vector*, and reverse-mode/adjoint is only cheap for the *opposite* shape (gradient of one
+its Jacobian estimate is inexact, but because it needs the full Jacobian of the _residual
+vector_, and reverse-mode/adjoint is only cheap for the _opposite_ shape (gradient of one
 scalar loss, cost independent of parameter count). So a second backend is needed, not a
 drop-in replacement of `lmdif`'s Jacobian step: it runs the adjoint (§2.3) to get ∇_θL for
 the summed-residual loss each iteration, then takes an **Adam** step (learning rate
@@ -357,15 +357,15 @@ export interface FitProgress {
 `lmdif`'s raw `info` code is not surfaced to callers — it maps onto `FitStopReason` inside
 `fitWorker.ts`:
 
-| `info`  | MINPACK meaning                                     | `FitStopReason`     |
-| ------- | ---------------------------------------------------- | -------------------- |
-| 1, 3    | relative reduction in sum-of-squares below `ftol`     | `converged_residual` |
-| 2       | relative change in solution below `xtol`              | `converged_step`     |
-| 4, 8    | residuals orthogonal to Jacobian columns (`gtol`) — already a first-order-optimality / gradient-based check | `converged_gradient` |
-| 6, 7    | `ftol`/`xtol` too small to improve further — already a "stopped improving" signal | `plateau`             |
-| 5       | `maxfev` (now `maxIterations`) exhausted              | `budget_reached`     |
-| custom `-2` | `targetResidualNorm` crossed (ADR 0004 §2.7, unchanged) | `target_reached` |
-| 0, other negative | bad input / genuine failure                 | `error`               |
+| `info`            | MINPACK meaning                                                                                             | `FitStopReason`      |
+| ----------------- | ----------------------------------------------------------------------------------------------------------- | -------------------- |
+| 1, 3              | relative reduction in sum-of-squares below `ftol`                                                           | `converged_residual` |
+| 2                 | relative change in solution below `xtol`                                                                    | `converged_step`     |
+| 4, 8              | residuals orthogonal to Jacobian columns (`gtol`) — already a first-order-optimality / gradient-based check | `converged_gradient` |
+| 6, 7              | `ftol`/`xtol` too small to improve further — already a "stopped improving" signal                           | `plateau`            |
+| 5                 | `maxfev` (now `maxIterations`) exhausted                                                                    | `budget_reached`     |
+| custom `-2`       | `targetResidualNorm` crossed (ADR 0004 §2.7, unchanged)                                                     | `target_reached`     |
+| 0, other negative | bad input / genuine failure                                                                                 | `error`              |
 
 `converged_step` has no "adjoint" equivalent and is never emitted on that path — a
 first-order optimizer's step size reflects its learning-rate schedule, not proximity to a
@@ -379,7 +379,7 @@ points (§2.1), the AST's generic per-node visitor methods (§2.2), the existing
 `FIT_INIT`/`FIT_CHUNK`/`FIT_FREE` worker protocol and its `initialResidualNorm` probe
 (§2.4), and ADR 0004's fit-target/data plumbing (including its per-parameter linear-space
 toggle, reused rather than replaced in §2.1.2), none of which need to change shape. The one
-deliberate departure from prior art is *not* following diffrax's own preferred adjoint
+deliberate departure from prior art is _not_ following diffrax's own preferred adjoint
 strategy (§2.3) — the reason is architectural (opaque solver), not a disagreement with
 that recommendation.
 
@@ -388,7 +388,7 @@ that recommendation.
 Every major branch of this design is now resolved (§2.1–§2.5, via a dedicated design
 session — see the ADR history for what was reconsidered along the way, e.g. the original
 "new AST node types" and "single hidden layer" framings, both superseded). What remains is
-implementation, plus two things that are deliberately *not* design decisions to make from
+implementation, plus two things that are deliberately _not_ design decisions to make from
 first principles:
 
 - The exact auto-selection time-budget threshold (§2.4) — a placeholder (200ms) ships

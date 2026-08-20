@@ -291,7 +291,9 @@
         }
       }
     }
-    const nnBlockFitIdx = nnBlockParamNames.map((name) => parNames.indexOf(name));
+    const nnBlockFitIdx = nnBlockParamNames.map((name) =>
+      parNames.indexOf(name),
+    );
     const combinedFitIdx = [...fitIdx, ...nnBlockFitIdx];
 
     const logFlags = [
