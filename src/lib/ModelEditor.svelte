@@ -30,15 +30,17 @@
     popovertarget: string;
   } = $props();
 
-  // NN block weights/biases and generated reactions live in the same
-  // `parent.parameters`/`parent.reactions` maps as ordinary entries (no
-  // other marker distinguishes them) — but this array feeds `ModelView.
-  // toBuilder()` on Save, which must round-trip every entry's *current*
-  // value (including a fitted weight) untouched. Excluding block-owned
-  // entries here would silently drop those values from the rebuilt model
-  // instead of just hiding their rows, so the exclusion happens downstream,
-  // inside TableParameters/TableReactions themselves (ADR 0005 §2.1.3 is a
-  // display/editability rule, not a data-flow one).
+  // NN block weights/biases/scale live in the same `parent.parameters` map
+  // as ordinary entries (no other marker distinguishes them) — but this
+  // array feeds `ModelView.toBuilder()` on Save, which must round-trip
+  // every entry's *current* value (including a fitted weight) untouched.
+  // Excluding block-owned entries here would silently drop those values
+  // from the rebuilt model instead of just hiding their rows, so the
+  // exclusion happens downstream, inside TableParameters itself (ADR 0005
+  // §2.1.3 is a display/editability rule, not a data-flow one). Reactions
+  // are unaffected by this — an NN block no longer generates one at all,
+  // for any mechanism (NNBlockConfig.mechanism's doc comment), so
+  // `parent.reactions` is always purely hand-authored.
   let parameters = $derived(
     parent.parameters
       .entries()
