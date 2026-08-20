@@ -100,9 +100,22 @@
       })
       .toArray(),
   );
+  // Weights/biases live in `parent.nnWeights`, structurally separate from
+  // `parent.parameters` (mxl-schemas nn_blocks v2) — carried through
+  // unchanged so every reactive rebuild (`modelView.toBuilder()`, not just
+  // explicit Save) preserves a block's actual, possibly fitted, values
+  // instead of silently Glorot-reinitializing them on every render.
+  let nnWeights = $derived(new Map(parent.nnWeights.entries()));
 
   let modelView = $derived(
-    new ModelView(parameters, variables, assignments, reactions, nnBlocks),
+    new ModelView(
+      parameters,
+      variables,
+      assignments,
+      reactions,
+      nnBlocks,
+      nnWeights,
+    ),
   );
   let builder = $derived(modelView.toBuilder());
   let latex = $derived(builder.buildTex());

@@ -83,8 +83,15 @@ function makeJsBackend(method: string, label: string): Backend {
         rhsFn: model.buildJs(),
         allDerivedFn: allDerived,
         selectDerivedFn: selectDerived,
-        pars: model.resolveParameters(),
-        parNames: model.getParameterNames(),
+        // getAllAddressableNames()/resolveAllAddressableValues(), not
+        // getParameterNames()/resolveParameters(): buildJs()/buildWat()
+        // compile against the merged parameters+nnWeights array
+        // (ModelBuilderBase.lower()'s ir.parNames), so a model with an NN
+        // block needs every weight/bias bound too, not just parameters —
+        // otherwise every weight/bias binds to undefined, corrupting the
+        // block's output (and, via dx/dt coupling, the whole trajectory).
+        pars: model.resolveAllAddressableValues(),
+        parNames: model.getAllAddressableNames(),
         method,
       };
     },
@@ -104,8 +111,15 @@ function makeWasmBackend(method: string, label: string): Backend {
         rhsWat: model.buildWat(),
         allDerivedFn: allDerived,
         selectDerivedFn: selectDerived,
-        pars: model.resolveParameters(),
-        parNames: model.getParameterNames(),
+        // getAllAddressableNames()/resolveAllAddressableValues(), not
+        // getParameterNames()/resolveParameters(): buildJs()/buildWat()
+        // compile against the merged parameters+nnWeights array
+        // (ModelBuilderBase.lower()'s ir.parNames), so a model with an NN
+        // block needs every weight/bias bound too, not just parameters —
+        // otherwise every weight/bias binds to undefined, corrupting the
+        // block's output (and, via dx/dt coupling, the whole trajectory).
+        pars: model.resolveAllAddressableValues(),
+        parNames: model.getAllAddressableNames(),
         method,
       };
     },

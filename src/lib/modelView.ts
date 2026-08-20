@@ -1,4 +1,5 @@
 import {
+  isNNBlockOwnedWeightName,
   KineticModelBuilder,
   type NNBlockConfig,
   OdeModelBuilder,
@@ -129,6 +130,26 @@ export function idToDisplay(
   return displayNames;
 }
 
+/**
+ * `nnWeights`'s entries owned by `blockId`, per `ModelBuilderBase`'s own
+ * naming convention (`isNNBlockOwnedWeightName`) — the subset `toBuilder()`
+ * passes as `addNNBlock`'s `trainedWeights` argument so a rebuild preserves
+ * fitted values instead of Glorot-reinitializing them. `undefined` (not an
+ * empty `Map`) when the block owns no entries yet, matching `addNNBlock`'s
+ * own "no override, generate fresh" contract — relevant for a block that
+ * was just added this session and has never been through a Save yet.
+ */
+function trainedWeightsFor(
+  blockId: string,
+  nnWeights: Map<string, number>,
+): Map<string, number> | undefined {
+  const owned = new Map<string, number>();
+  for (const [name, value] of nnWeights) {
+    if (isNNBlockOwnedWeightName(name, blockId)) owned.set(name, value);
+  }
+  return owned.size > 0 ? owned : undefined;
+}
+
 // Model View
 export class ModelView {
   parameters: ParView = [];
@@ -136,6 +157,7 @@ export class ModelView {
   assignments: AssView = [];
   reactions: RxnView = [];
   nnBlocks: NNBlockView = [];
+  nnWeights: Map<string, number> = new Map();
 
   constructor(
     parameters: ParView = [],
@@ -143,32 +165,42 @@ export class ModelView {
     assignments: AssView = [],
     reactions: RxnView = [],
     nnBlocks: NNBlockView = [],
+    nnWeights: Map<string, number> = new Map(),
   ) {
     this.parameters = parameters;
     this.variables = variables;
     this.assignments = assignments;
     this.reactions = reactions;
     this.nnBlocks = nnBlocks;
+    this.nnWeights = nnWeights;
   }
 
   toBuilder(): KineticModelBuilder {
     const builder = new KineticModelBuilder();
-    // NN blocks first, deliberately: addNNBlock always Glorot-reinitializes
-    // its weights fresh from `seed`, so it would clobber any fitting-updated
-    // values already sitting in `this.parameters` if it ran after the
+    // NN blocks first, deliberately: without an explicit trainedWeights
+    // override, addNNBlock Glorot-reinitializes its weights fresh from
+    // `seed`, so it would clobber any fitting-updated values already
+    // sitting in `this.parameters`/`this.nnWeights` if it ran after the
     // parameter loop below (see ModelBuilderBase.buildMxlweb's identical
-    // ordering and doc comment for the same hazard).
+    // ordering and doc comment for the same hazard). Passing
+    // trainedWeightsFor(...) directly means weights never depend on that
+    // ordering trick at all — only `scale` (an ordinary Parameter) still
+    // does.
     this.nnBlocks.forEach((el) =>
-      builder.addNNBlock(el.id, {
-        inputs: el.inputs,
-        depth: el.depth,
-        width: el.width,
-        seed: el.seed,
-        targets: el.targets,
-        trained: el.trained,
-        scale: el.scale,
-        mechanism: el.mechanism,
-      }),
+      builder.addNNBlock(
+        el.id,
+        {
+          inputs: el.inputs,
+          layers: el.layers,
+          seed: el.seed,
+          targets: el.targets,
+          trained: el.trained,
+          scale: el.scale,
+          mechanism: el.mechanism,
+          activation: el.activation,
+        },
+        trainedWeightsFor(el.id, this.nnWeights),
+      ),
     );
     this.parameters.forEach((el) =>
       builder.addParameter(el.id, {
@@ -211,36 +243,44 @@ export class OdeModelView {
   variables: OdeVarView = [];
   assignments: AssView = [];
   nnBlocks: NNBlockView = [];
+  nnWeights: Map<string, number> = new Map();
 
   constructor(
     parameters: ParView = [],
     variables: OdeVarView = [],
     assignments: AssView = [],
     nnBlocks: NNBlockView = [],
+    nnWeights: Map<string, number> = new Map(),
   ) {
     this.parameters = parameters;
     this.variables = variables;
     this.assignments = assignments;
     this.nnBlocks = nnBlocks;
+    this.nnWeights = nnWeights;
   }
 
   toBuilder(): OdeModelBuilder {
     const builder = new OdeModelBuilder();
     // NN blocks first, deliberately — see ModelView.toBuilder's identical
-    // ordering and doc comment: addNNBlock always Glorot-reinitializes its
-    // weights fresh from `seed`, which would clobber fitting-updated values
-    // already sitting in `this.parameters` if it ran after that loop.
+    // ordering and doc comment: without an explicit trainedWeights
+    // override, addNNBlock Glorot-reinitializes its weights fresh from
+    // `seed`, which would clobber fitting-updated values already sitting in
+    // `this.parameters`/`this.nnWeights` if it ran after that loop.
     this.nnBlocks.forEach((el) =>
-      builder.addNNBlock(el.id, {
-        inputs: el.inputs,
-        depth: el.depth,
-        width: el.width,
-        seed: el.seed,
-        targets: el.targets,
-        trained: el.trained,
-        scale: el.scale,
-        mechanism: el.mechanism,
-      }),
+      builder.addNNBlock(
+        el.id,
+        {
+          inputs: el.inputs,
+          layers: el.layers,
+          seed: el.seed,
+          targets: el.targets,
+          trained: el.trained,
+          scale: el.scale,
+          mechanism: el.mechanism,
+          activation: el.activation,
+        },
+        trainedWeightsFor(el.id, this.nnWeights),
+      ),
     );
     this.parameters.forEach((el) =>
       builder.addParameter(el.id, {

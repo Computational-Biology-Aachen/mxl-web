@@ -86,9 +86,14 @@
       })
       .toArray(),
   );
+  // See ModelEditor.svelte's identical derivation: weights/biases live in
+  // `parent.nnWeights`, separate from `parent.parameters`, and must be
+  // carried through so every reactive rebuild preserves a block's actual
+  // values instead of silently Glorot-reinitializing them.
+  let nnWeights = $derived(new Map(parent.nnWeights.entries()));
 
   let modelView = $derived(
-    new OdeModelView(parameters, variables, assignments, nnBlocks),
+    new OdeModelView(parameters, variables, assignments, nnBlocks, nnWeights),
   );
   let latex = $derived(modelView.toBuilder().buildTex());
 

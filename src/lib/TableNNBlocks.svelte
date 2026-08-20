@@ -2,8 +2,18 @@
   import {
     Button,
     ButtonIcon as IconButton,
+    Math,
+    Popover,
   } from "@computational-biology-aachen/design";
+  import {
+    additiveMechanism,
+    multiplyMechanism,
+    relativeMultiplyMechanism,
+    softplusActivation,
+  } from "@computational-biology-aachen/mxlweb-core";
+  import type { Base } from "@computational-biology-aachen/mxlweb-core/mathml";
   import { MediaQuery } from "svelte/reactivity";
+  import EqEditor from "./EqEditor.svelte";
   import {
     type AssView,
     type NNBlockView,
@@ -14,19 +24,46 @@
   import TableSearch from "./TableSearch.svelte";
   import { fuzzyMatch } from "./utils";
 
+  // The mechanism EqEditor is scoped to exactly the two placeholders
+  // mxl-schemas' `mechanismNode` restricts a `mechanism` expression's `Name`
+  // leaves to — every other symbol (model variables/parameters/the block's
+  // own scale) is deliberately unreachable there, the same way a reaction's
+  // rate law is restricted to real model symbols (EqEditor.svelte's
+  // `restrictArgNames`/`argNames`).
+  const mechanismArgNames: string[][] = [
+    ["ode", "ode"],
+    ["nde", "nde"],
+  ];
+  // "f"/"NN" — short, literature-style labels (Rackauckas et al.:
+  // f(x,p,t) + NN(x,θ)) purely for the live preview's rendered LaTeX; the
+  // editor itself always works with the real "ode"/"nde" placeholder names.
+  const mechanismTexNames = new Map([
+    ["ode", "f"],
+    ["nde", "NN"],
+  ]);
+  const mechanismTemplates = [
+    { name: "Additive: f + NN(x)", code: additiveMechanism },
+    {
+      name: "Relative multiply: f · (1 + NN(x))",
+      code: relativeMultiplyMechanism,
+    },
+    { name: "Multiply: f · NN(x)", code: multiplyMechanism },
+  ];
+
   const md = new MediaQuery("max-width: 768px");
 
   // The four other model views are received for the same uniform table API
-  // every other table component gets (see ModelEditor.svelte) — this one
-  // only actually reads `variables` (a block's fixed input *and* target set:
-  // it reads every state variable and corrects every state variable, no
-  // parameters/assignments involved) and only edits `nnBlocks`.
+  // every other table component gets (see ModelEditor.svelte). `variables`
+  // is a block's fixed input *and* target set (it reads every state
+  // variable and corrects every state variable, no per-block picker);
+  // `parameters`/`assignments`/`reactions` feed the mechanism EqEditor's
+  // argNames exclusion (a hand-authored mechanism can't reference an
+  // NN-block-owned scale/weight, same restriction reactions already get).
+  // This table only ever edits `nnBlocks` itself.
   let {
     variables = $bindable(),
     parameters = $bindable(),
-    // eslint-disable-next-line no-useless-assignment
     assignments = $bindable(),
-    // eslint-disable-next-line no-useless-assignment
     reactions = $bindable(),
     nnBlocks = $bindable(),
   }: {
@@ -51,18 +88,31 @@
 
   // Keeps every block's inputs/targets equal to "every state variable" even
   // when the model's variable set changes on some other tab without this
-  // one being touched at all.
+  // one being touched at all. The output layer's width must track
+  // targets.length too (mxl-schemas: "the final layer's width is the
+  // number of outputs, must match the length of targets") — otherwise
+  // adding/removing a state variable elsewhere would silently leave a
+  // block's `layers` array schema-invalid.
   $effect(() => {
-    const next = nnBlocks.map((b) =>
-      sameNames(b.inputs, allVariableNames) &&
-      sameNames(b.targets, allVariableNames)
-        ? b
-        : {
-            ...b,
-            inputs: [...allVariableNames],
-            targets: [...allVariableNames],
-          },
-    );
+    const next = nnBlocks.map((b) => {
+      if (
+        sameNames(b.inputs, allVariableNames) &&
+        sameNames(b.targets, allVariableNames)
+      ) {
+        return b;
+      }
+      const layers = [...b.layers];
+      layers[layers.length - 1] = {
+        ...layers[layers.length - 1],
+        width: allVariableNames.length,
+      };
+      return {
+        ...b,
+        inputs: [...allVariableNames],
+        targets: [...allVariableNames],
+        layers,
+      };
+    });
     if (next.some((b, i) => b !== nnBlocks[i])) nnBlocks = next;
   });
 
@@ -81,8 +131,14 @@
       {
         id: `block${nnBlocks.length}`,
         inputs: [...allVariableNames],
-        depth: 1,
-        width: 4,
+        // One hidden layer of width 4, plus the implicit linear output
+        // layer (setLayers below always appends one sized to targets.length)
+        // — the same "depth × width" shape the UI still authors, now
+        // expressed as mxl-schemas' explicit per-layer `layers` array.
+        layers: [
+          { type: "dense", width: 4 },
+          { type: "dense", width: allVariableNames.length },
+        ],
         seed: Date.now() + nextSeed,
         targets: [...allVariableNames],
         trained: true,
@@ -90,13 +146,38 @@
         // bigger freshly-initialized network doesn't blow up the first fit
         // iteration; the scale itself is trainable too, same as any weight.
         scale: 0.01,
-        // additive: dx/dt = f + scale*NN. relative_multiply: dx/dt =
-        // f*(1 + scale*NN) — default, since an untrained network then
-        // leaves f unchanged regardless of scale. multiply: dx/dt =
-        // f*scale*NN.
-        mechanism: "relative_multiply",
+        // relative_multiply: dx/dt = f*(1 + scale*NN) — default, since an
+        // untrained network then leaves f unchanged regardless of scale.
+        // Only a starting point, freely re-editable via the mechanism
+        // EqEditor (mechanismTemplates above) like any other expression.
+        mechanism: relativeMultiplyMechanism(),
+        activation: softplusActivation(),
       },
     ];
+  }
+
+  // Depth/width is still the only architecture the UI authors (a full
+  // per-layer editor is future scope the schema's `layers` array makes
+  // possible, not something this pass builds) — derived from/written back
+  // into the block's real `layers` array, whose last entry is always the
+  // implicit linear output layer sized to the block's own target count.
+  function currentDepth(idx: number): number {
+    return globalThis.Math.max(1, nnBlocks[idx].layers.length - 1);
+  }
+  function currentWidth(idx: number): number {
+    const layers = nnBlocks[idx].layers;
+    return layers.length > 1 ? layers[0].width : 1;
+  }
+  function setDepthWidth(idx: number, depth: number, width: number) {
+    const outputWidth = nnBlocks[idx].targets.length;
+    nnBlocks[idx].layers = [
+      ...Array.from({ length: depth }, () => ({
+        type: "dense" as const,
+        width,
+      })),
+      { type: "dense" as const, width: outputWidth },
+    ];
+    nnBlocks = nnBlocks.slice();
   }
 
   // The block's scale is `${blockId}_scale` in `this.parameters` — an
@@ -129,6 +210,11 @@
       nnBlocks = nnBlocks.slice();
     }
   }
+
+  function onSaveMechanism(idx: number, mechanism: Base) {
+    nnBlocks[idx].mechanism = mechanism;
+    nnBlocks = nnBlocks.slice();
+  }
 </script>
 
 {#snippet depthWidthField(idx: number)}
@@ -139,11 +225,13 @@
       step="1"
       aria-label="Hidden layers"
       bind:value={
-        () => nnBlocks[idx].depth,
-        (value) => {
-          nnBlocks[idx].depth = Math.max(1, Math.round(value));
-          nnBlocks = nnBlocks.slice();
-        }
+        () => currentDepth(idx),
+        (value) =>
+          setDepthWidth(
+            idx,
+            globalThis.Math.max(1, globalThis.Math.round(value)),
+            currentWidth(idx),
+          )
       }
     />
     <span>×</span>
@@ -153,11 +241,13 @@
       step="1"
       aria-label="Layer width"
       bind:value={
-        () => nnBlocks[idx].width,
-        (value) => {
-          nnBlocks[idx].width = Math.max(1, Math.round(value));
-          nnBlocks = nnBlocks.slice();
-        }
+        () => currentWidth(idx),
+        (value) =>
+          setDepthWidth(
+            idx,
+            currentDepth(idx),
+            globalThis.Math.max(1, globalThis.Math.round(value)),
+          )
       }
     />
   </div>
@@ -173,22 +263,17 @@
 {/snippet}
 
 {#snippet mechanismField(idx: number)}
-  <select
-    aria-label="Mechanism"
-    bind:value={
-      () => nnBlocks[idx].mechanism,
-      (value) => {
-        nnBlocks[idx].mechanism = value;
-        nnBlocks = nnBlocks.slice();
-      }
-    }
-  >
-    <option value="additive">Additive: f + s·NN(x)</option>
-    <option value="relative_multiply"
-      >Relative multiply: f · (1 + s·NN(x))</option
-    >
-    <option value="multiply">Multiply: f · s·NN(x)</option>
-  </select>
+  <div class="row">
+    <Math
+      tex={nnBlocks[idx].mechanism.toTex(mechanismTexNames)}
+      display={true}
+      fontSize="0.75rem"
+    />
+    <IconButton
+      icon="edit"
+      popovertarget="mechanism-editor-{idx}"
+    />
+  </div>
 {/snippet}
 
 {#snippet trainedField(idx: number)}
@@ -282,6 +367,26 @@
   <Button onclick={addBlock}>add NN block</Button>
 </div>
 
+{#each nnBlocks as block, idx (block.id)}
+  <Popover
+    size="md"
+    popovertarget={`mechanism-editor-${idx}`}
+  >
+    <EqEditor
+      root={block.mechanism}
+      variables={variables}
+      parameters={parameters}
+      assignments={assignments}
+      reactions={reactions}
+      nnBlocks={nnBlocks}
+      restrictArgNames={mechanismArgNames}
+      presetTemplates={mechanismTemplates}
+      onSave={(root) => onSaveMechanism(idx, root)}
+      popovertarget={`mechanism-editor-${idx}`}
+    />
+  </Popover>
+{/each}
+
 <style>
   .padding {
     padding: 1rem;
@@ -289,6 +394,13 @@
   .empty {
     padding: 0 1rem;
     color: var(--color-text-muted);
+  }
+  .row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 0.5rem;
   }
   .pair {
     display: flex;
@@ -299,8 +411,7 @@
     width: 4rem;
   }
 
-  input,
-  select {
+  input {
     border: var(--border-transparent);
     border-radius: var(--radius-lg);
     background-color: transparent;
@@ -308,8 +419,7 @@
     width: 100%;
     font-size: 0.875rem;
   }
-  input:hover,
-  select:hover {
+  input:hover {
     border: var(--border-primary);
   }
 

@@ -100,7 +100,7 @@
     // NN block weights/biases must never surface as sliders (ADR 0005
     // §2.1.3) — the generator itself never sets `.slider`, so this only
     // matters defensively against a loaded .mxl.json with a hand-set one.
-    const owned = model.nnBlockOwnedParameterNames();
+    const owned = model.nnBlockScaleParameterNames();
     return model.parameters
       .entries()
       .filter((k) => k[1].slider !== undefined && !owned.has(k[0]))
@@ -301,7 +301,7 @@
     // Skip NN-block-owned weights/biases (ADR 0005 §2.1.3) — otherwise a
     // model with a trained block could default to a scan target that
     // ParameterScanEditor's own dropdown then excludes as an option.
-    const owned = model.nnBlockOwnedParameterNames();
+    const owned = model.nnBlockScaleParameterNames();
     const firstParam = model.parameters.keys().find((k) => !owned.has(k)) ?? "";
     const newScan: ParameterScanAnalysis = {
       type: "parameterScan",

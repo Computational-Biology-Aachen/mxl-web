@@ -7,7 +7,6 @@
   import {
     defaultTexName,
     defaultValue,
-    isNNBlockOwnedParamName,
   } from "@computational-biology-aachen/mxlweb-core";
   import { MediaQuery, SvelteSet } from "svelte/reactivity";
   import {
@@ -49,15 +48,18 @@
     parameters = parameters.slice();
   }
 
-  // NN block weights/biases must never surface as individual rows here
-  // (ADR 0005 §2.1.3) — `parameters` itself stays the full, unfiltered
-  // array (ModelEditor.svelte round-trips it through toBuilder() on Save,
-  // which needs every entry's live value, fitted or not), so the exclusion
-  // happens only in what this table renders/edits.
+  // An NN block's own `scale` must never surface as an individual row here
+  // (ADR 0005 §2.1.3) — weights/biases don't need this exclusion at all
+  // any more, since they live in `nnWeights`, structurally separate from
+  // `parameters`, not here to begin with (mxl-schemas nn_blocks v2).
+  // `parameters` itself stays the full, unfiltered array (ModelEditor.svelte
+  // round-trips it through toBuilder() on Save, which needs every entry's
+  // live value, fitted or not), so the exclusion happens only in what this
+  // table renders/edits.
   let ownedParamIds = $derived.by(() => {
     const owned = new SvelteSet<string>();
     for (const par of parameters) {
-      if (nnBlocks.some((b) => isNNBlockOwnedParamName(par.id, b.id))) {
+      if (nnBlocks.some((b) => par.id === `${b.id}_scale`)) {
         owned.add(par.id);
       }
     }

@@ -3,7 +3,7 @@
   import { Button, Math, Row } from "@computational-biology-aachen/design";
   import {
     defaultValue,
-    isNNBlockOwnedParamName,
+    isNNBlockOwnedWeightName,
   } from "@computational-biology-aachen/mxlweb-core";
   import {
     Abs,
@@ -86,6 +86,8 @@
     nnBlocks,
     onSave,
     popovertarget,
+    restrictArgNames,
+    presetTemplates,
   }: {
     root: Base;
     variables: VarView;
@@ -95,15 +97,38 @@
     nnBlocks: NNBlockView;
     popovertarget: string;
     onSave: (fn: Base) => void;
+    /**
+     * Overrides the model-derived symbol picker with a fixed, small set —
+     * for an expression scoped to placeholders the schema itself restricts
+     * (an nn_block's `mechanism`: exactly `ode`/`nde`), rather than every
+     * variable/parameter/assignment in the model. `[id, displayLabel]`
+     * pairs, same shape the model-derived `argNames` already produces.
+     */
+    restrictArgNames?: string[][];
+    /**
+     * Overrides the default reaction-shaped template dropdown (Proportional/
+     * Mass-action/Michaelis-Menten) with a different preset set — for
+     * mechanism editing, the additive/relative_multiply/multiply presets
+     * (TableNNBlocks.svelte), still fully editable afterward via the same
+     * palette every other EqEditor use gets (ADR 0005's grill-me follow-up:
+     * these three are common starting points, not the only legal
+     * mechanism).
+     */
+    presetTemplates?: { name: string; code: () => Base }[];
   } = $props();
 
-  // NN block weights/biases must never be a pickable symbol here (ADR 0005
-  // §2.1.3) — a hand-written equation referencing one would silently break
-  // whenever the block is resized/refitted, since a block is authored as
-  // one opaque unit, not individual named parameters.
+  // NN block weights must never be a pickable symbol here (ADR 0005 §2.1.3)
+  // — a hand-written equation referencing one would silently break whenever
+  // the block is resized/refitted, since a block is authored as one opaque
+  // unit, not individual named weights. Its own `scale` is likewise
+  // excluded (nnBlockScaleParameterNames) for the same reason.
   let argNames: string[][] = $derived.by(() => {
+    if (restrictArgNames !== undefined) return restrictArgNames;
+    const blockScaleNames = new Set(nnBlocks.map((b) => `${b.id}_scale`));
     const selectableParams = parameters.filter(
-      (el) => !nnBlocks.some((b) => isNNBlockOwnedParamName(el.id, b.id)),
+      (el) =>
+        !nnBlocks.some((b) => isNNBlockOwnedWeightName(el.id, b.id)) &&
+        !blockScaleNames.has(el.id),
     );
     return [
       ["time", "time"],
@@ -250,7 +275,7 @@
     return () => window.removeEventListener("keydown", onKeydown);
   });
 
-  const templates = [
+  const defaultTemplates = [
     {
       name: "Proportional",
       code: () => {
@@ -288,6 +313,7 @@
       },
     },
   ];
+  let templates = $derived(presetTemplates ?? defaultTemplates);
 
   const paletteGroups: {
     name: string;

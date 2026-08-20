@@ -98,7 +98,7 @@
 
   // NN block weights/biases are never a valid scan target (ADR 0005 §2.1.3)
   // — a block is trained as one unit, not swept parameter-by-parameter.
-  let ownedParams = $derived(model.nnBlockOwnedParameterNames());
+  let ownedParams = $derived(model.nnBlockScaleParameterNames());
   let parameterKeys = $derived(
     [...model.parameters.keys()].filter((key) => !ownedParams.has(key)),
   );

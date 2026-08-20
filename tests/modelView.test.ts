@@ -8,9 +8,15 @@
  * `toBuilder()`'s nnBlocks-before-parameters ordering and on why
  * ModelEditor.svelte's `parameters`/`reactions` arrays must stay unfiltered
  * even though the corresponding table UI must not render block-owned rows.
+ *
+ * mxl-schemas nn_blocks v2 split weights (nnWeights, never `parameters`)
+ * from scale (still an ordinary Parameter) — this file now exercises both
+ * halves of that split.
  */
 import {
   KineticModelBuilder,
+  additiveMechanism,
+  softplusActivation,
   OdeModelBuilder,
   type NNBlockConfig,
 } from "@computational-biology-aachen/mxlweb-core";
@@ -21,20 +27,25 @@ import {
   type NNBlockView,
 } from "../src/lib/modelView";
 
-const block: NNBlockConfig = {
-  inputs: ["x"],
-  depth: 1,
-  width: 2,
-  seed: 1,
-  targets: ["x"],
-  trained: true,
-  scale: 0.1,
-  mechanism: "additive",
-};
+function makeBlock(): NNBlockConfig {
+  return {
+    inputs: ["x"],
+    layers: [
+      { type: "dense", width: 2 },
+      { type: "dense", width: 1 },
+    ],
+    seed: 1,
+    targets: ["x"],
+    trained: true,
+    scale: 0.1,
+    mechanism: additiveMechanism(),
+    activation: softplusActivation(),
+  };
+}
 
-// Mirrors ModelEditor.svelte's own `parameters`/`nnBlocks` derivations
-// exactly (full parameters, no NN-block exclusion) so this test fails the
-// same way the app would if that filtering crept back in.
+// Mirrors ModelEditor.svelte's own `parameters`/`nnBlocks`/`nnWeights`
+// derivations exactly (full parameters, no NN-block exclusion) so this test
+// fails the same way the app would if that filtering crept back in.
 function viewArraysFrom(builder: KineticModelBuilder | OdeModelBuilder) {
   const parameters = [...builder.parameters.entries()].map(([id, p]) => ({
     ...p,
@@ -44,34 +55,32 @@ function viewArraysFrom(builder: KineticModelBuilder | OdeModelBuilder) {
   const nnBlocks: NNBlockView = [...builder.nnBlocks.entries()].map(
     ([id, b]) => ({ ...b, id }),
   );
-  return { parameters, nnBlocks };
+  const nnWeights = new Map(builder.nnWeights.entries());
+  return { parameters, nnBlocks, nnWeights };
 }
 
 describe("ModelView.toBuilder round-trips fitted NN block weights", () => {
   it("preserves a manually-set weight value and a manually-set scale, not a fresh re-init", () => {
     const builder = new KineticModelBuilder()
       .addVariable("x", { value: 1 })
-      .addNNBlock("corr", block);
+      .addNNBlock("corr", makeBlock());
 
-    const weightName = [...builder.parameters.keys()].find((n) =>
+    const weightName = [...builder.nnWeights.keys()].find((n) =>
       n.startsWith("corr_w"),
     )!;
     // Simulate Fit.svelte's applyFittedParameters writing a fitted value
-    // straight into the live model — both a weight and the block's own
-    // trainable scale factor (TableNNBlocks.svelte's "Output scale" field
-    // edits the exact same way once the parameter exists).
-    const original = builder.parameters.get(weightName)!;
-    builder.parameters = builder.parameters.set(weightName, {
-      ...original,
-      value: 42,
-    });
+    // straight into the live model — both a weight (nnWeights) and the
+    // block's own trainable scale factor (still a Parameter;
+    // TableNNBlocks.svelte's "Output scale" field edits the exact same way
+    // once the parameter exists).
+    builder.nnWeights = builder.nnWeights.set(weightName, 42);
     const originalScale = builder.parameters.get("corr_scale")!;
     builder.parameters = builder.parameters.set("corr_scale", {
       ...originalScale,
       value: 7,
     });
 
-    const { parameters, nnBlocks } = viewArraysFrom(builder);
+    const { parameters, nnBlocks, nnWeights } = viewArraysFrom(builder);
     const variables = [...builder.variables.entries()].map(([id, v]) => ({
       ...v,
       id,
@@ -94,10 +103,13 @@ describe("ModelView.toBuilder round-trips fitted NN block weights", () => {
       assignments,
       reactions,
       nnBlocks,
+      nnWeights,
     ).toBuilder();
 
-    expect(rebuilt.parameters.get(weightName)?.value).toBe(42);
+    expect(rebuilt.nnWeights.get(weightName)).toBe(42);
     expect(rebuilt.parameters.get("corr_scale")?.value).toBe(7);
+    // Weights never leak into parameters — only scale does.
+    expect(rebuilt.parameters.has(weightName)).toBe(false);
   });
 });
 
@@ -105,23 +117,19 @@ describe("OdeModelView.toBuilder round-trips fitted NN block weights", () => {
   it("preserves a manually-set weight value and a manually-set scale, not a fresh re-init", () => {
     const builder = new OdeModelBuilder()
       .addVariable("x", { value: 1 })
-      .addNNBlock("corr", block);
+      .addNNBlock("corr", makeBlock());
 
-    const weightName = [...builder.parameters.keys()].find((n) =>
+    const weightName = [...builder.nnWeights.keys()].find((n) =>
       n.startsWith("corr_w"),
     )!;
-    const original = builder.parameters.get(weightName)!;
-    builder.parameters = builder.parameters.set(weightName, {
-      ...original,
-      value: 42,
-    });
+    builder.nnWeights = builder.nnWeights.set(weightName, 42);
     const originalScale = builder.parameters.get("corr_scale")!;
     builder.parameters = builder.parameters.set("corr_scale", {
       ...originalScale,
       value: 7,
     });
 
-    const { parameters, nnBlocks } = viewArraysFrom(builder);
+    const { parameters, nnBlocks, nnWeights } = viewArraysFrom(builder);
     const variables = [...builder.variables.entries()].map(([id, v]) => ({
       ...v,
       id,
@@ -139,9 +147,11 @@ describe("OdeModelView.toBuilder round-trips fitted NN block weights", () => {
       variables,
       assignments,
       nnBlocks,
+      nnWeights,
     ).toBuilder();
 
-    expect(rebuilt.parameters.get(weightName)?.value).toBe(42);
+    expect(rebuilt.nnWeights.get(weightName)).toBe(42);
     expect(rebuilt.parameters.get("corr_scale")?.value).toBe(7);
+    expect(rebuilt.parameters.has(weightName)).toBe(false);
   });
 });

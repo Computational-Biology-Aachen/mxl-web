@@ -11,7 +11,6 @@
 <script lang="ts">
   import { LineChart } from "@computational-biology-aachen/design";
   import {
-    isNNBlockOwnedParamName,
     type FitBackend,
     type ModelBuilderBase,
   } from "@computational-biology-aachen/mxlweb-core";
@@ -70,11 +69,14 @@
 
   // ---- Parameter selection -------------------------------------------
 
-  // NN block weights/biases live in model.parameters like any other
-  // parameter, but are never individual table rows (ADR 0005 §2.1.3) — a
-  // 6×64 block is ≈20,800 of them. Fitting them is the block's own
-  // "trained" toggle (TableNNBlocks), not a per-row checkbox here.
-  let nnBlockOwnedParams = $derived(model.nnBlockOwnedParameterNames());
+  // An NN block's own scale is a Parameter but never an individual table
+  // row (ADR 0005 §2.1.3) — fitting it is the block's own "trained" toggle
+  // (TableNNBlocks), not a per-row checkbox here. Weights/biases need no
+  // such exclusion any more: they live in model.nnWeights, structurally
+  // separate from model.parameters (mxl-schemas nn_blocks v2), so a 6×64
+  // block's ≈20,800 of them were never candidates for this list to begin
+  // with.
+  let nnBlockScaleParams = $derived(model.nnBlockScaleParameterNames());
   let hasTrainedNNBlock = $derived(
     [...model.nnBlocks.values()].some((b) => b.trained),
   );
@@ -83,7 +85,7 @@
   // in fitParameters defaults to unchecked.
   let paramRows = $derived(
     [...model.parameters.keys()]
-      .filter((id) => !nnBlockOwnedParams.has(id))
+      .filter((id) => !nnBlockScaleParams.has(id))
       .map((id) => {
         const existing = fitParameters.find((p) => p.id === id);
         return existing ?? { id, fit: false, logSpace: true };
@@ -150,7 +152,11 @@
     backends.wasmRadau5.getPool().postMessage({
       ...req,
       pars: parValues,
-      parNames: model.getParameterNames(),
+      // Matches parValues' own indexing: this is only ever called with
+      // progress.params (below), itself indexed against
+      // getAllAddressableNames() — the array actually submitted to the fit
+      // session (runFit()'s pars/parNames, same reasoning).
+      parNames: model.getAllAddressableNames(),
       initialValues: model.resolveInitialValues(),
       rhsNames: model.getNames(),
       allDerivedNames: order,
@@ -184,7 +190,15 @@
   }
 
   function fitTargets(): { fitIdx: number[]; ok: boolean } {
-    const parNames = model.getParameterNames();
+    // getAllAddressableNames(), not getParameterNames(): fitIdx is spliced
+    // directly into combinedFitIdx in runFit() below, which is indexed
+    // against the former. fitParameters entries are always ordinary
+    // parameter ids (never a weight/scale name — those join separately via
+    // nnBlockParamNames), so this doesn't change *which* indices are
+    // found, only removes the implicit "getParameterNames() is always a
+    // positional prefix of getAllAddressableNames()" assumption the two
+    // arrays previously had to agree on silently.
+    const parNames = model.getAllAddressableNames();
     const fitIdx = fitParameters
       .filter((p) => p.fit)
       .map((p) => parNames.indexOf(p.id))
@@ -275,7 +289,14 @@
       };
     });
 
-    const parNames = model.getParameterNames();
+    // The full flat array the compiled WAT module actually indexes into
+    // (ModelBuilderBase.lower()'s ir.parNames === getAllAddressableNames():
+    // model.parameters, then model.nnWeights) — not getParameterNames(),
+    // which is the UI-facing kinetic-parameters-plus-scale subset. Every
+    // index (fitIdx, nnBlockFitIdx, combinedFitIdx below) is positional
+    // against *this* array, so building the WASM pars[]/fitIdx layout from
+    // anything else would silently misalign once any block has weights.
+    const parNames = model.getAllAddressableNames();
 
     // Every weight/bias, and the block's own trainable scale factor, of
     // every *trained* NN block joins the fitted set — always in linear
@@ -285,11 +306,8 @@
     const nnBlockParamNames: string[] = [];
     for (const [key, config] of model.nnBlocks) {
       if (!config.trained) continue;
-      for (const name of parNames) {
-        if (isNNBlockOwnedParamName(name, key)) {
-          nnBlockParamNames.push(name);
-        }
-      }
+      nnBlockParamNames.push(`${key}_scale`);
+      nnBlockParamNames.push(...model.nnBlockWeightNames(key));
     }
     const nnBlockFitIdx = nnBlockParamNames.map((name) =>
       parNames.indexOf(name),
@@ -309,7 +327,7 @@
     // have no such override — they start from their current (Glorot-
     // initialized or previously-fitted) value, like any un-overridden row.
     const pars = model
-      .resolveParameters()
+      .resolveAllAddressableValues()
       .map(
         (v, i) =>
           fitParameters.find((p) => p.id === parNames[i])?.initialGuess ?? v,
@@ -416,10 +434,10 @@
     running = false;
   }
 
-  // Writes the current best-fit values into model.parameters — the same
-  // SvelteMap.set() pattern AnalysesDashboard's parameter sliders already
-  // use to mutate the shared, reactive model — then lets the dashboard
-  // re-run every other analysis box (ADR 0004 §2.12).
+  // Writes the current best-fit values into model.parameters/model.nnWeights
+  // — the same SvelteMap.set() pattern AnalysesDashboard's parameter
+  // sliders already use to mutate the shared, reactive model — then lets
+  // the dashboard re-run every other analysis box (ADR 0004 §2.12).
   function applyFittedParameters() {
     if (!fittedValues) return;
     for (const row of paramRows) {
@@ -430,15 +448,27 @@
       if (!current) continue;
       model.parameters = model.parameters.set(row.id, { ...current, value });
     }
-    // Trained NN blocks' weights/biases have no paramRows entry (§2.1.3) —
+    // Trained NN blocks' scale/weights have no paramRows entry (§2.1.3) —
     // written back separately, for every trained block, unconditionally.
+    // scale is still an ordinary Parameter; weights/biases go to nnWeights
+    // instead (mxl-schemas nn_blocks v2 — they never live in `parameters`).
     for (const [key, config] of model.nnBlocks) {
       if (!config.trained) continue;
-      for (const [name, value] of Object.entries(fittedValues)) {
-        if (!isNNBlockOwnedParamName(name, key)) continue;
-        const current = model.parameters.get(name);
-        if (!current) continue;
-        model.parameters = model.parameters.set(name, { ...current, value });
+      const scaleName = `${key}_scale`;
+      const scaleValue = fittedValues[scaleName];
+      if (scaleValue !== undefined) {
+        const current = model.parameters.get(scaleName);
+        if (current) {
+          model.parameters = model.parameters.set(scaleName, {
+            ...current,
+            value: scaleValue,
+          });
+        }
+      }
+      for (const name of model.nnBlockWeightNames(key)) {
+        const value = fittedValues[name];
+        if (value === undefined) continue;
+        model.nnWeights = model.nnWeights.set(name, value);
       }
     }
     onApply?.();
