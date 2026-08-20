@@ -3,7 +3,7 @@ repos:
     hooks:
       - id: format-lint
         name: Format and lint
-        entry: bash -c 'npx prettier --write . && npx eslint .'
+        entry: bash -c 'git diff --cached --name-only --diff-filter=ACMR -z | xargs -0 -r npx prettier --ignore-unknown --write && npx eslint .'
         language: system
         pass_filenames: false
         always_run: true
