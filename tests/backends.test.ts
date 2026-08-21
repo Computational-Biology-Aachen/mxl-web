@@ -31,7 +31,7 @@ function makeModelWithNNBlock(): OdeModelBuilder {
     .addNNBlock("corr", {
       inputs: ["x"],
       layers: [
-        { type: "dense", width: 2 },
+        { type: "dense", width: 2, activation: softplusActivation() },
         { type: "dense", width: 1 },
       ],
       seed: 1,
@@ -39,7 +39,6 @@ function makeModelWithNNBlock(): OdeModelBuilder {
       trained: true,
       scale: 0.1,
       mechanism: additiveMechanism(),
-      activation: softplusActivation(),
     });
 }
 

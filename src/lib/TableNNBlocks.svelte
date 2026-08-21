@@ -131,12 +131,14 @@
       {
         id: `block${nnBlocks.length}`,
         inputs: [...allVariableNames],
-        // One hidden layer of width 4, plus the implicit linear output
-        // layer (setLayers below always appends one sized to targets.length)
-        // — the same "depth × width" shape the UI still authors, now
-        // expressed as mxl-schemas' explicit per-layer `layers` array.
+        // One hidden layer of width 4 (softplus-activated), plus the
+        // implicit linear (no activation) output layer (setLayers below
+        // always appends one sized to targets.length) — the same "depth ×
+        // width" shape the UI still authors, now expressed as mxl-schemas'
+        // explicit per-layer `layers` array (activation moved from a single
+        // block-level field to each layer's own optional `activation`).
         layers: [
-          { type: "dense", width: 4 },
+          { type: "dense", width: 4, activation: softplusActivation() },
           { type: "dense", width: allVariableNames.length },
         ],
         seed: Date.now() + nextSeed,
@@ -151,7 +153,6 @@
         // Only a starting point, freely re-editable via the mechanism
         // EqEditor (mechanismTemplates above) like any other expression.
         mechanism: relativeMultiplyMechanism(),
-        activation: softplusActivation(),
       },
     ];
   }
@@ -174,6 +175,7 @@
       ...Array.from({ length: depth }, () => ({
         type: "dense" as const,
         width,
+        activation: softplusActivation(),
       })),
       { type: "dense" as const, width: outputWidth },
     ];
