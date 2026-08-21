@@ -9,13 +9,13 @@
 -->
 
 <script lang="ts">
-  import { LineChart } from "@computational-biology-aachen/design";
   import {
     type FitBackend,
     type ModelBuilderBase,
   } from "@computational-biology-aachen/mxlweb-core";
   import type { ParsedCsv } from "./csvParse";
   import type { FitParameterConfig, FitTargetMapping } from "./index";
+  import LineChart from "./LineChart.svelte";
   import SimErrDisplay from "./SimErrDisplay.svelte";
   import { backends } from "./stores/backends";
   import { FitSession } from "./stores/fitStore";
@@ -520,6 +520,18 @@
       },
     ],
   });
+
+  // A fixed y-axis ceiling, derived once from the uploaded data rather than
+  // the live-updating model trajectory: with no explicit `yMax` set, letting
+  // Chart.js auto-scale to the current trajectory's own max makes the axis
+  // (and so every point on the line) visibly rescale on each progress tick —
+  // the "jumping" a live-updating fit chart must not do.
+  let dataYMax = $derived.by(() => {
+    if (!csv || !timeColumn || targets.length === 0) return undefined;
+    const values = targets.flatMap((t) => csv!.columns[t.column] ?? []);
+    if (values.length === 0) return undefined;
+    return Math.max(...values) * 1.2;
+  });
 </script>
 
 <div class="fit-panel">
@@ -648,7 +660,7 @@
           <LineChart
             data={lineData}
             loading={false}
-            yMax={yMax}
+            yMax={yMax ?? dataYMax}
           />
         </div>
       {/if}
@@ -660,6 +672,7 @@
             loading={false}
             yScale="logarithmic"
             yMin={undefined}
+            xMax={maxFunctionEvaluations}
             xLabel="Function evaluations"
             yLabel="Residual norm"
           />
