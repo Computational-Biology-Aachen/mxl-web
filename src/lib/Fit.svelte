@@ -10,10 +10,16 @@
 
 <script lang="ts">
   import {
+    Button,
+    InputNumberOptional,
+    Row,
+  } from "@computational-biology-aachen/design";
+  import H2 from "@computational-biology-aachen/design/H2.svelte";
+  import {
     type FitBackend,
     type ModelBuilderBase,
   } from "@computational-biology-aachen/mxlweb-core";
-  import type { ParsedCsv } from "./csvParse";
+  import { parseCsvFile, type ParsedCsv } from "./csvParse";
   import type { FitParameterConfig, FitTargetMapping } from "./index";
   import LineChart from "./LineChart.svelte";
   import SimErrDisplay from "./SimErrDisplay.svelte";
@@ -28,35 +34,33 @@
 
   let {
     model,
-    timeColumn = $bindable(undefined),
-    targets = $bindable([]),
-    fitParameters = $bindable([]),
-    csv = $bindable(null),
-    chunkMaxfev,
-    targetResidualNorm,
-    maxFunctionEvaluations,
-    yMax,
+    popovertarget,
     onApply,
   }: {
     model: ModelBuilderBase;
-    timeColumn?: string;
-    targets?: FitTargetMapping[];
-    fitParameters?: FitParameterConfig[];
-    /** Uploaded data file — parsed and mapped from FitEditor's "Upload
-     * data" button. */
-    csv?: ParsedCsv | null;
-    chunkMaxfev: number;
-    /** Stop once the residual norm drops to or below this. */
-    targetResidualNorm: number;
-    /** Hard cap on total function evaluations across every chunk. */
-    maxFunctionEvaluations: number;
-    yMax?: number;
+    popovertarget: string;
     /** Called after "Apply fitted parameters" writes into model.parameters —
      * wired by AnalysesDashboard to re-run every other analysis box. */
     onApply?: () => void;
   } = $props();
 
-  // ---- Column mapping ------------------------------------------------
+  // Every field below is this popover's own transient config — fitting is
+  // never persisted (not in .mxl.json, no localStorage/URL) and this popover
+  // is a dashboard-wide singleton, not one of several DynBoxRow boxes, so
+  // there's no parent object to thread these through any more.
+  let chunkMaxfev = $state(5);
+  let targetResidualNorm = $state(1e-1);
+  let maxFunctionEvaluations = $state(1000);
+  let yMaxValue = $state(10);
+  let yMaxAuto = $state(true);
+  let yMax = $derived(yMaxAuto ? undefined : yMaxValue);
+
+  // ---- Data upload + column mapping --------------------------------------
+
+  let csv = $state<ParsedCsv | null>(null);
+  let timeColumn = $state<string | undefined>(undefined);
+  let targets = $state<FitTargetMapping[]>([]);
+  let fitParameters = $state<FitParameterConfig[]>([]);
 
   // Candidate fit targets: state variables + derived quantities — the same
   // source TimeCourse.svelte uses for its "select derived" UI.
@@ -66,6 +70,59 @@
       .sortDependencies()
       .map((key) => ({ key, kind: "derived" as const })),
   ]);
+
+  function autoMapColumns() {
+    if (!csv) return;
+    if (!timeColumn) {
+      const guess = csv.headers.find((h) => /^t(ime)?$/i.test(h));
+      timeColumn = guess ?? csv.headers[0];
+    }
+    const displayNames = model.getDisplayNames();
+    const mapped: FitTargetMapping[] = [];
+    for (const header of csv.headers) {
+      if (header === timeColumn) continue;
+      const match = candidateKeys.find(
+        ({ key }) =>
+          key.toLowerCase() === header.toLowerCase() ||
+          (displayNames.get(key) ?? "").toLowerCase() === header.toLowerCase(),
+      );
+      if (match) {
+        mapped.push({ column: header, key: match.key, kind: match.kind });
+      }
+    }
+    targets = mapped;
+  }
+
+  function setTargetColumn(column: string, key: string) {
+    const match = candidateKeys.find((c) => c.key === key);
+    if (!match) return;
+    // A key can only be mapped from one column at a time — remapping it here
+    // implicitly un-maps whichever other column previously used it, rather
+    // than silently duplicating a residual row for the same model quantity.
+    const rest = targets.filter((t) => t.column !== column && t.key !== key);
+    targets = [...rest, { column, key, kind: match.kind }];
+  }
+
+  function unmapColumn(column: string) {
+    targets = targets.filter((t) => t.column !== column);
+  }
+
+  let fileInput = $state<HTMLInputElement | null>(null);
+  let fileError = $state<string | null>(null);
+
+  async function handleFile(event: Event) {
+    fileError = null;
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    try {
+      csv = await parseCsvFile(file);
+      autoMapColumns();
+    } catch (e) {
+      fileError = e instanceof Error ? e.message : "Failed to parse file";
+    }
+    input.value = "";
+  }
 
   // ---- Parameter selection -------------------------------------------
 
@@ -535,6 +592,143 @@
 </script>
 
 <div class="fit-panel">
+  <Row
+    stack
+    justify="between"
+    gap="0.5rem"
+  >
+    <H2>Fit to data</H2>
+    <div class="actions">
+      <Button
+        disabled={!fittedValues}
+        onclick={applyFittedParameters}>Apply fitted parameters</Button
+      >
+      <Button
+        popovertarget={popovertarget}
+        popovertargetaction="hide">Close</Button
+      >
+    </div>
+  </Row>
+
+  <div class="config-row">
+    <div class="config-col">
+      <h3>Fit settings</h3>
+      <table class="settings-table">
+        <thead>
+          <tr>
+            <th>Setting</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Function evaluations per progress update</td>
+            <td>
+              <input
+                type="number"
+                step="any"
+                bind:value={chunkMaxfev}
+              />
+            </td>
+          </tr>
+          <tr>
+            <td>Maximum total function evaluations</td>
+            <td>
+              <input
+                type="number"
+                step="any"
+                bind:value={maxFunctionEvaluations}
+              />
+            </td>
+          </tr>
+          <tr>
+            <td>Stop once residual norm reaches</td>
+            <td>
+              <input
+                type="number"
+                step="any"
+                bind:value={targetResidualNorm}
+              />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="config-col">
+      <h3>Data</h3>
+      <input
+        type="file"
+        accept=".csv,.tsv,.txt"
+        bind:this={fileInput}
+        onchange={handleFile}
+        style="display:none"
+      />
+      {#if fileError}
+        <p class="error">{fileError}</p>
+      {/if}
+
+      {#if csv}
+        <table class="mapping-table">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>Maps to</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each csv.headers as header (header)}
+              {@const mapping = targets.find((t) => t.column === header)}
+              <tr>
+                <td>{header}</td>
+                <td>
+                  {#if header === timeColumn}
+                    <span class="time-badge">time axis</span>
+                  {:else}
+                    <select
+                      value={mapping?.key ?? ""}
+                      onchange={(e) => {
+                        const value = (e.target as HTMLSelectElement).value;
+                        if (value === "") unmapColumn(header);
+                        else setTargetColumn(header, value);
+                      }}
+                    >
+                      <option value="">(ignore)</option>
+                      {#each candidateKeys as c (c.key)}
+                        <option value={c.key}>{c.key} ({c.kind})</option>
+                      {/each}
+                    </select>
+                    <button
+                      type="button"
+                      class="time-link"
+                      onclick={() => (timeColumn = header)}>use as time</button
+                    >
+                  {/if}
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+        <span class="file-info"
+          >{csv.rowCount} rows, {csv.headers.length} columns</span
+        >
+      {:else}
+        <Button
+          variant="secondary"
+          onclick={() => fileInput?.click()}>Upload data</Button
+        >
+      {/if}
+    </div>
+  </div>
+
+  <h3>Plot options</h3>
+  <InputNumberOptional
+    id="fit-yMax"
+    valueLabel="yMax: "
+    condLabel="Auto?"
+    bind:value={yMaxValue}
+    bind:condition={yMaxAuto}
+  />
+
   {#if csv}
     <table class="param-table">
       <thead>
@@ -596,7 +790,7 @@
     {#if hasTrainedNNBlock}
       <p class="nn-note">
         Also training {[...model.nnBlocks.values()].filter((b) => b.trained)
-          .length} NN block(s) — this fit uses the adjoint backend.
+          .length} NN block(s), this fit uses the adjoint backend.
       </p>
     {/if}
     <div class="run-row">
@@ -611,13 +805,6 @@
           type="button"
           class="cancel-button"
           onclick={cancelFit}>Stop</button
-        >
-      {/if}
-      {#if fittedValues}
-        <button
-          type="button"
-          class="apply-button"
-          onclick={applyFittedParameters}>Apply fitted parameters</button
         >
       {/if}
       {#if residualNorm !== null}
@@ -665,29 +852,73 @@
         </div>
       {/if}
 
-      {#if residualHistory.length > 0}
-        <div class="chart-cell">
-          <LineChart
-            data={residualHistoryData}
-            loading={false}
-            yScale="logarithmic"
-            yMin={undefined}
-            xMax={maxFunctionEvaluations}
-            xLabel="Function evaluations"
-            yLabel="Residual norm"
-          />
-        </div>
-      {/if}
+      <div class="chart-cell">
+        <LineChart
+          data={residualHistoryData}
+          loading={false}
+          yScale="logarithmic"
+          yMin={undefined}
+          xMax={maxFunctionEvaluations}
+          xLabel="Function evaluations"
+          yLabel="Residual norm"
+        />
+      </div>
     </div>
   {/if}
 </div>
 
 <style>
+  /* Global styles */
+
+  input,
+  select {
+    border: var(--border);
+    border-radius: var(--radius-lg);
+    background-color: transparent;
+    padding: 0.35rem 0.5rem;
+    width: auto;
+    font-size: 0.875rem;
+  }
+  input:hover,
+  select:hover {
+    border: var(--border-primary);
+  }
+  /* Local styles */
   .fit-panel {
     display: flex;
     flex-direction: column;
     gap: 1rem;
     width: 100%;
+  }
+  .actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .config-row {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+
+    @media (min-width: 768px) {
+      flex-direction: row;
+      align-items: flex-start;
+    }
+  }
+  .config-col {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+  /* Form controls don't inherit the page font or size by default — without
+     this every input/select in these tables renders in the browser's UI
+     font/size instead of matching the surrounding table text. */
+  input,
+  select {
+    font-size: inherit;
+    font-family: inherit;
   }
   .charts-row {
     display: flex;
@@ -737,7 +968,8 @@
     font-size: 0.7rem;
     text-transform: uppercase;
   }
-  .param-table input[type="number"] {
+  .param-table input[type="number"],
+  .settings-table input[type="number"] {
     width: 8rem;
   }
   .run-row {
@@ -746,8 +978,7 @@
     gap: 1rem;
   }
   .run-button,
-  .cancel-button,
-  .apply-button {
+  .cancel-button {
     cursor: pointer;
     border: var(--border);
     border-radius: var(--radius-lg);
@@ -762,11 +993,6 @@
     background: var(--error, #dc2626);
     color: white;
   }
-  .apply-button {
-    border-color: var(--color-primary);
-    background: var(--color-surface);
-    color: var(--color-primary);
-  }
   .progress-info {
     color: var(--color-text-muted);
     font-size: 0.8rem;
@@ -780,5 +1006,22 @@
     margin: 0;
     color: var(--color-text-muted);
     font-size: 0.875rem;
+  }
+  .file-info {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+  .time-badge {
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+  .time-link {
+    cursor: pointer;
+    margin-left: 0.5rem;
+    border: none;
+    background: none;
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    text-decoration: underline;
   }
 </style>

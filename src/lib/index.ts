@@ -87,28 +87,7 @@ export type FitParameterConfig = {
   initialGuess?: number;
 };
 
-export type FitAnalysis = {
-  type: "fit";
-  id: number;
-  idx: number;
-  title: string;
-  span: number;
-  /** CSV column used as the time axis; unset until a file is mapped. */
-  timeColumn?: string;
-  targets?: FitTargetMapping[];
-  fitParameters?: FitParameterConfig[];
-  /** Function evaluations per chunk — see ADR 0004 §2.7 in the mxlweb repo. */
-  chunkMaxfev: number;
-  /** Stop once the residual norm drops to or below this. */
-  targetResidualNorm: number;
-  /** Hard cap on total function evaluations across every chunk — also the
-   * progress bar's denominator. */
-  maxFunctionEvaluations: number;
-  yMax: number | undefined;
-};
-
-export type Analysis =
-  SimulationAnalysis | ParameterScanAnalysis | PamAnalysis | FitAnalysis;
+export type Analysis = SimulationAnalysis | ParameterScanAnalysis | PamAnalysis;
 export type Analyses = Analysis[];
 
 // Steady-state (algebraic) models have their own analysis: a closed-form sweep

@@ -3,12 +3,11 @@
   import {
     backends,
     type Analyses,
-    type FitAnalysis,
     type PamAnalysis,
     type ParameterScanAnalysis,
     type SimulationAnalysis,
   } from "$lib";
-  import FitSimulator from "$lib/Fit.svelte";
+  import Fit from "$lib/Fit.svelte";
   import PamSimulator from "$lib/Pam.svelte";
   import ParameterScanSimulator from "$lib/ParameterScan.svelte";
   import Simulator from "$lib/TimeCourse.svelte";
@@ -38,8 +37,6 @@
   } from "@computational-biology-aachen/mxlweb-core/sbml";
   import type { Snippet } from "svelte";
   import { tick } from "svelte";
-  import type { ParsedCsv } from "./csvParse";
-  import FitEditor from "./FitEditor.svelte";
   import ModelEditor from "./ModelEditor.svelte";
   import OdeModelEditor from "./OdeModelEditor.svelte";
   import PamScanEditor from "./PamScanEditor.svelte";
@@ -67,12 +64,6 @@
     {},
   );
   let pamRefs = $state<Record<number, PamSimulator | undefined>>({});
-  let fitRefs = $state<Record<number, FitSimulator | undefined>>({});
-  // Uploaded fit data, keyed by analysis id — ephemeral (not persisted with
-  // the analysis config) since raw CSV data shouldn't round-trip through
-  // saved settings. Shared between FitEditor (upload button) and
-  // FitSimulator (mapping table + fit run).
-  let csvById = $state<Record<number, ParsedCsv | null>>({});
 
   let analysisById = $derived.by(() => {
     // transient lookup rebuilt by this derived, not reactive state
@@ -325,21 +316,6 @@
     };
     analyses = [...analyses, newScan];
   }
-
-  function addFit(box: Box) {
-    const newFit: FitAnalysis = {
-      type: "fit",
-      id: box.id,
-      idx: analyses.length,
-      title: "Fit to data",
-      span: 6,
-      chunkMaxfev: 5,
-      targetResidualNorm: 1e-1,
-      maxFunctionEvaluations: 1000,
-      yMax: undefined,
-    };
-    analyses = [...analyses, newFit];
-  }
 </script>
 
 <Div>
@@ -380,6 +356,7 @@
         <ButtonMenuItem onclick={saveMxlweb}>mxlweb</ButtonMenuItem>
         <ButtonMenuItem onclick={savePython}>Python</ButtonMenuItem>
       </ButtonMenu>
+      <Button popovertarget="fit-editor">Fit</Button>
       <Button
         onclick={() => {
           model = initModel();
@@ -497,14 +474,6 @@
       scannerRefs = { ...scannerRefs };
       delete pamRefs[box.id];
       pamRefs = { ...pamRefs };
-      // A running fit owns a dedicated Worker (unlike the pooled workers
-      // above) that keeps calling itself via FIT_CHUNK independently of this
-      // component's lifecycle — cancel it explicitly or it runs forever.
-      fitRefs[box.id]?.cancelFit();
-      delete fitRefs[box.id];
-      fitRefs = { ...fitRefs };
-      delete csvById[box.id];
-      csvById = { ...csvById };
     }}
   >
     {#snippet children({ box })}
@@ -552,46 +521,6 @@
             normalizedKeys={analysis.normalizedKeys}
             nTimePoints={analysis.nTimePoints ?? 100}
             lineDisplay={analysis.lineDisplay}
-          />
-        {:else if analysis.type === "fit"}
-          <FitSimulator
-            bind:this={fitRefs[box.id]}
-            model={model}
-            bind:timeColumn={
-              () => analysis.timeColumn,
-              (v) => {
-                analyses = analyses.map((a) =>
-                  a.id === analysis.id ? { ...a, timeColumn: v } : a,
-                ) as Analyses;
-              }
-            }
-            bind:targets={
-              () => analysis.targets ?? [],
-              (v) => {
-                analyses = analyses.map((a) =>
-                  a.id === analysis.id ? { ...a, targets: v } : a,
-                ) as Analyses;
-              }
-            }
-            bind:fitParameters={
-              () => analysis.fitParameters ?? [],
-              (v) => {
-                analyses = analyses.map((a) =>
-                  a.id === analysis.id ? { ...a, fitParameters: v } : a,
-                ) as Analyses;
-              }
-            }
-            bind:csv={
-              () => csvById[box.id] ?? null,
-              (v) => {
-                csvById = { ...csvById, [box.id]: v };
-              }
-            }
-            chunkMaxfev={analysis.chunkMaxfev}
-            targetResidualNorm={analysis.targetResidualNorm}
-            maxFunctionEvaluations={analysis.maxFunctionEvaluations}
-            yMax={analysis.yMax}
-            onApply={runAllSimulations}
           />
         {/if}
       {/if}
@@ -650,21 +579,6 @@
     <Icon>pulse_alert</Icon>
     PAM Fluorescence
   </button>
-  <button
-    class="picker-option"
-    onclick={async () => {
-      if (!pendingBox) return;
-      addFit(pendingBox);
-      const id = pendingBox.id;
-      pendingBox = null;
-      pickerEl?.hidePopover();
-      await tick();
-      analysisEditorEls[id]?.showPopover();
-    }}
-  >
-    <Icon>target</Icon>
-    Fit to data
-  </button>
 </Popover>
 <Popover
   size="lg"
@@ -689,6 +603,17 @@
       }}
     />
   {/if}
+</Popover>
+
+<Popover
+  size="lg"
+  popovertarget="fit-editor"
+>
+  <Fit
+    model={model}
+    popovertarget="fit-editor"
+    onApply={runAllSimulations}
+  />
 </Popover>
 
 {#each analyses as analysis (analysis.id)}
@@ -730,39 +655,6 @@
             a.id === analysis.id ? updated : a,
           ) as Analyses;
           pamRefs[analysis.id]?.runSimulation(model);
-        }}
-        popovertarget={`analysis-editor-${analysis.id}`}
-      />
-    {:else if analysis.type === "fit"}
-      <FitEditor
-        parent={analysis}
-        model={model}
-        bind:csv={
-          () => csvById[analysis.id] ?? null,
-          (v) => {
-            csvById = { ...csvById, [analysis.id]: v };
-          }
-        }
-        bind:timeColumn={
-          () => analysis.timeColumn,
-          (v) => {
-            analyses = analyses.map((a) =>
-              a.id === analysis.id ? { ...a, timeColumn: v } : a,
-            ) as Analyses;
-          }
-        }
-        bind:targets={
-          () => analysis.targets ?? [],
-          (v) => {
-            analyses = analyses.map((a) =>
-              a.id === analysis.id ? { ...a, targets: v } : a,
-            ) as Analyses;
-          }
-        }
-        onSave={(updated) => {
-          analyses = analyses.map((a) =>
-            a.id === analysis.id ? updated : a,
-          ) as Analyses;
         }}
         popovertarget={`analysis-editor-${analysis.id}`}
       />

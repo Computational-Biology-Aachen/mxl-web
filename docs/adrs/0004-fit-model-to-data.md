@@ -1,7 +1,7 @@
 # ADR 0004: Fit Model to Uploaded Data
 
 **Status:** Implemented
-**Scope:** `AnalysesDashboard`, `ModelEditor` (this repo); `src-c/`, `build:wasm`,
+**Scope:** `AnalysesDashboard`, `Fit.svelte` (this repo); `src-c/`, `build:wasm`,
 `src/backends/wasm/` (sibling `mxlweb-core` repo)
 
 ---
@@ -63,7 +63,7 @@ for `t`/`time` headers). Unmapped columns are ignored — tolerates metadata col
 
 ### 2.4 Parameter selection, initial guess, bounds
 
-A "fit" checkbox column is added to `ModelEditor`'s parameter table; unchecked
+A "fit" checkbox column is added to `Fit.svelte`'s own parameter table; unchecked
 parameters stay fixed at their current value. The current table value doubles as the
 initial guess. Since `lmdif` is unconstrained and mxlweb's model libraries
 (mxlbricks/mxlmodels) are kinetic/biological — virtually every fittable parameter (rate
@@ -140,17 +140,22 @@ Emscripten-module-loading code.
 
 ### 2.10 UI placement
 
-A new mode/tab within `AnalysesDashboard.svelte` (not a new route), since fitting needs
-the same model config, parameter table, and chart the dashboard already assembles — a
-separate route would duplicate or awkwardly share that state.
+A self-contained popover within `AnalysesDashboard.svelte` (not a new route), since
+fitting needs the same model config, parameter table, and chart the dashboard already
+assembles — a separate route would duplicate or awkwardly share that state.
 
-The fit analysis box defaults to a `span` of 6 (`DynBoxRow`'s full `GRID_COLS` width),
-not the 3 every other analysis type defaults to — fitting's own UI (upload, column
-mapping, parameter table, two charts) is denser than a single time-course chart, and
-needs the room. The trajectory-vs-data chart and the convergence plot (2.11) sit side by
-side in a flex row above 768px, stacking back to a column below it (matching the
-existing mobile-breakpoint convention elsewhere in this file, e.g. `TableParameters`'s
-card layout).
+Originally implemented as a `DynBoxRow` analysis box, repeatable like
+Simulation/ParameterScan/PAM; moved to a single global popover instead — a
+`<Button popovertarget="fit-editor">Fit</Button>` next to `ModelEditor`'s own "Edit
+model" trigger, opening a `size="lg"` `Popover` that hosts `Fit.svelte` end to end
+(upload, column mapping, parameter table, run controls, both charts, and the settings
+that used to live in a separate `FitEditor`). Fitting is a model-scoped operation you do
+once at a time, not a side-by-side comparable analysis like the other three, so there's
+no reason to keep it repeatable — and `size="lg"` gives its denser UI the room a
+`DynBoxRow` box's span never could. The trajectory-vs-data chart and the convergence
+plot (2.11) sit side by side in a flex row above 768px, stacking back to a column below
+it (matching the existing mobile-breakpoint convention elsewhere in this file, e.g.
+`TableParameters`'s card layout).
 
 ### 2.11 Results display: fitted values and a convergence plot
 
@@ -240,8 +245,8 @@ general rejection of the mechanism.
 - Restarting `lmdif` per chunk means convergence diagnostics (`info` code) are only
   meaningful for the final chunk; progress reporting between chunks is limited to
   residual norm and current parameters, not full MINPACK convergence state.
-- Applying fitted parameters (2.12) mutates the same `model` object every other analysis
-  box on the dashboard references — there is no per-analysis "sandboxed" parameter set.
+- Applying fitted parameters (2.12) mutates the same `model` object every analysis box
+  on the dashboard references — there is no per-analysis "sandboxed" parameter set.
   This matches how every other parameter edit in this app already works (sliders,
   direct value edits), but means Fit is not a safe place to explore "what if" parameter
   values without affecting the rest of the dashboard; `AnalysesDashboard`'s existing
