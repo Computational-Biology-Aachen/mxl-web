@@ -1,11 +1,14 @@
 <!--
  @component
- Fit a model's parameters to uploaded data (ADR 0004).
+ Fit a model's parameters to uploaded data, single-model or ensemble
+ (ADR 0004, ADR 0006).
 
  Runs entirely against the WASM backend (radau5): fitWorker.ts vendors
  cminpack's lmdif alongside the integrators so the fit's inner loop never
  leaves WASM. Fitting is chunked — see docs/adrs/0004-fit-model-to-data.md —
- so progress can be shown and the run cancelled mid-fit.
+ so progress can be shown and the run cancelled mid-fit. Ensemble mode runs N
+ independent, non-interacting FitSessions from randomly-drawn starting
+ points — see docs/adrs/0006-ensemble-fitting.md.
 -->
 
 <script lang="ts">
@@ -16,20 +19,29 @@
   } from "@computational-biology-aachen/design";
   import H2 from "@computational-biology-aachen/design/H2.svelte";
   import {
+    buildNNBlock,
     type FitBackend,
     type ModelBuilderBase,
+    type NNBlockConfig,
   } from "@computational-biology-aachen/mxlweb-core";
   import { parseCsvFile, type ParsedCsv } from "./csvParse";
   import type { FitParameterConfig, FitTargetMapping } from "./index";
   import LineChart from "./LineChart.svelte";
   import SimErrDisplay from "./SimErrDisplay.svelte";
-  import { backends } from "./stores/backends";
+  import {
+    mulberry32,
+    sampleDistribution,
+    type FitDistribution,
+    type FitDistributionFamily,
+  } from "./random";
+  import { backends, createWasmPool } from "./stores/backends";
   import { FitSession } from "./stores/fitStore";
   import {
     WorkerManager,
     type SimulationError,
     type SimulationResult,
   } from "./stores/workerStore";
+  import type { WorkerPool } from "./stores/workerPool";
   import { arrayColumn } from "./utils";
 
   let {
@@ -48,12 +60,39 @@
   // never persisted (not in .mxl.json, no localStorage/URL) and this popover
   // is a dashboard-wide singleton, not one of several DynBoxRow boxes, so
   // there's no parent object to thread these through any more.
+  let mode = $state<"single" | "ensemble">("single");
   let chunkMaxfev = $state(5);
   let targetResidualNorm = $state(1e-1);
   let maxFunctionEvaluations = $state(1000);
   let yMaxValue = $state(10);
   let yMaxAuto = $state(true);
   let yMax = $derived(yMaxAuto ? undefined : yMaxValue);
+
+  // Chart.js palette for ensemble mode's multi-series charts (ADR 0006
+  // §2.6) — a target's shaded band and a member's convergence line each
+  // need an explicit, stable-per-index color, since default auto-cycling
+  // would desync once several datasets share one target/member.
+  const CHART_PALETTE = [
+    "#4e79a7",
+    "#f28e2b",
+    "#e15759",
+    "#76b7b2",
+    "#59a14f",
+    "#edc948",
+    "#b07aa1",
+    "#ff9da7",
+    "#9c755f",
+    "#bab0ac",
+  ];
+  function paletteColor(i: number): string {
+    return CHART_PALETTE[i % CHART_PALETTE.length];
+  }
+  function withAlpha(hex: string, alpha: number): string {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
 
   // ---- Data upload + column mapping --------------------------------------
 
@@ -134,9 +173,12 @@
   // block's ≈20,800 of them were never candidates for this list to begin
   // with.
   let nnBlockScaleParams = $derived(model.nnBlockScaleParameterNames());
-  let hasTrainedNNBlock = $derived(
-    [...model.nnBlocks.values()].some((b) => b.trained),
+  let trainedBlockKeys = $derived(
+    [...model.nnBlocks.entries()]
+      .filter(([, config]) => config.trained)
+      .map(([key]) => key),
   );
+  let hasTrainedNNBlock = $derived(trainedBlockKeys.length > 0);
 
   // Not all parameters fit by default (ADR 0004 §2.4) — a parameter not yet
   // in fitParameters defaults to unchecked.
@@ -161,7 +203,319 @@
     ];
   }
 
-  // ---- Fit run ---------------------------------------------------------
+  // ---- Ensemble distribution defaults & editing ---------------------------
+
+  // Relative, not absolute, defaults (ADR 0006 §2.1) — mxlbricks/mxlmodels'
+  // kinetic constants span many orders of magnitude, so a fixed absolute
+  // std/range would be wrong for nearly every row out of the box.
+  function defaultNormal(value: number): FitDistribution {
+    return {
+      family: "normal",
+      mean: value,
+      std: Math.max(Math.abs(value) * 0.2, 1e-9),
+    };
+  }
+  function defaultUniform(value: number): FitDistribution {
+    const a = value * 0.5;
+    const b = value * 2;
+    return { family: "uniform", min: Math.min(a, b), max: Math.max(a, b) };
+  }
+  function defaultLogUniform(value: number): FitDistribution {
+    const magnitude = Math.max(Math.abs(value), 1e-9);
+    return { family: "logUniform", min: magnitude * 0.5, max: magnitude * 2 };
+  }
+  function defaultDistributionFor(id: string): FitDistribution {
+    return defaultNormal(model.parameters.get(id)?.value ?? 0);
+  }
+  function setDistributionFamily(id: string, family: FitDistributionFamily) {
+    const value = model.parameters.get(id)?.value ?? 0;
+    const distribution =
+      family === "normal"
+        ? defaultNormal(value)
+        : family === "uniform"
+          ? defaultUniform(value)
+          : defaultLogUniform(value);
+    updateParamRow(id, { distribution });
+  }
+  function updateDistributionField(id: string, field: string, value: number) {
+    const row = fitParameters.find((p) => p.id === id);
+    const distribution = row?.distribution;
+    if (!distribution) return;
+    updateParamRow(id, {
+      distribution: { ...distribution, [field]: value } as FitDistribution,
+    });
+  }
+
+  const MAX_ENSEMBLE_SIZE = 16;
+
+  let ensembleSize = $state(8);
+  let ensembleSeed = $state(Math.floor(Math.random() * 2 ** 31));
+
+  function clampEnsembleSize(n: number): number {
+    return Math.max(1, Math.min(Math.round(n) || 1, MAX_ENSEMBLE_SIZE));
+  }
+
+  // ---- Shared fit-config building (single + ensemble) --------------------
+
+  type FitTargetEntry = {
+    kind: "state" | "derived";
+    index: number;
+    scale: number;
+    values: number[];
+  };
+
+  type FitConfig = {
+    parNames: string[];
+    fitIdx: number[];
+    nnBlockFitIdx: number[];
+    combinedFitIdx: number[];
+    logFlags: boolean[];
+    fitTargetsList: FitTargetEntry[];
+    sortedT: number[];
+    nDerived: number;
+    rhsWat: string;
+    derivedWat?: string;
+    y0: number[];
+    backend?: FitBackend;
+    adjointWat?: string;
+    /** parName -> owning NN block key, for every entry in nnBlockFitIdx —
+     * lets the ensemble draw recognize a trained block's own `scale` name
+     * (left untouched, ADR 0006 §2.8) versus an ordinary fit-parameter row. */
+    nnBlockOwner: Map<string, string>;
+    /** Every *trained* block's own architecture config, keyed by block key —
+     * lets the ensemble draw re-run `buildNNBlock` with a fresh per-member
+     * seed to get that member's own independently Glorot-initialized weights
+     * (ADR 0006 §2.8), the same generator `addNNBlock` itself calls. */
+    nnBlockConfigs: Map<string, NNBlockConfig>;
+  };
+
+  function fitTargets(): { fitIdx: number[]; ok: boolean } {
+    // getAllAddressableNames(), not getParameterNames(): fitIdx is spliced
+    // directly into combinedFitIdx below, which is indexed against the
+    // former. fitParameters entries are always ordinary parameter ids
+    // (never a weight/scale name — those join separately via
+    // nnBlockParamNames), so this doesn't change *which* indices are found,
+    // only removes the implicit "getParameterNames() is always a positional
+    // prefix of getAllAddressableNames()" assumption the two arrays would
+    // otherwise have to agree on silently.
+    const parNames = model.getAllAddressableNames();
+    const fitIdx = fitParameters
+      .filter((p) => p.fit)
+      .map((p) => parNames.indexOf(p.id))
+      .filter((i) => i >= 0);
+    return { fitIdx, ok: fitIdx.length > 0 };
+  }
+
+  /** Everything a fit run needs that does *not* depend on where each member
+   * starts (ADR 0006 §2.4) — built once and reused by both single-model and
+   * every ensemble member's own FitInitRequest. */
+  function buildFitConfig():
+    { ok: true; config: FitConfig } | { ok: false; error: string } {
+    if (!csv || !timeColumn || targets.length === 0) {
+      return {
+        ok: false,
+        error: "Upload a data file and map at least one column first.",
+      };
+    }
+    const { fitIdx, ok } = fitTargets();
+    if (!ok && !hasTrainedNNBlock) {
+      return {
+        ok: false,
+        error:
+          "Select at least one parameter to fit, or enable training on an NN block.",
+      };
+    }
+
+    // A mapping can go stale (e.g. the model was reloaded from a new SBML
+    // file) without the mapping table being touched — reject rather than
+    // let an unresolved key reach the WASM heap as a bogus buffer index.
+    const knownKeys = new Set(candidateKeys.map((c) => c.key));
+    const staleTarget = targets.find((t) => !knownKeys.has(t.key));
+    if (staleTarget) {
+      return {
+        ok: false,
+        error: `"${staleTarget.key}" is no longer a valid target — re-map column "${staleTarget.column}".`,
+      };
+    }
+
+    const columns = csv.columns;
+    const dataT = columns[timeColumn];
+    const order = dataT.map((t, i) => i).sort((a, b) => dataT[a] - dataT[b]);
+    const sortedT = order.map((i) => dataT[i]);
+    if (sortedT.some((t) => Number.isNaN(t))) {
+      return {
+        ok: false,
+        error: `Column "${timeColumn}" has a non-numeric value.`,
+      };
+    }
+    for (const t of targets) {
+      if (order.some((i) => Number.isNaN(columns[t.column][i]))) {
+        return {
+          ok: false,
+          error: `Column "${t.column}" has a non-numeric value.`,
+        };
+      }
+    }
+
+    const derivedTargets = targets.filter((t) => t.kind === "derived");
+    const derivedKeys = derivedTargets.map((t) => t.key);
+
+    // v1's "adjoint" backend only supports state-variable targets (see
+    // FitInitRequest.adjointWat's doc comment) — reject up front rather than
+    // let fit_init fail deep in the WASM boundary.
+    if (hasTrainedNNBlock && derivedTargets.length > 0) {
+      return {
+        ok: false,
+        error:
+          "Training an NN block requires every fit target to be a state variable, not a derived quantity.",
+      };
+    }
+
+    let derivedWat: string | undefined;
+    try {
+      derivedWat =
+        derivedKeys.length > 0 ? model.buildWatDerived(derivedKeys) : undefined;
+    } catch (e) {
+      return {
+        ok: false,
+        error:
+          e instanceof Error ? e.message : "Failed to build the fit model.",
+      };
+    }
+
+    const fitTargetsList: FitTargetEntry[] = targets.map((t) => {
+      const values = order.map((i) => columns[t.column][i]);
+      const scale = Math.max(...values.map(Math.abs), 1e-12);
+      return {
+        kind: t.kind,
+        index:
+          t.kind === "state"
+            ? model.getNames().indexOf(t.key)
+            : derivedKeys.indexOf(t.key),
+        scale,
+        values,
+      };
+    });
+
+    // The full flat array the compiled WAT module actually indexes into
+    // (ModelBuilderBase.lower()'s ir.parNames === getAllAddressableNames():
+    // model.parameters, then model.nnWeights) — not getParameterNames(),
+    // which is the UI-facing kinetic-parameters-plus-scale subset. Every
+    // index (fitIdx, nnBlockFitIdx, combinedFitIdx) is positional against
+    // *this* array.
+    const parNames = model.getAllAddressableNames();
+
+    // Every weight/bias, and the block's own trainable scale factor, of
+    // every *trained* NN block joins the fitted set — always in linear
+    // space, never log-space (ADR 0005 §2.1.2). Untrained blocks keep their
+    // current weights/scale fixed and are simply left out of fitIdx.
+    const nnBlockParamNames: string[] = [];
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const nnBlockOwner = new Map<string, string>();
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const nnBlockConfigs = new Map<string, NNBlockConfig>();
+    for (const [key, config] of model.nnBlocks) {
+      if (!config.trained) continue;
+      nnBlockConfigs.set(key, config);
+      const scaleName = `${key}_scale`;
+      nnBlockParamNames.push(scaleName);
+      nnBlockOwner.set(scaleName, key);
+      for (const name of model.nnBlockWeightNames(key)) {
+        nnBlockParamNames.push(name);
+        nnBlockOwner.set(name, key);
+      }
+    }
+    const nnBlockFitIdx = nnBlockParamNames.map((name) =>
+      parNames.indexOf(name),
+    );
+    const combinedFitIdx = [...fitIdx, ...nnBlockFitIdx];
+
+    const logFlags = [
+      ...fitIdx.map(
+        (i) =>
+          fitParameters.find((p) => p.id === parNames[i])?.logSpace ?? true,
+      ),
+      ...nnBlockFitIdx.map(() => false),
+    ];
+
+    // Any trained NN block forces the adjoint backend unconditionally — a
+    // 6×64 block's ≈20,800 finite-difference forward solves under "lm" are
+    // intractable regardless of measured per-solve cost (ADR 0005 §2.4). A
+    // purely mechanistic fit leaves `backend` undefined, defaulting to "lm".
+    const backend: FitBackend | undefined =
+      nnBlockFitIdx.length > 0 ? "adjoint" : undefined;
+    let adjointWat: string | undefined;
+    if (backend === "adjoint") {
+      try {
+        adjointWat = model.buildAdjointWat(
+          combinedFitIdx.map((i) => parNames[i]),
+        );
+      } catch (e) {
+        return {
+          ok: false,
+          error:
+            e instanceof Error
+              ? e.message
+              : "Failed to build the adjoint model.",
+        };
+      }
+    }
+
+    return {
+      ok: true,
+      config: {
+        parNames,
+        fitIdx,
+        nnBlockFitIdx,
+        combinedFitIdx,
+        logFlags,
+        fitTargetsList,
+        sortedT,
+        nDerived: derivedKeys.length,
+        rhsWat: model.buildWat(),
+        derivedWat,
+        y0: model.resolveInitialValues(),
+        backend,
+        adjointWat,
+        nnBlockOwner,
+        nnBlockConfigs,
+      },
+    };
+  }
+
+  function fitInitPayload(config: FitConfig, pars: number[]) {
+    return {
+      rhsWat: config.rhsWat,
+      derivedWat: config.derivedWat,
+      nDerived: config.nDerived,
+      y0: config.y0,
+      pars,
+      fitIdx: config.combinedFitIdx,
+      logFlags: config.logFlags,
+      targets: config.fitTargetsList.map(({ kind, index, scale }) => ({
+        kind,
+        index,
+        scale,
+      })),
+      dataT: config.sortedT,
+      dataY: config.fitTargetsList.flatMap((t) => t.values),
+      tEnd: config.sortedT[config.sortedT.length - 1],
+      solver: "radau5" as const,
+      rtol: 1e-8,
+      atol: 1e-10,
+      targetResidualNorm,
+      backend: config.backend,
+      adjointWat: config.adjointWat,
+    };
+  }
+
+  // Caps a chunk's own maxfev so a fit doesn't overshoot the total
+  // maxFunctionEvaluations budget by a whole chunk's worth.
+  function nextChunkBudget(currentNfev: number): number {
+    return Math.min(chunkMaxfev, maxFunctionEvaluations - currentNfev);
+  }
+
+  // ---- Single-model fit run ------------------------------------------
 
   let session: FitSession | null = null;
   let running = $state(false);
@@ -240,65 +594,13 @@
     return unsub;
   });
 
-  // Caps a chunk's own maxfev so a fit doesn't overshoot the total
-  // maxFunctionEvaluations budget by a whole chunk's worth.
-  function nextChunkBudget(currentNfev: number): number {
-    return Math.min(chunkMaxfev, maxFunctionEvaluations - currentNfev);
-  }
-
-  function fitTargets(): { fitIdx: number[]; ok: boolean } {
-    // getAllAddressableNames(), not getParameterNames(): fitIdx is spliced
-    // directly into combinedFitIdx in runFit() below, which is indexed
-    // against the former. fitParameters entries are always ordinary
-    // parameter ids (never a weight/scale name — those join separately via
-    // nnBlockParamNames), so this doesn't change *which* indices are
-    // found, only removes the implicit "getParameterNames() is always a
-    // positional prefix of getAllAddressableNames()" assumption the two
-    // arrays previously had to agree on silently.
-    const parNames = model.getAllAddressableNames();
-    const fitIdx = fitParameters
-      .filter((p) => p.fit)
-      .map((p) => parNames.indexOf(p.id))
-      .filter((i) => i >= 0);
-    return { fitIdx, ok: fitIdx.length > 0 };
-  }
-
   export function runFit() {
-    if (!csv || !timeColumn || targets.length === 0) {
-      errorMsg = "Upload a data file and map at least one column first.";
+    const result = buildFitConfig();
+    if (!result.ok) {
+      errorMsg = result.error;
       return;
     }
-    const { fitIdx, ok } = fitTargets();
-    if (!ok && !hasTrainedNNBlock) {
-      errorMsg =
-        "Select at least one parameter to fit, or enable training on an NN block.";
-      return;
-    }
-
-    // A mapping can go stale (e.g. the model was reloaded from a new SBML
-    // file) without the mapping table being touched — reject rather than
-    // let an unresolved key reach the WASM heap as a bogus buffer index.
-    const knownKeys = new Set(candidateKeys.map((c) => c.key));
-    const staleTarget = targets.find((t) => !knownKeys.has(t.key));
-    if (staleTarget) {
-      errorMsg = `"${staleTarget.key}" is no longer a valid target — re-map column "${staleTarget.column}".`;
-      return;
-    }
-
-    const columns = csv.columns;
-    const dataT = columns[timeColumn];
-    const order = dataT.map((t, i) => i).sort((a, b) => dataT[a] - dataT[b]);
-    const sortedT = order.map((i) => dataT[i]);
-    if (sortedT.some((t) => Number.isNaN(t))) {
-      errorMsg = `Column "${timeColumn}" has a non-numeric value.`;
-      return;
-    }
-    for (const t of targets) {
-      if (order.some((i) => Number.isNaN(columns[t.column][i]))) {
-        errorMsg = `Column "${t.column}" has a non-numeric value.`;
-        return;
-      }
-    }
+    const config = result.config;
 
     errorMsg = null;
     running = true;
@@ -308,76 +610,6 @@
     fittedValues = null;
     residualHistory = [];
 
-    const derivedTargets = targets.filter((t) => t.kind === "derived");
-    const derivedKeys = derivedTargets.map((t) => t.key);
-
-    // v1's "adjoint" backend only supports state-variable targets (see
-    // FitInitRequest.adjointWat's doc comment) — reject up front rather than
-    // let fit_init fail deep in the WASM boundary.
-    if (hasTrainedNNBlock && derivedTargets.length > 0) {
-      errorMsg =
-        "Training an NN block requires every fit target to be a state variable, not a derived quantity.";
-      running = false;
-      return;
-    }
-
-    let derivedWat: string | undefined;
-    try {
-      derivedWat =
-        derivedKeys.length > 0 ? model.buildWatDerived(derivedKeys) : undefined;
-    } catch (e) {
-      errorMsg =
-        e instanceof Error ? e.message : "Failed to build the fit model.";
-      running = false;
-      return;
-    }
-
-    const fitTargetsList = targets.map((t) => {
-      const values = order.map((i) => columns[t.column][i]);
-      const scale = Math.max(...values.map(Math.abs), 1e-12);
-      return {
-        kind: t.kind,
-        index:
-          t.kind === "state"
-            ? model.getNames().indexOf(t.key)
-            : derivedKeys.indexOf(t.key),
-        scale,
-        values,
-      };
-    });
-
-    // The full flat array the compiled WAT module actually indexes into
-    // (ModelBuilderBase.lower()'s ir.parNames === getAllAddressableNames():
-    // model.parameters, then model.nnWeights) — not getParameterNames(),
-    // which is the UI-facing kinetic-parameters-plus-scale subset. Every
-    // index (fitIdx, nnBlockFitIdx, combinedFitIdx below) is positional
-    // against *this* array, so building the WASM pars[]/fitIdx layout from
-    // anything else would silently misalign once any block has weights.
-    const parNames = model.getAllAddressableNames();
-
-    // Every weight/bias, and the block's own trainable scale factor, of
-    // every *trained* NN block joins the fitted set — always in linear
-    // space, never log-space (ADR 0005 §2.1.2: weights must range over all
-    // reals, and scale can go negative too). Untrained blocks keep their
-    // current weights/scale fixed and are simply left out of fitIdx.
-    const nnBlockParamNames: string[] = [];
-    for (const [key, config] of model.nnBlocks) {
-      if (!config.trained) continue;
-      nnBlockParamNames.push(`${key}_scale`);
-      nnBlockParamNames.push(...model.nnBlockWeightNames(key));
-    }
-    const nnBlockFitIdx = nnBlockParamNames.map((name) =>
-      parNames.indexOf(name),
-    );
-    const combinedFitIdx = [...fitIdx, ...nnBlockFitIdx];
-
-    const logFlags = [
-      ...fitIdx.map(
-        (i) =>
-          fitParameters.find((p) => p.id === parNames[i])?.logSpace ?? true,
-      ),
-      ...nnBlockFitIdx.map(() => false),
-    ];
     // A per-row "initial guess" override (edited in the param table) starts
     // the fit from a value other than the model's current live parameter —
     // falls back to that live value where no override was set. NN weights
@@ -387,28 +619,9 @@
       .resolveAllAddressableValues()
       .map(
         (v, i) =>
-          fitParameters.find((p) => p.id === parNames[i])?.initialGuess ?? v,
+          fitParameters.find((p) => p.id === config.parNames[i])
+            ?.initialGuess ?? v,
       );
-
-    // Any trained NN block forces the adjoint backend unconditionally — a
-    // 6×64 block's ≈20,800 finite-difference forward solves under "lm" are
-    // intractable regardless of measured per-solve cost (ADR 0005 §2.4).
-    // A purely mechanistic fit leaves `backend` undefined, defaulting to "lm".
-    const backend: FitBackend | undefined =
-      nnBlockFitIdx.length > 0 ? "adjoint" : undefined;
-    let adjointWat: string | undefined;
-    if (backend === "adjoint") {
-      try {
-        adjointWat = model.buildAdjointWat(
-          combinedFitIdx.map((i) => parNames[i]),
-        );
-      } catch (e) {
-        errorMsg =
-          e instanceof Error ? e.message : "Failed to build the adjoint model.";
-        running = false;
-        return;
-      }
-    }
 
     session = new FitSession();
     session.onInitResult((result) => {
@@ -443,9 +656,12 @@
         { nfev: progress.nfev, residualNorm: progress.residualNorm },
       ];
       fittedValues = Object.fromEntries(
-        parNames.map((id, i) => [id, progress.params[i]]),
+        config.parNames.map((id, i) => [id, progress.params[i]]),
       );
-      previewTrajectory(progress.params, sortedT[sortedT.length - 1]);
+      previewTrajectory(
+        progress.params,
+        config.sortedT[config.sortedT.length - 1],
+      );
 
       const reachedTarget = progress.residualNorm <= targetResidualNorm;
       const reachedMaxEvals = progress.nfev >= maxFunctionEvaluations;
@@ -460,29 +676,7 @@
       }
     });
 
-    session.init({
-      rhsWat: model.buildWat(),
-      derivedWat,
-      nDerived: derivedKeys.length,
-      y0: model.resolveInitialValues(),
-      pars,
-      fitIdx: combinedFitIdx,
-      logFlags,
-      targets: fitTargetsList.map(({ kind, index, scale }) => ({
-        kind,
-        index,
-        scale,
-      })),
-      dataT: sortedT,
-      dataY: fitTargetsList.flatMap((t) => t.values),
-      tEnd: sortedT[sortedT.length - 1],
-      solver: "radau5",
-      rtol: 1e-8,
-      atol: 1e-10,
-      targetResidualNorm,
-      backend,
-      adjointWat,
-    });
+    session.init(fitInitPayload(config, pars));
   }
 
   export function cancelFit() {
@@ -526,6 +720,319 @@
         const value = fittedValues[name];
         if (value === undefined) continue;
         model.nnWeights = model.nnWeights.set(name, value);
+      }
+    }
+    onApply?.();
+  }
+
+  // ---- Ensemble fit run (ADR 0006) ---------------------------------------
+
+  type EnsembleMember = {
+    nfev: number;
+    residualNorm: number | null;
+    fittedValues: Record<string, number> | null;
+    residualHistory: { nfev: number; residualNorm: number }[];
+    trajectory: { time: number[]; values: number[][] };
+    previewRequestId: string | null;
+    done: boolean;
+    errored: boolean;
+  };
+
+  function emptyMember(): EnsembleMember {
+    return {
+      nfev: 0,
+      residualNorm: null,
+      fittedValues: null,
+      residualHistory: [],
+      trajectory: { time: [], values: [] },
+      previewRequestId: null,
+      done: false,
+      errored: false,
+    };
+  }
+
+  let members = $state<EnsembleMember[]>([]);
+  // FitSession instances live outside $state, deliberately — a class
+  // wrapping a live Worker gets no benefit from Svelte 5's deep-reactivity
+  // proxying, matching single-fit mode's own plain `session` variable.
+  let memberSessions: (FitSession | null)[] = [];
+  let ensembleRunning = $state(false);
+  let ensembleErrorMsg = $state<string | null>(null);
+  let ensemblePreviewPool: WorkerPool | null = null;
+  let unsubEnsemblePreview: (() => void) | null = null;
+
+  let survivingMembers = $derived(members.filter((m) => !m.errored));
+  let ensembleAnyProgress = $derived(
+    survivingMembers.some((m) => m.fittedValues !== null),
+  );
+  let ensembleNfevSum = $derived(members.reduce((s, m) => s + m.nfev, 0));
+  let ensembleProgressFraction = $derived(
+    Math.min(
+      ensembleNfevSum / Math.max(members.length * maxFunctionEvaluations, 1),
+      1,
+    ),
+  );
+  let ensembleAllDone = $derived(
+    members.length > 0 && members.every((m) => m.done),
+  );
+
+  function ensembleParamStats(
+    id: string,
+  ): { mean: number; std: number } | null {
+    const values = survivingMembers
+      .map((m) => m.fittedValues?.[id])
+      .filter((v): v is number => v !== undefined);
+    if (values.length === 0) return null;
+    const mean = values.reduce((a, b) => a + b, 0) / values.length;
+    const variance =
+      values.reduce((a, b) => a + (b - mean) ** 2, 0) / values.length;
+    return { mean, std: Math.sqrt(variance) };
+  }
+
+  function teardownEnsembleWorkers() {
+    memberSessions.forEach((s) => s?.cancel());
+    memberSessions = [];
+    ensemblePreviewPool?.terminate();
+    ensemblePreviewPool = null;
+    unsubEnsemblePreview?.();
+    unsubEnsemblePreview = null;
+  }
+
+  function checkEnsembleDone() {
+    if (members.every((m) => m.done)) {
+      ensembleRunning = false;
+      teardownEnsembleWorkers();
+    }
+  }
+
+  function previewEnsembleTrajectory(
+    m: number,
+    parValues: number[],
+    tEnd: number,
+  ) {
+    if (!ensemblePreviewPool) return;
+    const requestId = WorkerManager.generateRequestId();
+    members = members.map((mem, i) =>
+      i === m ? { ...mem, previewRequestId: requestId } : mem,
+    );
+    const order = model.sortDependencies();
+    const req = backends.wasmRadau5.buildRequest(model, {
+      derivedSelection: order,
+    });
+    ensemblePreviewPool.postMessage({
+      ...req,
+      pars: parValues,
+      parNames: model.getAllAddressableNames(),
+      initialValues: model.resolveInitialValues(),
+      rhsNames: model.getNames(),
+      allDerivedNames: order,
+      selectDerivedNames: order,
+      tEnd,
+      requestId,
+      calculateDerived: true,
+      nTimePoints: 200,
+    });
+  }
+
+  function startEnsembleMember(m: number, config: FitConfig, pars: number[]) {
+    const memberSession = new FitSession();
+    memberSessions[m] = memberSession;
+
+    const setMember = (patch: Partial<EnsembleMember>) => {
+      members = members.map((mem, i) => (i === m ? { ...mem, ...patch } : mem));
+    };
+
+    memberSession.onInitResult((result) => {
+      if (!result.ok) {
+        setMember({ errored: true, done: true });
+        memberSession.cancel();
+        memberSessions[m] = null;
+        checkEnsembleDone();
+        return;
+      }
+      if (result.initialResidualNorm !== undefined) {
+        setMember({
+          residualHistory: [
+            { nfev: 0, residualNorm: result.initialResidualNorm },
+          ],
+        });
+      }
+      memberSession.chunk(nextChunkBudget(0));
+    });
+
+    memberSession.onProgress((progress) => {
+      if (progress.err) {
+        setMember({ errored: true, done: true, nfev: progress.nfev });
+        memberSession.free();
+        memberSessions[m] = null;
+        checkEnsembleDone();
+        return;
+      }
+      const member = members[m];
+      const nextHistory = [
+        ...member.residualHistory,
+        { nfev: progress.nfev, residualNorm: progress.residualNorm },
+      ];
+      const fittedValues = Object.fromEntries(
+        config.parNames.map((id, i) => [id, progress.params[i]]),
+      );
+      setMember({
+        nfev: progress.nfev,
+        residualNorm: progress.residualNorm,
+        residualHistory: nextHistory,
+        fittedValues,
+      });
+      previewEnsembleTrajectory(
+        m,
+        progress.params,
+        config.sortedT[config.sortedT.length - 1],
+      );
+
+      const reachedTarget = progress.residualNorm <= targetResidualNorm;
+      const reachedMaxEvals = progress.nfev >= maxFunctionEvaluations;
+      const budget = nextChunkBudget(progress.nfev);
+      if (!progress.done && !reachedTarget && !reachedMaxEvals && budget > 0) {
+        memberSession.chunk(budget);
+      } else {
+        setMember({ done: true });
+        memberSession.free();
+        memberSessions[m] = null;
+        checkEnsembleDone();
+      }
+    });
+
+    memberSession.init(fitInitPayload(config, pars));
+  }
+
+  export function runEnsembleFit() {
+    const result = buildFitConfig();
+    if (!result.ok) {
+      ensembleErrorMsg = result.error;
+      return;
+    }
+    const config = result.config;
+
+    teardownEnsembleWorkers();
+    ensembleErrorMsg = null;
+    ensembleRunning = true;
+
+    const N = clampEnsembleSize(ensembleSize);
+    const rng = mulberry32(ensembleSeed);
+    const currentValues = model.resolveAllAddressableValues();
+    const fitIdxSet = new Set(config.combinedFitIdx);
+
+    ensemblePreviewPool = createWasmPool(
+      Math.min(N, navigator.hardwareConcurrency || 4),
+    );
+    unsubEnsemblePreview = ensemblePreviewPool.onMessage(
+      (data: SimulationResult) => {
+        const idx = members.findIndex(
+          (m) => m.previewRequestId === data.requestId,
+        );
+        if (idx === -1) return;
+        if (!data.err) {
+          members = members.map((mem, i) =>
+            i === idx
+              ? { ...mem, trajectory: { time: data.time, values: data.values } }
+              : mem,
+          );
+        }
+      },
+    );
+
+    members = Array.from({ length: N }, emptyMember);
+    memberSessions = Array.from({ length: N }, () => null);
+
+    // Fresh, independently-seeded weight init per member for every trained
+    // NN block (ADR 0006 §2.8) — reruns mxlweb-core's own `buildNNBlock`
+    // (the exact generator `addNNBlock` itself calls) with a seed drawn from
+    // the ensemble's own rng, rather than perturbing around the current
+    // (possibly already-fitted) weights. A block's own `scale` parameter is
+    // deliberately left untouched below: perturbing it broke the "starts
+    // small" invariant ADR 0005 relies on, since scale's default (0.01) is
+    // ~2 orders of magnitude smaller than a Glorot-initialized weight.
+    const memberWeights: Map<string, number>[] = Array.from(
+      { length: N },
+      () => {
+        // eslint-disable-next-line svelte/prefer-svelte-reactivity
+        const weights = new Map<string, number>();
+        for (const [key, blockConfig] of config.nnBlockConfigs) {
+          const seed = Math.floor(rng() * 2 ** 31);
+          const result = buildNNBlock({
+            name: key,
+            inputs: blockConfig.inputs,
+            layers: blockConfig.layers,
+            seed,
+            scale: blockConfig.scale,
+          });
+          for (const [name, value] of result.weights) weights.set(name, value);
+        }
+        return weights;
+      },
+    );
+
+    const memberPars: number[][] = Array.from({ length: N }, (_, m) =>
+      currentValues.map((v, i) => {
+        if (!fitIdxSet.has(i)) return v;
+        const name = config.parNames[i];
+        const freshWeight = memberWeights[m].get(name);
+        if (freshWeight !== undefined) return freshWeight;
+        // A trained block's own `scale` name — left at its current value,
+        // not drawn (ADR 0006 §2.8).
+        if (config.nnBlockOwner.has(name)) return v;
+        const row = fitParameters.find((p) => p.id === name);
+        const distribution = row?.distribution ?? defaultNormal(v);
+        return sampleDistribution(distribution, rng);
+      }),
+    );
+
+    for (let m = 0; m < N; m++) {
+      startEnsembleMember(m, config, memberPars[m]);
+    }
+  }
+
+  export function cancelEnsembleFit() {
+    teardownEnsembleWorkers();
+    ensembleRunning = false;
+    members = members.map((m) => (m.done ? m : { ...m, done: true }));
+  }
+
+  $effect(() => {
+    return () => teardownEnsembleWorkers();
+  });
+
+  // Ensemble counterpart to applyFittedParameters (ADR 0004 §2.12, ADR 0006
+  // §2.10): writes the empirical mean across surviving members, gated on
+  // "any member has reported first progress" rather than full completion.
+  function applyEnsembleFittedParameters() {
+    if (!ensembleAnyProgress) return;
+    for (const row of paramRows) {
+      if (!row.fit) continue;
+      const stats = ensembleParamStats(row.id);
+      if (!stats) continue;
+      const current = model.parameters.get(row.id);
+      if (!current) continue;
+      model.parameters = model.parameters.set(row.id, {
+        ...current,
+        value: stats.mean,
+      });
+    }
+    for (const [key, config] of model.nnBlocks) {
+      if (!config.trained) continue;
+      const scaleName = `${key}_scale`;
+      const scaleStats = ensembleParamStats(scaleName);
+      if (scaleStats) {
+        const current = model.parameters.get(scaleName);
+        if (current) {
+          model.parameters = model.parameters.set(scaleName, {
+            ...current,
+            value: scaleStats.mean,
+          });
+        }
+      }
+      for (const name of model.nnBlockWeightNames(key)) {
+        const stats = ensembleParamStats(name);
+        if (stats) model.nnWeights = model.nnWeights.set(name, stats.mean);
       }
     }
     onApply?.();
@@ -578,6 +1085,108 @@
     ],
   });
 
+  // Per target: an invisible lower-bound line, an invisible upper-bound line
+  // filled back to the lower one (the shaded ±1 std band), then the visible
+  // mean line — the two boundary datasets use label:"" so LineChart's
+  // existing `legend.labels.filter(item => item.text !== "")` keeps them out
+  // of the legend (ADR 0006 §2.6).
+  let ensembleLineData = $derived.by(() => {
+    const displayNames = model.getDisplayNames();
+    const nVars = model.getNames().length;
+    const order = model.sortDependencies();
+    const trajectories = survivingMembers
+      .map((m) => m.trajectory)
+      .filter((t) => t.time.length > 0);
+    const timeLabels = trajectories[0]?.time ?? [];
+    const nT = timeLabels.length;
+
+    const bandDatasets = targets.flatMap((t, ti) => {
+      const idx =
+        t.kind === "state"
+          ? model.getNames().indexOf(t.key)
+          : nVars + order.indexOf(t.key);
+      const color = paletteColor(ti);
+      const meanArr: number[] = [];
+      const lowerArr: number[] = [];
+      const upperArr: number[] = [];
+      for (let step = 0; step < nT; step++) {
+        const vals = trajectories
+          .map((traj) => traj.values[step]?.[idx])
+          .filter((v): v is number => v !== undefined && Number.isFinite(v));
+        if (vals.length === 0) {
+          meanArr.push(NaN);
+          lowerArr.push(NaN);
+          upperArr.push(NaN);
+          continue;
+        }
+        const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
+        const variance =
+          vals.reduce((a, b) => a + (b - mean) ** 2, 0) / vals.length;
+        const std = Math.sqrt(variance);
+        meanArr.push(mean);
+        lowerArr.push(mean - std);
+        upperArr.push(mean + std);
+      }
+      return [
+        {
+          label: "",
+          data: lowerArr,
+          borderWidth: 0,
+          pointRadius: 0,
+          fill: false,
+          borderColor: "transparent",
+        },
+        {
+          label: "",
+          data: upperArr,
+          borderWidth: 0,
+          pointRadius: 0,
+          fill: "-1",
+          backgroundColor: withAlpha(color, 0.15),
+          borderColor: "transparent",
+        },
+        {
+          label: `${displayNames.get(t.key) ?? t.key} (mean)`,
+          data: meanArr,
+          borderColor: color,
+          backgroundColor: color,
+          pointRadius: 0,
+        },
+      ];
+    });
+
+    const dataDatasets =
+      csv && timeColumn
+        ? targets.map((t, ti) => ({
+            label: `${displayNames.get(t.key) ?? t.key} (data)`,
+            data: csv!.columns[timeColumn!].map((x, i) => ({
+              x,
+              y: csv!.columns[t.column][i],
+            })),
+            showLine: false,
+            pointRadius: 4,
+            borderColor: paletteColor(ti),
+            backgroundColor: paletteColor(ti),
+          }))
+        : [];
+
+    return { labels: timeLabels, datasets: [...bandDatasets, ...dataDatasets] };
+  });
+
+  // One line per member, points as {x: nfev, y: residualNorm} rather than
+  // shared `labels` — members' nfev sequences diverge since they run
+  // independent chunk loops (ADR 0006 §2.4, §2.6).
+  let ensembleResidualData = $derived({
+    labels: [],
+    datasets: members.map((m, i) => ({
+      label: `member ${i + 1}${m.errored ? " (errored)" : ""}`,
+      data: m.residualHistory.map((h) => ({ x: h.nfev, y: h.residualNorm })),
+      borderColor: paletteColor(i),
+      backgroundColor: paletteColor(i),
+      pointRadius: 0,
+    })),
+  });
+
   // A fixed y-axis ceiling, derived once from the uploaded data rather than
   // the live-updating model trajectory: with no explicit `yMax` set, letting
   // Chart.js auto-scale to the current trajectory's own max makes the axis
@@ -600,8 +1209,10 @@
     <H2>Fit to data</H2>
     <div class="actions">
       <Button
-        disabled={!fittedValues}
-        onclick={applyFittedParameters}>Apply fitted parameters</Button
+        disabled={mode === "single" ? !fittedValues : !ensembleAnyProgress}
+        onclick={mode === "single"
+          ? applyFittedParameters
+          : applyEnsembleFittedParameters}>Apply fitted parameters</Button
       >
       <Button
         popovertarget={popovertarget}
@@ -609,6 +1220,16 @@
       >
     </div>
   </Row>
+
+  <div class="mode-row">
+    <label>
+      Mode:
+      <select bind:value={mode}>
+        <option value="single">Single fit</option>
+        <option value="ensemble">Ensemble fit</option>
+      </select>
+    </label>
+  </div>
 
   <div class="config-row">
     <div class="config-col">
@@ -651,6 +1272,45 @@
               />
             </td>
           </tr>
+          {#if mode === "ensemble"}
+            <tr>
+              <td>Ensemble size</td>
+              <td>
+                <input
+                  type="number"
+                  step="1"
+                  min="1"
+                  max={MAX_ENSEMBLE_SIZE}
+                  value={ensembleSize}
+                  onchange={(e) =>
+                    (ensembleSize = clampEnsembleSize(
+                      Number((e.target as HTMLInputElement).value),
+                    ))}
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>Random seed</td>
+              <td>
+                <input
+                  type="number"
+                  step="1"
+                  value={ensembleSeed}
+                  onchange={(e) =>
+                    (ensembleSeed = Number(
+                      (e.target as HTMLInputElement).value,
+                    ))}
+                />
+                <button
+                  type="button"
+                  class="time-link"
+                  onclick={() =>
+                    (ensembleSeed = Math.floor(Math.random() * 2 ** 31))}
+                  >re-roll</button
+                >
+              </td>
+            </tr>
+          {/if}
         </tbody>
       </table>
     </div>
@@ -736,8 +1396,13 @@
           <th>Parameter</th>
           <th>Fit</th>
           <th>Log-space</th>
-          <th>Initial guess</th>
-          <th>Fitted value</th>
+          {#if mode === "single"}
+            <th>Initial guess</th>
+            <th>Fitted value</th>
+          {:else}
+            <th>Distribution</th>
+            <th>Fitted (mean ± std)</th>
+          {/if}
         </tr>
       </thead>
       <tbody>
@@ -765,105 +1430,278 @@
                   })}
               />
             </td>
-            <td>
-              <input
-                type="number"
-                step="any"
-                value={row.initialGuess ?? model.parameters.get(row.id)?.value}
-                disabled={!row.fit}
-                onchange={(e) =>
-                  updateParamRow(row.id, {
-                    initialGuess: Number((e.target as HTMLInputElement).value),
-                  })}
-              />
-            </td>
-            <td
-              >{row.fit && fittedValues
-                ? fittedValues[row.id]?.toPrecision(6)
-                : "—"}</td
-            >
+            {#if mode === "single"}
+              <td>
+                <input
+                  type="number"
+                  step="any"
+                  value={row.initialGuess ??
+                    model.parameters.get(row.id)?.value}
+                  disabled={!row.fit}
+                  onchange={(e) =>
+                    updateParamRow(row.id, {
+                      initialGuess: Number(
+                        (e.target as HTMLInputElement).value,
+                      ),
+                    })}
+                />
+              </td>
+              <td
+                >{row.fit && fittedValues
+                  ? fittedValues[row.id]?.toPrecision(6)
+                  : "—"}</td
+              >
+            {:else}
+              {@const distribution =
+                row.distribution ?? defaultDistributionFor(row.id)}
+              <td>
+                <div class="dist-editor">
+                  <select
+                    value={distribution.family}
+                    disabled={!row.fit}
+                    onchange={(e) =>
+                      setDistributionFamily(
+                        row.id,
+                        (e.target as HTMLSelectElement)
+                          .value as FitDistributionFamily,
+                      )}
+                  >
+                    <option value="normal">Normal</option>
+                    <option value="uniform">Uniform</option>
+                    <option value="logUniform">Log-uniform</option>
+                  </select>
+                  {#if distribution.family === "normal"}
+                    <input
+                      type="number"
+                      step="any"
+                      aria-label="mean"
+                      disabled={!row.fit}
+                      value={distribution.mean}
+                      onchange={(e) =>
+                        updateDistributionField(
+                          row.id,
+                          "mean",
+                          Number((e.target as HTMLInputElement).value),
+                        )}
+                    />
+                    <input
+                      type="number"
+                      step="any"
+                      aria-label="std"
+                      disabled={!row.fit}
+                      value={distribution.std}
+                      onchange={(e) =>
+                        updateDistributionField(
+                          row.id,
+                          "std",
+                          Number((e.target as HTMLInputElement).value),
+                        )}
+                    />
+                  {:else}
+                    <input
+                      type="number"
+                      step="any"
+                      aria-label="min"
+                      disabled={!row.fit}
+                      value={distribution.min}
+                      onchange={(e) =>
+                        updateDistributionField(
+                          row.id,
+                          "min",
+                          Number((e.target as HTMLInputElement).value),
+                        )}
+                    />
+                    <input
+                      type="number"
+                      step="any"
+                      aria-label="max"
+                      disabled={!row.fit}
+                      value={distribution.max}
+                      onchange={(e) =>
+                        updateDistributionField(
+                          row.id,
+                          "max",
+                          Number((e.target as HTMLInputElement).value),
+                        )}
+                    />
+                  {/if}
+                </div>
+              </td>
+              <td>
+                {#if row.fit}
+                  {@const stats = ensembleParamStats(row.id)}
+                  {stats
+                    ? `${stats.mean.toPrecision(6)} ± ${stats.std.toPrecision(3)}`
+                    : "—"}
+                {:else}
+                  —
+                {/if}
+              </td>
+            {/if}
           </tr>
         {/each}
       </tbody>
     </table>
 
     {#if hasTrainedNNBlock}
-      <p class="nn-note">
-        Also training {[...model.nnBlocks.values()].filter((b) => b.trained)
-          .length} NN block(s), this fit uses the adjoint backend.
-      </p>
-    {/if}
-    <div class="run-row">
-      {#if !running}
-        <button
-          type="button"
-          class="run-button"
-          onclick={runFit}>Run fit</button
-        >
+      {#if mode === "ensemble"}
+        <p class="nn-note">
+          Also training {trainedBlockKeys.length} NN block(s), this fit uses the adjoint
+          backend. Each ensemble member trains from its own independently Glorot-initialized
+          weights (same architecture, seeded from the ensemble's own random seed)
+          — the block's own output scale stays fixed at its current value for every
+          member.
+        </p>
       {:else}
-        <button
-          type="button"
-          class="cancel-button"
-          onclick={cancelFit}>Stop</button
-        >
+        <p class="nn-note">
+          Also training {trainedBlockKeys.length} NN block(s), this fit uses the adjoint
+          backend.
+        </p>
       {/if}
-      {#if residualNorm !== null}
-        <span class="progress-info"
-          >evals: {nfev} · residual norm: {residualNorm.toExponential(3)}</span
-        >
-      {/if}
-    </div>
-    {#if targetMissed}
-      <p class="target-missed">
-        Stopped before reaching the target residual norm ({targetResidualNorm.toExponential(
-          1,
-        )}) — {nfev >= maxFunctionEvaluations
-          ? "hit the maximum function evaluations."
-          : "the fit converged and couldn't improve further."}
-      </p>
-    {/if}
-    {#if nfev > 0}
-      <div
-        class="progress-bar-track"
-        title="{nfev} / {maxFunctionEvaluations} evaluations"
-      >
-        <div
-          class="progress-bar-fill"
-          style="width: {(fitComplete ? 100 : progressFraction * 100).toFixed(
-            1,
-          )}%"
-        ></div>
-      </div>
-    {/if}
-    {#if errorMsg}
-      <p class="error">{errorMsg}</p>
     {/if}
 
-    <div class="charts-row">
-      {#if trajectoryErr}
-        <SimErrDisplay err={trajectoryErr} />
-      {:else}
+    {#if mode === "single"}
+      <div class="run-row">
+        {#if !running}
+          <button
+            type="button"
+            class="run-button"
+            onclick={runFit}>Run fit</button
+          >
+        {:else}
+          <button
+            type="button"
+            class="cancel-button"
+            onclick={cancelFit}>Stop</button
+          >
+        {/if}
+        {#if residualNorm !== null}
+          <span class="progress-info"
+            >evals: {nfev} · residual norm: {residualNorm.toExponential(
+              3,
+            )}</span
+          >
+        {/if}
+      </div>
+      {#if targetMissed}
+        <p class="target-missed">
+          Stopped before reaching the target residual norm ({targetResidualNorm.toExponential(
+            1,
+          )}) — {nfev >= maxFunctionEvaluations
+            ? "hit the maximum function evaluations."
+            : "the fit converged and couldn't improve further."}
+        </p>
+      {/if}
+      {#if nfev > 0}
+        <div
+          class="progress-bar-track"
+          title="{nfev} / {maxFunctionEvaluations} evaluations"
+        >
+          <div
+            class="progress-bar-fill"
+            style="width: {(fitComplete ? 100 : progressFraction * 100).toFixed(
+              1,
+            )}%"
+          ></div>
+        </div>
+      {/if}
+      {#if errorMsg}
+        <p class="error">{errorMsg}</p>
+      {/if}
+
+      <div class="charts-row">
+        {#if trajectoryErr}
+          <SimErrDisplay err={trajectoryErr} />
+        {:else}
+          <div class="chart-cell">
+            <LineChart
+              data={lineData}
+              loading={false}
+              yMax={yMax ?? dataYMax}
+            />
+          </div>
+        {/if}
+
         <div class="chart-cell">
           <LineChart
-            data={lineData}
+            data={residualHistoryData}
+            loading={false}
+            yScale="logarithmic"
+            yMin={undefined}
+            xMax={maxFunctionEvaluations}
+            xLabel="Function evaluations"
+            yLabel="Residual norm"
+          />
+        </div>
+      </div>
+    {:else}
+      <div class="run-row">
+        {#if !ensembleRunning}
+          <button
+            type="button"
+            class="run-button"
+            onclick={runEnsembleFit}>Run ensemble fit</button
+          >
+        {:else}
+          <button
+            type="button"
+            class="cancel-button"
+            onclick={cancelEnsembleFit}>Stop</button
+          >
+        {/if}
+        {#if members.length > 0}
+          <span class="progress-info"
+            >evals: {ensembleNfevSum} · {survivingMembers.length}/{members.length}
+            members completed</span
+          >
+        {/if}
+      </div>
+      {#if members.length > 0}
+        <div
+          class="progress-bar-track"
+          title="{ensembleNfevSum} / {members.length *
+            maxFunctionEvaluations} evaluations"
+        >
+          <div
+            class="progress-bar-fill"
+            style="width: {(ensembleAllDone
+              ? 100
+              : ensembleProgressFraction * 100
+            ).toFixed(1)}%"
+          ></div>
+        </div>
+      {/if}
+      {#if members.some((m) => m.errored)}
+        <p class="target-missed">
+          {members.filter((m) => m.errored).length} member(s) failed and were dropped
+          from the ensemble statistics.
+        </p>
+      {/if}
+      {#if ensembleErrorMsg}
+        <p class="error">{ensembleErrorMsg}</p>
+      {/if}
+
+      <div class="charts-row">
+        <div class="chart-cell">
+          <LineChart
+            data={ensembleLineData}
             loading={false}
             yMax={yMax ?? dataYMax}
           />
         </div>
-      {/if}
-
-      <div class="chart-cell">
-        <LineChart
-          data={residualHistoryData}
-          loading={false}
-          yScale="logarithmic"
-          yMin={undefined}
-          xMax={maxFunctionEvaluations}
-          xLabel="Function evaluations"
-          yLabel="Residual norm"
-        />
+        <div class="chart-cell">
+          <LineChart
+            data={ensembleResidualData}
+            loading={false}
+            yScale="logarithmic"
+            yMin={undefined}
+            xMax={maxFunctionEvaluations}
+            xLabel="Function evaluations"
+            yLabel="Residual norm"
+          />
+        </div>
       </div>
-    </div>
+    {/if}
   {/if}
 </div>
 
@@ -894,6 +1732,17 @@
     display: flex;
     gap: 0.5rem;
   }
+  .mode-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .mode-row label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+  }
   .config-row {
     display: flex;
     flex-direction: column;
@@ -919,6 +1768,15 @@
   select {
     font-size: inherit;
     font-family: inherit;
+  }
+  .dist-editor {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .dist-editor input {
+    width: 6rem;
   }
   .charts-row {
     display: flex;

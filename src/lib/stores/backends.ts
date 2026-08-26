@@ -28,6 +28,20 @@ const getWasmPool = once(() => new WorkerPool(wasmWorkerUrl, 1));
 const getPyPool = once(() => new WorkerPool(pyWorkerUrl));
 const getJsPool = once(() => new WorkerPool(jsWorkerUrl));
 
+/**
+ * A fresh, caller-owned WASM worker pool — unlike the singletons above, not
+ * memoized. Ensemble fitting (Fit.svelte, ADR 0006 §2.5) needs N preview
+ * trajectories computed in parallel, one per ensemble member, which the
+ * shared `wasmRadau5` pool (hardcoded to size 1, ADR 0004) would just
+ * serialize; scoping a dedicated pool to the ensemble run's own lifetime
+ * (created when it starts, `terminate()`d when it finishes or is cancelled)
+ * keeps every other `wasmRadau5` consumer — single-model fitting included —
+ * unaffected.
+ */
+export function createWasmPool(size: number): WorkerPool {
+  return new WorkerPool(wasmWorkerUrl, size);
+}
+
 type BuildOpts = {
   userParameters?: string[];
   derivedSelection?: string[];
