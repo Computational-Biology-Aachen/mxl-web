@@ -154,7 +154,7 @@ not a UI).
 **Revision (found via a live repro against real data, see below): the first
 implementation of this section was wrong.** It gave each trained block one number field
 — "init perturbation std" — and drew `weight_i ~ Normal(current_weight_i, std)` for
-every weight/bias *and* the block's own `scale` parameter, all from the same std. That
+every weight/bias _and_ the block's own `scale` parameter, all from the same std. That
 broke ADR 0005 §2.1's explicit "starts small" invariant for `scale`: `scale` defaults to
 **0.01**, while a Glorot-initialized weight's natural magnitude — `Uniform(-limit,
 limit)`, `limit = sqrt(6/(fanIn+fanOut))` — is order 1 for typical block shapes (`limit =
@@ -187,7 +187,7 @@ new setting to the ensemble panel.
 With no per-member weight variation, every member would start adjoint training from
 bit-identical weights and (lmdif/the adjoint optimizer being deterministic, no stochastic
 minibatching here) converge to identical results — an ensemble of NN-trained members
-needs *some* per-member draw to be worth running at all, which is why weights still get
+needs _some_ per-member draw to be worth running at all, which is why weights still get
 a fresh, independent draw even though `scale` no longer does.
 
 ### 2.9 Mode selector and results display
@@ -223,14 +223,29 @@ extended verbatim to "mean over whatever's landed."
 `hardwareConcurrency`, without querying it for the cap itself, since the cap needs to
 hold even if a user later opens this on a low-core-count device with a saved/shared
 config) sits in the same settings table as `chunkMaxfev`/`maxFunctionEvaluations` in
-ensemble mode. The aggregate progress bar reuses single-fit mode's exact
-`nfev / maxFunctionEvaluations` fraction math, just summed:
-`Σ(member.nfev) / (N × maxFunctionEvaluations)`. "Running" stays true until every member
-has stopped (converged, errored, or cancelled); Stop cancels every still-running member
-and tears down the ensemble's preview pool (§2.5) at once. A per-member mini-progress-bar
-grid was considered and rejected — more granular, but a new UI element (vs. reusing
-`.progress-bar-track`/`.progress-bar-fill` as-is) that gets visually busy past
-N≈8.
+ensemble mode.
+
+**Revision:** the first implementation of the "evals" readout summed every member's
+`nfev` — `Σ(member.nfev)`, denominator `N × maxFunctionEvaluations`. That turned out to
+be actively misleading rather than just uninformative: with 8 members it read as
+"~5000 evals" on a run whose `maxFunctionEvaluations` was the default 1000, disagreeing
+with the convergence chart's own x-axis (§2.6), which is per-member and only ever spans
+`0..maxFunctionEvaluations`. Members run independent, non-synchronized chunk loops
+(§2.4), so there genuinely is no single shared "the ensemble's nfev" the way single-fit
+mode has one nfev — but a sum across members isn't a stand-in for one either; it's just
+a different, larger number nobody asked for.
+
+The readout (and the progress bar's fraction) now use
+`min(members.map(m => m.nfev))` instead — the evaluation count _every_ member has
+reported progress to at least, i.e. the ensemble's own "synced" communication point.
+This stays on the same per-member scale as the convergence chart (`0..
+maxFunctionEvaluations`), so the number next to the button and the chart's x-axis agree,
+and it reads as what it actually is: how far along the slowest-progressing member is,
+not an aggregate compute total. "Running" stays true until every member has stopped
+(converged, errored, or cancelled); Stop cancels every still-running member and tears
+down the ensemble's preview pool (§2.5) at once. A per-member mini-progress-bar grid was
+considered and rejected — more granular, but a new UI element (vs. reusing
+`.progress-bar-track`/`.progress-bar-fill` as-is) that gets visually busy past N≈8.
 
 ## 3. Rationale
 
