@@ -1,5 +1,6 @@
 // place files you want to import through the `$lib` alias in this folder.
 import type { PamGroup } from "./protocol";
+import type { FitDistribution } from "./random";
 import type { Backend } from "./stores/backends";
 
 export { allBackends, backends } from "./stores/backends";
@@ -82,9 +83,16 @@ export type FitParameterConfig = {
   /** Fit in log-space (guarantees positivity) — requires the parameter's
    * current value to be > 0. */
   logSpace: boolean;
-  /** Starting value the fit runs from — undefined falls back to the model's
-   * current live parameter value. */
+  /** Single-model mode: starting value the fit runs from — undefined falls
+   * back to the model's current live parameter value. */
   initialGuess?: number;
+  /** Ensemble mode: the per-member starting-point distribution this row
+   * draws from — undefined falls back to a default normal distribution
+   * around the model's current live parameter value (ADR 0006 §2.1). Kept
+   * on the same row as `initialGuess`/`logSpace` rather than a parallel
+   * array so switching the mode selector doesn't lose which parameters are
+   * marked "fit" (ADR 0006 §2.9). */
+  distribution?: FitDistribution;
 };
 
 export type Analysis = SimulationAnalysis | ParameterScanAnalysis | PamAnalysis;
