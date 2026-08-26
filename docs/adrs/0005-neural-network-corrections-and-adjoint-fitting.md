@@ -48,7 +48,7 @@ doesn't survive a 6×64 block's ≈20,800 weights. `TableNNBlocks.svelte` keeps 
 and ODE parameters as deliberately separate concepts: a block is authored/resized as one
 unit in its own UI (architecture spec, which variable/reaction it corrects), never
 expanded into individual rows in `ModelEditor`'s existing parameter table. Weights are
-seeded via standard randomized init (Xavier/Glorot-style) and from then on change *only*
+seeded via standard randomized init (Xavier/Glorot-style) and from then on change _only_
 through fitting — never hand-edited. Fitting itself is a **per-block toggle** ("train
 this block: yes/no"), not per-weight checkboxes — there's no real scenario where half a
 block's weights should be frozen while the rest train. This also makes §2.1's log-space
