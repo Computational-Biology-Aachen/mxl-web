@@ -1470,9 +1470,11 @@
                 />
               </td>
               <td
-                >{row.fit && fittedValues
-                  ? fittedValues[row.id]?.toPrecision(6)
-                  : "—"}</td
+                ><span class="fitted-value"
+                  >{row.fit && fittedValues
+                    ? fittedValues[row.id]?.toPrecision(6)
+                    : "—"}</span
+                ></td
               >
             {:else}
               {@const distribution =
@@ -1551,14 +1553,16 @@
                 </div>
               </td>
               <td>
-                {#if row.fit}
-                  {@const stats = ensembleParamStats(row.id)}
-                  {stats
-                    ? `${stats.mean.toPrecision(6)} ± ${stats.std.toPrecision(3)}`
-                    : "—"}
-                {:else}
-                  —
-                {/if}
+                <span class="fitted-value fitted-value-wide">
+                  {#if row.fit}
+                    {@const stats = ensembleParamStats(row.id)}
+                    {stats
+                      ? `${stats.mean.toPrecision(6)} ± ${stats.std.toPrecision(3)}`
+                      : "—"}
+                  {:else}
+                    —
+                  {/if}
+                </span>
               </td>
             {/if}
           </tr>
@@ -1851,6 +1855,23 @@
   .param-table input[type="number"],
   .settings-table input[type="number"] {
     width: 8rem;
+  }
+  /* Fixed width + tabular figures so a changing "Fitted value"/"Fitted
+     (mean ± std)" during a running fit doesn't reflow the column (and so
+     the whole param table) on every progress tick — toPrecision()'s output
+     length varies with the number's sign/magnitude/exponent notation, and
+     table-layout:auto resizes columns to fit whatever's currently in them. */
+  .fitted-value {
+    display: inline-block;
+    vertical-align: middle;
+    width: 8rem;
+    overflow: hidden;
+    font-variant-numeric: tabular-nums;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .fitted-value-wide {
+    width: 13rem;
   }
   .run-row {
     display: flex;
