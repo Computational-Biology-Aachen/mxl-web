@@ -235,17 +235,39 @@ with the convergence chart's own x-axis (§2.6), which is per-member and only ev
 mode has one nfev — but a sum across members isn't a stand-in for one either; it's just
 a different, larger number nobody asked for.
 
-The readout (and the progress bar's fraction) now use
-`min(members.map(m => m.nfev))` instead — the evaluation count _every_ member has
-reported progress to at least, i.e. the ensemble's own "synced" communication point.
-This stays on the same per-member scale as the convergence chart (`0..
-maxFunctionEvaluations`), so the number next to the button and the chart's x-axis agree,
-and it reads as what it actually is: how far along the slowest-progressing member is,
-not an aggregate compute total. "Running" stays true until every member has stopped
-(converged, errored, or cancelled); Stop cancels every still-running member and tears
-down the ensemble's preview pool (§2.5) at once. A per-member mini-progress-bar grid was
-considered and rejected — more granular, but a new UI element (vs. reusing
-`.progress-bar-track`/`.progress-bar-fill` as-is) that gets visually busy past N≈8.
+The readout (and the progress bar's fraction) then switched to
+`min(members.map(m => m.nfev))` — the evaluation count _every_ member has reported
+progress to at least, i.e. the ensemble's own "synced" communication point. This stays
+on the same per-member scale as the convergence chart (`0..maxFunctionEvaluations`), so
+the number next to the button and the chart's x-axis agree.
+
+**Second revision:** that min was still wrong, just in a different way — it was a min
+over _every_ member, including ones that had already stopped. A member that converges
+early (hits `targetResidualNorm`, or just genuinely needs fewer evaluations) keeps its
+final `nfev` forever once `done`; taking the min against still-`nfev`-frozen finished
+members means the very first member to finish pins the readout at its own final value
+for the rest of the run, even while every other member keeps working well past it — the
+number looks stalled when the ensemble is actively still making progress.
+
+The fix: exclude already-`done` members from the min while any member is still running
+— `min(members.filter(m => !m.done).map(m => m.nfev))` — so a finished member's frozen
+value can no longer hold the readout down while others keep going. Once every member is
+done there's nothing left running to take that min over, so it falls back to the min
+across all of them at that point — a legitimate, non-misleading summary of a _completed_
+run ("every member reached at least this many evals"), unlike the same number mid-run.
+"Running" stays true until every member has stopped (converged, errored, or cancelled);
+Stop cancels every still-running member and tears down the ensemble's preview pool
+(§2.5) at once. A per-member mini-progress-bar grid was considered and rejected — more
+granular, but a new UI element (vs. reusing `.progress-bar-track`/`.progress-bar-fill`
+as-is) that gets visually busy past N≈8.
+
+Caught alongside the second revision: the adjacent "`k`/`N` members completed" count was
+reading `survivingMembers.length` (non-errored count, §2.7 — correct for the separate
+"`k` member(s) failed" note) as if it meant "completed," so it showed e.g. "8/8 members
+completed" from the very first progress tick, while every member was still actively
+running (no member had errored yet, which is all `survivingMembers` actually checks). A
+dedicated `ensembleDoneCount = members.filter(m => m.done).length` now backs that
+readout instead.
 
 ## 3. Rationale
 
