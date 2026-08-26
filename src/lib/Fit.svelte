@@ -765,12 +765,20 @@
   let ensembleAnyProgress = $derived(
     survivingMembers.some((m) => m.fittedValues !== null),
   );
-  let ensembleNfevSum = $derived(members.reduce((s, m) => s + m.nfev, 0));
+  // Members run independent, non-synchronized chunk loops (ADR 0006 §2.4) —
+  // there's no single shared nfev the way single-fit mode has one. Summing
+  // across members would read like "0..N*maxFunctionEvaluations", which
+  // doesn't match the convergence chart's own per-member x-axis
+  // (0..maxFunctionEvaluations) and isn't a meaningful number on its own.
+  // The minimum across members is: every member has reported progress to
+  // *at least* this point — the ensemble's own "synced" communication
+  // point, on the same per-member scale as the chart and the progress bar's
+  // denominator.
+  let ensembleNfev = $derived(
+    members.length > 0 ? Math.min(...members.map((m) => m.nfev)) : 0,
+  );
   let ensembleProgressFraction = $derived(
-    Math.min(
-      ensembleNfevSum / Math.max(members.length * maxFunctionEvaluations, 1),
-      1,
-    ),
+    Math.min(ensembleNfev / Math.max(maxFunctionEvaluations, 1), 1),
   );
   let ensembleAllDone = $derived(
     members.length > 0 && members.every((m) => m.done),
@@ -1651,7 +1659,7 @@
         {/if}
         {#if members.length > 0}
           <span class="progress-info"
-            >evals: {ensembleNfevSum} · {survivingMembers.length}/{members.length}
+            >evals: {ensembleNfev} · {survivingMembers.length}/{members.length}
             members completed</span
           >
         {/if}
@@ -1659,8 +1667,7 @@
       {#if members.length > 0}
         <div
           class="progress-bar-track"
-          title="{ensembleNfevSum} / {members.length *
-            maxFunctionEvaluations} evaluations"
+          title="{ensembleNfev} / {maxFunctionEvaluations} evaluations"
         >
           <div
             class="progress-bar-fill"
