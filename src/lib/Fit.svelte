@@ -762,6 +762,11 @@
   let unsubEnsemblePreview: (() => void) | null = null;
 
   let survivingMembers = $derived(members.filter((m) => !m.errored));
+  // Distinct from survivingMembers.length (non-errored count, used for the
+  // "k member(s) failed" note): this is how many members have actually
+  // stopped — converged, hit their target, cancelled, or errored — vs. still
+  // running, for the "N/M members completed" readout.
+  let ensembleDoneCount = $derived(members.filter((m) => m.done).length);
   let ensembleAnyProgress = $derived(
     survivingMembers.some((m) => m.fittedValues !== null),
   );
@@ -770,13 +775,23 @@
   // across members would read like "0..N*maxFunctionEvaluations", which
   // doesn't match the convergence chart's own per-member x-axis
   // (0..maxFunctionEvaluations) and isn't a meaningful number on its own.
-  // The minimum across members is: every member has reported progress to
-  // *at least* this point — the ensemble's own "synced" communication
-  // point, on the same per-member scale as the chart and the progress bar's
-  // denominator.
-  let ensembleNfev = $derived(
-    members.length > 0 ? Math.min(...members.map((m) => m.nfev)) : 0,
-  );
+  //
+  // The minimum *still-running* member's nfev is: every member still doing
+  // work has reported progress to at least this point — the ensemble's own
+  // "synced" communication point. A member that already stopped (converged,
+  // hit its target, errored) is excluded from that min once it's done —
+  // otherwise, the very first member to finish early would freeze this
+  // number for the rest of the run while every other member keeps working
+  // well past it, which reads as the run having stalled. Once every member
+  // is done there's nothing left running to take a min over, so it falls
+  // back to the min across all of them — a legitimate summary at that
+  // point ("every member reached at least this many evals"), not a
+  // mid-run freeze.
+  let ensembleNfev = $derived.by(() => {
+    const running = members.filter((m) => !m.done);
+    const pool = running.length > 0 ? running : members;
+    return pool.length > 0 ? Math.min(...pool.map((m) => m.nfev)) : 0;
+  });
   let ensembleProgressFraction = $derived(
     Math.min(ensembleNfev / Math.max(maxFunctionEvaluations, 1), 1),
   );
@@ -1659,7 +1674,7 @@
         {/if}
         {#if members.length > 0}
           <span class="progress-info"
-            >evals: {ensembleNfev} · {survivingMembers.length}/{members.length}
+            >evals: {ensembleNfev} · {ensembleDoneCount}/{members.length}
             members completed</span
           >
         {/if}
