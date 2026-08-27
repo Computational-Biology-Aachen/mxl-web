@@ -64,6 +64,17 @@
   let chunkMaxfev = $state(5);
   let targetResidualNorm = $state(1e-1);
   let maxFunctionEvaluations = $state(1000);
+
+  // Patience-based early stopping (single-fit and ensemble alike): lmdif's
+  // own chunked `done` flag only reflects true convergence (ftol/xtol/gtol)
+  // or a hard error, so a run stuck near a flat/degenerate Jacobian can
+  // report "chunk exhausted, not done" forever without ever tripping that
+  // flag — burning the rest of maxFunctionEvaluations for no improvement.
+  // Counts consecutive *chunks*, not evaluations, so it scales with
+  // whatever chunkMaxfev is configured.
+  const FIT_PATIENCE_CHUNKS = 20;
+  const FIT_MIN_DELTA = 1e-3;
+
   let yMaxValue = $state(10);
   let yMaxAuto = $state(true);
   let yMax = $derived(yMaxAuto ? undefined : yMaxValue);
@@ -601,6 +612,15 @@
   // alone is misleading on completion, since a fit that converges well
   // under the cap would otherwise show a small, seemingly-unfinished bar.
   let fitComplete = $state(false);
+  // True when the run stopped because of patience-based stalling (below),
+  // not genuine lmdif convergence — lmdif's own chunked `done` flag only
+  // reflects true convergence (ftol/xtol/gtol) or a hard error, so a run
+  // stuck near a flat/degenerate Jacobian can report "chunk exhausted, not
+  // done" forever without ever tripping that flag. Distinguished from plain
+  // "converged" in the targetMissed message below, rather than folded into
+  // it, since a stuck-in-a-local-minimum stop deserves a clearer flag than
+  // wording that could read as a mild success.
+  let fitStalled = $state(false);
   // A finished fit can stop short of targetResidualNorm — e.g. lmdif's own
   // convergence criteria decide there's no further improvement to be had, or
   // maxFunctionEvaluations runs out first — without that being an error.
@@ -669,10 +689,13 @@
     errorMsg = null;
     running = true;
     fitComplete = false;
+    fitStalled = false;
     nfev = 0;
     residualNorm = null;
     fittedValues = null;
     residualHistory = [];
+    let bestResidual = Infinity;
+    let staleChunks = 0;
 
     // A per-row "initial guess" override (edited in the param table) starts
     // the fit from a value other than the model's current live parameter —
@@ -727,14 +750,32 @@
         config.sortedT[config.sortedT.length - 1],
       );
 
+      const improvement = Number.isFinite(bestResidual)
+        ? (bestResidual - progress.residualNorm) / bestResidual
+        : Infinity;
+      if (improvement > FIT_MIN_DELTA) {
+        bestResidual = progress.residualNorm;
+        staleChunks = 0;
+      } else {
+        staleChunks += 1;
+      }
+      const stalled = staleChunks >= FIT_PATIENCE_CHUNKS;
+
       const reachedTarget = progress.residualNorm <= targetResidualNorm;
       const reachedMaxEvals = progress.nfev >= maxFunctionEvaluations;
       const budget = nextChunkBudget(progress.nfev);
-      if (!progress.done && !reachedTarget && !reachedMaxEvals && budget > 0) {
+      if (
+        !progress.done &&
+        !reachedTarget &&
+        !reachedMaxEvals &&
+        !stalled &&
+        budget > 0
+      ) {
         session?.chunk(budget);
       } else {
         running = false;
         fitComplete = true;
+        fitStalled = stalled;
         session?.free();
         session = null;
       }
@@ -970,6 +1011,8 @@
   function startEnsembleMember(m: number, config: FitConfig, pars: number[]) {
     const memberSession = new FitSession();
     memberSessions[m] = memberSession;
+    let bestResidual = Infinity;
+    let staleChunks = 0;
 
     const setMember = (patch: Partial<EnsembleMember>) => {
       members = members.map((mem, i) => (i === m ? { ...mem, ...patch } : mem));
@@ -1021,10 +1064,27 @@
         config.sortedT[config.sortedT.length - 1],
       );
 
+      const improvement = Number.isFinite(bestResidual)
+        ? (bestResidual - progress.residualNorm) / bestResidual
+        : Infinity;
+      if (improvement > FIT_MIN_DELTA) {
+        bestResidual = progress.residualNorm;
+        staleChunks = 0;
+      } else {
+        staleChunks += 1;
+      }
+      const stalled = staleChunks >= FIT_PATIENCE_CHUNKS;
+
       const reachedTarget = progress.residualNorm <= targetResidualNorm;
       const reachedMaxEvals = progress.nfev >= maxFunctionEvaluations;
       const budget = nextChunkBudget(progress.nfev);
-      if (!progress.done && !reachedTarget && !reachedMaxEvals && budget > 0) {
+      if (
+        !progress.done &&
+        !reachedTarget &&
+        !reachedMaxEvals &&
+        !stalled &&
+        budget > 0
+      ) {
         memberSession.chunk(budget);
       } else {
         setMember({ done: true });
@@ -1757,7 +1817,9 @@
           1,
         )}) — {nfev >= maxFunctionEvaluations
           ? "hit the maximum function evaluations."
-          : "the fit converged and couldn't improve further."}
+          : fitStalled
+            ? `stopped after ${FIT_PATIENCE_CHUNKS} chunks with no meaningful improvement — likely stuck in a local minimum.`
+            : "the fit converged and couldn't improve further."}
       </p>
     {/if}
     {#if nfev > 0}
