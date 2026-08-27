@@ -51,7 +51,28 @@ export function drawLogUniform(
   return Math.exp(lo + (hi - lo) * rng());
 }
 
-export type FitDistributionFamily = "normal" | "uniform" | "logUniform";
+// `mean` is the distribution's median, not a bias-corrected arithmetic mean —
+// muLog = ln(mean) keeps the typed value exactly the 50th percentile rather
+// than requiring a -sigma^2/2 correction term. `std` is in the same units as
+// mean; its ratio std/mean becomes the (dimensionless) log-space sigma, so
+// the %-based UI editing std/mean means the same thing as it does for a
+// plain Normal. The Math.max(..., 1e-300) floor is a defensive, sample-time
+// guard mirroring drawLogUniform's own floor above — Fit.svelte's `mean`
+// input is not itself guarded against 0/negative values.
+export function drawLogNormal(
+  rng: () => number,
+  mean: number,
+  std: number,
+): number {
+  const magnitude = Math.max(Math.abs(mean), 1e-300);
+  const muLog = Math.log(magnitude);
+  const sigmaLog = std / magnitude;
+  const z = drawNormal(rng, 0, 1);
+  return Math.exp(muLog + sigmaLog * z);
+}
+
+export type FitDistributionFamily =
+  "normal" | "logNormal" | "uniform" | "logUniform";
 
 /** One ensemble member's starting-point distribution for a single fitted
  * parameter (ADR 0006 §2.1) — always draws a plain linear-space scalar,
@@ -59,6 +80,7 @@ export type FitDistributionFamily = "normal" | "uniform" | "logUniform";
  * (ADR 0006 §2.3). */
 export type FitDistribution =
   | { family: "normal"; mean: number; std: number }
+  | { family: "logNormal"; mean: number; std: number }
   | { family: "uniform"; min: number; max: number }
   | { family: "logUniform"; min: number; max: number };
 
@@ -69,6 +91,8 @@ export function sampleDistribution(
   switch (dist.family) {
     case "normal":
       return drawNormal(rng, dist.mean, dist.std);
+    case "logNormal":
+      return drawLogNormal(rng, dist.mean, dist.std);
     case "uniform":
       return drawUniform(rng, dist.min, dist.max);
     case "logUniform":

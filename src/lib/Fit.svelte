@@ -27,21 +27,21 @@
   import { parseCsvFile, type ParsedCsv } from "./csvParse";
   import type { FitParameterConfig, FitTargetMapping } from "./index";
   import LineChart from "./LineChart.svelte";
-  import SimErrDisplay from "./SimErrDisplay.svelte";
   import {
     mulberry32,
     sampleDistribution,
     type FitDistribution,
     type FitDistributionFamily,
   } from "./random";
+  import SimErrDisplay from "./SimErrDisplay.svelte";
   import { backends, createWasmPool } from "./stores/backends";
   import { FitSession } from "./stores/fitStore";
+  import type { WorkerPool } from "./stores/workerPool";
   import {
     WorkerManager,
     type SimulationError,
     type SimulationResult,
   } from "./stores/workerStore";
-  import type { WorkerPool } from "./stores/workerPool";
   import { arrayColumn } from "./utils";
 
   let {
@@ -224,17 +224,33 @@
     const magnitude = Math.max(Math.abs(value), 1e-9);
     return { family: "logUniform", min: magnitude * 0.5, max: magnitude * 2 };
   }
+  // Same 20% magnitude as defaultNormal, abs+floored like defaultLogUniform
+  // — log-normal requires a strictly positive median, so a zero/negative
+  // live parameter value falls back to its magnitude rather than a
+  // different family entirely.
+  function defaultLogNormal(value: number): FitDistribution {
+    return {
+      family: "logNormal",
+      mean: Math.max(Math.abs(value), 1e-9),
+      std: Math.max(Math.abs(value) * 0.2, 1e-9),
+    };
+  }
+  // Log-normal is the default for a fresh row (never goes negative, same
+  // relative spread for every parameter regardless of its magnitude) —
+  // Normal stays fully selectable, just no longer what a new row starts as.
   function defaultDistributionFor(id: string): FitDistribution {
-    return defaultNormal(model.parameters.get(id)?.value ?? 0);
+    return defaultLogNormal(model.parameters.get(id)?.value ?? 0);
   }
   function setDistributionFamily(id: string, family: FitDistributionFamily) {
     const value = model.parameters.get(id)?.value ?? 0;
     const distribution =
       family === "normal"
         ? defaultNormal(value)
-        : family === "uniform"
-          ? defaultUniform(value)
-          : defaultLogUniform(value);
+        : family === "logNormal"
+          ? defaultLogNormal(value)
+          : family === "uniform"
+            ? defaultUniform(value)
+            : defaultLogUniform(value);
     updateParamRow(id, { distribution });
   }
   function updateDistributionField(id: string, field: string, value: number) {
@@ -246,10 +262,58 @@
     });
   }
 
+  // Distribution inputs are edited as % of a reference value rather than
+  // absolute numbers (kinetic constants span many orders of magnitude, same
+  // reasoning as defaultNormal/defaultUniform/defaultLogUniform's own 20%/
+  // 50%/200% defaults) — storage stays absolute throughout, only the input
+  // boxes convert at the UI edge.
+  const PERCENT_EPSILON = 1e-9;
+
+  function toPercent(absolute: number, reference: number): number {
+    return Math.abs(reference) < PERCENT_EPSILON
+      ? 0
+      : (absolute / reference) * 100;
+  }
+
+  // Spinner/arrow-key step for an absolute-value input, one decade finer
+  // than the value's own magnitude — step="any" falls back to a default
+  // step of 1, which for a value like 0.1 jumps to 1.1 on a single
+  // keypress. 10 presses now traverse one decade (0.1 -> 0.11 -> ... -> 0.2)
+  // instead.
+  function magnitudeStep(value: number): number {
+    const magnitude = Math.abs(value);
+    if (magnitude === 0 || !Number.isFinite(magnitude)) return 1;
+    return 10 ** (Math.floor(Math.log10(magnitude)) - 1);
+  }
+
+  // Uniform/logUniform have no stored "center" the way normal has `mean` —
+  // their defaults scale off the model's live current parameter value
+  // instead, so that's the reference their % inputs use too. logUniform
+  // uses its magnitude (defaultLogUniform's own baseline), uniform keeps the
+  // sign (defaultUniform's value*0.5/value*2 scaling).
+  function distributionPercentReference(
+    id: string,
+    distribution: FitDistribution,
+  ): number {
+    const value = model.parameters.get(id)?.value ?? 0;
+    return distribution.family === "logUniform" ? Math.abs(value) : value;
+  }
+
+  function updateDistributionPercentField(
+    id: string,
+    field: string,
+    percent: number,
+    reference: number,
+  ) {
+    if (Math.abs(reference) < PERCENT_EPSILON) return;
+    updateDistributionField(id, field, (percent / 100) * reference);
+  }
+
   const MAX_ENSEMBLE_SIZE = 16;
 
   let ensembleSize = $state(8);
   let ensembleSeed = $state(Math.floor(Math.random() * 2 ** 31));
+  let filterOutliers = $state(true);
 
   function clampEnsembleSize(n: number): number {
     return Math.max(1, Math.min(Math.round(n) || 1, MAX_ENSEMBLE_SIZE));
@@ -761,14 +825,60 @@
   let ensemblePreviewPool: WorkerPool | null = null;
   let unsubEnsemblePreview: (() => void) | null = null;
 
-  let survivingMembers = $derived(members.filter((m) => !m.errored));
-  // Distinct from survivingMembers.length (non-errored count, used for the
-  // "k member(s) failed" note): this is how many members have actually
-  // stopped — converged, hit their target, cancelled, or errored — vs. still
-  // running, for the "N/M members completed" readout.
+  // Distinct from members.filter((m) => !m.errored).length (non-errored
+  // count, used for the "k member(s) failed" note): this is how many
+  // members have actually stopped — converged, hit their target, cancelled,
+  // or errored — vs. still running, for the "N/M members completed"
+  // readout.
   let ensembleDoneCount = $derived(members.filter((m) => m.done).length);
+
+  // Residual-norm outlier filter: a member stuck in a worse local minimum
+  // than the rest of the ensemble shouldn't drag down the mean/spread shown
+  // to the user. Robust to scale (residual norms span orders of magnitude)
+  // and to the outlier itself skewing the threshold, unlike a mean/stddev
+  // cutoff — median absolute deviation (MAD) of log10(residualNorm), one-
+  // sided (only *worse*, i.e. higher, residuals are ever flagged). Only
+  // `done` members are ever judged — a still-running member's residualNorm
+  // is provisional and hasn't converged yet.
+  const OUTLIER_MIN_DONE = 4;
+  const OUTLIER_MAD_K = 3;
+  const OUTLIER_MAD_EPSILON = 1e-9;
+
+  function medianOf(sorted: number[]): number {
+    const values = [...sorted].sort((a, b) => a - b);
+    const mid = Math.floor(values.length / 2);
+    return values.length % 2 === 0
+      ? (values[mid - 1] + values[mid]) / 2
+      : values[mid];
+  }
+
+  let outlierMemberIndices = $derived.by(() => {
+    if (!filterOutliers) return new Set<number>();
+    const eligible = members
+      .map((m, i) => ({ m, i, logVal: Math.log10(m.residualNorm ?? NaN) }))
+      .filter(({ m }) => !m.errored && m.done && m.residualNorm !== null);
+    if (eligible.length < OUTLIER_MIN_DONE) return new Set<number>();
+    const median = medianOf(eligible.map((e) => e.logVal));
+    const mad = medianOf(eligible.map((e) => Math.abs(e.logVal - median)));
+    const madFloor = Math.max(mad, OUTLIER_MAD_EPSILON);
+    return new Set(
+      eligible
+        .filter(({ logVal }) => (logVal - median) / madFloor > OUTLIER_MAD_K)
+        .map(({ i }) => i),
+    );
+  });
+
+  // Non-errored members minus outlier-flagged ones — feeds the ensemble
+  // stats/band chart/apply-fitted-parameters, but NOT the residual
+  // convergence chart (which stays a complete diagnostic view of every
+  // non-errored member, outliers included, just dashed — see
+  // ensembleResidualData) or the completion bookkeeping above.
+  let nonOutlierMembers = $derived(
+    members.filter((m, i) => !m.errored && !outlierMemberIndices.has(i)),
+  );
+
   let ensembleAnyProgress = $derived(
-    survivingMembers.some((m) => m.fittedValues !== null),
+    nonOutlierMembers.some((m) => m.fittedValues !== null),
   );
   // Members run independent, non-synchronized chunk loops (ADR 0006 §2.4) —
   // there's no single shared nfev the way single-fit mode has one. Summing
@@ -802,7 +912,7 @@
   function ensembleParamStats(
     id: string,
   ): { mean: number; std: number } | null {
-    const values = survivingMembers
+    const values = nonOutlierMembers
       .map((m) => m.fittedValues?.[id])
       .filter((v): v is number => v !== undefined);
     if (values.length === 0) return null;
@@ -1117,7 +1227,7 @@
     const displayNames = model.getDisplayNames();
     const nVars = model.getNames().length;
     const order = model.sortDependencies();
-    const trajectories = survivingMembers
+    const trajectories = nonOutlierMembers
       .map((m) => m.trajectory)
       .filter((t) => t.time.length > 0);
     const timeLabels = trajectories[0]?.time ?? [];
@@ -1207,6 +1317,7 @@
       borderColor: paletteColor(i),
       backgroundColor: paletteColor(i),
       pointRadius: 0,
+      borderDash: outlierMemberIndices.has(i) ? [6, 4] : [],
     })),
   });
 
@@ -1333,6 +1444,17 @@
                 >
               </td>
             </tr>
+            <tr>
+              <td>Filter residual outliers</td>
+              <td>
+                <input
+                  type="checkbox"
+                  checked={filterOutliers}
+                  onchange={(e) =>
+                    (filterOutliers = (e.target as HTMLInputElement).checked)}
+                />
+              </td>
+            </tr>
           {/if}
         </tbody>
       </table>
@@ -1412,322 +1534,340 @@
     bind:condition={yMaxAuto}
   />
 
-  {#if csv}
-    <table class="param-table">
-      <thead>
+  <table class="param-table">
+    <thead>
+      <tr>
+        <th>Parameter</th>
+        <th>Fit</th>
+        <th>Log-space</th>
+        {#if mode === "single"}
+          <th>Initial guess</th>
+          <th>Fitted value</th>
+        {:else}
+          <th>Distribution</th>
+          <th>Fitted (mean ± std)</th>
+        {/if}
+      </tr>
+    </thead>
+    <tbody>
+      {#each paramRows as row (row.id)}
         <tr>
-          <th>Parameter</th>
-          <th>Fit</th>
-          <th>Log-space</th>
+          <td>{model.getDisplayNames().get(row.id) ?? row.id}</td>
+          <td>
+            <input
+              type="checkbox"
+              checked={row.fit}
+              onchange={(e) =>
+                updateParamRow(row.id, {
+                  fit: (e.target as HTMLInputElement).checked,
+                })}
+            />
+          </td>
+          <td>
+            <input
+              type="checkbox"
+              checked={row.logSpace}
+              disabled={!row.fit}
+              onchange={(e) =>
+                updateParamRow(row.id, {
+                  logSpace: (e.target as HTMLInputElement).checked,
+                })}
+            />
+          </td>
           {#if mode === "single"}
-            <th>Initial guess</th>
-            <th>Fitted value</th>
-          {:else}
-            <th>Distribution</th>
-            <th>Fitted (mean ± std)</th>
-          {/if}
-        </tr>
-      </thead>
-      <tbody>
-        {#each paramRows as row (row.id)}
-          <tr>
-            <td>{model.getDisplayNames().get(row.id) ?? row.id}</td>
+            {@const initialGuess =
+              row.initialGuess ?? model.parameters.get(row.id)?.value ?? 0}
             <td>
               <input
-                type="checkbox"
-                checked={row.fit}
-                onchange={(e) =>
-                  updateParamRow(row.id, {
-                    fit: (e.target as HTMLInputElement).checked,
-                  })}
-              />
-            </td>
-            <td>
-              <input
-                type="checkbox"
-                checked={row.logSpace}
+                type="number"
+                step={magnitudeStep(initialGuess)}
+                value={initialGuess}
                 disabled={!row.fit}
                 onchange={(e) =>
                   updateParamRow(row.id, {
-                    logSpace: (e.target as HTMLInputElement).checked,
+                    initialGuess: Number((e.target as HTMLInputElement).value),
                   })}
               />
             </td>
-            {#if mode === "single"}
-              <td>
-                <input
-                  type="number"
-                  step="any"
-                  value={row.initialGuess ??
-                    model.parameters.get(row.id)?.value}
+            <td
+              ><span class="fitted-value"
+                >{row.fit && fittedValues
+                  ? fittedValues[row.id]?.toExponential(2)
+                  : "—"}</span
+              ></td
+            >
+          {:else}
+            {@const distribution =
+              row.distribution ?? defaultDistributionFor(row.id)}
+            <td>
+              <div class="dist-editor">
+                <select
+                  value={distribution.family}
                   disabled={!row.fit}
                   onchange={(e) =>
-                    updateParamRow(row.id, {
-                      initialGuess: Number(
-                        (e.target as HTMLInputElement).value,
-                      ),
-                    })}
-                />
-              </td>
-              <td
-                ><span class="fitted-value"
-                  >{row.fit && fittedValues
-                    ? fittedValues[row.id]?.toPrecision(6)
-                    : "—"}</span
-                ></td
-              >
-            {:else}
-              {@const distribution =
-                row.distribution ?? defaultDistributionFor(row.id)}
-              <td>
-                <div class="dist-editor">
-                  <select
-                    value={distribution.family}
-                    disabled={!row.fit}
-                    onchange={(e) =>
-                      setDistributionFamily(
-                        row.id,
-                        (e.target as HTMLSelectElement)
-                          .value as FitDistributionFamily,
-                      )}
+                    setDistributionFamily(
+                      row.id,
+                      (e.target as HTMLSelectElement)
+                        .value as FitDistributionFamily,
+                    )}
+                >
+                  <option value="logNormal">Log-normal</option>
+                  <option value="normal">Normal</option>
+                  <option value="uniform">Uniform</option>
+                  <option value="logUniform">Log-uniform</option>
+                </select>
+                {#if distribution.family === "normal" || distribution.family === "logNormal"}
+                  <span class="dist-field-label"
+                    >{distribution.family === "logNormal"
+                      ? "median"
+                      : "mean"}</span
                   >
-                    <option value="normal">Normal</option>
-                    <option value="uniform">Uniform</option>
-                    <option value="logUniform">Log-uniform</option>
-                  </select>
-                  {#if distribution.family === "normal"}
-                    <input
-                      type="number"
-                      step="any"
-                      aria-label="mean"
-                      disabled={!row.fit}
-                      value={distribution.mean}
-                      onchange={(e) =>
-                        updateDistributionField(
-                          row.id,
-                          "mean",
-                          Number((e.target as HTMLInputElement).value),
-                        )}
-                    />
-                    <input
-                      type="number"
-                      step="any"
-                      aria-label="std"
-                      disabled={!row.fit}
-                      value={distribution.std}
-                      onchange={(e) =>
-                        updateDistributionField(
-                          row.id,
-                          "std",
-                          Number((e.target as HTMLInputElement).value),
-                        )}
-                    />
-                  {:else}
-                    <input
-                      type="number"
-                      step="any"
-                      aria-label="min"
-                      disabled={!row.fit}
-                      value={distribution.min}
-                      onchange={(e) =>
-                        updateDistributionField(
-                          row.id,
-                          "min",
-                          Number((e.target as HTMLInputElement).value),
-                        )}
-                    />
-                    <input
-                      type="number"
-                      step="any"
-                      aria-label="max"
-                      disabled={!row.fit}
-                      value={distribution.max}
-                      onchange={(e) =>
-                        updateDistributionField(
-                          row.id,
-                          "max",
-                          Number((e.target as HTMLInputElement).value),
-                        )}
-                    />
-                  {/if}
-                </div>
-              </td>
-              <td>
-                <span class="fitted-value fitted-value-wide">
-                  {#if row.fit}
-                    {@const stats = ensembleParamStats(row.id)}
-                    {stats
-                      ? `${stats.mean.toPrecision(6)} ± ${stats.std.toPrecision(3)}`
-                      : "—"}
-                  {:else}
-                    —
-                  {/if}
-                </span>
-              </td>
-            {/if}
-          </tr>
-        {/each}
-      </tbody>
-    </table>
+                  <input
+                    type="number"
+                    step={magnitudeStep(distribution.mean)}
+                    aria-label={distribution.family === "logNormal"
+                      ? "median"
+                      : "mean"}
+                    disabled={!row.fit}
+                    value={distribution.mean}
+                    onchange={(e) =>
+                      updateDistributionField(
+                        row.id,
+                        "mean",
+                        Number((e.target as HTMLInputElement).value),
+                      )}
+                  />
+                  <span class="dist-field-label">std</span>
+                  <input
+                    type="number"
+                    step="any"
+                    aria-label="std %"
+                    disabled={!row.fit}
+                    value={toPercent(
+                      distribution.std,
+                      distribution.mean,
+                    ).toPrecision(3)}
+                    onchange={(e) =>
+                      updateDistributionPercentField(
+                        row.id,
+                        "std",
+                        Number((e.target as HTMLInputElement).value),
+                        distribution.mean,
+                      )}
+                  />
+                  <span>%</span>
+                {:else}
+                  {@const ref = distributionPercentReference(
+                    row.id,
+                    distribution,
+                  )}
+                  <span class="dist-field-label">min</span>
+                  <input
+                    type="number"
+                    step="any"
+                    aria-label="min %"
+                    disabled={!row.fit}
+                    value={toPercent(distribution.min, ref).toPrecision(3)}
+                    onchange={(e) =>
+                      updateDistributionPercentField(
+                        row.id,
+                        "min",
+                        Number((e.target as HTMLInputElement).value),
+                        ref,
+                      )}
+                  />
+                  <span>%</span>
+                  <span class="dist-field-label">max</span>
+                  <input
+                    type="number"
+                    step="any"
+                    aria-label="max %"
+                    disabled={!row.fit}
+                    value={toPercent(distribution.max, ref).toPrecision(3)}
+                    onchange={(e) =>
+                      updateDistributionPercentField(
+                        row.id,
+                        "max",
+                        Number((e.target as HTMLInputElement).value),
+                        ref,
+                      )}
+                  />
+                  <span>%</span>
+                {/if}
+              </div>
+            </td>
+            <td>
+              <span class="fitted-value fitted-value-wide">
+                {#if row.fit}
+                  {@const stats = ensembleParamStats(row.id)}
+                  {stats
+                    ? `${stats.mean.toExponential(2)} ± ${stats.std.toExponential(1)}`
+                    : "—"}
+                {:else}
+                  —
+                {/if}
+              </span>
+            </td>
+          {/if}
+        </tr>
+      {/each}
+    </tbody>
+  </table>
 
-    {#if hasTrainedNNBlock}
-      {#if mode === "ensemble"}
-        <p class="nn-note">
-          Also training {trainedBlockKeys.length} NN block(s), this fit uses the adjoint
-          backend. Each ensemble member trains from its own independently Glorot-initialized
-          weights (same architecture, seeded from the ensemble's own random seed)
-          — the block's own output scale stays fixed at its current value for every
-          member.
-        </p>
+  {#if hasTrainedNNBlock}
+    {#if mode === "ensemble"}
+      <p class="nn-note">
+        Also training {trainedBlockKeys.length} NN block(s), this fit uses the adjoint
+        backend. Each ensemble member trains from its own independently Glorot-initialized
+        weights (same architecture, seeded from the ensemble's own random seed) —
+        the block's own output scale stays fixed at its current value for every member.
+      </p>
+    {:else}
+      <p class="nn-note">
+        Also training {trainedBlockKeys.length} NN block(s), this fit uses the adjoint
+        backend.
+      </p>
+    {/if}
+  {/if}
+
+  {#if mode === "single"}
+    <div class="run-row">
+      {#if !running}
+        <button
+          type="button"
+          class="run-button"
+          onclick={runFit}>Run fit</button
+        >
       {:else}
-        <p class="nn-note">
-          Also training {trainedBlockKeys.length} NN block(s), this fit uses the adjoint
-          backend.
-        </p>
+        <button
+          type="button"
+          class="cancel-button"
+          onclick={cancelFit}>Stop</button
+        >
       {/if}
+      {#if residualNorm !== null}
+        <span class="progress-info"
+          >evals: {nfev} · residual norm: {residualNorm.toExponential(3)}</span
+        >
+      {/if}
+    </div>
+    {#if targetMissed}
+      <p class="target-missed">
+        Stopped before reaching the target residual norm ({targetResidualNorm.toExponential(
+          1,
+        )}) — {nfev >= maxFunctionEvaluations
+          ? "hit the maximum function evaluations."
+          : "the fit converged and couldn't improve further."}
+      </p>
+    {/if}
+    {#if nfev > 0}
+      <div
+        class="progress-bar-track"
+        title="{nfev} / {maxFunctionEvaluations} evaluations"
+      >
+        <div
+          class="progress-bar-fill"
+          style="width: {(fitComplete ? 100 : progressFraction * 100).toFixed(
+            1,
+          )}%"
+        ></div>
+      </div>
+    {/if}
+    {#if errorMsg}
+      <p class="error">{errorMsg}</p>
     {/if}
 
-    {#if mode === "single"}
-      <div class="run-row">
-        {#if !running}
-          <button
-            type="button"
-            class="run-button"
-            onclick={runFit}>Run fit</button
-          >
-        {:else}
-          <button
-            type="button"
-            class="cancel-button"
-            onclick={cancelFit}>Stop</button
-          >
-        {/if}
-        {#if residualNorm !== null}
-          <span class="progress-info"
-            >evals: {nfev} · residual norm: {residualNorm.toExponential(
-              3,
-            )}</span
-          >
-        {/if}
-      </div>
-      {#if targetMissed}
-        <p class="target-missed">
-          Stopped before reaching the target residual norm ({targetResidualNorm.toExponential(
-            1,
-          )}) — {nfev >= maxFunctionEvaluations
-            ? "hit the maximum function evaluations."
-            : "the fit converged and couldn't improve further."}
-        </p>
-      {/if}
-      {#if nfev > 0}
-        <div
-          class="progress-bar-track"
-          title="{nfev} / {maxFunctionEvaluations} evaluations"
-        >
-          <div
-            class="progress-bar-fill"
-            style="width: {(fitComplete ? 100 : progressFraction * 100).toFixed(
-              1,
-            )}%"
-          ></div>
-        </div>
-      {/if}
-      {#if errorMsg}
-        <p class="error">{errorMsg}</p>
-      {/if}
-
-      <div class="charts-row">
-        {#if trajectoryErr}
-          <SimErrDisplay err={trajectoryErr} />
-        {:else}
-          <div class="chart-cell">
-            <LineChart
-              data={lineData}
-              loading={false}
-              yMax={yMax ?? dataYMax}
-            />
-          </div>
-        {/if}
-
+    <div class="charts-row">
+      {#if trajectoryErr}
+        <SimErrDisplay err={trajectoryErr} />
+      {:else}
         <div class="chart-cell">
           <LineChart
-            data={residualHistoryData}
-            loading={false}
-            yScale="logarithmic"
-            yMin={undefined}
-            xMax={maxFunctionEvaluations}
-            xLabel="Function evaluations"
-            yLabel="Residual norm"
-          />
-        </div>
-      </div>
-    {:else}
-      <div class="run-row">
-        {#if !ensembleRunning}
-          <button
-            type="button"
-            class="run-button"
-            onclick={runEnsembleFit}>Run ensemble fit</button
-          >
-        {:else}
-          <button
-            type="button"
-            class="cancel-button"
-            onclick={cancelEnsembleFit}>Stop</button
-          >
-        {/if}
-        {#if members.length > 0}
-          <span class="progress-info"
-            >evals: {ensembleNfev} · {ensembleDoneCount}/{members.length}
-            members completed</span
-          >
-        {/if}
-      </div>
-      {#if members.length > 0}
-        <div
-          class="progress-bar-track"
-          title="{ensembleNfev} / {maxFunctionEvaluations} evaluations"
-        >
-          <div
-            class="progress-bar-fill"
-            style="width: {(ensembleAllDone
-              ? 100
-              : ensembleProgressFraction * 100
-            ).toFixed(1)}%"
-          ></div>
-        </div>
-      {/if}
-      {#if members.some((m) => m.errored)}
-        <p class="target-missed">
-          {members.filter((m) => m.errored).length} member(s) failed and were dropped
-          from the ensemble statistics.
-        </p>
-      {/if}
-      {#if ensembleErrorMsg}
-        <p class="error">{ensembleErrorMsg}</p>
-      {/if}
-
-      <div class="charts-row">
-        <div class="chart-cell">
-          <LineChart
-            data={ensembleLineData}
+            data={lineData}
             loading={false}
             yMax={yMax ?? dataYMax}
           />
         </div>
-        <div class="chart-cell">
-          <LineChart
-            data={ensembleResidualData}
-            loading={false}
-            yScale="logarithmic"
-            yMin={undefined}
-            xMax={maxFunctionEvaluations}
-            xLabel="Function evaluations"
-            yLabel="Residual norm"
-          />
-        </div>
+      {/if}
+
+      <div class="chart-cell">
+        <LineChart
+          data={residualHistoryData}
+          loading={false}
+          yScale="logarithmic"
+          yMin={undefined}
+          xMax={maxFunctionEvaluations}
+          xLabel="Function evaluations"
+          yLabel="Residual norm"
+        />
+      </div>
+    </div>
+  {:else}
+    <div class="run-row">
+      {#if !ensembleRunning}
+        <button
+          type="button"
+          class="run-button"
+          onclick={runEnsembleFit}>Run ensemble fit</button
+        >
+      {:else}
+        <button
+          type="button"
+          class="cancel-button"
+          onclick={cancelEnsembleFit}>Stop</button
+        >
+      {/if}
+      {#if members.length > 0}
+        <span class="progress-info"
+          >evals: {ensembleNfev} · {ensembleDoneCount}/{members.length}
+          members completed</span
+        >
+      {/if}
+    </div>
+    {#if members.length > 0}
+      <div
+        class="progress-bar-track"
+        title="{ensembleNfev} / {maxFunctionEvaluations} evaluations"
+      >
+        <div
+          class="progress-bar-fill"
+          style="width: {(ensembleAllDone
+            ? 100
+            : ensembleProgressFraction * 100
+          ).toFixed(1)}%"
+        ></div>
       </div>
     {/if}
+    {#if members.some((m) => m.errored)}
+      <p class="target-missed">
+        {members.filter((m) => m.errored).length} member(s) failed and were dropped
+        from the ensemble statistics.
+      </p>
+    {/if}
+    {#if ensembleErrorMsg}
+      <p class="error">{ensembleErrorMsg}</p>
+    {/if}
+
+    <div class="charts-row">
+      <div class="chart-cell">
+        <LineChart
+          data={ensembleLineData}
+          loading={false}
+          yMax={yMax ?? dataYMax}
+        />
+      </div>
+      <div class="chart-cell">
+        <LineChart
+          data={ensembleResidualData}
+          loading={false}
+          yScale="logarithmic"
+          yMin={undefined}
+          xMax={maxFunctionEvaluations}
+          xLabel="Function evaluations"
+          yLabel="Residual norm"
+        />
+      </div>
+    </div>
   {/if}
 </div>
 
@@ -1803,6 +1943,10 @@
   }
   .dist-editor input {
     width: 6rem;
+  }
+  .dist-field-label {
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
   }
   .charts-row {
     display: flex;
