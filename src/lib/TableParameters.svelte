@@ -24,7 +24,7 @@
 
   const md = new MediaQuery("max-width: 768px");
 
-  // All five model views are received for a uniform table API (see
+  // All six model views are received for a uniform table API (see
   // OdeModelEditor), but this table only reads/edits `parameters`.
   let {
     // eslint-disable-next-line no-useless-assignment
@@ -35,12 +35,15 @@
     // eslint-disable-next-line no-useless-assignment
     reactions = $bindable(),
     nnBlocks = $bindable(),
+    // eslint-disable-next-line no-useless-assignment
+    readouts = $bindable(),
   }: {
     variables: VarView;
     parameters: ParView;
     assignments: AssView;
     reactions: RxnView;
     nnBlocks: NNBlockView;
+    readouts?: AssView;
   } = $props();
 
   function onSaveSlider(idx: number, update: Variable | Parameter) {
