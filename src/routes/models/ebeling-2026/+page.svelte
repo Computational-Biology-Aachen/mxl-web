@@ -118,6 +118,7 @@
   :global(.scheme-img) {
     width: 100%;
     max-width: 90rem;
+    height: 100%;
   }
 
   .centered {
