@@ -85,7 +85,10 @@
 
     const protocol = expandProtocol(pamProtocol, ppfdKey);
 
-    const order = model.sortDependencies();
+    const order = [
+      ...model.sortDependencies(),
+      ...model.sortReadoutDependencies(),
+    ];
     const allDerivedSet = new Set(order);
     const derivedSelection =
       showDerived && selectedKeys
@@ -159,7 +162,10 @@
     if (!showDerived)
       return { labels: result.time as number[], datasets: varDatasets };
 
-    const allDerived = model.sortDependencies();
+    const allDerived = [
+      ...model.sortDependencies(),
+      ...model.sortReadoutDependencies(),
+    ];
     const activeDerived = selectedKeys
       ? allDerived.filter((k) => selectedKeys.includes(k))
       : allDerived;

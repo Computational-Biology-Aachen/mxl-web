@@ -3,6 +3,7 @@
   import TableNNBlocks from "$lib/TableNNBlocks.svelte";
   import TableParameters from "$lib/TableParameters.svelte";
   import TableReactions from "$lib/TableReactions.svelte";
+  import TableReadouts from "$lib/TableReadout.svelte";
   import TableVariables from "$lib/TableVariables.svelte";
   import {
     Button,
@@ -106,6 +107,18 @@
   // explicit Save) preserves a block's actual, possibly fitted, values
   // instead of silently Glorot-reinitializing them on every render.
   let nnWeights = $derived(new Map(parent.nnWeights.entries()));
+  let readouts = $derived(
+    parent.readouts
+      .entries()
+      .map(([name, ro]) => {
+        return {
+          ...ro,
+          id: name,
+          texName: ro.texName || defaultTexName(ro.displayName || name),
+        };
+      })
+      .toArray(),
+  );
 
   let modelView = $derived(
     new ModelView(
@@ -115,6 +128,7 @@
       reactions,
       nnBlocks,
       nnWeights,
+      readouts,
     ),
   );
   let builder = $derived(modelView.toBuilder());
@@ -144,6 +158,11 @@
       name: "NN Blocks",
       comp: TableNNBlocks,
       icon: "model_training",
+    },
+    {
+      name: "Readouts",
+      comp: TableReadouts,
+      icon: "visibility",
     },
   ];
 
@@ -213,6 +232,7 @@
       bind:assignments={assignments}
       bind:reactions={reactions}
       bind:nnBlocks={nnBlocks}
+      bind:readouts={readouts}
     />
   </div>
 
@@ -265,7 +285,7 @@
 
     @media (min-width: 768px) {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
       padding: 0;
     }
   }

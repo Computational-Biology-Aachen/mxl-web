@@ -52,7 +52,7 @@
 
   const md = new MediaQuery("max-width: 768px");
 
-  // The four other model views are received for the same uniform table API
+  // The five other model views are received for the same uniform table API
   // every other table component gets (see ModelEditor.svelte). `variables`
   // is a block's fixed input *and* target set (it reads every state
   // variable and corrects every state variable, no per-block picker);
@@ -66,12 +66,15 @@
     assignments = $bindable(),
     reactions = $bindable(),
     nnBlocks = $bindable(),
+    // eslint-disable-next-line no-useless-assignment
+    readouts = $bindable(),
   }: {
     variables: VarView;
     parameters: ParView;
     assignments: AssView;
     reactions: RxnView;
     nnBlocks: NNBlockView;
+    readouts?: AssView;
   } = $props();
 
   // A block always reads every state variable as input and corrects every

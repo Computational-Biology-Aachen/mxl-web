@@ -45,7 +45,9 @@
 
   let allAvailableKeys = $derived([
     ...model.variables.keys(),
-    ...(showDerived ? model.sortDependencies() : []),
+    ...(showDerived
+      ? [...model.sortDependencies(), ...model.sortReadoutDependencies()]
+      : []),
   ]);
 
   let filteredKeys = $derived(

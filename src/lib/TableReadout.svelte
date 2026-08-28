@@ -8,13 +8,8 @@
   import {
     defaultTexName,
     defaultValue,
-    stoichToTex,
   } from "@computational-biology-aachen/mxlweb-core";
-  import {
-    Base,
-    Name,
-    Num,
-  } from "@computational-biology-aachen/mxlweb-core/mathml";
+  import { Base, Num } from "@computational-biology-aachen/mxlweb-core/mathml";
   import { MediaQuery } from "svelte/reactivity";
   import EqEditor from "./EqEditor.svelte";
   import {
@@ -23,10 +18,8 @@
     type NNBlockView,
     type ParView,
     type RxnView,
-    type Stoichiometry,
     type VarView,
   } from "./modelView";
-  import StoichEditor from "./StoichEditor.svelte";
   import TableSearch from "./TableSearch.svelte";
   import { fuzzyMatch } from "./utils";
 
@@ -38,7 +31,6 @@
     assignments = $bindable(),
     reactions = $bindable(),
     nnBlocks = $bindable(),
-    // eslint-disable-next-line no-useless-assignment
     readouts = $bindable(),
   }: {
     variables: VarView;
@@ -46,33 +38,31 @@
     assignments: AssView;
     reactions: RxnView;
     nnBlocks: NNBlockView;
-    readouts?: AssView;
+    readouts: AssView;
   } = $props();
 
+  // A readout may reference a variable/parameter/reaction directly, or an
+  // existing assignment (derived quantity), or another readout — but never
+  // the reverse (mxlweb-core issue #6: nothing that feeds dxdt may ever
+  // reference a readout). This picker/rendering set reflects that: it's
+  // strictly broader than TableAssignment.svelte's own (assignments-only).
+  let referenceable: AssView = $derived([...assignments, ...readouts]);
+
   function onSaveEq(idx: number, fn: Base) {
-    reactions[idx].fn = fn;
-    reactions = reactions.slice();
-  }
-  function onSaveStoichs(idx: number, stoichiometry: Stoichiometry) {
-    reactions[idx].stoichiometry = stoichiometry;
-    reactions = reactions.slice();
+    readouts[idx].fn = fn;
+    readouts = readouts.slice();
   }
 
   let texNames: Map<string, string> = $derived(
-    idToTex(variables, parameters, assignments, reactions),
+    idToTex(variables, parameters, referenceable, reactions),
   );
 
-  // NN blocks no longer create a reaction at all (ADR 0005's mechanism
-  // selector — a multiplicative block can't be expressed as one more
-  // stoichiometric term, so composition moved to a shared step in
-  // mxlweb-core's ModelBuilderBase.lower() instead) — every row here is
-  // always a genuine hand-authored reaction, no exclusion needed.
   let query = $state("");
   let filtered = $derived(
-    reactions
-      .map((rxn, idx) => ({ rxn, idx }))
-      .filter(({ rxn }) =>
-        fuzzyMatch(defaultValue(rxn.displayName, rxn.id), query),
+    readouts
+      .map((ro, idx) => ({ ro, idx }))
+      .filter(({ ro }) =>
+        fuzzyMatch(defaultValue(ro.displayName, ro.id), query),
       ),
   );
 </script>
@@ -81,11 +71,11 @@
   <input
     type="text"
     bind:value={
-      () => defaultValue(reactions[idx].displayName, reactions[idx].id),
+      () => defaultValue(readouts[idx].displayName, readouts[idx].id),
       (value) => {
-        reactions[idx].displayName = value;
-        reactions[idx].texName = defaultTexName(value);
-        reactions = reactions.slice();
+        readouts[idx].displayName = value;
+        readouts[idx].texName = defaultTexName(value);
+        readouts = readouts.slice();
       }
     }
   />
@@ -95,49 +85,35 @@
   <input
     type="text"
     bind:value={
-      () => reactions[idx].texName || "",
+      () => readouts[idx].texName || "",
       (value) => {
-        reactions[idx].texName = value;
-        reactions = reactions.slice();
+        readouts[idx].texName = value;
+        readouts = readouts.slice();
       }
     }
   />
 {/snippet}
 
-{#snippet rateLawDisplay(idx: number)}
+{#snippet functionDisplay(idx: number)}
   <div class="row">
     <Math
-      tex={reactions[idx].fn.toTex(texNames)}
+      tex={readouts[idx].fn.toTex(texNames)}
       display={true}
       fontSize="0.75rem"
     />
     <IconButton
       icon="edit"
-      popovertarget="eq-editor-{idx}"
+      popovertarget="readout-eq-editor-{idx}"
     />
   </div>
 {/snippet}
 
-{#snippet stoichiometryDisplay(idx: number)}
-  <div class="row">
-    <Math
-      tex={stoichToTex(reactions[idx].stoichiometry, texNames)}
-      display={true}
-      fontSize="0.75rem"
-    />
-    <IconButton
-      icon="edit"
-      popovertarget="stoich-editor-{idx}"
-    />
-  </div>
-{/snippet}
-
-{#snippet actions(_idx: number, rxn: RxnView[number])}
+{#snippet actions(_idx: number, ro: AssView[number])}
   <IconButton
     icon="close"
     onclick={() => {
-      reactions = reactions.filter((i) => {
-        return i.id !== rxn.id;
+      readouts = readouts.filter((i) => {
+        return i.id !== ro.id;
       });
     }}
   />
@@ -150,7 +126,7 @@
 {#if md.current}
   <!-- Card layout for mobile -->
   <div class="card-container">
-    {#each filtered as { rxn, idx } (rxn.id)}
+    {#each filtered as { ro, idx } (ro.id)}
       <div class="card">
         <div class="card-row">
           <span class="card-label">Name</span>
@@ -165,19 +141,13 @@
           </div>
         </div>
         <div class="card-row">
-          <span class="card-label">Rate law</span>
+          <span class="card-label">Function</span>
           <div class="card-value">
-            {@render rateLawDisplay(idx)}
-          </div>
-        </div>
-        <div class="card-row">
-          <span class="card-label">Stoichiometry</span>
-          <div class="card-value">
-            {@render stoichiometryDisplay(idx)}
+            {@render functionDisplay(idx)}
           </div>
         </div>
         <div class="card-row card-actions">
-          {@render actions(idx, rxn)}
+          {@render actions(idx, ro)}
         </div>
       </div>
     {/each}
@@ -189,13 +159,12 @@
       <tr>
         <th>Name</th>
         <th>Tex name</th>
-        <th>Rate law</th>
-        <th>Stoichiometry</th>
+        <th>Function</th>
         <th>Actions</th>
       </tr>
     </thead>
     <tbody>
-      {#each filtered as { rxn, idx } (rxn.id)}
+      {#each filtered as { ro, idx } (ro.id)}
         <tr>
           <td>
             {@render nameInput(idx)}
@@ -204,13 +173,10 @@
             {@render texNameInput(idx)}
           </td>
           <td>
-            {@render rateLawDisplay(idx)}
+            {@render functionDisplay(idx)}
           </td>
           <td>
-            {@render stoichiometryDisplay(idx)}
-          </td>
-          <td>
-            {@render actions(idx, rxn)}
+            {@render actions(idx, ro)}
           </td>
         </tr>
       {/each}
@@ -220,52 +186,35 @@
 {#if query !== "" && filtered.length === 0}
   <p class="empty">No items match “{query}”.</p>
 {/if}
-
 <div class="padding">
   <Button
     onclick={() => {
-      reactions = [
-        ...reactions,
+      readouts = [
+        ...readouts,
         {
-          id: `v${reactions.length}`,
-          texName: `v_${reactions.length}`,
-          fn: new Name("Default"),
-          stoichiometry: [{ name: "Default", value: new Num(1.0) }],
+          id: `ro${readouts.length}`,
+          fn: new Num(1.0),
+          texName: `ro_${readouts.length}`,
         },
       ];
     }}>add new item</Button
   >
 </div>
 
-{#each reactions as rxn, idx (rxn.id)}
+{#each readouts as ro, idx (ro.id)}
   <Popover
     size="md"
-    popovertarget={`eq-editor-${idx}`}
+    popovertarget={`readout-eq-editor-${idx}`}
   >
     <EqEditor
-      root={rxn.fn}
+      root={ro.fn}
       variables={variables}
       parameters={parameters}
-      assignments={assignments}
+      assignments={referenceable}
       reactions={reactions}
       nnBlocks={nnBlocks}
       onSave={(root) => onSaveEq(idx, root)}
-      popovertarget={`eq-editor-${idx}`}
-    />
-  </Popover>
-
-  <Popover
-    size="md"
-    popovertarget={`stoich-editor-${idx}`}
-  >
-    <StoichEditor
-      stoichiometry={rxn.stoichiometry}
-      variables={variables}
-      parameters={parameters}
-      assignments={assignments}
-      reactions={reactions}
-      onSave={(stoichs) => onSaveStoichs(idx, stoichs)}
-      popovertarget={`stoich-editor-${idx}`}
+      popovertarget={`readout-eq-editor-${idx}`}
     />
   </Popover>
 {/each}
