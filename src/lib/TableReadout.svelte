@@ -358,7 +358,7 @@
        to fit it. A tighter override here is enough for both the label and
        the single icon button the body cells hold. */
     padding: 0.75rem 0.5rem;
-    width: 4rem;
+    width: 6rem;
     text-align: center;
   }
   /* text-align: center above only centers inline content (the "Actions"
