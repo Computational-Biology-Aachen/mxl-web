@@ -106,11 +106,13 @@
 
 {#snippet rateLawDisplay(idx: number)}
   <div class="row">
-    <Math
-      tex={reactions[idx].fn.toTex(texNames)}
-      display={true}
-      fontSize="0.75rem"
-    />
+    <div class="eq-scroll">
+      <Math
+        tex={reactions[idx].fn.toTex(texNames)}
+        display={true}
+        fontSize="0.75rem"
+      />
+    </div>
     <IconButton
       icon="edit"
       popovertarget="eq-editor-{idx}"
@@ -120,11 +122,13 @@
 
 {#snippet stoichiometryDisplay(idx: number)}
   <div class="row">
-    <Math
-      tex={stoichToTex(reactions[idx].stoichiometry, texNames)}
-      display={true}
-      fontSize="0.75rem"
-    />
+    <div class="eq-scroll">
+      <Math
+        tex={stoichToTex(reactions[idx].stoichiometry, texNames)}
+        display={true}
+        fontSize="0.75rem"
+      />
+    </div>
     <IconButton
       icon="edit"
       popovertarget="stoich-editor-{idx}"
@@ -284,9 +288,22 @@
   .row {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
     align-items: center;
+    gap: 0.5rem;
     padding: 0 0.5rem;
+    min-width: 0;
+  }
+
+  /* Lets a wide rate law/stoichiometry expression scroll within its own
+     cell instead of forcing the table (and everything around it, up to the
+     popover) wider — see the `table-layout: fixed` rule below for why this
+     only works together with that. `min-width: 0` overrides flexbox's
+     default `min-width: auto`, which would otherwise refuse to shrink this
+     below the expression's own content width. */
+  .eq-scroll {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-x: auto;
   }
 
   /* Input styles shared between table and cards */
@@ -353,7 +370,11 @@
   table {
     border-collapse: collapse;
     width: 100%;
-    overflow-x: auto;
+    /* Fixed layout: column widths come from the rules below, not from cell
+       content — otherwise a long rate law or stoichiometry expression just
+       makes the table (and its ancestors, up to the popover) grow instead
+       of scrolling in place. */
+    table-layout: fixed;
     text-align: left;
     text-indent: 0;
   }
@@ -370,10 +391,34 @@
   tbody tr:last-of-type td:last-of-type {
     border-bottom-right-radius: 0.5rem;
   }
+  th:nth-child(1),
+  td:nth-child(1) {
+    width: 15%;
+    min-width: 8rem;
+  }
+  th:nth-child(2),
+  td:nth-child(2) {
+    width: 12%;
+    min-width: 6rem;
+  }
+  /* Rate law (3rd) and Stoichiometry (4th) get no explicit width — they
+     split whatever's left of the fixed layout between them. */
   th:last-child,
   td:last-child {
-    width: 3rem;
+    /* The general th/td padding below (1rem 1.5rem) alone is 3rem wide —
+       more than this column's own width, leaving no room for the "Actions"
+       header label once table-layout: fixed stops auto-widening the column
+       to fit it. A tighter override here is enough for both the label and
+       the single icon button the body cells hold. */
+    padding: 0.75rem 0.5rem;
+    width: 4rem;
     text-align: center;
+  }
+  /* text-align: center above only centers inline content (the "Actions"
+     header text) — ButtonIcon's <button> is display: flex, a block-level
+     box, so it ignores text-align entirely and needs its own centering. */
+  td:last-child :global(button) {
+    margin: 0 auto;
   }
   th {
     background-color: #e5e7eb;
