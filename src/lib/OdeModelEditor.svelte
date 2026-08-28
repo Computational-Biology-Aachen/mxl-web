@@ -3,6 +3,7 @@
   import TableDifferentials from "$lib/TableDifferentials.svelte";
   import TableNNBlocks from "$lib/TableNNBlocks.svelte";
   import TableParameters from "$lib/TableParameters.svelte";
+  import TableReadouts from "$lib/TableReadout.svelte";
   import {
     Button,
     ButtonTab,
@@ -91,9 +92,28 @@
   // carried through so every reactive rebuild preserves a block's actual
   // values instead of silently Glorot-reinitializing them.
   let nnWeights = $derived(new Map(parent.nnWeights.entries()));
+  let readouts = $derived(
+    parent.readouts
+      .entries()
+      .map(([name, ro]) => {
+        return {
+          ...ro,
+          id: name,
+          texName: ro.texName || defaultTexName(ro.displayName || name),
+        };
+      })
+      .toArray(),
+  );
 
   let modelView = $derived(
-    new OdeModelView(parameters, variables, assignments, nnBlocks, nnWeights),
+    new OdeModelView(
+      parameters,
+      variables,
+      assignments,
+      nnBlocks,
+      nnWeights,
+      readouts,
+    ),
   );
   let latex = $derived(modelView.toBuilder().buildTex());
 
@@ -113,6 +133,10 @@
     {
       name: "NN Blocks",
       icon: "model_training",
+    },
+    {
+      name: "Readouts",
+      icon: "visibility",
     },
   ];
 
@@ -199,13 +223,22 @@
       reactions={reactions}
       nnBlocks={nnBlocks}
     />
-  {:else}
+  {:else if cur.name === "NN Blocks"}
     <TableNNBlocks
       variables={variables}
       parameters={parameters}
       assignments={assignments}
       reactions={reactions}
       bind:nnBlocks={nnBlocks}
+    />
+  {:else}
+    <TableReadouts
+      variables={variables}
+      parameters={parameters}
+      assignments={assignments}
+      reactions={reactions}
+      nnBlocks={nnBlocks}
+      bind:readouts={readouts}
     />
   {/if}
 </div>
@@ -257,7 +290,7 @@
 
     @media (min-width: 768px) {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
       padding: 0;
     }
   }

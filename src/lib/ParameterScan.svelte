@@ -85,7 +85,10 @@
     const scanId = activeScanId;
     const paramValues = linspace(analysis.min, analysis.max, analysis.steps);
     const varKeys = [...currentModel.variables.keys()];
-    const order = model.sortDependencies();
+    const order = [
+      ...model.sortDependencies(),
+      ...model.sortReadoutDependencies(),
+    ];
     const allDerivedKeys = showDerived ? order : [];
     const derivedSelection =
       showDerived && selectedKeys

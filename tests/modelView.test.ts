@@ -20,6 +20,7 @@ import {
   OdeModelBuilder,
   type NNBlockConfig,
 } from "@computational-biology-aachen/mxlweb-core";
+import { Num } from "@computational-biology-aachen/mxlweb-core/mathml";
 import { describe, expect, it } from "vitest";
 import {
   ModelView,
@@ -152,5 +153,71 @@ describe("OdeModelView.toBuilder round-trips fitted NN block weights", () => {
     expect(rebuilt.nnWeights.get(weightName)).toBe(42);
     expect(rebuilt.parameters.get("corr_scale")?.value).toBe(7);
     expect(rebuilt.parameters.has(weightName)).toBe(false);
+  });
+});
+
+// mxlweb-core issue #6: TableAssignment.svelte's readout toggle moves an
+// entry between the model's `assignments` and `readouts` views — this
+// exercises that both views' `toBuilder()` actually wires a `readouts`
+// entry back onto the rebuilt model, not just an `assignments` one.
+describe("ModelView/OdeModelView.toBuilder round-trip readouts", () => {
+  it("KineticModelBuilder: a readout survives the view round-trip", () => {
+    const builder = new KineticModelBuilder()
+      .addVariable("x", { value: 1 })
+      .addReadout("ro", { fn: new Num(1), displayName: "my readout" });
+
+    const readouts = [...builder.readouts.entries()].map(([id, r]) => ({
+      ...r,
+      id,
+      texName: r.texName ?? id,
+    }));
+    const variables = [...builder.variables.entries()].map(([id, v]) => ({
+      ...v,
+      id,
+      texName: v.texName ?? id,
+    }));
+
+    const rebuilt = new ModelView(
+      [],
+      variables,
+      [],
+      [],
+      [],
+      new Map(),
+      readouts,
+    ).toBuilder();
+
+    expect(rebuilt.readouts.get("ro")?.displayName).toBe("my readout");
+    expect(rebuilt.assignments.has("ro")).toBe(false);
+  });
+
+  it("OdeModelBuilder: a readout survives the view round-trip", () => {
+    const builder = new OdeModelBuilder()
+      .addVariable("x", { value: 1 })
+      .addReadout("ro", { fn: new Num(1), displayName: "my readout" });
+
+    const readouts = [...builder.readouts.entries()].map(([id, r]) => ({
+      ...r,
+      id,
+      texName: r.texName ?? id,
+    }));
+    const variables = [...builder.variables.entries()].map(([id, v]) => ({
+      ...v,
+      id,
+      texName: v.texName ?? id,
+      differential: builder.differentials.get(id) ?? new Num(0),
+    }));
+
+    const rebuilt = new OdeModelView(
+      [],
+      variables,
+      [],
+      [],
+      new Map(),
+      readouts,
+    ).toBuilder();
+
+    expect(rebuilt.readouts.get("ro")?.displayName).toBe("my readout");
+    expect(rebuilt.assignments.has("ro")).toBe(false);
   });
 });

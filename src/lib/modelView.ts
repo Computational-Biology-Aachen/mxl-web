@@ -158,6 +158,7 @@ export class ModelView {
   reactions: RxnView = [];
   nnBlocks: NNBlockView = [];
   nnWeights: Map<string, number> = new Map();
+  readouts: AssView = [];
 
   constructor(
     parameters: ParView = [],
@@ -166,6 +167,7 @@ export class ModelView {
     reactions: RxnView = [],
     nnBlocks: NNBlockView = [],
     nnWeights: Map<string, number> = new Map(),
+    readouts: AssView = [],
   ) {
     this.parameters = parameters;
     this.variables = variables;
@@ -173,6 +175,7 @@ export class ModelView {
     this.reactions = reactions;
     this.nnBlocks = nnBlocks;
     this.nnWeights = nnWeights;
+    this.readouts = readouts;
   }
 
   toBuilder(): KineticModelBuilder {
@@ -232,6 +235,13 @@ export class ModelView {
         texName: el.texName,
       }),
     );
+    this.readouts.forEach((el) =>
+      builder.addReadout(el.id, {
+        fn: el.fn,
+        displayName: el.displayName,
+        texName: el.texName,
+      }),
+    );
     return builder;
   }
 }
@@ -243,6 +253,7 @@ export class OdeModelView {
   assignments: AssView = [];
   nnBlocks: NNBlockView = [];
   nnWeights: Map<string, number> = new Map();
+  readouts: AssView = [];
 
   constructor(
     parameters: ParView = [],
@@ -250,12 +261,14 @@ export class OdeModelView {
     assignments: AssView = [],
     nnBlocks: NNBlockView = [],
     nnWeights: Map<string, number> = new Map(),
+    readouts: AssView = [],
   ) {
     this.parameters = parameters;
     this.variables = variables;
     this.assignments = assignments;
     this.nnBlocks = nnBlocks;
     this.nnWeights = nnWeights;
+    this.readouts = readouts;
   }
 
   toBuilder(): OdeModelBuilder {
@@ -305,6 +318,13 @@ export class OdeModelView {
     );
     this.variables.forEach((el) =>
       builder.setDifferential(el.id, el.differential),
+    );
+    this.readouts.forEach((el) =>
+      builder.addReadout(el.id, {
+        fn: el.fn,
+        displayName: el.displayName,
+        texName: el.texName,
+      }),
     );
     return builder;
   }

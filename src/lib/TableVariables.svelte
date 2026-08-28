@@ -34,12 +34,15 @@
     assignments = $bindable(),
     reactions = $bindable(),
     nnBlocks = $bindable(),
+    // eslint-disable-next-line no-useless-assignment
+    readouts = $bindable(),
   }: {
     variables: VarView;
     parameters: ParView;
     assignments: AssView;
     reactions: RxnView;
     nnBlocks: NNBlockView;
+    readouts?: AssView;
   } = $props();
 
   function onSaveSlider(idx: number, update: Variable) {

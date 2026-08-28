@@ -116,9 +116,9 @@
   // source TimeCourse.svelte uses for its "select derived" UI.
   let candidateKeys = $derived([
     ...model.getNames().map((key) => ({ key, kind: "state" as const })),
-    ...model
-      .sortDependencies()
-      .map((key) => ({ key, kind: "derived" as const })),
+    ...[...model.sortDependencies(), ...model.sortReadoutDependencies()].map(
+      (key) => ({ key, kind: "derived" as const }),
+    ),
   ]);
 
   function autoMapColumns() {
@@ -640,7 +640,10 @@
   function previewTrajectory(parValues: number[], tEnd: number) {
     const requestId = WorkerManager.generateRequestId();
     previewRequestId = requestId;
-    const order = model.sortDependencies();
+    const order = [
+      ...model.sortDependencies(),
+      ...model.sortReadoutDependencies(),
+    ];
     const req = backends.wasmRadau5.buildRequest(model, {
       derivedSelection: order,
     });
@@ -989,7 +992,10 @@
     members = members.map((mem, i) =>
       i === m ? { ...mem, previewRequestId: requestId } : mem,
     );
-    const order = model.sortDependencies();
+    const order = [
+      ...model.sortDependencies(),
+      ...model.sortReadoutDependencies(),
+    ];
     const req = backends.wasmRadau5.buildRequest(model, {
       derivedSelection: order,
     });
@@ -1236,7 +1242,10 @@
   let lineData = $derived.by(() => {
     const displayNames = model.getDisplayNames();
     const nVars = model.getNames().length;
-    const order = model.sortDependencies();
+    const order = [
+      ...model.sortDependencies(),
+      ...model.sortReadoutDependencies(),
+    ];
 
     const modelDatasets = targets.map((t) => {
       const idx =
@@ -1286,7 +1295,10 @@
   let ensembleLineData = $derived.by(() => {
     const displayNames = model.getDisplayNames();
     const nVars = model.getNames().length;
-    const order = model.sortDependencies();
+    const order = [
+      ...model.sortDependencies(),
+      ...model.sortReadoutDependencies(),
+    ];
     const trajectories = nonOutlierMembers
       .map((m) => m.trajectory)
       .filter((t) => t.time.length > 0);
