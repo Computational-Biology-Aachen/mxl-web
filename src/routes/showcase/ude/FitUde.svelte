@@ -145,7 +145,10 @@
     { column: "Prey", key: "Prey", kind: "state" },
     { column: "Predator", key: "Predator", kind: "state" },
   ]);
-  let fitParameters = $state<FitParameterConfig[]>([]);
+  let fitParameters = $state<FitParameterConfig[]>([
+    { id: "Alpha", fit: true, logSpace: true },
+    { id: "Beta", fit: true, logSpace: true },
+  ]);
 
   // Candidate fit targets: state variables + derived quantities — the same
   // source TimeCourse.svelte uses for its "select derived" UI.
