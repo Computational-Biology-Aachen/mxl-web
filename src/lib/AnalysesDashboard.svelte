@@ -49,12 +49,18 @@
     initModel,
     analyses = $bindable(),
     equationsOpen = true,
+    fitComponent: FitComponent = Fit,
   }: {
     name: string;
     initModel: () => KineticModelBuilder | OdeModelBuilder;
     analyses: Analyses;
     children?: Snippet;
     equationsOpen?: boolean;
+    /** Swaps out the "Fit" popover's component — defaults to the ordinary
+     * upload-your-own-data `Fit.svelte`. Lets a page like the UDE showcase
+     * inject a variant pre-seeded with fixed data without every other
+     * model page's Fit popover carrying that variant's extra state. */
+    fitComponent?: typeof Fit;
   } = $props();
 
   let model = $derived(initModel());
@@ -609,7 +615,7 @@
   size="lg"
   popovertarget="fit-editor"
 >
-  <Fit
+  <FitComponent
     model={model}
     popovertarget="fit-editor"
     onApply={runAllSimulations}
