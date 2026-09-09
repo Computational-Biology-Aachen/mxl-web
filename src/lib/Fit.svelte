@@ -12,6 +12,7 @@
 -->
 
 <script lang="ts">
+  import { untrack } from "svelte";
   import {
     Button,
     InputNumberOptional,
@@ -61,7 +62,17 @@
   // is a dashboard-wide singleton, not one of several DynBoxRow boxes, so
   // there's no parent object to thread these through any more.
   let mode = $state<"single" | "ensemble">("single");
-  let chunkMaxfev = $state(5);
+  // Purely cosmetic: how many evaluations/steps pass between chart/preview
+  // refreshes. Deliberately *not* the same thing as chunkMaxfev (below,
+  // computed) — that's the optimizer's own per-chunk budget, a correctness
+  // concern for "lm"/"lm-jacobian" (see chunkMaxfev's own doc comment) that
+  // users should never need to touch. This value is sent to the worker as
+  // FitInitRequest.progressUpdateInterval, which fires a genuine mid-chunk
+  // FitProgress (`intermediate: true`) from inside the C driver's own
+  // evaluation loop every N evals/steps — independent of chunkMaxfev — so
+  // the UI actually redraws at the requested cadence instead of only once
+  // per (much coarser) chunk.
+  let progressUpdateInterval = $state(5);
   let targetResidualNorm = $state(1e-1);
   let maxFunctionEvaluations = $state(1000);
 
@@ -71,7 +82,7 @@
   // report "chunk exhausted, not done" forever without ever tripping that
   // flag — burning the rest of maxFunctionEvaluations for no improvement.
   // Counts consecutive *chunks*, not evaluations, so it scales with
-  // whatever chunkMaxfev is configured.
+  // chunkMaxfev (computed below), not progressUpdateInterval above.
   const FIT_PATIENCE_CHUNKS = 20;
   const FIT_MIN_DELTA = 1e-3;
 
@@ -190,6 +201,131 @@
       .map(([key]) => key),
   );
   let hasTrainedNNBlock = $derived(trainedBlockKeys.length > 0);
+
+  // ---- Fit backend (ADR 0005 §2.3 amendment) --------------------------
+
+  // ADR 0005 §2.3 originally forced "adjoint" unconditionally on any
+  // trained NN block and hid the choice entirely ("the audience should
+  // never need to know an optimizer choice exists"). Now that
+  // mxlweb-core also has an analytic-Jacobian LM path (jacobianWat,
+  // jacobian_wrapper.c) that's both faster and numerically more reliable
+  // than finite-difference "lm" for a small block, and than "adjoint"'s
+  // per-step cost, there's a real choice worth exposing rather than
+  // guessing silently — all three are user-selectable, defaulting to a
+  // suggested one per model (below), not forced.
+  type BackendChoice = "lm" | "lm-jacobian" | "adjoint";
+
+  // Both "adjoint" and "lm-jacobian" are v1-restricted to state-variable
+  // fit targets — each needs a *second* generated gradient/Jacobian graph
+  // over derived_fn's own expression tree to support a derived-quantity
+  // target, which doesn't exist yet (adjoint_wrapper.c's and
+  // jacobian_wrapper.c's own doc comments in mxlweb-core). Straightforward
+  // to add later (mirrors the existing state-target graph, just built over
+  // a different expression tree) — not done yet.
+  let hasDerivedTarget = $derived(targets.some((t) => t.kind === "derived"));
+
+  // Total scalar fit-parameters (weights + the block's own scale) across
+  // every *trained* block — the actual cost driver for "lm-jacobian"'s
+  // augmented system (sized n_y*(1+n_theta)) and for "adjoint"'s per-step
+  // cost, not block count.
+  let trainedNNParamCount = $derived(
+    trainedBlockKeys.reduce(
+      (sum, key) => sum + 1 + model.nnBlockWeightNames(key).size,
+      0,
+    ),
+  );
+
+  // Placeholder threshold, deliberately uncalibrated against real models
+  // (same caveat as ADR 0005 §2.4's own unimplemented mechanistic
+  // heuristic) — chosen only to comfortably cover this session's proven
+  // case (a 1-hidden-layer-of-4 block, ~20 fit params, converges reliably
+  // in 30-300 evals under "lm-jacobian") while staying orders of magnitude
+  // below ADR 0005 §2.3's "obviously intractable" example (a 6×64 block's
+  // ≈20,800 weights).
+  const SMALL_NN_BLOCK_PARAM_THRESHOLD = 50;
+
+  // Fitting a mechanistic parameter *alongside* a trained NN block hits a
+  // real bug in buildJacobianGraph's codegen (modelIr.ts) — confirmed
+  // empirically: the UDE showcase's default Alpha+Beta+NN-block fit throws
+  // "Maximum call stack size exceeded" under "lm-jacobian" (caught by
+  // buildFitConfig's own try/catch, so it fails as a visible error rather
+  // than crashing, but it's still a bad default) while "adjoint" handles
+  // the exact same fit fine. Root cause is presumably buildJacobianGraph's
+  // n_y independent reverse-mode passes lacking buildAdjointGraph's
+  // memoization across passes — not fixed here, just avoided as a
+  // suggestion trigger until it is.
+  let hasMechanisticFitParam = $derived(fitParameters.some((p) => p.fit));
+
+  function suggestBackend(): BackendChoice {
+    if (!hasTrainedNNBlock) return "lm";
+    if (hasDerivedTarget) return "adjoint"; // lm-jacobian can't do this yet
+    if (hasMechanisticFitParam) return "adjoint"; // lm-jacobian's codegen bug
+    return trainedNNParamCount <= SMALL_NN_BLOCK_PARAM_THRESHOLD
+      ? "lm-jacobian"
+      : "adjoint";
+  }
+
+  // Every fit-parameter, mechanistic + NN (weights + each trained block's
+  // own scale) — the count that actually matters for chunkMaxfev below, not
+  // just the NN side trainedNNParamCount alone covers.
+  let totalFitParamCount = $derived(
+    fitParameters.filter((p) => p.fit).length + trainedNNParamCount,
+  );
+
+  // The optimizer's own per-chunk budget — *not* user-facing (see
+  // progressUpdateInterval above for the field that used to conflate the
+  // two). Always computed live from the current fit-parameter count, not a
+  // one-time per-model suggestion: unlike backendChoice, there's no
+  // legitimate reason for a user to override this downward (it's not a
+  // preference, it's a correctness floor) or upward (more room never hurts,
+  // so there's nothing to trade off), so it just tracks totalFitParamCount
+  // directly and stays correct even if the user toggles more parameters
+  // into the fit mid-session.
+  //
+  // "lm"/"lm-jacobian" can't make any real progress in a chunk whose budget
+  // doesn't comfortably exceed the fit-parameter count: lmdif's own fdjac2
+  // needs n extra evals per outer iteration just for its finite-difference
+  // Jacobian (fit_wrapper.c's fit_chunk hard-requires budgetLeft > n before
+  // even attempting one — a smaller chunk returns "improper input" without
+  // ever calling lmdif); lmder doesn't have that same hard requirement, but
+  // a chunk that tight still starves its trust region of room to make real
+  // progress before the next chunk cold-restarts it from scratch. Confirmed
+  // empirically: the UDE showcase's default 25-parameter fit (Alpha+Beta+NN
+  // block) silently failed outright under "lm" with a flat default of 5
+  // (never cleared fit_chunk's own budgetLeft>n guard) and stalled flat
+  // under "lm-jacobian" (5 evals/chunk, nowhere near enough room) — raising
+  // it to 60 (> the 25 fit params there) made both converge below target.
+  // Harmless overkill for "adjoint", which has no such requirement, so this
+  // doesn't need to be backend-specific. Deliberately uncalibrated margin
+  // (same caveat as SMALL_NN_BLOCK_PARAM_THRESHOLD above) — just
+  // comfortably clears the hard minimum with room for a few outer
+  // iterations, not tuned against real models.
+  let chunkMaxfev = $derived(Math.max(5, totalFitParamCount + 20));
+
+  function backendLabel(choice: BackendChoice): string {
+    switch (choice) {
+      case "lm":
+        return "Levenberg-Marquardt";
+      case "lm-jacobian":
+        return "Levenberg-Marquardt (analytic Jacobian)";
+      case "adjoint":
+        return "adjoint";
+    }
+  }
+
+  // One suggestion per model, not a forced/re-forced decision: re-runs only
+  // when `model` itself changes identity (this popover is a dashboard-wide
+  // singleton reused across "Load"s, ADR 0006 §2.4's own framing) — every
+  // other reactive read inside is untracked so toggling an NN block's
+  // "trained" state or remapping a target afterward never silently
+  // overwrites the user's own choice.
+  let backendChoice = $state<BackendChoice>("lm");
+  $effect(() => {
+    void model;
+    untrack(() => {
+      backendChoice = suggestBackend();
+    });
+  });
 
   // Not all parameters fit by default (ADR 0004 §2.4) — a parameter not yet
   // in fitParameters defaults to unchecked.
@@ -353,6 +489,13 @@
     y0: number[];
     backend?: FitBackend;
     adjointWat?: string;
+    jacobianWat?: string;
+    /** The user-facing selection this config was built from — kept around
+     * purely for display (the "this fit uses the X backend" note), since
+     * the wire-level `backend` field alone can't distinguish "lm" from
+     * "lm-jacobian" (both report as plain "lm", FitInitRequest.jacobianWat's
+     * doc comment). */
+    backendChoice: BackendChoice;
     /** parName -> owning NN block key, for every entry in nnBlockFitIdx —
      * lets the ensemble draw recognize a trained block's own `scale` name
      * (left untouched, ADR 0006 §2.8) versus an ordinary fit-parameter row. */
@@ -435,14 +578,18 @@
     const derivedTargets = targets.filter((t) => t.kind === "derived");
     const derivedKeys = derivedTargets.map((t) => t.key);
 
-    // v1's "adjoint" backend only supports state-variable targets (see
-    // FitInitRequest.adjointWat's doc comment) — reject up front rather than
-    // let fit_init fail deep in the WASM boundary.
-    if (hasTrainedNNBlock && derivedTargets.length > 0) {
+    // "adjoint" and "lm-jacobian" both only support state-variable targets
+    // v1 (see FitInitRequest.adjointWat's/jacobianWat's doc comments) —
+    // reject up front rather than let fit_init fail deep in the WASM
+    // boundary. Independent of whether an NN block is even involved: both
+    // backends work over any fit-parameter set, mechanistic included.
+    if (
+      (backendChoice === "adjoint" || backendChoice === "lm-jacobian") &&
+      derivedTargets.length > 0
+    ) {
       return {
         ok: false,
-        error:
-          "Training an NN block requires every fit target to be a state variable, not a derived quantity.",
+        error: `The ${backendChoice === "adjoint" ? "adjoint" : "analytic-Jacobian LM"} backend requires every fit target to be a state variable, not a derived quantity — pick "Levenberg-Marquardt" instead, or remap the derived-quantity target.`,
       };
     }
 
@@ -513,14 +660,15 @@
       ...nnBlockFitIdx.map(() => false),
     ];
 
-    // Any trained NN block forces the adjoint backend unconditionally — a
-    // 6×64 block's ≈20,800 finite-difference forward solves under "lm" are
-    // intractable regardless of measured per-solve cost (ADR 0005 §2.4). A
-    // purely mechanistic fit leaves `backend` undefined, defaulting to "lm".
+    // Wire-level `backend` only ever distinguishes "adjoint" from "lm" —
+    // "lm-jacobian" is still reported as plain "lm" with jacobianWat
+    // attached (FitInitRequest.jacobianWat's doc comment); undefined
+    // defaults to "lm" inside fitWorker.ts either way.
     const backend: FitBackend | undefined =
-      nnBlockFitIdx.length > 0 ? "adjoint" : undefined;
+      backendChoice === "adjoint" ? "adjoint" : undefined;
     let adjointWat: string | undefined;
-    if (backend === "adjoint") {
+    let jacobianWat: string | undefined;
+    if (backendChoice === "adjoint") {
       try {
         adjointWat = model.buildAdjointWat(
           combinedFitIdx.map((i) => parNames[i]),
@@ -532,6 +680,20 @@
             e instanceof Error
               ? e.message
               : "Failed to build the adjoint model.",
+        };
+      }
+    } else if (backendChoice === "lm-jacobian") {
+      try {
+        jacobianWat = model.buildJacobianWat(
+          combinedFitIdx.map((i) => parNames[i]),
+        );
+      } catch (e) {
+        return {
+          ok: false,
+          error:
+            e instanceof Error
+              ? e.message
+              : "Failed to build the analytic-Jacobian model.",
         };
       }
     }
@@ -552,6 +714,8 @@
         y0: model.resolveInitialValues(),
         backend,
         adjointWat,
+        jacobianWat,
+        backendChoice,
         nnBlockOwner,
         nnBlockConfigs,
       },
@@ -581,6 +745,8 @@
       targetResidualNorm,
       backend: config.backend,
       adjointWat: config.adjointWat,
+      jacobianWat: config.jacobianWat,
+      progressUpdateInterval,
     };
   }
 
@@ -741,17 +907,22 @@
         session = null;
         return;
       }
+      fittedValues = Object.fromEntries(
+        config.parNames.map((id, i) => [id, progress.params[i]]),
+      );
       residualHistory = [
         ...residualHistory,
         { nfev: progress.nfev, residualNorm: progress.residualNorm },
       ];
-      fittedValues = Object.fromEntries(
-        config.parNames.map((id, i) => [id, progress.params[i]]),
-      );
       previewTrajectory(
         progress.params,
         config.sortedT[config.sortedT.length - 1],
       );
+
+      // Intermediate reports (progressUpdateInterval, ADR 0005 §2.5) are
+      // display-only — never used for continuation/patience decisions,
+      // which stay tied to real chunk completions.
+      if (progress.intermediate) return;
 
       const improvement = Number.isFinite(bestResidual)
         ? (bestResidual - progress.residualNorm) / bestResidual
@@ -1051,13 +1222,13 @@
         return;
       }
       const member = members[m];
+      const fittedValues = Object.fromEntries(
+        config.parNames.map((id, i) => [id, progress.params[i]]),
+      );
       const nextHistory = [
         ...member.residualHistory,
         { nfev: progress.nfev, residualNorm: progress.residualNorm },
       ];
-      const fittedValues = Object.fromEntries(
-        config.parNames.map((id, i) => [id, progress.params[i]]),
-      );
       setMember({
         nfev: progress.nfev,
         residualNorm: progress.residualNorm,
@@ -1069,6 +1240,11 @@
         progress.params,
         config.sortedT[config.sortedT.length - 1],
       );
+
+      // Intermediate reports (progressUpdateInterval, ADR 0005 §2.5) are
+      // display-only — never used for continuation/patience decisions,
+      // which stay tied to real chunk completions.
+      if (progress.intermediate) return;
 
       const improvement = Number.isFinite(bestResidual)
         ? (bestResidual - progress.residualNorm) / bestResidual
@@ -1449,12 +1625,24 @@
         </thead>
         <tbody>
           <tr>
+            <td>Fit backend</td>
+            <td>
+              <select bind:value={backendChoice}>
+                <option value="lm">Levenberg-Marquardt</option>
+                <option value="lm-jacobian"
+                  >Levenberg-Marquardt (analytic Jacobian)</option
+                >
+                <option value="adjoint">Adjoint</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
             <td>Function evaluations per progress update</td>
             <td>
               <input
                 type="number"
                 step="any"
-                bind:value={chunkMaxfev}
+                bind:value={progressUpdateInterval}
               />
             </td>
           </tr>
@@ -1789,15 +1977,17 @@
   {#if hasTrainedNNBlock}
     {#if mode === "ensemble"}
       <p class="nn-note">
-        Also training {trainedBlockKeys.length} NN block(s), this fit uses the adjoint
-        backend. Each ensemble member trains from its own independently Glorot-initialized
+        Also training {trainedBlockKeys.length} NN block(s) using the {backendLabel(
+          backendChoice,
+        )} backend. Each ensemble member trains from its own independently Glorot-initialized
         weights (same architecture, seeded from the ensemble's own random seed) —
         the block's own output scale stays fixed at its current value for every member.
       </p>
     {:else}
       <p class="nn-note">
-        Also training {trainedBlockKeys.length} NN block(s), this fit uses the adjoint
-        backend.
+        Also training {trainedBlockKeys.length} NN block(s) using the {backendLabel(
+          backendChoice,
+        )} backend.
       </p>
     {/if}
   {/if}
