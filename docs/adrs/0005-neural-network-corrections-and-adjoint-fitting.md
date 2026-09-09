@@ -170,7 +170,7 @@ Split into two, both in `Fit.svelte` and both showcase forks:
 `progressUpdateInterval` client-only, throttling `residualHistory`/`previewTrajectory`
 updates to "at least every N evals since the last redraw." This didn't work: raw
 `FitProgress` events only ever arrived once per `chunkMaxfev`-sized chunk (now ~45 evals
-for a typical fit), so a throttle — which can only make updates *less* frequent than its
+for a typical fit), so a throttle — which can only make updates _less_ frequent than its
 input, never more — left the UI redrawing at whatever cadence chunks happened to
 complete, silently ignoring a user-set `progressUpdateInterval` of 5. Worse, it was
 actively misleading: the field reads as "the plot updates every N evals," but it might
@@ -180,12 +180,12 @@ update only once per 10x that.
 evaluation loop.** Each of the three drivers (`fit_wrapper.c`'s `fit_fcn`,
 `jacobian_wrapper.c`'s `jacobian_fcn`, `adjoint_wrapper.c`'s `adjoint_chunk`) now takes a
 `progress_interval` in its `*_init` call and tracks its own `chunk_nfev` (evals/steps so
-far in the *currently executing* chunk, reset to 0 at the start of every `*_chunk` call —
+far in the _currently executing_ chunk, reset to 0 at the start of every `*_chunk` call —
 deliberately separate from `chunkMaxfev`'s own, much coarser, correctness-mandated
 budget). Every `progress_interval`-th evaluation, it invokes a JS callback
 (`fit_set_progress_fn`/`jacobian_set_progress_fn`/`adjoint_set_progress_fn`, an
 Emscripten `addFunction` table slot, registered once per worker lifetime in
-`fitWorker.ts` since it's stateless) synchronously, *from inside* the blocking
+`fitWorker.ts` since it's stateless) synchronously, _from inside_ the blocking
 `_fit_chunk`/`_jacobian_chunk`/`_adjoint_chunk` WASM call — the same reentrant
 JS↔WASM pattern `previewTrajectory` already relies on one layer up
 (`onProgress` calling back into the WASM module), just one layer deeper here.
@@ -195,7 +195,7 @@ JS↔WASM pattern `previewTrajectory` already relies on one layer up
 Client code (`Fit.svelte` and both showcase forks) branches on `progress.intermediate`:
 every tick (intermediate or not) updates `nfev`/`residualNorm`/`fittedValues`/
 `residualHistory`/the trajectory preview unconditionally — no throttle needed any more,
-since the interval is now enforced at the source — but only a *non*-intermediate tick
+since the interval is now enforced at the source — but only a _non_-intermediate tick
 (an actual chunk completion) runs the patience/stall-tracking and
 continue-vs-stop decision, so `FIT_PATIENCE_CHUNKS` and ADR 0004 §2.7's per-chunk
 cancelability are exactly as before: unaffected by how many intermediate ticks landed
