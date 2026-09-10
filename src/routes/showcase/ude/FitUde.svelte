@@ -16,21 +16,8 @@
 -->
 
 <script lang="ts">
-  import { untrack } from "svelte";
-  import {
-    Button,
-    InputNumberOptional,
-    Row,
-  } from "@computational-biology-aachen/design";
-  import H2 from "@computational-biology-aachen/design/H2.svelte";
-  import {
-    buildNNBlock,
-    type FitBackend,
-    type ModelBuilderBase,
-    type NNBlockConfig,
-  } from "@computational-biology-aachen/mxlweb-core";
-  import { parseCsvFile, type ParsedCsv } from "$lib/csvParse";
   import type { FitParameterConfig, FitTargetMapping } from "$lib";
+  import { parseCsvFile, type ParsedCsv } from "$lib/csvParse";
   import LineChart from "$lib/LineChart.svelte";
   import {
     mulberry32,
@@ -48,6 +35,19 @@
     type SimulationResult,
   } from "$lib/stores/workerStore";
   import { arrayColumn } from "$lib/utils";
+  import {
+    Button,
+    InputNumberOptional,
+    Row,
+  } from "@computational-biology-aachen/design";
+  import H2 from "@computational-biology-aachen/design/H2.svelte";
+  import {
+    buildNNBlock,
+    type FitBackend,
+    type ModelBuilderBase,
+    type NNBlockConfig,
+  } from "@computational-biology-aachen/mxlweb-core";
+  import { untrack } from "svelte";
 
   let {
     model,
@@ -65,7 +65,7 @@
   // never persisted (not in .mxl.json, no localStorage/URL) and this popover
   // is a dashboard-wide singleton, not one of several DynBoxRow boxes, so
   // there's no parent object to thread these through any more.
-  let mode = $state<"single" | "ensemble">("single");
+  let mode = $state<"single" | "ensemble">("ensemble");
   // Purely cosmetic: how many evaluations/steps pass between chart/preview
   // refreshes. Deliberately *not* the same thing as chunkMaxfev (below,
   // computed) — that's the optimizer's own per-chunk budget, a correctness
@@ -499,7 +499,7 @@
   const MAX_ENSEMBLE_SIZE = 16;
 
   let ensembleSize = $state(8);
-  let ensembleSeed = $state(Math.floor(Math.random() * 2 ** 31));
+  let ensembleSeed = $state(108418838);
   let filterOutliers = $state(true);
 
   function clampEnsembleSize(n: number): number {
