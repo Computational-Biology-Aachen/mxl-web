@@ -1,4 +1,5 @@
 import {
+  buildNNBlock,
   isNNBlockOwnedWeightName,
   KineticModelBuilder,
   type NNBlockConfig,
@@ -138,8 +139,23 @@ export function idToDisplay(
  * empty `Map`) when the block owns no entries yet, matching `addNNBlock`'s
  * own "no override, generate fresh" contract — relevant for a block that
  * was just added this session and has never been through a Save yet.
+ *
+ * Also returns `undefined` when the *architecture* has since diverged from
+ * these weights — resizing depth/width, changing `inputs`, or switching
+ * `targetKind` (which resizes the output layer to the new target count) all
+ * change which weight names the config now expects, before the next Save
+ * ever runs. `addNNBlock`'s `trainedWeights` contract requires an *exact*
+ * key-set match and throws otherwise (by design, for a genuine data-loading
+ * mismatch) — but every reactive rebuild here (`ModelEditor.svelte`'s
+ * `modelView.toBuilder()`, not just an explicit Save) must never throw just
+ * because the user is mid-edit. Falling back to a fresh Glorot re-init on
+ * mismatch matches `ModelBuilderBase.updateNNBlock`'s own established
+ * behavior for exactly this case ("a changed layer stack/input count
+ * generally changes which weight even corresponds to which, so there's
+ * nothing meaningful to carry over").
  */
 function trainedWeightsFor(
+  config: NNBlockConfig,
   blockId: string,
   nnWeights: Map<string, number>,
 ): Map<string, number> | undefined {
@@ -147,7 +163,19 @@ function trainedWeightsFor(
   for (const [name, value] of nnWeights) {
     if (isNNBlockOwnedWeightName(name, blockId)) owned.set(name, value);
   }
-  return owned.size > 0 ? owned : undefined;
+  if (owned.size === 0) return undefined;
+
+  const { weights: expected } = buildNNBlock({
+    name: blockId,
+    inputs: config.inputs,
+    layers: config.layers,
+    seed: config.seed,
+    scale: config.scale,
+  });
+  const matchesArchitecture =
+    expected.size === owned.size &&
+    [...expected.keys()].every((name) => owned.has(name));
+  return matchesArchitecture ? owned : undefined;
 }
 
 // Model View
@@ -202,7 +230,7 @@ export class ModelView {
           scale: el.scale,
           mechanism: el.mechanism,
         },
-        trainedWeightsFor(el.id, this.nnWeights),
+        trainedWeightsFor(el, el.id, this.nnWeights),
       ),
     );
     this.parameters.forEach((el) =>
@@ -292,7 +320,7 @@ export class OdeModelView {
           scale: el.scale,
           mechanism: el.mechanism,
         },
-        trainedWeightsFor(el.id, this.nnWeights),
+        trainedWeightsFor(el, el.id, this.nnWeights),
       ),
     );
     this.parameters.forEach((el) =>

@@ -114,6 +114,87 @@ describe("ModelView.toBuilder round-trips fitted NN block weights", () => {
   });
 });
 
+// Regression test: switching a block's "Corrects" selector (targetKind) in
+// TableNNBlocks.svelte resizes its output layer to match the new target
+// count (2 variables vs. 3 reactions here) — every reactive rebuild before
+// the next explicit Save (ModelEditor.svelte's `modelView.toBuilder()`)
+// must see that resized config paired with the *stale*, pre-resize
+// nnWeights snapshot, since nnWeights only updates on Save. addNNBlock's
+// trainedWeights contract requires an exact key-set match and throws
+// otherwise; toBuilder()/trainedWeightsFor() must instead fall back to a
+// fresh re-init (matching updateNNBlock's own established behavior for an
+// architecture change), so the live preview keeps showing the correction
+// term with new weights rather than throwing and losing it entirely.
+describe("ModelView.toBuilder survives an architecture change since the last Save", () => {
+  it("switching targetKind (and thus the output layer width) doesn't throw, and the correction term survives with freshly re-initialized weights", () => {
+    const builder = new KineticModelBuilder()
+      .addVariable("x", { value: 1 })
+      .addVariable("y", { value: 1 })
+      .addReaction("v1", {
+        fn: new Num(0),
+        stoichiometry: [{ name: "x", value: new Num(-1) }],
+      })
+      .addReaction("v2", {
+        fn: new Num(0),
+        stoichiometry: [{ name: "y", value: new Num(-1) }],
+      })
+      .addReaction("v3", {
+        fn: new Num(0),
+        stoichiometry: [{ name: "x", value: new Num(1) }],
+      })
+      .addNNBlock("corr", {
+        inputs: ["x", "y"],
+        layers: [
+          { type: "dense", width: 2, activation: softplusActivation() },
+          { type: "dense", width: 2 },
+        ],
+        seed: 1,
+        targetKind: "variable",
+        targets: ["x", "y"],
+        trained: true,
+        scale: 0.1,
+        mechanism: additiveMechanism(),
+      });
+
+    const { parameters, nnBlocks, nnWeights } = viewArraysFrom(builder);
+    const variables = [...builder.variables.entries()].map(([id, v]) => ({
+      ...v,
+      id,
+      texName: v.texName ?? id,
+    }));
+    const reactions = [...builder.reactions.entries()].map(([id, r]) => ({
+      ...r,
+      id,
+      texName: r.texName ?? id,
+    }));
+
+    // Simulate the $effect after the user flips "Corrects" to "Reactions":
+    // targets/output width resize to the model's 3 reactions, but
+    // `nnWeights` above is still the stale 2-output snapshot.
+    const switched: NNBlockView = nnBlocks.map((b) => ({
+      ...b,
+      targetKind: "reaction",
+      targets: ["v1", "v2", "v3"],
+      layers: [b.layers[0], { ...b.layers[1], width: 3 }],
+    }));
+
+    let rebuilt!: KineticModelBuilder;
+    expect(() => {
+      rebuilt = new ModelView(
+        parameters,
+        variables,
+        [],
+        reactions,
+        switched,
+        nnWeights,
+      ).toBuilder();
+    }).not.toThrow();
+
+    expect(rebuilt.nnBlockWeightNames("corr").size).toBeGreaterThan(0);
+    expect(rebuilt.buildTex()).toContain("NN_{corr}");
+  });
+});
+
 describe("OdeModelView.toBuilder round-trips fitted NN block weights", () => {
   it("preserves a manually-set weight value and a manually-set scale, not a fresh re-init", () => {
     const builder = new OdeModelBuilder()
