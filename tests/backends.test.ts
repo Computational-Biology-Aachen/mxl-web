@@ -35,6 +35,7 @@ function makeModelWithNNBlock(): OdeModelBuilder {
         { type: "dense", width: 1 },
       ],
       seed: 1,
+      targetKind: "variable",
       targets: ["x"],
       trained: true,
       scale: 0.1,

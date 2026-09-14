@@ -54,12 +54,15 @@
 
   // The five other model views are received for the same uniform table API
   // every other table component gets (see ModelEditor.svelte). `variables`
-  // is a block's fixed input *and* target set (it reads every state
-  // variable and corrects every state variable, no per-block picker);
-  // `parameters`/`assignments`/`reactions` feed the mechanism EqEditor's
-  // argNames exclusion (a hand-authored mechanism can't reference an
-  // NN-block-owned scale/weight, same restriction reactions already get).
-  // This table only ever edits `nnBlocks` itself.
+  // is always a block's fixed input set (it reads every state variable, no
+  // per-block picker); it's also the fixed target set for a
+  // targetKind: "variable" block (the default), while `reactions` is the
+  // fixed target set for a targetKind: "reaction" block instead — either
+  // way, no per-block picker on which subset. `parameters`/`assignments`/
+  // `reactions` also feed the mechanism EqEditor's argNames exclusion (a
+  // hand-authored mechanism can't reference an NN-block-owned scale/weight,
+  // same restriction reactions already get). This table only ever edits
+  // `nnBlocks` itself.
   let {
     variables = $bindable(),
     parameters = $bindable(),
@@ -77,42 +80,65 @@
     readouts?: AssView;
   } = $props();
 
-  // A block always reads every state variable as input and corrects every
-  // state variable as output — no per-block picker (not even for the inputs/
-  // targets themselves, which used to be free-text fields; those are gone
-  // too, not just hidden). Letting a user hand-select a subset, or parameters
-  // into the input set, produced confusing, easy-to-break configurations (a
-  // block silently going stale against the model it's meant to track).
+  // A block always reads every state variable as input — no per-block
+  // picker (not even for the inputs themselves, which used to be a
+  // free-text field; that's gone too, not just hidden). Letting a user
+  // hand-select a subset, or parameters into the input set, produced
+  // confusing, easy-to-break configurations (a block silently going stale
+  // against the model it's meant to track).
   let allVariableNames = $derived(variables.map((v) => v.id));
+  // A reaction-mode block corrects every reaction the same way — same "no
+  // picker" rationale as inputs/variable-mode targets above, applied to
+  // NNBlockConfig.targetKind === "reaction" instead.
+  let allReactionNames = $derived(reactions.map((r) => r.id));
+  // The "Reactions" target-kind option only makes sense once the model has
+  // reactions to target at all (OdeModelEditor always passes an empty
+  // `reactions` array — see its own comment — so this naturally never shows
+  // there). Kept visible for a block already in reaction mode even if every
+  // reaction was since deleted, so its selector remains reachable to switch
+  // back rather than stranding the block.
+  let showTargetKind = $derived(
+    allReactionNames.length > 0 ||
+      nnBlocks.some((b) => b.targetKind === "reaction"),
+  );
 
   function sameNames(a: string[], b: string[]): boolean {
     return a.length === b.length && a.every((name, i) => name === b[i]);
   }
 
-  // Keeps every block's inputs/targets equal to "every state variable" even
-  // when the model's variable set changes on some other tab without this
-  // one being touched at all. The output layer's width must track
-  // targets.length too (mxl-schemas: "the final layer's width is the
-  // number of outputs, must match the length of targets") — otherwise
-  // adding/removing a state variable elsewhere would silently leave a
-  // block's `layers` array schema-invalid.
+  function targetNamesFor(block: NNBlockView[number]): string[] {
+    return block.targetKind === "reaction"
+      ? allReactionNames
+      : allVariableNames;
+  }
+
+  // Keeps every block's inputs equal to "every state variable" and its
+  // targets equal to "every state variable" (targetKind "variable") or
+  // "every reaction" (targetKind "reaction") even when the model's
+  // variable/reaction set changes on some other tab without this one being
+  // touched at all. The output layer's width must track targets.length too
+  // (mxl-schemas: "the final layer's width is the number of outputs, must
+  // match the length of targets") — otherwise adding/removing a variable or
+  // reaction elsewhere would silently leave a block's `layers` array
+  // schema-invalid.
   $effect(() => {
     const next = nnBlocks.map((b) => {
+      const targetNames = targetNamesFor(b);
       if (
         sameNames(b.inputs, allVariableNames) &&
-        sameNames(b.targets, allVariableNames)
+        sameNames(b.targets, targetNames)
       ) {
         return b;
       }
       const layers = [...b.layers];
       layers[layers.length - 1] = {
         ...layers[layers.length - 1],
-        width: allVariableNames.length,
+        width: targetNames.length,
       };
       return {
         ...b,
         inputs: [...allVariableNames],
-        targets: [...allVariableNames],
+        targets: [...targetNames],
         layers,
       };
     });
@@ -145,6 +171,7 @@
           { type: "dense", width: allVariableNames.length },
         ],
         seed: Date.now() + nextSeed,
+        targetKind: "variable",
         targets: [...allVariableNames],
         trained: true,
         // dx/dt = f(x,p,t) * (1 + scale * NN(x,θ)) — starts small so a
@@ -220,7 +247,34 @@
     nnBlocks[idx].mechanism = mechanism;
     nnBlocks = nnBlocks.slice();
   }
+
+  // Switching kind just flips the tag; the $effect above resyncs
+  // inputs/targets/layer-width to match on the very next run (allVariableNames
+  // for "variable", allReactionNames for "reaction") rather than duplicating
+  // that logic here.
+  function setTargetKind(idx: number, kind: "variable" | "reaction") {
+    nnBlocks[idx].targetKind = kind;
+    nnBlocks = nnBlocks.slice();
+  }
 </script>
+
+{#snippet targetKindField(idx: number)}
+  <select
+    aria-label="Corrects"
+    bind:value={
+      () => nnBlocks[idx].targetKind,
+      (value) => setTargetKind(idx, value as "variable" | "reaction")
+    }
+  >
+    <option value="variable">Equations</option>
+    <option
+      value="reaction"
+      disabled={allReactionNames.length === 0}
+    >
+      Reactions
+    </option>
+  </select>
+{/snippet}
 
 {#snippet depthWidthField(idx: number)}
   <div class="pair">
@@ -316,6 +370,12 @@
           <span class="card-label">Name</span>
           {block.id}
         </div>
+        {#if showTargetKind}
+          <div class="card-row">
+            <span class="card-label">Corrects</span>
+            <div class="card-input">{@render targetKindField(idx)}</div>
+          </div>
+        {/if}
         <div class="card-row">
           <span class="card-label">Architecture</span>
           <div class="card-input">{@render depthWidthField(idx)}</div>
@@ -344,6 +404,9 @@
     <thead>
       <tr>
         <th>Name</th>
+        {#if showTargetKind}
+          <th>Corrects</th>
+        {/if}
         <th>Layers</th>
         <th>Output scale</th>
         <th>Mechanism</th>
@@ -355,6 +418,9 @@
       {#each filtered as { block, idx } (block.id)}
         <tr>
           <td>{block.id}</td>
+          {#if showTargetKind}
+            <td>{@render targetKindField(idx)}</td>
+          {/if}
           <td>{@render depthWidthField(idx)}</td>
           <td>{@render scaleField(idx)}</td>
           <td>{@render mechanismField(idx)}</td>
@@ -416,7 +482,8 @@
     width: 4rem;
   }
 
-  input {
+  input,
+  select {
     border: var(--border-transparent);
     border-radius: var(--radius-lg);
     background-color: transparent;
@@ -424,7 +491,8 @@
     width: 100%;
     font-size: 0.875rem;
   }
-  input:hover {
+  input:hover,
+  select:hover {
     border: var(--border-primary);
   }
 

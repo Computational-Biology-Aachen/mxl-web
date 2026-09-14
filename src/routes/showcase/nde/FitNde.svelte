@@ -291,10 +291,12 @@
   // real bug in buildJacobianGraph's codegen (modelIr.ts) — confirmed
   // empirically on the UDE showcase (its default Alpha+Beta+NN-block fit
   // throws "Maximum call stack size exceeded" under "lm-jacobian", while
-  // "adjoint" handles the exact same fit fine). This showcase has no
-  // mechanistic parameters at all (fitParameters is always empty by
-  // design), so this is always false here — kept for consistency with
-  // $lib/Fit.svelte and FitUde.svelte. Root cause is presumably
+  // "adjoint" handles the exact same fit fine). This showcase's model has
+  // its own mechanistic parameters too now (Beta/Delta, fixing predation's
+  // stoichiometric ratio — see model.ts), unchecked by default like every
+  // parameter (ADR 0004 §2.4), so this only trips if the user opts one in;
+  // logic kept identical to $lib/Fit.svelte and FitUde.svelte rather than
+  // special-cased for "usually empty". Root cause is presumably
   // buildJacobianGraph's n_y independent reverse-mode passes lacking
   // buildAdjointGraph's memoization across passes — not fixed here, just
   // avoided as a suggestion trigger until it is.

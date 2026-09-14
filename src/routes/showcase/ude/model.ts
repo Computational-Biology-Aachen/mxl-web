@@ -98,6 +98,7 @@ export function initModel(): KineticModelBuilder {
     })
     .addNNBlock("ude_correction", {
       inputs: ["Prey", "Predator"],
+      targetKind: "variable",
       targets: ["Prey", "Predator"],
       layers: [
         { type: "dense", width: 4, activation: softplusActivation() },
