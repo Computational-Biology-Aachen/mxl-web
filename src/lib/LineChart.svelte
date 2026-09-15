@@ -48,6 +48,7 @@
   import Chart, { type ChartData } from "chart.js/auto";
   import { untrack } from "svelte";
   import type { Attachment } from "svelte/attachments";
+  import { toStyleString } from "./utils";
 
   export interface PhaseRegion {
     start: number;
@@ -261,9 +262,7 @@
 
 <div
   class="chart-container"
-  style={Object.entries(cssVars)
-    .map(([k, v]) => `${k}:${v}`)
-    .join(";")}
+  style={toStyleString(cssVars)}
 >
   {#if showLoadingSpinner}
     <div class="loading-container">
