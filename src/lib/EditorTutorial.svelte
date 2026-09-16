@@ -244,14 +244,20 @@
     pointer-events: none;
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    .spotlight {
+      transition: none;
+    }
+  }
+
   .card {
     display: flex;
     position: fixed;
     flex-direction: column;
     gap: 0.5rem;
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-sm);
     border-radius: var(--radius-lg);
-    background: var(--color-bg, #fff);
+    background: var(--color-bg);
     padding: 1.25rem;
   }
 
@@ -290,7 +296,7 @@
 
   p {
     margin: 0;
-    color: var(--slate-600, #475569);
+    color: var(--slate-600);
     font-size: 0.9rem;
     line-height: 1.5;
   }
@@ -312,9 +318,9 @@
   }
 
   .ghost {
-    border: 1px solid var(--slate-300, #cbd5e1);
+    border: 1px solid var(--slate-300);
     background: transparent;
-    color: var(--slate-600, #475569);
+    color: var(--slate-600);
   }
 
   .ghost:disabled {
@@ -325,6 +331,6 @@
   .primary {
     border: none;
     background: var(--color-primary);
-    color: var(--color-text-inverse, #fff);
+    color: var(--color-text-inverse);
   }
 </style>

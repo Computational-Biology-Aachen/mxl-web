@@ -933,7 +933,19 @@
   .palette-button:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-    border-color: var(--color-surface);
+    border-color: var(--color-primary);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .palette-button {
+      transition:
+        box-shadow 120ms ease,
+        border-color 120ms ease;
+    }
+
+    .palette-button:hover:not(:disabled) {
+      transform: none;
+    }
   }
 
   .palette-button:disabled {
@@ -962,7 +974,7 @@
   }
 
   .window {
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-sm);
     border: var(--border);
     border-radius: var(--radius-lg);
     background: #fff;

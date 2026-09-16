@@ -2077,9 +2077,7 @@
       >
         <div
           class="progress-bar-fill"
-          style="width: {(fitComplete ? 100 : progressFraction * 100).toFixed(
-            1,
-          )}%"
+          style="transform: scaleX({fitComplete ? 1 : progressFraction})"
         ></div>
       </div>
     {/if}
@@ -2141,10 +2139,9 @@
       >
         <div
           class="progress-bar-fill"
-          style="width: {(ensembleAllDone
-            ? 100
-            : ensembleProgressFraction * 100
-          ).toFixed(1)}%"
+          style="transform: scaleX({ensembleAllDone
+            ? 1
+            : ensembleProgressFraction})"
         ></div>
       </div>
     {/if}
@@ -2281,13 +2278,15 @@
     overflow: hidden;
   }
   .progress-bar-fill {
-    transition: width 200ms ease;
+    transform-origin: left;
+    transition: transform 200ms ease;
     background: var(--color-primary);
+    width: 100%;
     height: 100%;
   }
   .error {
     margin: 0;
-    color: var(--error, #dc2626);
+    color: var(--color-danger);
     font-size: 0.875rem;
   }
   table {
@@ -2345,7 +2344,7 @@
     color: white;
   }
   .cancel-button {
-    background: var(--error, #dc2626);
+    background: var(--color-danger);
     color: white;
   }
   .progress-info {
@@ -2354,7 +2353,7 @@
   }
   .target-missed {
     margin: 0;
-    color: var(--color-accent, #f6a800);
+    color: var(--color-accent);
     font-size: 0.875rem;
   }
   .nn-note {

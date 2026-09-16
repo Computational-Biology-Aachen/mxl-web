@@ -61,16 +61,16 @@
 
 <style>
   .sim-error {
-    border-left: 3px solid var(--color-error, #c0392b);
+    border-left: 3px solid var(--color-danger);
     /* border-radius: 0 var(--round, 4px) var(--round, 4px) 0; */
-    background: color-mix(in srgb, var(--color-error, #c0392b) 8%, transparent);
+    background: color-mix(in srgb, var(--color-danger) 8%, transparent);
     padding: 0.5rem 0.75rem;
     font-size: 0.875rem;
   }
 
   .error-msg {
     margin: 0 0 0.4rem;
-    color: var(--color-error, #c0392b);
+    color: var(--color-danger);
     font-weight: 600;
     word-break: break-word;
   }

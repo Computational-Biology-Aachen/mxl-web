@@ -65,7 +65,7 @@
     <div class="centered">
       <img
         src={scheme}
-        alt="model-scheme"
+        alt="Diagram of the Lotka-Volterra predator-prey model: prey growth, predation, and predator mortality rates between prey and predator population densities"
       />
     </div>
   </AnalysesDashboard>

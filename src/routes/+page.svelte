@@ -96,7 +96,7 @@
     </div>
     <img
       src={hero}
-      alt="hero banner"
+      alt="Screenshot of the Ebeling 2026 photosynthesis model in mxl-web, showing its thylakoid transport diagram and live parameter sliders"
       class="top-img"
     />
   </div>

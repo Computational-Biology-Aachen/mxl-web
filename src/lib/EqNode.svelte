@@ -171,19 +171,65 @@
     if (node instanceof RateOf) return "d/dt";
     return "fn";
   }
+
+  function getNodeAriaLabel(node: Base): string {
+    if (node instanceof Name)
+      return `Variable ${defaultValue(displayName, node.name)}`;
+    if (node instanceof Num) return `Number ${node.value}`;
+    const className = getNodeClassName(node) || "Expression";
+    return `${className.replace(/([A-Z])/g, " $1").trim()} node`;
+  }
+
+  function getNodeStatusHint(node: Base): string {
+    if (draggedId === node.id) return "Cut. Press Escape to cancel";
+    if (draggedId !== null) {
+      return isValidDropTarget
+        ? "Press Control+V to move the cut node here"
+        : "Not a valid destination for the cut node";
+    }
+    return "Press Control+X to cut, or Enter to select";
+  }
 </script>
 
-<!-- svelte-ignore a11y_click_events_have_key_events -->
-<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
   class={`node node-${getNodeClassName(node)}`}
   data-selected={selectedId === node.id}
   data-dragging={draggedId === node.id}
   data-drop-target={dragOverSelf && isValidDropTarget}
   draggable="true"
+  role="button"
+  tabindex={0}
+  aria-pressed={selectedId === node.id}
+  aria-label={`${getNodeAriaLabel(node)}. ${getNodeStatusHint(node)}`}
   onclick={(e) => {
     e.stopPropagation();
     selectSelf();
+  }}
+  onkeydown={(e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      e.stopPropagation();
+      selectSelf();
+      return;
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "x") {
+      e.preventDefault();
+      e.stopPropagation();
+      onDragStart(node);
+      return;
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "v") {
+      if (!isValidDropTarget) return;
+      e.preventDefault();
+      e.stopPropagation();
+      onDrop(node.id);
+      return;
+    }
+    if (e.key === "Escape" && draggedId !== null) {
+      e.preventDefault();
+      e.stopPropagation();
+      onDragEnd();
+    }
   }}
   ondragstart={(e) => {
     e.stopPropagation();
@@ -771,8 +817,8 @@
     border-radius: var(--radius-lg);
     background: var(--color-surface);
     padding: 0;
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 2.75rem;
+    height: 2.75rem;
     color: var(--color-primary);
     font-weight: 700;
     line-height: 1;
@@ -787,7 +833,7 @@
     cursor: grab;
     box-sizing: border-box;
     margin: 0 auto;
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-sm);
     border: var(--border);
     border-radius: var(--radius-lg);
     background: #fafafa;
@@ -796,10 +842,15 @@
     :hover {
       border-color: var(--color-primary);
     }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
   }
 
   .node[data-selected="true"] {
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-md);
     border-color: var(--color-primary);
     background: rgb(from var(--color-primary) r g b / 8%);
   }

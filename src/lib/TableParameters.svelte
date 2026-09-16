@@ -83,6 +83,7 @@
 {#snippet nameInput(idx: number)}
   <input
     type="text"
+    aria-label="Name"
     bind:value={
       () => defaultValue(parameters[idx].displayName, parameters[idx].id),
       (value) => {
@@ -97,6 +98,7 @@
 {#snippet texNameInput(idx: number)}
   <input
     type="text"
+    aria-label="Tex name"
     bind:value={
       () => parameters[idx].texName,
       (value) => {
@@ -110,6 +112,7 @@
 {#snippet valueInput(idx: number)}
   <input
     type="number"
+    aria-label="Initial value"
     bind:value={
       () => parameters[idx].value, (value) => (parameters[idx].value = value)
     }
@@ -263,7 +266,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-sm);
     border: var(--border);
     border-radius: 0.5rem;
     background-color: var(--color-surface);

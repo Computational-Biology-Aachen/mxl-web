@@ -181,7 +181,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--shadow-sm);
     border-radius: var(--radius-lg);
     background-color: var(--color-surface);
   }
@@ -237,7 +237,7 @@
     background-color: lch(from var(--color-surface) calc(l - 5) c h);
   }
   .expr-display {
-    color: var(--slate-500, #64748b);
+    color: var(--slate-500);
     font-size: 0.875rem;
     font-family: monospace;
   }

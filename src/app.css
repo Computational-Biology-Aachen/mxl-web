@@ -1,6 +1,21 @@
 @charset "UTF-8";
 @import "@computational-biology-aachen/design/tokens.css";
 
+/* @computational-biology-aachen/design does not define a danger/error color
+token. This is a site-local addition, using the design system's own RWTH red
+(see --rwth-red in tokens.css), so mxl-web has one shared token instead of
+several hardcoded reds. */
+:root {
+  --color-danger: rgb(204, 7, 30);
+  --color-warning: #e07b00;
+
+  /* The design package only exports --slate-50/400/500 (see tokens.css).
+  EditorTutorial.svelte needs two more steps of the same Tailwind slate scale
+  it already draws from — fill in the gaps rather than hardcoding them. */
+  --slate-300: rgb(203, 213, 225);
+  --slate-600: rgb(71, 85, 105);
+}
+
 /* Note: setting height: 100% and overflow: scroll on body / html breaks
 window.scrollTo/window.scrollY as that scrolls via the viewport.
 Set min-height: 100vh; on #app in app.html instead

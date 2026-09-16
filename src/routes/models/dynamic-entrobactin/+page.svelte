@@ -79,7 +79,7 @@
     <div class="centered">
       <img
         src={scheme}
-        alt="model-scheme"
+        alt="Diagram of enterobactin-mediated iron exchange: E. coli secretes enterobactin, which scavenges iron from a shared pool and is taken up by C. glutamicum"
       />
     </div>
   </AnalysesDashboard>

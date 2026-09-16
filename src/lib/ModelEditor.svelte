@@ -267,7 +267,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--shadow-sm);
     border-radius: var(--radius-lg);
     background-color: var(--color-surface);
   }

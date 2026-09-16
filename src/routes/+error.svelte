@@ -22,7 +22,7 @@
 
 <style>
   .card {
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-sm);
     border-radius: var(--radius-lg);
     background-color: var(--color-surface);
     padding: 1.5rem;

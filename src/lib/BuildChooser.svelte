@@ -298,6 +298,18 @@
     box-shadow: var(--shadow-primary);
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    .model-card {
+      transition:
+        box-shadow 0.2s ease,
+        border-top-color 0.2s ease;
+    }
+
+    .model-card:hover {
+      transform: none;
+    }
+  }
+
   .graphic {
     margin: 0;
     border-radius: var(--radius-md);

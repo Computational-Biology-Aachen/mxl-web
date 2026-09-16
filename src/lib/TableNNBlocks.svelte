@@ -506,7 +506,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-sm);
     border: var(--border);
     border-radius: 0.5rem;
     background-color: var(--color-surface);

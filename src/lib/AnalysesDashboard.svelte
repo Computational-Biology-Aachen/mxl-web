@@ -671,7 +671,7 @@
 <style>
   .load-error {
     margin: 0;
-    color: var(--error, #dc2626);
+    color: var(--color-danger);
     font-size: 0.875rem;
   }
 
@@ -684,7 +684,7 @@
     display: flex;
     flex-direction: column;
     align-items: inherit;
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-sm);
     border-radius: var(--radius-lg);
     background-color: var(--color-surface);
     padding: 1.5rem;
@@ -726,8 +726,8 @@
     text-align: left;
   }
   .picker-option:hover {
-    border-color: var(--color-surface);
-    background: color-mix(in srgb, var(--color-surface) 10%, transparent);
-    color: var(--color-surface);
+    border-color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+    color: var(--color-primary);
   }
 </style>
