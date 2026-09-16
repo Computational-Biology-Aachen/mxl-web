@@ -179,7 +179,6 @@
   }
 
   function saveMxlpy() {
-    if (!(model instanceof KineticModelBuilder)) return;
     exportError = null;
     try {
       downloadText(
@@ -356,8 +355,8 @@
       <ButtonMenu label="Save">
         {#if model instanceof KineticModelBuilder}
           <ButtonMenuItem onclick={saveModel}>SBML</ButtonMenuItem>
-          <ButtonMenuItem onclick={saveMxlpy}>MxlPy</ButtonMenuItem>
         {/if}
+        <ButtonMenuItem onclick={saveMxlpy}>MxlPy</ButtonMenuItem>
         <ButtonMenuItem onclick={saveMxlJson}>mxl.json</ButtonMenuItem>
         <ButtonMenuItem onclick={saveMxlweb}>mxlweb</ButtonMenuItem>
         <ButtonMenuItem onclick={savePython}>Python</ButtonMenuItem>
