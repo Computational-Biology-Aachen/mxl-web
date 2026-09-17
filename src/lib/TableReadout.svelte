@@ -21,6 +21,7 @@
     type VarView,
   } from "./modelView";
   import TableSearch from "./TableSearch.svelte";
+  import TexNameInput from "./TexNameInput.svelte";
   import { fuzzyMatch } from "./utils";
 
   const md = new MediaQuery("max-width: 768px");
@@ -83,9 +84,7 @@
 {/snippet}
 
 {#snippet texNameInput(idx: number)}
-  <input
-    type="text"
-    aria-label="Tex name"
+  <TexNameInput
     bind:value={
       () => readouts[idx].texName || "",
       (value) => {
