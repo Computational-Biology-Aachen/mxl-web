@@ -191,22 +191,27 @@
       ctx.rect(left, top, right - left, height);
       ctx.clip();
 
-      for (const phase of phases) {
+      phases.forEach((phase, index) => {
         const xStart = Math.max(scales.x.getPixelForValue(phase.start), left);
         const xEnd = Math.min(scales.x.getPixelForValue(phase.end), right);
-        if (xEnd <= xStart) continue;
+        if (xEnd <= xStart) return;
 
         ctx.fillStyle = phase.color;
         ctx.fillRect(xStart, top, xEnd - xStart, height);
 
         if (phase.label && phase.end > phase.start) {
           const midX = (xStart + xEnd) / 2;
+          // Two narrow, adjacent regions (e.g. stages that both converge
+          // quickly) put their labels' centers close enough to overlap —
+          // dropping every other label down one line keeps them legible
+          // without needing to measure actual text-width collisions.
+          const labelY = top + 14 + (index % 2 === 1 ? 12 : 0);
           ctx.fillStyle = "rgba(0,0,0,0.5)";
           ctx.font = "11px system-ui, sans-serif";
           ctx.textAlign = "center";
-          ctx.fillText(phase.label, midX, top + 14);
+          ctx.fillText(phase.label, midX, labelY);
         }
-      }
+      });
 
       ctx.restore();
     },

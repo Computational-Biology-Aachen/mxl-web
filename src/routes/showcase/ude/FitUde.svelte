@@ -18,7 +18,23 @@
 <script lang="ts">
   import type { FitParameterConfig, FitTargetMapping } from "$lib";
   import { parseCsvFile, type ParsedCsv } from "$lib/csvParse";
-  import LineChart from "$lib/LineChart.svelte";
+  import {
+    defaultCurriculum,
+    finalStageBudget,
+    type CurriculumStage,
+  } from "$lib/fit/curriculum";
+  import CurriculumStagesEditor from "$lib/fit/CurriculumStagesEditor.svelte";
+  import {
+    runCurriculumFit,
+    type CurriculumRunHandle,
+  } from "$lib/fit/curriculumRunner";
+  import {
+    buildFitConfig,
+    residualPerPoint,
+    type BackendChoice,
+    type FitConfig,
+  } from "$lib/fit/fitConfig";
+  import LineChart, { type PhaseRegion } from "$lib/LineChart.svelte";
   import {
     mulberry32,
     sampleDistribution,
@@ -27,7 +43,6 @@
   } from "$lib/random";
   import SimErrDisplay from "$lib/SimErrDisplay.svelte";
   import { backends, createWasmPool } from "$lib/stores/backends";
-  import { FitSession } from "$lib/stores/fitStore";
   import type { WorkerPool } from "$lib/stores/workerPool";
   import {
     WorkerManager,
@@ -43,9 +58,7 @@
   import H2 from "@computational-biology-aachen/design/H2.svelte";
   import {
     buildNNBlock,
-    type FitBackend,
     type ModelBuilderBase,
-    type NNBlockConfig,
   } from "@computational-biology-aachen/mxlweb-core";
   import { untrack } from "svelte";
 
@@ -252,8 +265,8 @@
   // guessing silently — all three are user-selectable, defaulting to a
   // suggested one per model (below), not forced. Same as $lib/Fit.svelte;
   // this fork doesn't diverge here beyond the pre-seeded dataset (see
-  // this file's own doc comment).
-  type BackendChoice = "lm" | "lm-jacobian" | "adjoint";
+  // this file's own doc comment). (BackendChoice itself now lives in
+  // $lib/fit/fitConfig.ts, shared with Fit.svelte/FitNde.svelte.)
 
   // Both "adjoint" and "lm-jacobian" are v1-restricted to state-variable
   // fit targets — each needs a *second* generated gradient/Jacobian graph
@@ -341,6 +354,19 @@
   // above) — just comfortably clears the hard minimum with room for a few
   // outer iterations, not tuned against real models.
   let chunkMaxfev = $derived(Math.max(5, totalFitParamCount + 20));
+
+  // The curriculum stage editor's own x-axis — independent of buildFitConfig
+  // succeeding (targets need not be mapped yet), so the schedule can be set
+  // up before or while picking fit targets. Falls back to a placeholder
+  // scale before any data is loaded; existing stage cutoffs get reinterpreted
+  // against the real range once it is, via resolveCutoffT's own clamping.
+  let curriculumTEnd = $derived.by(() => {
+    if (!csv || !timeColumn) return 100;
+    const values = (csv.columns[timeColumn] ?? []).filter((t) =>
+      Number.isFinite(t),
+    );
+    return values.length > 0 ? Math.max(...values) : 100;
+  });
 
   function backendLabel(choice: BackendChoice): string {
     switch (choice) {
@@ -507,298 +533,27 @@
   }
 
   // ---- Shared fit-config building (single + ensemble) --------------------
+  // FitTargetEntry/FitConfig/buildFitConfig now live in $lib/fit/fitConfig.ts,
+  // shared with Fit.svelte/FitNde.svelte and every curriculum stage
+  // ($lib/fit/curriculumRunner.ts).
 
-  type FitTargetEntry = {
-    kind: "state" | "derived";
-    index: number;
-    scale: number;
-    values: number[];
-  };
+  // ---- Curriculum schedule (optional; a single 100%-cutoff stage
+  // reproduces a plain fit exactly) — see $lib/fit/curriculum.ts. The single
+  // default stage's own `maxIterations` is a placeholder (it's always the
+  // *final* stage, whose iteration budget the runner ignores in favor of
+  // maxFunctionEvaluations/targetResidualNorm below) — not read from
+  // maxFunctionEvaluations itself, so this doesn't need to stay in sync
+  // with it.
+  let stages = $state<CurriculumStage[]>(defaultCurriculum(1000));
 
-  type FitConfig = {
-    parNames: string[];
-    fitIdx: number[];
-    nnBlockFitIdx: number[];
-    combinedFitIdx: number[];
-    logFlags: boolean[];
-    fitTargetsList: FitTargetEntry[];
-    sortedT: number[];
-    nDerived: number;
-    rhsWat: string;
-    derivedWat?: string;
-    y0: number[];
-    backend?: FitBackend;
-    adjointWat?: string;
-    jacobianWat?: string;
-    /** The user-facing selection this config was built from — kept around
-     * purely for display (the "this fit uses the X backend" note), since
-     * the wire-level `backend` field alone can't distinguish "lm" from
-     * "lm-jacobian" (both report as plain "lm", FitInitRequest.jacobianWat's
-     * doc comment). */
-    backendChoice: BackendChoice;
-    /** parName -> owning NN block key, for every entry in nnBlockFitIdx —
-     * lets the ensemble draw recognize a trained block's own `scale` name
-     * (left untouched, ADR 0006 §2.8) versus an ordinary fit-parameter row. */
-    nnBlockOwner: Map<string, string>;
-    /** Every *trained* block's own architecture config, keyed by block key —
-     * lets the ensemble draw re-run `buildNNBlock` with a fresh per-member
-     * seed to get that member's own independently Glorot-initialized weights
-     * (ADR 0006 §2.8), the same generator `addNNBlock` itself calls. */
-    nnBlockConfigs: Map<string, NNBlockConfig>;
-  };
-
-  function fitTargets(): { fitIdx: number[]; ok: boolean } {
-    // getAllAddressableNames(), not getParameterNames(): fitIdx is spliced
-    // directly into combinedFitIdx below, which is indexed against the
-    // former. fitParameters entries are always ordinary parameter ids
-    // (never a weight/scale name — those join separately via
-    // nnBlockParamNames), so this doesn't change *which* indices are found,
-    // only removes the implicit "getParameterNames() is always a positional
-    // prefix of getAllAddressableNames()" assumption the two arrays would
-    // otherwise have to agree on silently.
-    const parNames = model.getAllAddressableNames();
-    const fitIdx = fitParameters
-      .filter((p) => p.fit)
-      .map((p) => parNames.indexOf(p.id))
-      .filter((i) => i >= 0);
-    return { fitIdx, ok: fitIdx.length > 0 };
-  }
-
-  /** Everything a fit run needs that does *not* depend on where each member
-   * starts (ADR 0006 §2.4) — built once and reused by both single-model and
-   * every ensemble member's own FitInitRequest. */
-  function buildFitConfig():
-    { ok: true; config: FitConfig } | { ok: false; error: string } {
-    if (!csv || !timeColumn || targets.length === 0) {
-      return {
-        ok: false,
-        error: "Upload a data file and map at least one column first.",
-      };
-    }
-    const { fitIdx, ok } = fitTargets();
-    if (!ok && !hasTrainedNNBlock) {
-      return {
-        ok: false,
-        error:
-          "Select at least one parameter to fit, or enable training on an NN block.",
-      };
-    }
-
-    // A mapping can go stale (e.g. the model was reloaded from a new SBML
-    // file) without the mapping table being touched — reject rather than
-    // let an unresolved key reach the WASM heap as a bogus buffer index.
-    const knownKeys = new Set(candidateKeys.map((c) => c.key));
-    const staleTarget = targets.find((t) => !knownKeys.has(t.key));
-    if (staleTarget) {
-      return {
-        ok: false,
-        error: `"${staleTarget.key}" is no longer a valid target — re-map column "${staleTarget.column}".`,
-      };
-    }
-
-    const columns = csv.columns;
-    const dataT = columns[timeColumn];
-    const order = dataT.map((t, i) => i).sort((a, b) => dataT[a] - dataT[b]);
-    const sortedT = order.map((i) => dataT[i]);
-    if (sortedT.some((t) => Number.isNaN(t))) {
-      return {
-        ok: false,
-        error: `Column "${timeColumn}" has a non-numeric value.`,
-      };
-    }
-    for (const t of targets) {
-      if (order.some((i) => Number.isNaN(columns[t.column][i]))) {
-        return {
-          ok: false,
-          error: `Column "${t.column}" has a non-numeric value.`,
-        };
-      }
-    }
-
-    const derivedTargets = targets.filter((t) => t.kind === "derived");
-    const derivedKeys = derivedTargets.map((t) => t.key);
-
-    // "adjoint" and "lm-jacobian" both only support state-variable targets
-    // v1 (see FitInitRequest.adjointWat's/jacobianWat's doc comments) —
-    // reject up front rather than let fit_init fail deep in the WASM
-    // boundary. Independent of whether an NN block is even involved: both
-    // backends work over any fit-parameter set, mechanistic included.
-    if (
-      (backendChoice === "adjoint" || backendChoice === "lm-jacobian") &&
-      derivedTargets.length > 0
-    ) {
-      return {
-        ok: false,
-        error: `The ${backendChoice === "adjoint" ? "adjoint" : "analytic-Jacobian LM"} backend requires every fit target to be a state variable, not a derived quantity — pick "Levenberg-Marquardt" instead, or remap the derived-quantity target.`,
-      };
-    }
-
-    let derivedWat: string | undefined;
-    try {
-      derivedWat =
-        derivedKeys.length > 0 ? model.buildWatDerived(derivedKeys) : undefined;
-    } catch (e) {
-      return {
-        ok: false,
-        error:
-          e instanceof Error ? e.message : "Failed to build the fit model.",
-      };
-    }
-
-    const fitTargetsList: FitTargetEntry[] = targets.map((t) => {
-      const values = order.map((i) => columns[t.column][i]);
-      const scale = Math.max(...values.map(Math.abs), 1e-12);
-      return {
-        kind: t.kind,
-        index:
-          t.kind === "state"
-            ? model.getNames().indexOf(t.key)
-            : derivedKeys.indexOf(t.key),
-        scale,
-        values,
-      };
-    });
-
-    // The full flat array the compiled WAT module actually indexes into
-    // (ModelBuilderBase.lower()'s ir.parNames === getAllAddressableNames():
-    // model.parameters, then model.nnWeights) — not getParameterNames(),
-    // which is the UI-facing kinetic-parameters-plus-scale subset. Every
-    // index (fitIdx, nnBlockFitIdx, combinedFitIdx) is positional against
-    // *this* array.
-    const parNames = model.getAllAddressableNames();
-
-    // Every weight/bias, and the block's own trainable scale factor, of
-    // every *trained* NN block joins the fitted set — always in linear
-    // space, never log-space (ADR 0005 §2.1.2). Untrained blocks keep their
-    // current weights/scale fixed and are simply left out of fitIdx.
-    const nnBlockParamNames: string[] = [];
-    // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    const nnBlockOwner = new Map<string, string>();
-    // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    const nnBlockConfigs = new Map<string, NNBlockConfig>();
-    for (const [key, config] of model.nnBlocks) {
-      if (!config.trained) continue;
-      nnBlockConfigs.set(key, config);
-      const scaleName = `${key}_scale`;
-      nnBlockParamNames.push(scaleName);
-      nnBlockOwner.set(scaleName, key);
-      for (const name of model.nnBlockWeightNames(key)) {
-        nnBlockParamNames.push(name);
-        nnBlockOwner.set(name, key);
-      }
-    }
-    const nnBlockFitIdx = nnBlockParamNames.map((name) =>
-      parNames.indexOf(name),
-    );
-    const combinedFitIdx = [...fitIdx, ...nnBlockFitIdx];
-
-    const logFlags = [
-      ...fitIdx.map(
-        (i) =>
-          fitParameters.find((p) => p.id === parNames[i])?.logSpace ?? true,
-      ),
-      ...nnBlockFitIdx.map(() => false),
-    ];
-
-    // Wire-level `backend` only ever distinguishes "adjoint" from "lm" —
-    // "lm-jacobian" is still reported as plain "lm" with jacobianWat
-    // attached (FitInitRequest.jacobianWat's doc comment); undefined
-    // defaults to "lm" inside fitWorker.ts either way.
-    const backend: FitBackend | undefined =
-      backendChoice === "adjoint" ? "adjoint" : undefined;
-    let adjointWat: string | undefined;
-    let jacobianWat: string | undefined;
-    if (backendChoice === "adjoint") {
-      try {
-        adjointWat = model.buildAdjointWat(
-          combinedFitIdx.map((i) => parNames[i]),
-        );
-      } catch (e) {
-        return {
-          ok: false,
-          error:
-            e instanceof Error
-              ? e.message
-              : "Failed to build the adjoint model.",
-        };
-      }
-    } else if (backendChoice === "lm-jacobian") {
-      try {
-        jacobianWat = model.buildJacobianWat(
-          combinedFitIdx.map((i) => parNames[i]),
-        );
-      } catch (e) {
-        return {
-          ok: false,
-          error:
-            e instanceof Error
-              ? e.message
-              : "Failed to build the analytic-Jacobian model.",
-        };
-      }
-    }
-
-    return {
-      ok: true,
-      config: {
-        parNames,
-        fitIdx,
-        nnBlockFitIdx,
-        combinedFitIdx,
-        logFlags,
-        fitTargetsList,
-        sortedT,
-        nDerived: derivedKeys.length,
-        rhsWat: model.buildWat(),
-        derivedWat,
-        y0: model.resolveInitialValues(),
-        backend,
-        adjointWat,
-        jacobianWat,
-        backendChoice,
-        nnBlockOwner,
-        nnBlockConfigs,
-      },
-    };
-  }
-
-  function fitInitPayload(config: FitConfig, pars: number[]) {
-    return {
-      rhsWat: config.rhsWat,
-      derivedWat: config.derivedWat,
-      nDerived: config.nDerived,
-      y0: config.y0,
-      pars,
-      fitIdx: config.combinedFitIdx,
-      logFlags: config.logFlags,
-      targets: config.fitTargetsList.map(({ kind, index, scale }) => ({
-        kind,
-        index,
-        scale,
-      })),
-      dataT: config.sortedT,
-      dataY: config.fitTargetsList.flatMap((t) => t.values),
-      tEnd: config.sortedT[config.sortedT.length - 1],
-      solver: "radau5" as const,
-      rtol: 1e-8,
-      atol: 1e-10,
-      targetResidualNorm,
-      backend: config.backend,
-      adjointWat: config.adjointWat,
-      jacobianWat: config.jacobianWat,
-      progressUpdateInterval,
-    };
-  }
-
-  // Caps a chunk's own maxfev so a fit doesn't overshoot the total
-  // maxFunctionEvaluations budget by a whole chunk's worth.
-  function nextChunkBudget(currentNfev: number): number {
-    return Math.min(chunkMaxfev, maxFunctionEvaluations - currentNfev);
-  }
+  // Consecutive mid-chunk solver failures tolerated — via perturb-and-retry
+  // — before giving up on a curriculum stage; see curriculumRunner.ts.
+  const MAX_CONSECUTIVE_SOLVER_ERRORS = 10;
+  const PERTURBATION_SCALE = 1e-3;
 
   // ---- Single-model fit run ------------------------------------------
 
-  let session: FitSession | null = null;
+  let session: CurriculumRunHandle | null = null;
   let running = $state(false);
   let errorMsg = $state<string | null>(null);
   let nfev = $state(0);
@@ -807,11 +562,61 @@
   // a saved config choice, so it lives here rather than in FitParameterConfig
   // (ADR 0004 §2.11). null until the first chunk's progress has landed.
   let fittedValues = $state<Record<string, number> | null>(null);
-  // One entry per chunk response, reset at the start of each run (§2.11).
+  // One entry per chunk response across the *whole* curriculum run — reset
+  // only at runFit()'s own start, never per stage, so nfev is a true
+  // cumulative step count rather than restarting at 0 (and the chart
+  // appearing to snap back to the left edge) at every stage transition.
   let residualHistory = $state<{ nfev: number; residualNorm: number }[]>([]);
-  let progressFraction = $derived(
-    Math.min(nfev / Math.max(maxFunctionEvaluations, 1), 1),
+  const PHASE_COLORS = ["rgba(0, 97, 101, 0.08)", "rgba(246, 168, 0, 0.08)"];
+  function phaseColor(index: number): string {
+    return PHASE_COLORS[index % PHASE_COLORS.length];
+  }
+  // Deterministic, event-independent stage windows shared by single-fit and
+  // ensemble mode alike — each stage's *nominal* budget window (mirroring
+  // stageBudget's own per-stage calc below), fixed and in stage order
+  // regardless of how a run actually behaves (an early convergence, a
+  // solver-error retry, ...). Unlike residualHistory, this deliberately
+  // doesn't track a run's own live progress — shading transitions from
+  // actual runtime events made them jump around under retries/early
+  // convergence, and for ensemble mode there's no single such timeline to
+  // begin with (members progress through stages at genuinely different
+  // real paces).
+  let phaseRegions = $derived.by(() => {
+    // A single stage is a plain (non-curriculum) fit — shading "Stage 1
+    // (final)" over the entire chart says nothing and just looks like an
+    // unexplained tint.
+    if (stages.length <= 1) return [];
+    const regions: PhaseRegion[] = [];
+    let cumulative = 0;
+    for (let i = 0; i < stages.length; i++) {
+      const budget =
+        i < stages.length - 1
+          ? stages[i].maxIterations
+          : finalStageBudget(stages, maxFunctionEvaluations);
+      regions.push({
+        start: cumulative,
+        end: cumulative + budget,
+        color: phaseColor(i),
+        label: `Stage ${i + 1}${i === stages.length - 1 ? " (final)" : ""}`,
+      });
+      cumulative += budget;
+    }
+    return regions;
+  });
+  // Which curriculum stage is currently running, 0-indexed, and how many
+  // stages the schedule has — 1-of-1 for a plain (non-curriculum) fit, so
+  // the UI only needs to show this when stageCount > 1.
+  let stageIndex = $state(0);
+  let stageCount = $state(1);
+  // A non-final stage's progress is bounded by its own share of the fixed
+  // total budget; the final stage gets whatever's left of it (see
+  // $lib/fit/curriculum.ts's finalStageBudget / $lib/fit/curriculumRunner.ts).
+  let stageBudget = $derived(
+    stageIndex < stages.length - 1
+      ? stages[stageIndex].maxIterations
+      : finalStageBudget(stages, maxFunctionEvaluations),
   );
+  let progressFraction = $derived(Math.min(nfev / Math.max(stageBudget, 1), 1));
   // True once a run has stopped because it's genuinely finished (converged,
   // hit the residual target, or hit the max-evaluations cap) — as opposed to
   // still running or cancelled. Forces the progress bar to 100%: nfev/max
@@ -888,7 +693,16 @@
   });
 
   export function runFit() {
-    const result = buildFitConfig();
+    const result = buildFitConfig({
+      model,
+      fitParameters,
+      csv,
+      timeColumn,
+      targets,
+      candidateKeys,
+      backendChoice,
+      hasTrainedNNBlock,
+    });
     if (!result.ok) {
       errorMsg = result.error;
       return;
@@ -903,8 +717,8 @@
     residualNorm = null;
     fittedValues = null;
     residualHistory = [];
-    let bestResidual = Infinity;
-    let staleChunks = 0;
+    stageIndex = 0;
+    stageCount = stages.length;
 
     // A per-row "initial guess" override (edited in the param table) starts
     // the fit from a value other than the model's current live parameter —
@@ -919,83 +733,113 @@
             ?.initialGuess ?? v,
       );
 
-    session = new FitSession();
-    session.onInitResult((result) => {
-      if (!result.ok) {
-        errorMsg = result.error ?? "Failed to start the fit.";
-        running = false;
-        session?.cancel();
-        session = null;
-        return;
-      }
-      // Anchor the convergence plot at nfev=0 with the pre-fit residual,
-      // rather than starting from wherever the first chunk happens to land.
-      if (result.initialResidualNorm !== undefined) {
-        residualHistory = [
-          { nfev: 0, residualNorm: result.initialResidualNorm },
-        ];
-      }
-      session?.chunk(nextChunkBudget(0));
-    });
-    session.onProgress((progress) => {
-      nfev = progress.nfev;
-      residualNorm = progress.residualNorm;
-      if (progress.err) {
-        errorMsg = progress.err.message;
-        running = false;
-        session?.free();
-        session = null;
-        return;
-      }
-      fittedValues = Object.fromEntries(
-        config.parNames.map((id, i) => [id, progress.params[i]]),
-      );
-      residualHistory = [
-        ...residualHistory,
-        { nfev: progress.nfev, residualNorm: progress.residualNorm },
-      ];
-      previewTrajectory(
-        progress.params,
-        config.sortedT[config.sortedT.length - 1],
-      );
+    // Cumulative step offset across the whole curriculum — see
+    // residualHistory's own doc comment. Plain closure state, not
+    // reactive: only residualHistory itself needs to drive the chart.
+    let cumulativeOffset = 0;
+    let lastStageNfev = 0;
 
-      // Intermediate reports (progressUpdateInterval, ADR 0005 §2.5) are
-      // display-only — never used for continuation/patience decisions,
-      // which stay tied to real chunk completions.
-      if (progress.intermediate) return;
-
-      const improvement = Number.isFinite(bestResidual)
-        ? (bestResidual - progress.residualNorm) / bestResidual
-        : Infinity;
-      if (improvement > FIT_MIN_DELTA) {
-        bestResidual = progress.residualNorm;
-        staleChunks = 0;
-      } else {
-        staleChunks += 1;
-      }
-      const stalled = staleChunks >= FIT_PATIENCE_CHUNKS;
-
-      const reachedTarget = progress.residualNorm <= targetResidualNorm;
-      const reachedMaxEvals = progress.nfev >= maxFunctionEvaluations;
-      const budget = nextChunkBudget(progress.nfev);
-      if (
-        !progress.done &&
-        !reachedTarget &&
-        !reachedMaxEvals &&
-        !stalled &&
-        budget > 0
-      ) {
-        session?.chunk(budget);
-      } else {
-        running = false;
-        fitComplete = true;
-        fitStalled = stalled;
-        session?.free();
-        session = null;
-      }
-    });
-
-    session.init(fitInitPayload(config, pars));
+    session = runCurriculumFit(
+      config,
+      pars,
+      stages,
+      // A getter, not a plain object: re-read live on every init/chunk
+      // decision inside runCurriculumFit, so editing "Stop once residual
+      // norm reaches"/"Maximum total function evaluations" etc. mid-run
+      // takes effect on the next chunk, same as before curriculum learning
+      // existed — a snapshot taken once here would freeze them for the
+      // whole run instead.
+      () => ({
+        targetResidualNorm,
+        maxFunctionEvaluations,
+        chunkMaxfev,
+        progressUpdateInterval,
+        patienceChunks: FIT_PATIENCE_CHUNKS,
+        minDelta: FIT_MIN_DELTA,
+        maxConsecutiveSolverErrors: MAX_CONSECUTIVE_SOLVER_ERRORS,
+        perturbationScale: PERTURBATION_SCALE,
+      }),
+      {
+        onInitError: (message) => {
+          errorMsg = message;
+          running = false;
+          session = null;
+        },
+        onStageInit: ({
+          initialResidualNorm,
+          stageIndex: i,
+          stageCount: n,
+          stageCutoffT,
+        }) => {
+          // Every FIT_INIT resets progress.nfev to start counting from 0
+          // again for that attempt — a same-stage retry after a solver
+          // error (curriculumRunner.ts's perturb-and-retry) included, not
+          // just a genuine transition to the next stage — so the offset
+          // folds in unconditionally, or a retry's fresh progress.nfev
+          // would read as jumping backward on the chart.
+          cumulativeOffset += lastStageNfev;
+          lastStageNfev = 0;
+          stageIndex = i;
+          stageCount = n;
+          nfev = 0;
+          // Anchor the convergence plot at this stage's own start with its
+          // pre-chunk residual, rather than starting from wherever the
+          // first chunk happens to land.
+          if (initialResidualNorm !== undefined) {
+            residualHistory = [
+              ...residualHistory,
+              {
+                nfev: cumulativeOffset,
+                residualNorm: residualPerPoint(
+                  initialResidualNorm,
+                  stageCutoffT,
+                  config,
+                ),
+              },
+            ];
+          }
+        },
+        onProgress: ({
+          progress,
+          stageIndex: i,
+          stageCount: n,
+          stageCutoffT,
+        }) => {
+          nfev = progress.nfev;
+          residualNorm = progress.residualNorm;
+          stageIndex = i;
+          stageCount = n;
+          lastStageNfev = progress.nfev;
+          fittedValues = Object.fromEntries(
+            config.parNames.map((id, i) => [id, progress.params[i]]),
+          );
+          const cumulativeNfev = cumulativeOffset + progress.nfev;
+          residualHistory = [
+            ...residualHistory,
+            {
+              nfev: cumulativeNfev,
+              residualNorm: residualPerPoint(
+                progress.residualNorm,
+                stageCutoffT,
+                config,
+              ),
+            },
+          ];
+          previewTrajectory(progress.params, stageCutoffT);
+        },
+        onRunError: (message) => {
+          errorMsg = message;
+          running = false;
+          session = null;
+        },
+        onDone: ({ stalled }) => {
+          running = false;
+          fitComplete = true;
+          fitStalled = stalled;
+          session = null;
+        },
+      },
+    );
   }
 
   export function cancelFit() {
@@ -1071,10 +915,9 @@
   }
 
   let members = $state<EnsembleMember[]>([]);
-  // FitSession instances live outside $state, deliberately — a class
-  // wrapping a live Worker gets no benefit from Svelte 5's deep-reactivity
-  // proxying, matching single-fit mode's own plain `session` variable.
-  let memberSessions: (FitSession | null)[] = [];
+  // Run handles live outside $state, deliberately — matching single-fit
+  // mode's own plain `session` variable.
+  let memberSessions: (CurriculumRunHandle | null)[] = [];
   let ensembleRunning = $state(false);
   let ensembleErrorMsg = $state<string | null>(null);
   let ensemblePreviewPool: WorkerPool | null = null;
@@ -1226,101 +1069,111 @@
   }
 
   function startEnsembleMember(m: number, config: FitConfig, pars: number[]) {
-    const memberSession = new FitSession();
-    memberSessions[m] = memberSession;
-    let bestResidual = Infinity;
-    let staleChunks = 0;
-
     const setMember = (patch: Partial<EnsembleMember>) => {
       members = members.map((mem, i) => (i === m ? { ...mem, ...patch } : mem));
     };
 
-    memberSession.onInitResult((result) => {
-      if (!result.ok) {
-        setMember({ errored: true, done: true });
-        memberSession.cancel();
-        memberSessions[m] = null;
-        checkEnsembleDone();
-        return;
-      }
-      if (result.initialResidualNorm !== undefined) {
-        setMember({
-          residualHistory: [
-            { nfev: 0, residualNorm: result.initialResidualNorm },
-          ],
-        });
-      }
-      memberSession.chunk(nextChunkBudget(0));
-    });
+    // Cumulative step offset across this member's own curriculum — mirrors
+    // runFit()'s identically-named closure vars — so residualHistory keeps
+    // rising across stage transitions instead of resetting to 0 (member.nfev
+    // itself, used by the progress bar, deliberately stays per-stage/raw).
+    let cumulativeOffset = 0;
+    let lastStageNfev = 0;
 
-    memberSession.onProgress((progress) => {
-      if (progress.err) {
-        setMember({ errored: true, done: true, nfev: progress.nfev });
-        memberSession.free();
-        memberSessions[m] = null;
-        checkEnsembleDone();
-        return;
-      }
-      const member = members[m];
-      const fittedValues = Object.fromEntries(
-        config.parNames.map((id, i) => [id, progress.params[i]]),
-      );
-      const nextHistory = [
-        ...member.residualHistory,
-        { nfev: progress.nfev, residualNorm: progress.residualNorm },
-      ];
-      setMember({
-        nfev: progress.nfev,
-        residualNorm: progress.residualNorm,
-        residualHistory: nextHistory,
-        fittedValues,
-      });
-      previewEnsembleTrajectory(
-        m,
-        progress.params,
-        config.sortedT[config.sortedT.length - 1],
-      );
-
-      // Intermediate reports (progressUpdateInterval, ADR 0005 §2.5) are
-      // display-only — never used for continuation/patience decisions,
-      // which stay tied to real chunk completions.
-      if (progress.intermediate) return;
-
-      const improvement = Number.isFinite(bestResidual)
-        ? (bestResidual - progress.residualNorm) / bestResidual
-        : Infinity;
-      if (improvement > FIT_MIN_DELTA) {
-        bestResidual = progress.residualNorm;
-        staleChunks = 0;
-      } else {
-        staleChunks += 1;
-      }
-      const stalled = staleChunks >= FIT_PATIENCE_CHUNKS;
-
-      const reachedTarget = progress.residualNorm <= targetResidualNorm;
-      const reachedMaxEvals = progress.nfev >= maxFunctionEvaluations;
-      const budget = nextChunkBudget(progress.nfev);
-      if (
-        !progress.done &&
-        !reachedTarget &&
-        !reachedMaxEvals &&
-        !stalled &&
-        budget > 0
-      ) {
-        memberSession.chunk(budget);
-      } else {
-        setMember({ done: true });
-        memberSession.free();
-        memberSessions[m] = null;
-        checkEnsembleDone();
-      }
-    });
-
-    memberSession.init(fitInitPayload(config, pars));
+    memberSessions[m] = runCurriculumFit(
+      config,
+      pars,
+      stages,
+      // A getter, not a plain object: re-read live on every init/chunk
+      // decision inside runCurriculumFit, so editing "Stop once residual
+      // norm reaches"/"Maximum total function evaluations" etc. mid-run
+      // takes effect on the next chunk, same as before curriculum learning
+      // existed — a snapshot taken once here would freeze them for the
+      // whole run instead.
+      () => ({
+        targetResidualNorm,
+        maxFunctionEvaluations,
+        chunkMaxfev,
+        progressUpdateInterval,
+        patienceChunks: FIT_PATIENCE_CHUNKS,
+        minDelta: FIT_MIN_DELTA,
+        maxConsecutiveSolverErrors: MAX_CONSECUTIVE_SOLVER_ERRORS,
+        perturbationScale: PERTURBATION_SCALE,
+      }),
+      {
+        onInitError: () => {
+          setMember({ errored: true, done: true });
+          memberSessions[m] = null;
+          checkEnsembleDone();
+        },
+        onStageInit: ({ initialResidualNorm }) => {
+          // Every FIT_INIT resets progress.nfev to start counting from 0
+          // again for that attempt — a same-stage retry after a solver
+          // error (curriculumRunner.ts's perturb-and-retry) included, not
+          // just a genuine transition to the next stage — so the offset
+          // folds in unconditionally, or a retry's fresh progress.nfev
+          // would read as jumping backward on the chart.
+          cumulativeOffset += lastStageNfev;
+          lastStageNfev = 0;
+          const member = members[m];
+          setMember({
+            nfev: 0,
+            residualHistory:
+              initialResidualNorm !== undefined
+                ? [
+                    ...member.residualHistory,
+                    {
+                      nfev: cumulativeOffset,
+                      residualNorm: initialResidualNorm,
+                    },
+                  ]
+                : member.residualHistory,
+          });
+        },
+        onProgress: ({ progress, stageCutoffT }) => {
+          const member = members[m];
+          const fittedValues = Object.fromEntries(
+            config.parNames.map((id, i) => [id, progress.params[i]]),
+          );
+          lastStageNfev = progress.nfev;
+          const cumulativeNfev = cumulativeOffset + progress.nfev;
+          const nextHistory = [
+            ...member.residualHistory,
+            { nfev: cumulativeNfev, residualNorm: progress.residualNorm },
+          ];
+          setMember({
+            nfev: progress.nfev,
+            residualNorm: progress.residualNorm,
+            residualHistory: nextHistory,
+            fittedValues,
+          });
+          previewEnsembleTrajectory(m, progress.params, stageCutoffT);
+        },
+        onRunError: () => {
+          setMember({ errored: true, done: true });
+          memberSessions[m] = null;
+          checkEnsembleDone();
+        },
+        onDone: () => {
+          setMember({ done: true });
+          memberSessions[m] = null;
+          checkEnsembleDone();
+        },
+      },
+    );
   }
 
   export function runEnsembleFit() {
-    const result = buildFitConfig();
+    const result = buildFitConfig({
+      model,
+      fitParameters,
+      csv,
+      timeColumn,
+      targets,
+      candidateKeys,
+      backendChoice,
+      hasTrainedNNBlock,
+    });
     if (!result.ok) {
       ensembleErrorMsg = result.error;
       return;
@@ -1758,6 +1611,12 @@
           {/if}
         </tbody>
       </table>
+      <CurriculumStagesEditor
+        bind:stages={stages}
+        tEnd={curriculumTEnd}
+        budgetScale={maxFunctionEvaluations}
+        minBudgetWarn={chunkMaxfev}
+      />
     </div>
     <div class="config-col">
       <h3>Data</h3>
@@ -2047,6 +1906,10 @@
           onclick={cancelFit}>Stop</button
         >
       {/if}
+      {#if stageCount > 1 && (running || fitComplete)}
+        <span class="progress-info">stage {stageIndex + 1} of {stageCount}</span
+        >
+      {/if}
       {#if residualNorm !== null}
         <span class="progress-info"
           >evals: {nfev} · residual norm: {residualNorm.toExponential(3)}</span
@@ -2067,7 +1930,7 @@
     {#if nfev > 0}
       <div
         class="progress-bar-track"
-        title="{nfev} / {maxFunctionEvaluations} evaluations"
+        title="{nfev} / {stageBudget} evaluations"
       >
         <div
           class="progress-bar-fill"
@@ -2099,8 +1962,9 @@
           yScale="logarithmic"
           yMin={undefined}
           xMax={maxFunctionEvaluations}
-          xLabel="Function evaluations"
-          yLabel="Residual norm"
+          xLabel="Function evaluations (cumulative across stages)"
+          yLabel="Residual norm (per data point)"
+          phases={phaseRegions}
         />
       </div>
     </div>
@@ -2164,8 +2028,9 @@
           yScale="logarithmic"
           yMin={undefined}
           xMax={maxFunctionEvaluations}
-          xLabel="Function evaluations"
+          xLabel="Function evaluations (cumulative across stages)"
           yLabel="Residual norm"
+          phases={phaseRegions}
         />
       </div>
     </div>
