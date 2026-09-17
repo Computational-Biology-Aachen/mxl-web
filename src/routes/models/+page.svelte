@@ -2,7 +2,7 @@
   import { base } from "$app/paths";
   import schemeEbeling from "$lib/assets/ebeling2026-scheme.png";
   import schemeFvcb from "$lib/assets/fvcb.png";
-  import schemeKea3 from "$lib/assets/tomato_KEA3.png";
+  import mibinet from "$lib/assets/logos/mibinet.png";
   import schemeLotkaVolt from "$lib/assets/lotka-volterra-scheme.png";
   import scheme2016npq from "$lib/assets/matuszynska2016npq.png";
   import scheme2016phd from "$lib/assets/matuszynska2016phd.png";
@@ -10,11 +10,12 @@
   import schemePopDyn from "$lib/assets/population-dynamics.png";
   import schemeSaadat from "$lib/assets/saadat2021.png";
   import schemeSir from "$lib/assets/sir.png";
+  import schemeKea3 from "$lib/assets/tomato_KEA3.png";
   import schemeTripartite from "$lib/assets/tripartite.png";
   import schemeYokota from "$lib/assets/yokota.png";
+  import CardModel from "$lib/CardModel.svelte";
   import { fuzzyMatch } from "$lib/utils";
   import {
-    CardModel,
     GridGallery,
     H2,
     Icon,
@@ -22,7 +23,12 @@
     SectionMain,
   } from "@computational-biology-aachen/design";
 
-  type Model = { name: string; slug: string; image?: string };
+  type Model = {
+    name: string;
+    slug: string;
+    image?: string;
+    consortium?: string;
+  };
 
   const odeModels: Model[] = [
     { name: "Lotka Volterra", slug: "lotka-volterra", image: schemeLotkaVolt },
@@ -35,11 +41,13 @@
       name: "Tripartite dynamics",
       slug: "tripartite",
       image: schemeTripartite,
+      consortium: mibinet,
     },
     {
       name: "Enterobactin",
       slug: "dynamic-entrobactin",
       image: schemeEnterobactin,
+      consortium: mibinet,
     },
     { name: "Yokota 1985", slug: "yokota1985", image: schemeYokota },
     { name: "Poolman 2000", slug: "poolman2000", image: scheme2016phd },
@@ -115,6 +123,7 @@
           name={model.name}
           href="{base}/models/{model.slug}"
           image={model.image}
+          consortium={model.consortium}
         />
       {/each}
     </GridGallery>
@@ -127,6 +136,7 @@
           name={model.name}
           href="{base}/models/{model.slug}"
           image={model.image}
+          consortium={model.consortium}
         />
       {/each}
     </GridGallery>
