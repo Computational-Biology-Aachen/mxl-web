@@ -11,6 +11,7 @@
   import schemeEnterobactin from "$lib/assets/mibinet-duo.png";
   import hero from "$lib/assets/mxlweb-hero.png";
   import schemeSir from "$lib/assets/sir.png";
+  import CopyButton from "$lib/CopyButton.svelte";
   import {
     Button,
     CardFeature,
@@ -21,6 +22,11 @@
     SectionMain as Main,
     Row,
   } from "@computational-biology-aachen/design";
+  import Bold from "@computational-biology-aachen/design/Bold.svelte";
+  import H3 from "@computational-biology-aachen/design/H3.svelte";
+  import Italic from "@computational-biology-aachen/design/Italic.svelte";
+  import Link from "@computational-biology-aachen/design/Link.svelte";
+  import Text from "@computational-biology-aachen/design/Text.svelte";
 
   const logos = [
     { src: rwth, href: "https://www.rwth-aachen.de", alt: "rwth logo" },
@@ -55,6 +61,11 @@
       height: "4rem",
     },
   ];
+
+  let citationText = `van Aalst, Marvin, Alienor Lahlou, Tanvir Hassan, \
+  William Gaultier, David Colliaux, and Anna Matuszyńska. \
+  "Web-based collaborative model development in interdisciplinary consortia: \
+  Design principles and practical guidance." PLoS biology 24, no. 6 (2026): e3003825.`;
 </script>
 
 <svelte:head>
@@ -169,9 +180,36 @@
 
   <div class="heading">
     <Icon color="primary">handshake</Icon>
-    <h2>Trusted by the scientific community</h2>
+    <H3>Trusted by the scientific community</H3>
   </div>
   <LogoBar logos={logos} />
+
+  <div class="heading">
+    <Icon color="primary">book</Icon>
+    <H3>Publication</H3>
+  </div>
+  <div class="narrow">
+    <Row
+      justify="between"
+      gap="var(--space-12)"
+    >
+      <Text>
+        <Bold
+          >Web-based collaborative model development in interdisciplinary
+          consortia: Design principles and practical guidance.
+        </Bold>
+        Marvin van Aalst , Alienor Lahlou , Tanvir Hassan, William Gaultier, David
+        Colliaux, Anna Matuszyńska. <Italic
+          >PLoS biology 24, no. 6 (2026): e3003825;</Italic
+        >
+        <Link href="https://doi.org/10.1371/journal.pbio.3003825"
+          >https://doi.org/10.1371/journal.pbio.3003825</Link
+        >
+      </Text>
+      <CopyButton text={citationText} />
+    </Row>
+  </div>
+
   <!-- End container -->
 </Main>
 
@@ -250,5 +288,9 @@
     gap: 0.5rem;
     margin-top: 2.5rem;
     margin-bottom: 0.5rem;
+  }
+
+  div.narrow {
+    max-width: 100ch;
   }
 </style>
