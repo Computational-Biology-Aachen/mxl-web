@@ -6,8 +6,10 @@ import { existsSync } from "fs";
 
 // In the meta-repo, resolve the workspace packages from source for live edits;
 // standalone installs fall back to the published package via its exports map.
-const designSrc = new URL("../design/src/lib", import.meta.url).pathname;
-const coreSrc = new URL("../../pkg/mxlweb-core/src", import.meta.url).pathname;
+const designSrc = new URL("../../pkg-js/design/src/lib", import.meta.url)
+  .pathname;
+const coreSrc = new URL("../../pkg-js/mxlweb-core/src", import.meta.url)
+  .pathname;
 const workspaceAlias = {
   ...(existsSync(designSrc)
     ? { "@computational-biology-aachen/design": designSrc }

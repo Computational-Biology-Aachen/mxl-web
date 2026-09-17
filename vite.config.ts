@@ -20,9 +20,12 @@ const coreStatic = join(
 // on (e.g. katex, for its fonts) can resolve to ../design's own nested
 // node_modules rather than this project's — which SvelteKit's dev server
 // doesn't allow serving from by default. Allow it explicitly when present.
-const designNodeModules = new URL("../design/node_modules", import.meta.url)
+const designNodeModules = new URL(
+  "../../pkg-js/design/node_modules",
+  import.meta.url,
+).pathname;
+const designSrc = new URL("../../pkg-js/design/src/lib", import.meta.url)
   .pathname;
-const designSrc = new URL("../design/src/lib", import.meta.url).pathname;
 
 const MIME: Record<string, string> = {
   ".js": "application/javascript",
