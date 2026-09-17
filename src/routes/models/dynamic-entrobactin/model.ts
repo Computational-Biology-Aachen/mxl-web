@@ -8,146 +8,200 @@ import {
   Num,
 } from "@computational-biology-aachen/mxlweb-core/mathml";
 
+/**
+ * Dynamic enterobactin: siderophore-mediated cross-feeding between
+ * E. coli (producer) and C. glutamicum (exploiter) under iron limitation.
+ *
+ * Krüger, Paik, Bund, Pesch et al. (2026), bioRxiv 2026.05.27.728356.
+ * https://doi.org/10.64898/2026.05.27.728356
+ *
+ * E. coli secretes the siderophore enterobactin, which chelates iron and can
+ * be taken up by both species. Growth of each organism follows a
+ * double-Monod law on the shared glucose substrate and on enterobactin, with
+ * biomass yield coefficients on glucose and separate maximum rates for
+ * enterobactin production (E. coli only) and uptake (both species).
+ *
+ * Variables: e_coli, c_glutamicum, glucose, enterobactin
+ */
 export function initModel(): KineticModelBuilder {
   return new KineticModelBuilder()
-    .addParameter("Y_X1_S", {
+    .addVariable("e_coli", {
+      value: new Name("inoculation_ratio"),
+      texName: String.raw`\text{E. coli}`,
+    })
+    .addVariable("c_glutamicum", {
+      value: new Add([
+        new Num(1.0),
+        new Minus([new Name("inoculation_ratio")]),
+      ]),
+      texName: String.raw`\text{C. Glutamicum}`,
+    })
+    .addVariable("glucose", {
+      value: 10.0,
+      texName: String.raw`\text{Glucose}`,
+    })
+    .addVariable("enterobactin", {
+      value: 0.02,
+      texName: String.raw`\text{Enterobactin}`,
+    })
+    .addParameter("Y_e_coli_glucose", {
       value: 0.45,
-      texName: "Y\\_X1\\_S",
+      texName: String.raw`Y_{E.\ coli,\ Glucose}`,
     })
-    .addParameter("Y_X2_S", {
+    .addParameter("Y_c_glutamicum_glucose", {
       value: 0.5,
-      texName: "Y\\_X2\\_S",
+      texName: String.raw`Y_{C.\ glutamicum,\ Glucose}`,
     })
-    .addParameter("mu_max1", {
+    .addParameter("mu_max_e_coli", {
       value: 0.22,
-      texName: "mu\\_max1",
+      displayName: "E. coli max. growth rate",
+      texName: String.raw`mu_{max,\ E.\ coli}`,
       slider: {
         min: "0.1",
         max: "0.9",
         step: "0.1",
       },
     })
-    .addParameter("mu_max2", {
+    .addParameter("mu_max_c_glutamicum", {
       value: 0.45,
-      texName: "mu\\_max2",
+      displayName: "C. glutamicum max. growth rate",
+      texName: String.raw`mu_{max,\ C.\ glutamicum}`,
       slider: {
         min: "0.1",
         max: "0.9",
         step: "0.1",
       },
     })
-    .addParameter("K_s1", {
+    .addParameter("K_s_glucose_e_coli", {
       value: 0.0005,
-      texName: "K\\_s1",
+      texName: String.raw`K_{s,\ Glucose,\ E.\ coli}`,
     })
-    .addParameter("K_s2", {
+    .addParameter("K_s_glucose_c_glutamicum", {
       value: 0.005,
-      texName: "K\\_s2",
+      texName: String.raw`K_{s,\ Glucose,\ C.\ Glutamicum}`,
     })
-    .addParameter("q_p1_max", {
+    .addParameter("q_enterobactin_production_max", {
       value: 0.015,
-      texName: "q\\_p1\\_max",
+      texName: String.raw`q_{Enterobactin\ production\ max}`,
     })
-    .addParameter("q_up_X1_max", {
+    .addParameter("q_enterobactin_uptake_e_coli_max", {
       value: 0.005,
-      texName: "q\\_up\\_X1\\_max",
+      texName: String.raw`q_{Enterobactin\ uptake\ E.\ coli\ max}`,
     })
-    .addParameter("q_up_X2_max", {
+    .addParameter("q_enterobactin_uptake_c_glutamicum_max", {
       value: 0.01,
-      texName: "q\\_up\\_X2\\_max",
+      texName: String.raw`q_{Enterobactin\ uptake\ C.\ Glutamicum\ max}`,
     })
-    .addParameter("K_s_X1_minus_P", {
+    .addParameter("K_s_enterobactin_e_coli", {
       value: 1e-5,
-      texName: "K\\_s\\_X1-P",
+      texName: String.raw`K_{s,\ Enterobactin,\ E.\ coli}`,
     })
-    .addParameter("K_s_X2_minus_P", {
+    .addParameter("K_s_enterobactin_c_glutamicum", {
       value: 0.001,
-      texName: "K\\_s\\_X2-P",
+      texName: String.raw`K_{s,\ Enterobactin,\ C.\ Glutamicum}`,
     })
-    .addParameter("innoculationRatio", {
+    .addParameter("inoculation_ratio", {
       value: 0.5,
-      texName: "innoculationRatio",
+      texName: String.raw`\theta`,
       // slider: {
       //   min: "0.1",
       //   max: "0.9",
       //   step: "0.1",
       // },
     })
-    .addVariable("x1", {
-      value: new Name("innoculationRatio"),
-      texName: "x1",
-    })
-    .addVariable("x2", {
-      value: new Add([
-        new Num(1.0),
-        new Minus([new Name("innoculationRatio")]),
-      ]),
-      texName: "x2",
-    })
-    .addVariable("s1", {
-      value: 10.0,
-      texName: "s1",
-    })
-    .addVariable("p1", {
-      value: 0.02,
-      texName: "p1",
-    })
-    .addReaction("mu1", {
+    .addReaction("mu_e_coli", {
       fn: new Divide([
-        new Mul([new Name("mu_max1"), new Name("p1"), new Name("s1")]),
         new Mul([
-          new Add([new Name("K_s1"), new Name("s1")]),
-          new Add([new Name("K_s_X1_minus_P"), new Name("p1")]),
+          new Name("mu_max_e_coli"),
+          new Name("enterobactin"),
+          new Name("glucose"),
+        ]),
+        new Mul([
+          new Add([new Name("K_s_glucose_e_coli"), new Name("glucose")]),
+          new Add([
+            new Name("K_s_enterobactin_e_coli"),
+            new Name("enterobactin"),
+          ]),
         ]),
       ]),
       stoichiometry: [
-        { name: "x1", value: new Name("x1") },
+        { name: "e_coli", value: new Name("e_coli") },
         {
-          name: "s1",
-          value: new Minus([new Divide([new Name("x1"), new Name("Y_X1_S")])]),
+          name: "glucose",
+          value: new Minus([
+            new Divide([new Name("e_coli"), new Name("Y_e_coli_glucose")]),
+          ]),
         },
       ],
-      texName: "mu1",
+      texName: String.raw`mu_{E.\ coli}`,
     })
-    .addReaction("mu2", {
+    .addReaction("mu_c_glutamicum", {
       fn: new Divide([
-        new Mul([new Name("mu_max2"), new Name("p1"), new Name("s1")]),
         new Mul([
-          new Add([new Name("K_s2"), new Name("s1")]),
-          new Add([new Name("K_s_X2_minus_P"), new Name("p1")]),
+          new Name("mu_max_c_glutamicum"),
+          new Name("enterobactin"),
+          new Name("glucose"),
+        ]),
+        new Mul([
+          new Add([new Name("K_s_glucose_c_glutamicum"), new Name("glucose")]),
+          new Add([
+            new Name("K_s_enterobactin_c_glutamicum"),
+            new Name("enterobactin"),
+          ]),
         ]),
       ]),
       stoichiometry: [
-        { name: "x2", value: new Name("x2") },
+        { name: "c_glutamicum", value: new Name("c_glutamicum") },
         {
-          name: "s1",
-          value: new Minus([new Divide([new Name("x2"), new Name("Y_X2_S")])]),
+          name: "glucose",
+          value: new Minus([
+            new Divide([
+              new Name("c_glutamicum"),
+              new Name("Y_c_glutamicum_glucose"),
+            ]),
+          ]),
         },
       ],
-      texName: "mu2",
+      texName: String.raw`mu_{C.\ Glutamicum}`,
     })
-    .addReaction("q_p1", {
+    .addReaction("q_enterobactin_production", {
       fn: new Divide([
-        new Mul([new Name("mu1"), new Name("q_p1_max")]),
-        new Name("mu_max1"),
+        new Mul([
+          new Name("mu_e_coli"),
+          new Name("q_enterobactin_production_max"),
+        ]),
+        new Name("mu_max_e_coli"),
       ]),
-      stoichiometry: [{ name: "p1", value: new Name("x1") }],
-      texName: "q\\_p1",
+      stoichiometry: [{ name: "enterobactin", value: new Name("e_coli") }],
+      texName: String.raw`q\\_enterobactin\\_production`,
     })
-    .addReaction("q_up1", {
+    .addReaction("q_enterobactin_uptake_e_coli", {
       fn: new Divide([
-        new Mul([new Name("mu1"), new Name("q_up_X1_max")]),
-        new Name("mu_max1"),
+        new Mul([
+          new Name("mu_e_coli"),
+          new Name("q_enterobactin_uptake_e_coli_max"),
+        ]),
+        new Name("mu_max_e_coli"),
       ]),
-      stoichiometry: [{ name: "p1", value: new Minus([new Name("x1")]) }],
-      texName: "q\\_up1",
+      stoichiometry: [
+        { name: "enterobactin", value: new Minus([new Name("e_coli")]) },
+      ],
+      texName: String.raw`q\\_enterobactin\\_uptake\\_E.\ coli`,
     })
-    .addReaction("q_up2", {
+    .addReaction("q_enterobactin_uptake_c_glutamicum", {
       fn: new Divide([
-        new Mul([new Name("mu2"), new Name("q_up_X2_max")]),
-        new Name("mu_max2"),
+        new Mul([
+          new Name("mu_c_glutamicum"),
+          new Name("q_enterobactin_uptake_c_glutamicum_max"),
+        ]),
+        new Name("mu_max_c_glutamicum"),
       ]),
-      stoichiometry: [{ name: "p1", value: new Minus([new Name("x2")]) }],
-      texName: "q\\_up2",
+      stoichiometry: [
+        {
+          name: "enterobactin",
+          value: new Minus([new Name("c_glutamicum")]),
+        },
+      ],
+      texName: String.raw`q\\_enterobactin\\_uptake\\C.\ Glutamicum`,
     });
 }

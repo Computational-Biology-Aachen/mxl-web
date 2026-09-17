@@ -7,23 +7,30 @@ import {
 } from "@computational-biology-aachen/mxlweb-core/mathml";
 
 /**
- * Tripartite microbial community — cooperation, cheating, and private goods.
+ * Tripartite microbial community — cooperation, privatization and cheating.
  *
- * Three cell types with density-dependent (logistic) growth:
- *   P (Public)  — produces shared public goods; exploited by cheaters via α·P·C
- *   C (Cheater) — exploits public goods without contributing; grows on α·P·C
- *   M (Private) — produces private goods; competes with P via β·P·M
+ * Hassan, Dwivedi, Schuster & Matuszyńska (2026), Open Biol. 16:250484.
+ * https://doi.org/10.1098/rsob.250484
  *
- * Models evolutionary dynamics of cooperation breakdown and niche partitioning.
+ * A closed, well-mixed batch culture in which sucrose is the sole carbon
+ * source. Three strategies compete for it: the public metabolizer secretes
+ * invertase to hydrolyse sucrose into glucose, making it a shared resource;
+ * the cheater exploits that glucose without paying the production cost; the
+ * private metabolizer imports and digests sucrose intracellularly, avoiding
+ * both sharing and exploitation. Growth follows a generalized Lotka-Volterra
+ * model (eq. 2.1) with density-dependent self-limitation for each strategy.
  *
- * Variables: Public (P), Cheater (C), Private (M)
- * Parameters: r_P, r_M, α (P→C benefit), β (P↔M competition), η, ν, γ (density terms)
+ * Variables: PublicMetabolizer (P), Cheater (C), PrivateMetabolizer (M)
+ * Parameters: growthRatePublic (r_P), growthRatePrivate (r_M),
+ *   exploitationRatePublicToCheater (alpha), competitionRatePublicPrivate (beta),
+ *   selfLimitationPublic (eta), selfLimitationCheater (nu), selfLimitationPrivate (gamma)
  */
 export function initModel(): KineticModelBuilder {
   return new KineticModelBuilder()
-    .addVariable("Public", {
+    .addVariable("PublicMetabolizer", {
       value: 1.0,
-      texName: String.raw`P`,
+      displayName: "Public Metabolizer",
+      texName: String.raw`\text{Public}`,
       slider: {
         min: "0.0",
         max: "10000.0",
@@ -32,25 +39,28 @@ export function initModel(): KineticModelBuilder {
     })
     .addVariable("Cheater", {
       value: 1.0,
-      texName: String.raw`C`,
+      displayName: "Cheater",
+      texName: String.raw`\text{Cheater}`,
       slider: {
         min: "0.0",
         max: "10000.0",
         step: "1",
       },
     })
-    .addVariable("Private", {
+    .addVariable("PrivateMetabolizer", {
       value: 1.0,
-      texName: String.raw`M`,
+      displayName: "Private Metabolizer",
+      texName: String.raw`\text{Private}`,
       slider: {
         min: "0.0",
         max: "10000.0",
         step: "1",
       },
     })
-    .addParameter("r_p", {
-      value: 0.4,
+    .addParameter("growthRatePublic", {
+      value: 0.5,
       texName: String.raw`r_P`,
+      displayName: "Public growth rate",
       slider: {
         desc: "(growth rate)",
         min: "0.0",
@@ -58,8 +68,9 @@ export function initModel(): KineticModelBuilder {
         step: "0.00001",
       },
     })
-    .addParameter("eta", {
+    .addParameter("selfLimitationPublic", {
       value: 0.0001,
+      displayName: "Public self-limitation",
       texName: String.raw`\eta`,
       slider: {
         desc: "(density)",
@@ -68,8 +79,9 @@ export function initModel(): KineticModelBuilder {
         step: "0.00001",
       },
     })
-    .addParameter("nu", {
-      value: 0.00001,
+    .addParameter("selfLimitationCheater", {
+      value: 0.0001,
+      displayName: "Cheater self-limitation",
       texName: String.raw`\nu`,
       slider: {
         desc: "(density)",
@@ -78,9 +90,10 @@ export function initModel(): KineticModelBuilder {
         step: "0.00001",
       },
     })
-    .addParameter("r_m", {
+    .addParameter("growthRatePrivate", {
       value: 0.2,
       texName: String.raw`r_M`,
+      displayName: "Private growth rate",
       slider: {
         desc: "(growth rate)",
         min: "0.0",
@@ -88,8 +101,9 @@ export function initModel(): KineticModelBuilder {
         step: "0.0001",
       },
     })
-    .addParameter("gamma", {
+    .addParameter("selfLimitationPrivate", {
       value: 0.0001,
+      displayName: "Private self-limitation",
       texName: String.raw`\gamma`,
       slider: {
         desc: "(density)",
@@ -98,8 +112,9 @@ export function initModel(): KineticModelBuilder {
         step: "0.0001",
       },
     })
-    .addParameter("alpha", {
+    .addParameter("exploitationRatePublicToCheater", {
       value: 0.0002,
+      displayName: "Exploitation rate",
       texName: String.raw`\alpha`,
       slider: {
         desc: "(P→C cooperation)",
@@ -108,8 +123,9 @@ export function initModel(): KineticModelBuilder {
         step: "0.0001",
       },
     })
-    .addParameter("beta", {
+    .addParameter("competitionRatePublicPrivate", {
       value: 0.0001,
+      displayName: "Competition rate",
       texName: String.raw`\beta`,
       slider: {
         desc: "(P↔M competition)",
@@ -118,25 +134,37 @@ export function initModel(): KineticModelBuilder {
         step: "0.0001",
       },
     })
-    .addReaction("dPdt", {
+    .addReaction("dPublicMetabolizerDt", {
       fn: new Minus([
-        new Mul([new Name("r_p"), new Name("Public")]),
-        new Mul([new Name("alpha"), new Name("Public"), new Name("Cheater")]),
-        new Mul([new Name("beta"), new Name("Public"), new Name("Private")]),
+        new Mul([new Name("growthRatePublic"), new Name("PublicMetabolizer")]),
         new Mul([
-          new Name("eta"),
+          new Name("exploitationRatePublicToCheater"),
+          new Name("PublicMetabolizer"),
+          new Name("Cheater"),
+        ]),
+        new Mul([
+          new Name("competitionRatePublicPrivate"),
+          new Name("PublicMetabolizer"),
+          new Name("PrivateMetabolizer"),
+        ]),
+        new Mul([
+          new Name("selfLimitationPublic"),
           // FIXME: square
-          new Name("Public"),
-          new Name("Public"),
+          new Name("PublicMetabolizer"),
+          new Name("PublicMetabolizer"),
         ]),
       ]),
-      stoichiometry: [{ name: "Public", value: new Num(1.0) }],
+      stoichiometry: [{ name: "PublicMetabolizer", value: new Num(1.0) }],
     })
-    .addReaction("dCdt", {
+    .addReaction("dCheaterDt", {
       fn: new Minus([
-        new Mul([new Name("alpha"), new Name("Public"), new Name("Cheater")]),
         new Mul([
-          new Name("nu"),
+          new Name("exploitationRatePublicToCheater"),
+          new Name("PublicMetabolizer"),
+          new Name("Cheater"),
+        ]),
+        new Mul([
+          new Name("selfLimitationCheater"),
           // FIXME: square
           new Name("Cheater"),
           new Name("Cheater"),
@@ -144,17 +172,24 @@ export function initModel(): KineticModelBuilder {
       ]),
       stoichiometry: [{ name: "Cheater", value: new Num(1.0) }],
     })
-    .addReaction("dMdt", {
+    .addReaction("dPrivateMetabolizerDt", {
       fn: new Minus([
-        new Mul([new Name("r_m"), new Name("Private")]),
-        new Mul([new Name("beta"), new Name("Public"), new Name("Private")]),
         new Mul([
-          new Name("gamma"),
+          new Name("growthRatePrivate"),
+          new Name("PrivateMetabolizer"),
+        ]),
+        new Mul([
+          new Name("competitionRatePublicPrivate"),
+          new Name("PublicMetabolizer"),
+          new Name("PrivateMetabolizer"),
+        ]),
+        new Mul([
+          new Name("selfLimitationPrivate"),
           // FIXME: Square
-          new Name("Private"),
-          new Name("Private"),
+          new Name("PrivateMetabolizer"),
+          new Name("PrivateMetabolizer"),
         ]),
       ]),
-      stoichiometry: [{ name: "Private", value: new Num(1.0) }],
+      stoichiometry: [{ name: "PrivateMetabolizer", value: new Num(1.0) }],
     });
 }
