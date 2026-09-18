@@ -172,7 +172,13 @@
     return "fn";
   }
 
+  function isUnresolvedPlaceholder(node: Base): boolean {
+    return node instanceof Name && node.name === "default";
+  }
+
   function getNodeAriaLabel(node: Base): string {
+    if (isUnresolvedPlaceholder(node))
+      return "Unresolved placeholder. Needs a variable or parameter name";
     if (node instanceof Name)
       return `Variable ${defaultValue(displayName, node.name)}`;
     if (node instanceof Num) return `Number ${node.value}`;
@@ -276,6 +282,7 @@
       </div>
       <button
         class="op"
+        tabindex="-1"
         aria-label="Select divide"
         onclick={(e) => {
           e.stopPropagation();
@@ -315,6 +322,7 @@
       </div>
       <button
         class="op"
+        tabindex="-1"
         aria-label="Select mul"
         onclick={(e) => {
           e.stopPropagation();
@@ -354,6 +362,7 @@
       </div>
       <button
         class="op"
+        tabindex="-1"
         aria-label="Select add"
         onclick={(e) => {
           e.stopPropagation();
@@ -381,6 +390,7 @@
       <div class="mul">
         <button
           class="op"
+          tabindex="-1"
           aria-label="Select minus"
           onclick={(e) => {
             e.stopPropagation();
@@ -420,6 +430,7 @@
         </div>
         <button
           class="op"
+          tabindex="-1"
           aria-label="Select minus"
           onclick={(e) => {
             e.stopPropagation();
@@ -460,6 +471,7 @@
       </div>
       <button
         class="op"
+        tabindex="-1"
         aria-label="Select pow"
         onclick={(e) => {
           e.stopPropagation();
@@ -499,6 +511,7 @@
       </div>
       <button
         class="op"
+        tabindex="-1"
         aria-label="Select implies"
         onclick={(e) => {
           e.stopPropagation();
@@ -529,6 +542,7 @@
         {#if i > 0}
           <button
             class="op"
+            tabindex="-1"
             aria-label="Select operator"
             onclick={(e) => {
               e.stopPropagation();
@@ -557,6 +571,7 @@
     <div class="mul">
       <button
         class="op"
+        tabindex="-1"
         aria-label="Select not"
         onclick={(e) => {
           e.stopPropagation();
@@ -586,6 +601,7 @@
     <div class="fn-call">
       <button
         class="op fn-label"
+        tabindex="-1"
         aria-label="Select {label}"
         onclick={(e) => {
           e.stopPropagation();
@@ -618,6 +634,7 @@
     <div class="piecewise">
       <button
         class="op fn-label"
+        tabindex="-1"
         aria-label="Select piecewise"
         onclick={(e) => {
           e.stopPropagation();
@@ -670,6 +687,7 @@
     <div class="fn-call">
       <button
         class="op fn-label"
+        tabindex="-1"
         aria-label="Select log"
         onclick={(e) => {
           e.stopPropagation();
@@ -711,6 +729,7 @@
     <div class="fn-call">
       <button
         class="op fn-label"
+        tabindex="-1"
         aria-label="Select sqrt"
         onclick={(e) => {
           e.stopPropagation();
@@ -755,6 +774,7 @@
       {#if !isPostfix}
         <button
           class="op fn-label"
+          tabindex="-1"
           aria-label="Select {label}"
           onclick={(e) => {
             e.stopPropagation();
@@ -781,6 +801,7 @@
       {#if isPostfix}
         <button
           class="op fn-label"
+          tabindex="-1"
           aria-label="Select factorial"
           onclick={(e) => {
             e.stopPropagation();
@@ -794,8 +815,13 @@
       {/if}
     </div>
   {:else if node instanceof Name}
-    <div class="leaf">
-      <span class="value">{defaultValue(displayName, node.name)}</span>
+    <div class="leaf" data-placeholder={isUnresolvedPlaceholder(node)}>
+      {#if isUnresolvedPlaceholder(node)}
+        <span class="placeholder-mark" aria-hidden="true">?</span>
+        <span class="value">unnamed</span>
+      {:else}
+        <span class="value">{defaultValue(displayName, node.name)}</span>
+      {/if}
     </div>
   {:else if node instanceof Num}
     <div class="leaf">
@@ -957,6 +983,28 @@
     padding: 0.35rem 0.55rem;
     color: #1f2937;
     font-weight: 600;
+  }
+
+  /* An unresolved Name.prototype.default() placeholder — left behind by a
+     cut/move, or freshly inserted from the palette. Distinct from a real
+     variable chip so it can't be mistaken for one and saved unnoticed. */
+  .leaf[data-placeholder="true"] {
+    border: 2px dashed var(--color-warning);
+    background: color-mix(in srgb, var(--color-warning) 12%, transparent);
+    color: var(--color-warning);
+    font-style: italic;
+  }
+
+  .placeholder-mark {
+    display: inline-grid;
+    place-items: center;
+    width: 1rem;
+    height: 1rem;
+    border-radius: var(--radius-full);
+    border: 1px solid currentColor;
+    font-size: 0.65rem;
+    font-style: normal;
+    line-height: 1;
   }
 
   .badge {

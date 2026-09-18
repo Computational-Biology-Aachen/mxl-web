@@ -670,11 +670,32 @@
     },
   ];
 
+  // The first unresolved `Name.prototype.default()` placeholder inside a
+  // freshly built node, if any — used to drop the user straight into naming
+  // it instead of leaving it an unselected, unlabeled chip in the tree.
+  function firstDefaultNameNode(node: Base): Name | null {
+    if (node instanceof Name && node.name === "default") return node;
+    if (node instanceof Log || node instanceof Sqrt) {
+      return firstDefaultNameNode(node.child) ?? firstDefaultNameNode(node.base);
+    }
+    if (node instanceof Pow || node instanceof Implies) {
+      return firstDefaultNameNode(node.left) ?? firstDefaultNameNode(node.right);
+    }
+    if (node instanceof Unary) return firstDefaultNameNode(node.child);
+    if (node instanceof Nary) {
+      for (const child of node.children) {
+        const found = firstDefaultNameNode(child);
+        if (found !== null) return found;
+      }
+    }
+    return null;
+  }
+
   function insertNode(fn: () => Base) {
     const toInsert = fn();
     pushHistory();
     root = root.replace(currentNode.id, toInsert).node;
-    currentNode = toInsert;
+    currentNode = firstDefaultNameNode(toInsert) ?? toInsert;
   }
 
   // The first immediate child slot of a freshly-built node, used as the
@@ -1028,6 +1049,21 @@
   @media (max-width: 640px) {
     .builder-canvas {
       display: block;
+    }
+
+    /* The operator palette can run to 9+ buttons in its default-open group;
+       on a narrow viewport that pushes the actual equation canvas far below
+       the fold. Show the canvas + preview first, and cap the palette to a
+       scrollable band below it instead of letting it claim the full screen. */
+    .editor-grid {
+      order: 1;
+    }
+
+    .palette-groups {
+      order: 2;
+      max-height: 45vh;
+      overflow-y: auto;
+      padding-right: 0.25rem;
     }
   }
 
