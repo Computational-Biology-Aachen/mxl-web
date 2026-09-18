@@ -676,10 +676,14 @@
   function firstDefaultNameNode(node: Base): Name | null {
     if (node instanceof Name && node.name === "default") return node;
     if (node instanceof Log || node instanceof Sqrt) {
-      return firstDefaultNameNode(node.child) ?? firstDefaultNameNode(node.base);
+      return (
+        firstDefaultNameNode(node.child) ?? firstDefaultNameNode(node.base)
+      );
     }
     if (node instanceof Pow || node instanceof Implies) {
-      return firstDefaultNameNode(node.left) ?? firstDefaultNameNode(node.right);
+      return (
+        firstDefaultNameNode(node.left) ?? firstDefaultNameNode(node.right)
+      );
     }
     if (node instanceof Unary) return firstDefaultNameNode(node.child);
     if (node instanceof Nary) {
@@ -1061,9 +1065,9 @@
 
     .palette-groups {
       order: 2;
+      padding-right: 0.25rem;
       max-height: 45vh;
       overflow-y: auto;
-      padding-right: 0.25rem;
     }
   }
 

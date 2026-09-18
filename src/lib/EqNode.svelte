@@ -815,9 +815,15 @@
       {/if}
     </div>
   {:else if node instanceof Name}
-    <div class="leaf" data-placeholder={isUnresolvedPlaceholder(node)}>
+    <div
+      class="leaf"
+      data-placeholder={isUnresolvedPlaceholder(node)}
+    >
       {#if isUnresolvedPlaceholder(node)}
-        <span class="placeholder-mark" aria-hidden="true">?</span>
+        <span
+          class="placeholder-mark"
+          aria-hidden="true">?</span
+        >
         <span class="value">unnamed</span>
       {:else}
         <span class="value">{defaultValue(displayName, node.name)}</span>
@@ -998,12 +1004,12 @@
   .placeholder-mark {
     display: inline-grid;
     place-items: center;
+    border: 1px solid currentColor;
+    border-radius: var(--radius-full);
     width: 1rem;
     height: 1rem;
-    border-radius: var(--radius-full);
-    border: 1px solid currentColor;
-    font-size: 0.65rem;
     font-style: normal;
+    font-size: 0.65rem;
     line-height: 1;
   }
 

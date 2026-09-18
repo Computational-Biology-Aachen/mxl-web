@@ -2,31 +2,32 @@
 target: "Equation/model builder (models/new: kinetic/ode/steady-state)"
 total_score: 21
 max_score: 40
-na_heuristics: 
+na_heuristics:
 p0_count: 1
 p1_count: 3
 target_identity: "file:/home/marvin/git/0-admin/pages/mxl-web/src/routes/models/new"
 timestamp: 2026-09-18T05-20-34Z
 slug: src-routes-models-new
 ---
+
 Method: dual-agent (A: design-review sub-agent · B: detector+browser-evidence sub-agent)
 
-**Fix pass update (2026-09-18):** 3 of 5 Priority Issues fixed and verified live (P0 mobile palette, both P1s on the placeholder/tab-stops). The Escape P1 did not reproduce under direct live testing — no fix applied. The P2 toolbar-ordering issue was traced to a shared, site-wide component (`AnalysesDashboard.svelte`) and deferred as out of scope for this surface. See per-issue *Outcome* notes under Priority Issues below.
+**Fix pass update (2026-09-18):** 3 of 5 Priority Issues fixed and verified live (P0 mobile palette, both P1s on the placeholder/tab-stops). The Escape P1 did not reproduce under direct live testing — no fix applied. The P2 toolbar-ordering issue was traced to a shared, site-wide component (`AnalysesDashboard.svelte`) and deferred as out of scope for this surface. See per-issue _Outcome_ notes under Priority Issues below.
 
 ## Design Health Score
 
-| # | Heuristic | Score | Key Issue |
-|---|-----------|-------|-----------|
-| 1 | Visibility of System Status | 3 | Live KaTeX preview and dynamic `aria-label` hints are strong; mobile buries the canvas below the palette |
-| 2 | Match System / Real World | 3 | LaTeX/math notation fits a scientist audience |
-| 3 | User Control and Freedom | 1 | Escape closes the *entire* nested-popover stack, not just the innermost editor — confirmed live |
-| 4 | Consistency and Standards | 2 | `Mul` renders a literal "x" glyph while `Nary` uses proper ∧/∨/≥ symbols; three nested popovers each have their own identically-labeled "Save" |
-| 5 | Error Prevention | 1 | Cut/drop silently backfills the vacated slot with an unlabeled `default()` placeholder styled exactly like a real variable |
-| 6 | Recognition Rather Than Recall | 3 | `getNodeStatusHint` gives state-aware plain-language guidance per node |
-| 7 | Flexibility and Efficiency | 2 | Undo/redo exists, but moving from one sibling to another inside a single `Mul` costs 3 Tab stops instead of 1 (non-leaf wrappers are all `tabindex=0`) |
-| 8 | Aesthetic and Minimalist Design | 3 | Clean on desktop; palette hints ("a × b") are a nice touch |
-| 9 | Error Recovery | 1 | No visible flag on the injected `default()` placeholder; no equation-level validation before Save |
-| 10 | Help and Documentation | 2 | One hint line + a Tutorial button; keyboard shortcuts aren't listed anywhere discoverable |
+| #   | Heuristic                       | Score | Key Issue                                                                                                                                              |
+| --- | ------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | Visibility of System Status     | 3     | Live KaTeX preview and dynamic `aria-label` hints are strong; mobile buries the canvas below the palette                                               |
+| 2   | Match System / Real World       | 3     | LaTeX/math notation fits a scientist audience                                                                                                          |
+| 3   | User Control and Freedom        | 1     | Escape closes the _entire_ nested-popover stack, not just the innermost editor — confirmed live                                                        |
+| 4   | Consistency and Standards       | 2     | `Mul` renders a literal "x" glyph while `Nary` uses proper ∧/∨/≥ symbols; three nested popovers each have their own identically-labeled "Save"         |
+| 5   | Error Prevention                | 1     | Cut/drop silently backfills the vacated slot with an unlabeled `default()` placeholder styled exactly like a real variable                             |
+| 6   | Recognition Rather Than Recall  | 3     | `getNodeStatusHint` gives state-aware plain-language guidance per node                                                                                 |
+| 7   | Flexibility and Efficiency      | 2     | Undo/redo exists, but moving from one sibling to another inside a single `Mul` costs 3 Tab stops instead of 1 (non-leaf wrappers are all `tabindex=0`) |
+| 8   | Aesthetic and Minimalist Design | 3     | Clean on desktop; palette hints ("a × b") are a nice touch                                                                                             |
+| 9   | Error Recovery                  | 1     | No visible flag on the injected `default()` placeholder; no equation-level validation before Save                                                      |
+| 10  | Help and Documentation          | 2     | One hint line + a Tutorial button; keyboard shortcuts aren't listed anywhere discoverable                                                              |
 
 **Total: 21/40 — Acceptable.** Significant improvements needed before this surface is comfortable to use, especially for keyboard/mobile users.
 
@@ -51,28 +52,28 @@ The Circuit Board concept is real and well-executed at the component level — t
 ## Priority Issues
 
 **[P0] Mobile palette buries the canvas.** At 390px, the default-open "Arithmetic" group (9 buttons) plus 5 collapsed group headers fill the whole popover viewport; the actual node tree being edited sits far below the fold. A mobile user can't see what they're editing while picking an operator.
-*Fix:* Collapse "Arithmetic" by default under the design system's `--sm` breakpoint, or reorder the panel so the canvas sits above the palette.
-*Suggested command:* `/impeccable adapt`
-*Outcome (2026-09-18): FIXED.* `EqEditor.svelte`'s `.editor-grid`/`.palette-groups` now carry `order: 1`/`order: 2` under `max-width: 640px`, with the palette capped to `max-height: 45vh; overflow-y: auto`. Verified live at 390px: canvas + preview render before any palette button; screenshot confirmed no scrolling needed to see the equation on open.
+_Fix:_ Collapse "Arithmetic" by default under the design system's `--sm` breakpoint, or reorder the panel so the canvas sits above the palette.
+_Suggested command:_ `/impeccable adapt`
+_Outcome (2026-09-18): FIXED._ `EqEditor.svelte`'s `.editor-grid`/`.palette-groups` now carry `order: 1`/`order: 2` under `max-width: 640px`, with the palette capped to `max-height: 45vh; overflow-y: auto`. Verified live at 390px: canvas + preview render before any palette button; screenshot confirmed no scrolling needed to see the equation on open.
 
 **[P1] Escape closes the whole modal stack, not one layer.** Reproduced live: pressing Escape inside the Eq Editor exits all the way out of Model Details, discarding the entire session context — a wildly disproportionate consequence for what should be a single-level cancel.
-*Fix:* Scope the Escape handler to the innermost open popover/dialog only.
-*Suggested command:* `/impeccable harden`
-*Outcome (2026-09-18): DID NOT REPRODUCE — no fix applied.* Re-tested live via Playwright against `eq-editor-0` nested inside `model-editor` (confirmed a true light-DOM descendant): plain Escape, Escape while a toolbar button held focus, and Escape mid-cut (`draggedId !== null`, exercising `EqNode.svelte`'s own Escape-cancel handler) all closed only the topmost popover, leaving `model-editor` open in every case. The native Popover API's auto-nesting is working correctly here. The only real global Escape listener in the codebase is `EditorTutorial.svelte`'s (intentionally exits the guided tour). Original finding may have been a multi-press or tutorial-state artifact from the review agent's session; left as-is rather than adding a fix for a non-reproducing bug. Flag for re-review if a user reports this again, ideally with exact repro steps.
+_Fix:_ Scope the Escape handler to the innermost open popover/dialog only.
+_Suggested command:_ `/impeccable harden`
+_Outcome (2026-09-18): DID NOT REPRODUCE — no fix applied._ Re-tested live via Playwright against `eq-editor-0` nested inside `model-editor` (confirmed a true light-DOM descendant): plain Escape, Escape while a toolbar button held focus, and Escape mid-cut (`draggedId !== null`, exercising `EqNode.svelte`'s own Escape-cancel handler) all closed only the topmost popover, leaving `model-editor` open in every case. The native Popover API's auto-nesting is working correctly here. The only real global Escape listener in the codebase is `EditorTutorial.svelte`'s (intentionally exits the guided tour). Original finding may have been a multi-press or tutorial-state artifact from the review agent's session; left as-is rather than adding a fix for a non-reproducing bug. Flag for re-review if a user reports this again, ideally with exact repro steps.
 
 **[P1] Silent `default()` placeholder on cut/move.** Cutting a node backfills the vacated slot with `Name.prototype.default()`, styled identically to a real variable chip, with no warning. This is exactly the kind of silently-wrong equation the app is supposed to prevent — a model can be saved and fit against it without anyone noticing.
-*Fix:* Give the placeholder a distinct amber/dashed treatment and auto-open its Name dropdown so it demands resolution.
-*Suggested command:* `/impeccable clarify`
-*Outcome (2026-09-18): FIXED.* `EqNode.svelte` now renders any `Name` node with `name === "default"` as a dashed amber "unnamed" chip (`data-placeholder="true"`, using the site's `--color-warning` token) with an updated `aria-label` ("Unresolved placeholder. Needs a variable or parameter name"). `EqEditor.svelte`'s `insertNode` now auto-selects the first such placeholder inside any freshly built node via a new `firstDefaultNameNode` helper, so the Name dropdown opens immediately on insert (not just after a cut/paste). `handleDrop`'s post-move selection was left untouched (still selects the moved node, matching user intent), relying on the new visual chip instead. Verified live: inserting "Add" produces two dashed "unnamed" chips with the first auto-selected and its Name `<select>` visible.
+_Fix:_ Give the placeholder a distinct amber/dashed treatment and auto-open its Name dropdown so it demands resolution.
+_Suggested command:_ `/impeccable clarify`
+_Outcome (2026-09-18): FIXED._ `EqNode.svelte` now renders any `Name` node with `name === "default"` as a dashed amber "unnamed" chip (`data-placeholder="true"`, using the site's `--color-warning` token) with an updated `aria-label` ("Unresolved placeholder. Needs a variable or parameter name"). `EqEditor.svelte`'s `insertNode` now auto-selects the first such placeholder inside any freshly built node via a new `firstDefaultNameNode` helper, so the Name dropdown opens immediately on insert (not just after a cut/paste). `handleDrop`'s post-move selection was left untouched (still selects the moved node, matching user intent), relying on the new visual chip instead. Verified live: inserting "Add" produces two dashed "unnamed" chips with the first auto-selected and its Name `<select>` visible.
 
 **[P1] Redundant keyboard tab stops.** Every `EqNode` wrapper div is independently `tabindex=0` in addition to its children, so moving between two siblings inside one `Mul` costs 3 Tabs instead of 1 — this is the one interaction Sam (keyboard-only) has no alternative to.
-*Fix:* Set `tabindex=-1` on non-leaf wrapper divs; the parent's Enter-to-select already covers what the extra tab stop does.
-*Suggested command:* `/impeccable audit`
-*Outcome (2026-09-18): FIXED.* All 15 inline `.op`/`.op.fn-label` buttons in `EqNode.svelte` now carry `tabindex="-1"`; their click handlers still fire on mouse/Enter, and the parent node's existing keydown handlers (Enter to select, Ctrl+X to cut) still catch bubbled events from the button. Verified live via a focusable-elements query on a fresh `Add(default, default)` tree inside a `Mul`: the tab sequence is now [Mul wrapper] → [Add wrapper] → [placeholder 1] → [placeholder 2] → [x0], i.e. moving between sibling leaves is 1 Tab, not 2–3.
+_Fix:_ Set `tabindex=-1` on non-leaf wrapper divs; the parent's Enter-to-select already covers what the extra tab stop does.
+_Suggested command:_ `/impeccable audit`
+_Outcome (2026-09-18): FIXED._ All 15 inline `.op`/`.op.fn-label` buttons in `EqNode.svelte` now carry `tabindex="-1"`; their click handlers still fire on mouse/Enter, and the parent node's existing keydown handlers (Enter to select, Ctrl+X to cut) still catch bubbled events from the button. Verified live via a focusable-elements query on a fresh `Add(default, default)` tree inside a `Mul`: the tab sequence is now [Mul wrapper] → [Add wrapper] → [placeholder 1] → [placeholder 2] → [x0], i.e. moving between sibling leaves is 1 Tab, not 2–3.
 
 **[P2] Toolbar-before-content on mobile.** Load/Save/Fit/Reset/Edit Model render as four stacked full-width buttons above the page's own heading on mobile, pushing orienting copy off the first screen for a first-time visitor.
-*Suggested command:* `/impeccable layout`
-*Outcome (2026-09-18): DEFERRED — out of scope, not fixed.* Traced to `AnalysesDashboard.svelte`: its top `Row` (breadcrumb + Load/Save/Fit/Reset/Edit model) unconditionally renders before `{@render children()}` (the route's own `<h1>`/intro), on every viewport, for every model page. This component is shared by all ~25 published model pages, not just the builder — fixing it here would be a site-wide layout change beyond the "equation/model builder" surface this critique scoped to. Left unfixed; worth a dedicated `/impeccable layout` pass on `AnalysesDashboard.svelte` itself if the site-wide ordering should change.
+_Suggested command:_ `/impeccable layout`
+_Outcome (2026-09-18): DEFERRED — out of scope, not fixed._ Traced to `AnalysesDashboard.svelte`: its top `Row` (breadcrumb + Load/Save/Fit/Reset/Edit model) unconditionally renders before `{@render children()}` (the route's own `<h1>`/intro), on every viewport, for every model page. This component is shared by all ~25 published model pages, not just the builder — fixing it here would be a site-wide layout change beyond the "equation/model builder" surface this critique scoped to. Left unfixed; worth a dedicated `/impeccable layout` pass on `AnalysesDashboard.svelte` itself if the site-wide ordering should change.
 
 ## Persona Red Flags
 
@@ -88,5 +89,5 @@ The Circuit Board concept is real and well-executed at the component level — t
 
 ## Questions to Consider
 
-- If Ctrl+X/Ctrl+V is the only fully accessible reorder path, should it also become the primary *documented* method for mouse users too, given native drag has no visible handle?
+- If Ctrl+X/Ctrl+V is the only fully accessible reorder path, should it also become the primary _documented_ method for mouse users too, given native drag has no visible handle?
 - Should cut/paste ever leave an orphaned `default()` node, or should it default to a true swap instead?
