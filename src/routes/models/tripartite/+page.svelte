@@ -61,6 +61,7 @@
     equationsOpen={false}
   >
     <Row
+      stack
       justify="between"
       align="center"
     >

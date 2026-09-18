@@ -190,8 +190,9 @@
   </div>
   <div class="narrow">
     <Row
+      stack
       justify="between"
-      gap="var(--space-12)"
+      gap="0.5rem"
     >
       <Text>
         <Bold
