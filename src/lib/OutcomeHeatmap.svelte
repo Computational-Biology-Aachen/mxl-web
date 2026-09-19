@@ -213,8 +213,7 @@
 
 <div class="heatmap-section">
   <p class="caption">
-    Community outcome at t = {analysis.tEnd} h, using the model's current parameter
-    values except the two axes swept below.
+    Community outcome at t = {analysis.tEnd} h
   </p>
   <div class="progress">
     {#if running}
