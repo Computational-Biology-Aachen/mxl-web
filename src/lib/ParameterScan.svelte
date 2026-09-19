@@ -15,6 +15,7 @@
     type SimulationError,
     type SimulationResult,
   } from "./stores/workerStore";
+  import { linspace } from "./utils";
 
   let {
     model,
@@ -46,14 +47,6 @@
     keys: string[];
     datasets: { label: string; data: number[] }[];
   };
-
-  function linspace(min: number, max: number, steps: number): number[] {
-    if (steps <= 1) return [min];
-    return Array.from(
-      { length: steps },
-      (_, i) => min + (i / (steps - 1)) * (max - min),
-    );
-  }
 
   let err: SimulationError | undefined = $state(undefined);
   let scanResult = $state<ScanResult>({

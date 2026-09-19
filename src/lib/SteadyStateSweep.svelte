@@ -8,6 +8,7 @@
   import type { SteadyStateAnalysis } from "$lib";
   import { LineChart } from "@computational-biology-aachen/design";
   import type { ModelBuilderBase } from "@computational-biology-aachen/mxlweb-core";
+  import { linspace } from "./utils";
 
   let {
     model,
@@ -18,14 +19,6 @@
     analysis: SteadyStateAnalysis;
     lineDisplay: "current" | "last" | "first";
   } = $props();
-
-  function linspace(min: number, max: number, steps: number): number[] {
-    if (steps <= 1) return [min];
-    return Array.from(
-      { length: steps },
-      (_, i) => min + (i / (steps - 1)) * (max - min),
-    );
-  }
 
   function normalizeToMax(data: number[]): number[] {
     const max = Math.max(...data);

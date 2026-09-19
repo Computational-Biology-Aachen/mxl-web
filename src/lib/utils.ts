@@ -18,6 +18,14 @@ export function toStyleString(
 
 export const widthSmall = "800px";
 
+export function linspace(min: number, max: number, steps: number): number[] {
+  if (steps <= 1) return [min];
+  return Array.from(
+    { length: steps },
+    (_, i) => min + (i / (steps - 1)) * (max - min),
+  );
+}
+
 // Case-insensitive subsequence match: query chars appear in order in the name.
 export function fuzzyMatch(name: string, q: string): boolean {
   const needle = q.trim().toLowerCase();
