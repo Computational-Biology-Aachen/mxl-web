@@ -8,6 +8,7 @@
     type SimulationAnalysis,
   } from "$lib";
   import Fit from "$lib/Fit.svelte";
+  import OutcomeHeatmap from "$lib/OutcomeHeatmap.svelte";
   import PamSimulator from "$lib/Pam.svelte";
   import ParameterScanSimulator from "$lib/ParameterScan.svelte";
   import Simulator from "$lib/TimeCourse.svelte";
@@ -39,6 +40,7 @@
   import { tick } from "svelte";
   import ModelEditor from "./ModelEditor.svelte";
   import OdeModelEditor from "./OdeModelEditor.svelte";
+  import OutcomeHeatmapEditor from "./OutcomeHeatmapEditor.svelte";
   import PamScanEditor from "./PamScanEditor.svelte";
   import ParameterScanEditor from "./ParameterScanEditor.svelte";
   import AnalysisEditor from "./TimeCourseEditor.svelte";
@@ -70,6 +72,9 @@
     {},
   );
   let pamRefs = $state<Record<number, PamSimulator | undefined>>({});
+  let outcomeHeatmapRefs = $state<Record<number, OutcomeHeatmap | undefined>>(
+    {},
+  );
 
   let analysisById = $derived.by(() => {
     // transient lookup rebuilt by this derived, not reactive state
@@ -90,6 +95,9 @@
     }
     for (const pam of Object.values(pamRefs)) {
       pam?.runSimulation(model);
+    }
+    for (const heatmap of Object.values(outcomeHeatmapRefs)) {
+      heatmap?.runScan(model);
     }
   }
 
@@ -479,6 +487,8 @@
       scannerRefs = { ...scannerRefs };
       delete pamRefs[box.id];
       pamRefs = { ...pamRefs };
+      delete outcomeHeatmapRefs[box.id];
+      outcomeHeatmapRefs = { ...outcomeHeatmapRefs };
     }}
   >
     {#snippet children({ box })}
@@ -526,6 +536,12 @@
             normalizedKeys={analysis.normalizedKeys}
             nTimePoints={analysis.nTimePoints ?? 100}
             lineDisplay={analysis.lineDisplay}
+          />
+        {:else if analysis.type === "outcomeHeatmap"}
+          <OutcomeHeatmap
+            bind:this={outcomeHeatmapRefs[box.id]}
+            model={model}
+            analysis={analysis}
           />
         {/if}
       {/if}
@@ -660,6 +676,18 @@
             a.id === analysis.id ? updated : a,
           ) as Analyses;
           pamRefs[analysis.id]?.runSimulation(model);
+        }}
+        popovertarget={`analysis-editor-${analysis.id}`}
+      />
+    {:else if analysis.type === "outcomeHeatmap"}
+      <OutcomeHeatmapEditor
+        parent={analysis}
+        model={model}
+        onSave={(updated) => {
+          analyses = analyses.map((a) =>
+            a.id === analysis.id ? updated : a,
+          ) as Analyses;
+          outcomeHeatmapRefs[analysis.id]?.runScan(model);
         }}
         popovertarget={`analysis-editor-${analysis.id}`}
       />

@@ -22,6 +22,12 @@ colors:
   categorical-blush: "#ff9da7"
   categorical-tan: "#9c755f"
   categorical-stone: "#bab0ac"
+  outcome-collapse: "#d3d3d3"
+  outcome-public: "#008000"
+  outcome-cheater: "#000000"
+  outcome-private: "#ffa500"
+  outcome-coexistence: "#4169e1"
+  outcome-unstable: "#708090"
 components:
   eq-window-header:
     backgroundColor: "{colors.instrument-slate-heading}"
@@ -96,6 +102,13 @@ A second, 10-color categorical palette used only in `Fit.svelte`'s ensemble mode
 Steel Blue `#4e79a7`, Amber `#f28e2b`, Brick `#e15759`, Seafoam `#76b7b2`, Moss `#59a14f`, Mustard `#edc948`, Mauve `#b07aa1`, Blush `#ff9da7`, Tan `#9c755f`, Stone `#bab0ac`.
 
 **The Chart-Palette-Stays-Scoped Rule.** The design system's 4-color ordered chart palette (petrol/violet/blue/magenta) is for ordinary simulation charts (`LineChart`/`SimChart`). Extended Series is reserved for `Fit.svelte`'s ensemble views specifically — never mix the two palettes on one chart, and never use Extended Series outside ensemble fitting.
+
+### Categorical Outcome Series (discrete-heatmap palette — local extension)
+
+A third, purpose-built categorical palette for `CategoricalHeatmap.svelte` (a reusable discrete/`imshow`-style grid chart, distinct from `LineChart`/`SimChart`'s continuous time-series charts and from Extended Series' per-member line charts) — currently consumed by `tripartite-ph`'s `OutcomeHeatmap.svelte` to color its six ecological-outcome categories, matching the source notebook's own `matplotlib` `ListedColormap`:
+Collapse `#d3d3d3`, Public `#008000`, Cheater `#000000`, Private `#ffa500`, Coexistence `#4169e1`, Unstable `#708090`.
+
+Scoped the same way Extended Series is: reach for this palette only when building another categorical/discrete-grid chart on `CategoricalHeatmap`, never for an ordinary line chart or an ensemble view.
 
 ### Known inconsistencies (record accurately, do not repeat)
 
@@ -172,7 +185,7 @@ The navbar, footer/imprint, and page chrome are composed entirely from design-sy
 
 ### Do:
 
-- **Do** build every new mxl-web surface on `@computational-biology-aachen/design` tokens/components first (ADR 0003); reach for Instrument Slate, Node Leaf, or Extended Series only for the specific editor/tree/ensemble-chart contexts documented above.
+- **Do** build every new mxl-web surface on `@computational-biology-aachen/design` tokens/components first (ADR 0003); reach for Instrument Slate, Node Leaf, Extended Series, or Categorical Outcome Series only for the specific editor/tree/ensemble-chart/discrete-heatmap contexts documented above.
 - **Do** use the petrol selection/drop-target tint pattern (`rgb(from var(--color-primary) r g b / N%)`, solid border for selected, dashed for drop-target) for any new drag/drop or pick-state UI, to stay consistent with `EqNode`.
 - **Do** use `--shadow-sm` / `--shadow-md` / `--shadow-primary` for elevation (per `BuildChooser.svelte`), following the same hover-lift shape (`translateY` or `scale`, paired with a shadow step-up).
 - **Do** reuse the Extended Series palette, in order, for any future ensemble/multi-member view that needs more than 4 simultaneous series; keep it out of single-run charts.

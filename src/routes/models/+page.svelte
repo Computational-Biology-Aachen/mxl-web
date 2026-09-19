@@ -11,6 +11,7 @@
   import schemeSaadat from "$lib/assets/saadat2021.png";
   import schemeSir from "$lib/assets/sir.png";
   import schemeKea3 from "$lib/assets/tomato_KEA3.png";
+  import schemeTripartitePh from "$lib/assets/tripartite-ph.png";
   import schemeTripartite from "$lib/assets/tripartite.png";
   import schemeYokota from "$lib/assets/yokota.png";
   import CardModel from "$lib/CardModel.svelte";
@@ -41,6 +42,12 @@
       name: "Tripartite dynamics",
       slug: "tripartite",
       image: schemeTripartite,
+      consortium: mibinet,
+    },
+    {
+      name: "Tripartite dynamics (pH & resource)",
+      slug: "tripartite-ph",
+      image: schemeTripartitePh,
       consortium: mibinet,
     },
     {

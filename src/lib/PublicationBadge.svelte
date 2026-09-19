@@ -6,7 +6,7 @@
   }: {
     logo: string;
     text: string;
-    href: string;
+    href?: string;
   } = $props();
 </script>
 
@@ -21,14 +21,20 @@
       alt="SFB MibiNet logo"
     />
   </a>
-  <a
-    class="text"
-    href={href}
-    target="_blank"
-    rel="noopener noreferrer"
-  >
-    {text}
-  </a>
+  {#if href}
+    <a
+      class="text"
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      {text}
+    </a>
+  {:else}
+    <span class="text">
+      {text}
+    </span>
+  {/if}
 </div>
 
 <style>
@@ -49,7 +55,8 @@
     border-color: var(--color-primary);
   }
 
-  a {
+  a,
+  span {
     transition: var(--transition);
     color: var(--color-text);
     font-size: var(--text-callout);
@@ -57,7 +64,7 @@
     text-decoration: none;
   }
 
-  a.text {
+  .text {
     width: 10rem;
   }
   a.text:hover {
