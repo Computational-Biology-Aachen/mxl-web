@@ -1,39 +1,42 @@
 <!--
   @component
 
-  A linked card representing a model, showing its scheme image (or a gradient
-  "biotech" placeholder) above a name label.
+  A linked card representing a model: its scheme image (or a gradient
+  "biotech" placeholder), name, citation, a short description and chips for
+  the model type and biological systems.
 
   ### Props
 
-  - `name: string`
-    Model name shown in the label and image `alt` text.
+  - `model: ModelMeta`
+    The model to display; see `models.ts`.
   - `href: string`
     Destination the whole card links to.
-  - `image?: string`
-    Optional scheme image URL; omitted shows the placeholder.
   - `styleVars?: { mediaHeight?: string; fallbackIconSize?: string }`
     Optional overrides for CSS custom properties.
 
   ### Example
 
   ```svelte
-  <CardModel name="Poolman 2000" href="/models/poolman2000" image="/p2000.svg" />
+  <CardModel model={models[0]} href="/models/lotka-volterra" />
   ```
 -->
 <script lang="ts">
+  import Chip from "./Chip.svelte";
+  import { systemLabels, typeLabels, type ModelMeta } from "./models";
   import { toStyleString } from "./utils";
+
+  const typeIcons: Record<ModelMeta["type"], string> = {
+    ode: "timeline",
+    "steady-state": "equalizer",
+  };
+
   let {
-    name,
+    model,
     href,
-    image,
-    consortium,
     styleVars = {},
   }: {
-    name: string;
+    model: ModelMeta;
     href: string;
-    image?: string;
-    consortium?: string;
     styleVars?: {
       mediaHeight?: string;
       fallbackIconSize?: string;
@@ -48,6 +51,10 @@
       ? { "--card-model-fallback-icon-size": styleVars.fallbackIconSize }
       : {}),
   });
+
+  const citation = $derived(
+    [model.authors, model.year && `(${model.year})`].filter(Boolean).join(" "),
+  );
 </script>
 
 <a
@@ -55,28 +62,43 @@
   class="card"
   style={toStyleString(cardCssVars)}
 >
-  {#if consortium}
-    <img
-      src={consortium}
-      class="logo"
-      alt="consortium logo"
-    />
-  {/if}
   <div class="media">
-    {#if image}
+    {#if model.image}
       <img
-        src={image}
+        src={model.image}
         class="scheme"
-        alt="{name} scheme"
+        alt="{model.name} scheme"
       />
     {:else}
       <div class="fallback">
         <span class="material-symbols-outlined">biotech</span>
       </div>
     {/if}
+    {#if model.consortium}
+      <img
+        src={model.consortium}
+        class="logo"
+        alt="consortium logo"
+      />
+    {/if}
   </div>
-  <div class="label">
-    <span>{name}</span>
+  <div class="body">
+    <div class="heading">
+      <span class="name">{model.name}</span>
+      {#if citation}
+        <span class="citation">{citation}</span>
+      {/if}
+    </div>
+    <p class="description">{model.description}</p>
+    <div class="chips">
+      <Chip
+        label={typeLabels[model.type]}
+        icon={typeIcons[model.type]}
+      />
+      {#each model.systems as system (system)}
+        <Chip label={systemLabels[system]} />
+      {/each}
+    </div>
   </div>
 </a>
 
@@ -85,7 +107,6 @@
     --card-model-media-height: 160px;
     --card-model-fallback-icon-size: 3rem;
     display: flex;
-    position: relative;
     flex-direction: column;
     transition:
       transform var(--transition),
@@ -115,6 +136,7 @@
   }
 
   .media {
+    position: relative;
     flex-shrink: 0;
     height: var(--card-model-media-height);
     overflow: hidden;
@@ -132,7 +154,6 @@
     position: absolute;
     right: 10px;
     bottom: 10px;
-    z-index: 100;
     width: 60px;
   }
 
@@ -158,9 +179,45 @@
     font-size: var(--card-model-fallback-icon-size);
   }
 
-  .label {
-    padding: 0.75rem 1rem;
-    font-weight: var(--weight-medium);
+  .body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4) var(--space-4);
+  }
+
+  .heading {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .name {
+    font-weight: var(--weight-bold);
+    font-size: var(--text-h2);
+  }
+
+  .citation {
+    color: var(--color-text-muted);
     font-size: var(--text-sm);
+  }
+
+  .description {
+    display: -webkit-box;
+    margin: 0;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
+    color: var(--color-text);
+    font-size: var(--text-sm);
+    -webkit-box-orient: vertical;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: auto;
+    padding-top: var(--space-1);
   }
 </style>
