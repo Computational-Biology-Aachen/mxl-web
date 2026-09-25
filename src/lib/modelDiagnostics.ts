@@ -257,6 +257,9 @@ export function analyzeModel(parts: ModelParts): Diagnostics {
   }
   for (const b of nnBlocks) {
     const ref: ItemRef = { kind: "nnBlock", id: b.id };
+    // No dependency edges: a block's inputs/targets are always every
+    // variable/reaction (TableNNBlocks keeps them synced), so listing them
+    // would make every variable look "used by" every block.
     for (const name of [...b.inputs, ...b.targets]) {
       if (!isKnown(name)) {
         findings.push({
@@ -266,7 +269,6 @@ export function analyzeModel(parts: ModelParts): Diagnostics {
           message: `"${name}" is not defined.`,
         });
       }
-      addEdge(ref, name);
     }
   }
 
