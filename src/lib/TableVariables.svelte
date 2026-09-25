@@ -1,8 +1,6 @@
 <script lang="ts">
   import {
-    Button,
     ButtonIcon as IconButton,
-    InputNumber,
     Math,
     Popover,
   } from "@computational-biology-aachen/design";
@@ -11,8 +9,10 @@
     defaultValue,
   } from "@computational-biology-aachen/mxlweb-core";
   import { Base } from "@computational-biology-aachen/mxlweb-core/mathml";
-  import { MediaQuery } from "svelte/reactivity";
+  import DataTable from "./DataTable.svelte";
   import EqEditor from "./EqEditor.svelte";
+  import { nextFreeId } from "./modelDiagnostics";
+  import NumberCell from "./NumberCell.svelte";
   import {
     idToTex,
     type AssView,
@@ -22,12 +22,7 @@
     type Variable,
     type VarView,
   } from "./modelView";
-  import SliderEditor from "./SliderEditor.svelte";
-  import TableSearch from "./TableSearch.svelte";
   import TexNameInput from "./TexNameInput.svelte";
-  import { fuzzyMatch } from "./utils";
-
-  const md = new MediaQuery("max-width: 768px");
 
   let {
     variables = $bindable(),
@@ -35,7 +30,6 @@
     assignments = $bindable(),
     reactions = $bindable(),
     nnBlocks = $bindable(),
-    // eslint-disable-next-line no-useless-assignment
     readouts = $bindable(),
   }: {
     variables: VarView;
@@ -46,11 +40,6 @@
     readouts?: AssView;
   } = $props();
 
-  function onSaveSlider(idx: number, update: Variable) {
-    variables[idx] = update;
-    variables = variables.slice();
-  }
-
   function onSaveInitialAssignment(idx: number, fn: Base) {
     variables[idx] = { ...variables[idx], value: fn };
     variables = variables.slice();
@@ -60,180 +49,129 @@
     idToTex(variables, parameters, assignments, reactions),
   );
 
-  let query = $state("");
-  let filtered = $derived(
-    variables
-      .map((vari, idx) => ({ vari, idx }))
-      .filter(({ vari }) =>
-        fuzzyMatch(defaultValue(vari.displayName, vari.id), query),
-      ),
-  );
+  const columns = [
+    { key: "name", label: "Name" },
+    { key: "value", label: "Initial value", align: "right" as const },
+  ];
+
+  function add(): string {
+    const id = nextFreeId("x", {
+      variables,
+      parameters,
+      assignments,
+      reactions,
+      readouts,
+      nnBlocks,
+    });
+    variables = [...variables, { id, value: 1.0, texName: id }];
+    return id;
+  }
 </script>
 
-{#snippet nameInput(idx: number)}
-  <input
-    type="text"
-    aria-label="Name"
-    bind:value={
-      () => defaultValue(variables[idx].displayName, variables[idx].id),
-      (value) => {
-        variables[idx].displayName = value;
-        variables[idx].texName = defaultTexName(value);
-        variables = variables.slice();
-      }
-    }
-  />
-{/snippet}
-
-{#snippet texNameInput(idx: number)}
-  <TexNameInput
-    bind:value={
-      () => variables[idx].texName,
-      (value) => {
-        variables[idx].texName = value;
-        variables = variables.slice();
-      }
-    }
-  />
-{/snippet}
-
-{#snippet valueInput(idx: number)}
-  {#if variables[idx].value instanceof Base}
-    <div class="row">
-      <Math
-        tex={variables[idx].value.toTex(texNames)}
-        display={true}
-        fontSize="0.75rem"
-      />
-      <IconButton
-        icon="edit"
-        popovertarget="var-ia-editor-{idx}"
-      />
-    </div>
-  {:else}
-    <InputNumber
-      id="var-{idx}"
-      border="transparent"
-      bind:value={
-        () => variables[idx].value as number,
-        (value) => {
-          variables[idx].value = value;
-          variables = variables.slice();
-        }
-      }
-    />
-  {/if}
-{/snippet}
-
-{#snippet actions(idx: number, vari: Variable)}
-  <IconButton
-    icon="edit"
-    popovertarget="var-editor-{idx}"
-  />
-  <IconButton
-    icon="close"
-    onclick={() => {
-      variables = variables.filter((i) => {
-        return i.id !== vari.id;
-      });
-    }}
-  />
-{/snippet}
-
-<div class="padding">
-  <TableSearch bind:value={query} />
-</div>
-
-{#if md.current}
-  <!-- Card layout for mobile -->
-  <div class="card-container">
-    {#each filtered as { vari, idx } (vari.id)}
-      <div class="card">
-        <div class="card-row">
-          <span class="card-label">Name</span>
-          <div class="card-input">
-            {@render nameInput(idx)}
-          </div>
-        </div>
-        <div class="card-row">
-          <span class="card-label">Tex name</span>
-          <div class="card-input">
-            {@render texNameInput(idx)}
-          </div>
-        </div>
-        <div class="card-row">
-          <span class="card-label">Initial value</span>
-          <div class="card-input">
-            {@render valueInput(idx)}
-          </div>
-        </div>
-        <div class="card-row card-actions">
-          {@render actions(idx, vari)}
+<DataTable
+  kind="variable"
+  rows={variables}
+  idOf={(v) => v.id}
+  labelOf={(v) => defaultValue(v.displayName, v.id)}
+  columns={columns}
+  onAdd={add}
+  onRemove={(v) => (variables = variables.filter((i) => i.id !== v.id))}
+>
+  {#snippet cell(key: string, vari: Variable, idx: number)}
+    {#if key === "name"}
+      <div class="name-cell">
+        <input
+          type="text"
+          aria-label="Name"
+          bind:value={
+            () => defaultValue(variables[idx].displayName, variables[idx].id),
+            (value) => {
+              variables[idx].displayName = value;
+              variables[idx].texName = defaultTexName(value);
+              variables = variables.slice();
+            }
+          }
+        />
+        <div class="tex">
+          <TexNameInput
+            bind:value={
+              () => variables[idx].texName,
+              (value) => {
+                variables[idx].texName = value;
+                variables = variables.slice();
+              }
+            }
+          />
         </div>
       </div>
-    {/each}
-  </div>
-{:else}
-  <!-- Table layout for desktop -->
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Tex name</th>
-        <th>Initial value</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {#each filtered as { vari, idx } (vari.id)}
-        <tr>
-          <td>
-            {@render nameInput(idx)}
-          </td>
-          <td>
-            {@render texNameInput(idx)}
-          </td>
-          <td>
-            {@render valueInput(idx)}
-          </td>
-          <td class="actions">
-            {@render actions(idx, vari)}
-          </td>
-        </tr>
-      {/each}
-    </tbody>
-  </table>
-{/if}
-{#if query !== "" && filtered.length === 0}
-  <p class="empty">No items match “{query}”.</p>
-{/if}
-<div class="padding">
-  <Button
-    onclick={() => {
-      variables = [
-        ...variables,
-        {
-          id: `x${variables.length}`,
-          value: 1.0,
-          texName: `x${variables.length}`,
-        },
-      ];
-    }}>add new item</Button
-  >
-</div>
+    {:else}
+      {#if vari.value instanceof Base}
+        <div class="row">
+          <Math
+            tex={vari.value.toTex(texNames)}
+            display={true}
+            fontSize="0.75rem"
+          />
+          <IconButton
+            icon="edit"
+            popovertarget="var-ia-editor-{idx}"
+          />
+        </div>
+      {:else}
+        <NumberCell
+          id="var-{idx}"
+          label="Initial value"
+          bind:value={
+            () => variables[idx].value as number,
+            (value) => {
+              variables[idx].value = value;
+              variables = variables.slice();
+            }
+          }
+        />
+      {/if}
+    {/if}
+  {/snippet}
 
-{#each variables as vari, idx (vari.id)}
-  <Popover
-    size="sm"
-    popovertarget={`var-editor-${idx}`}
-  >
-    <SliderEditor
-      target={vari}
-      onSave={(root) => onSaveSlider(idx, root)}
-      popovertarget={`var-editor-${idx}`}
-    />
-  </Popover>
-{/each}
+  {#snippet expansion(vari: Variable, idx: number)}
+    <div class="slider">
+      <label>
+        <input
+          type="checkbox"
+          bind:checked={
+            () => variables[idx].slider !== undefined,
+            (on) => {
+              variables[idx].slider = on
+                ? { min: "0.0", max: "1.0", step: "0.1" }
+                : undefined;
+              variables = variables.slice();
+            }
+          }
+        />
+        Display slider
+      </label>
+      {#if vari.slider}
+        {#each ["min", "max", "step"] as const as field (field)}
+          <label>
+            {field}
+            <input
+              type="text"
+              inputmode="decimal"
+              class="slider-field"
+              bind:value={
+                () => variables[idx].slider![field],
+                (value) => {
+                  variables[idx].slider![field] = value;
+                  variables = variables.slice();
+                }
+              }
+            />
+          </label>
+        {/each}
+      {/if}
+    </div>
+  {/snippet}
+</DataTable>
 
 {#each variables as vari, idx (vari.id)}
   {#if vari.value instanceof Base}
@@ -256,25 +194,23 @@
 {/each}
 
 <style>
-  /* General */
-  .padding {
-    padding: 1rem;
+  .name-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
-
-  .empty {
-    padding: 0 1rem;
-    color: var(--color-text-muted);
+  .name-cell input,
+  .tex {
+    flex: 1 1 50%;
+    min-width: 0;
   }
-
   .row {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
-    padding: 0 0.5rem;
+    gap: 0.5rem;
   }
-
-  /* Input styles shared between table and cards */
   input {
     border: var(--border-transparent);
     border-radius: var(--radius-lg);
@@ -283,113 +219,27 @@
     width: 100%;
     font-size: 0.875rem;
   }
-
   input:hover {
     border: var(--border-primary);
   }
-
-  /* Card layout */
-  .card-container {
+  .slider label {
     display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 1rem;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.875rem;
   }
-
-  .card {
+  .slider input[type="checkbox"] {
+    width: auto;
+  }
+  .slider-field {
+    border: var(--border-primary);
+    width: 5rem;
+    text-align: right;
+  }
+  .slider {
     display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    box-shadow: var(--shadow-sm);
-    border: var(--border);
-    border-radius: 0.5rem;
-    background-color: var(--color-surface);
-    padding: 1rem;
-  }
-
-  .card-row {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .card-label {
-    color: #6b7280;
-    font-weight: var(--weight-bold);
-    font-size: 0.75rem;
-    line-height: 1rem;
-    text-transform: uppercase;
-  }
-
-  .card-input {
-    width: 100%;
-  }
-
-  .card-actions {
-    display: flex;
-    flex-direction: row;
-    gap: 0.5rem;
-    border-top: 1px solid #e5e7eb;
-    padding-top: 0.5rem;
-  }
-
-  /* Table layout */
-  table {
-    border-collapse: collapse;
-    width: 100%;
-    overflow-x: auto;
-    text-align: left;
-    text-indent: 0;
-  }
-
-  tr {
-    display: table-row;
-    background-color: var(--color-surface);
-  }
-
-  th {
-    display: table-cell;
-    background-color: #e5e7eb;
-    padding: 1rem 1.5rem;
-    font-weight: var(--weight-bold);
-    font-size: 0.75rem;
-    line-height: 1rem;
-    text-transform: uppercase;
-  }
-
-  td {
-    display: table-cell;
-    padding: 1rem 1.5rem;
-  }
-
-  thead th:first-of-type {
-    border-top-left-radius: 0.5rem;
-  }
-  thead th:last-of-type {
-    border-top-right-radius: 0.5rem;
-  }
-  tbody tr:last-of-type td:first-of-type {
-    border-bottom-left-radius: 0.5rem;
-  }
-  tbody tr:last-of-type td:last-of-type {
-    border-bottom-right-radius: 0.5rem;
-  }
-
-  th:last-child,
-  td:last-child {
-    width: 3rem;
-    text-align: center;
-  }
-
-  tr:hover {
-    transition-duration: 150ms;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    background-color: lch(from var(--color-surface) calc(l - 5) c h);
-  }
-
-  td.actions {
-    display: flex;
-    gap: 0 10px;
-    width: 7rem;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1.5rem;
   }
 </style>
