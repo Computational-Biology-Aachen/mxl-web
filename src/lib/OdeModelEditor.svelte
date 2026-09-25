@@ -16,7 +16,10 @@
     OdeModelBuilder,
   } from "@computational-biology-aachen/mxlweb-core";
   import { Num } from "@computational-biology-aachen/mxlweb-core/mathml";
+  import { EditorContext, provideEditorContext } from "./editorContext.svelte";
   import EditorTutorial from "./EditorTutorial.svelte";
+  import { countBySeverity, type ItemKind } from "./modelDiagnostics";
+  import TabBadge from "./TabBadge.svelte";
   import { OdeModelView, type RxnView } from "./modelView";
   import { buildEditorTutorial } from "./tutorial";
 
@@ -120,27 +123,49 @@
   let tabs = [
     {
       name: "Variables",
+      kinds: ["variable"] as ItemKind[],
       icon: "variable_add",
     },
     {
       name: "Parameters",
+      kinds: ["parameter"] as ItemKind[],
       icon: "tune",
     },
     {
       name: "Assignments",
+      kinds: ["assignment"] as ItemKind[],
       icon: "expand",
     },
     {
       name: "NN Blocks",
+      kinds: ["nnBlock"] as ItemKind[],
       icon: "model_training",
     },
     {
       name: "Readouts",
+      kinds: ["readout"] as ItemKind[],
       icon: "visibility",
     },
   ];
 
   let cur = $state(tabs[0]);
+
+  const ctx = provideEditorContext(
+    new EditorContext(
+      () => ({
+        variables,
+        parameters,
+        assignments,
+        readouts,
+        nnBlocks,
+        nnWeights,
+      }),
+      (ref) => {
+        const tab = tabs.find((t) => t.kinds.includes(ref.kind));
+        if (tab) cur = tab;
+      },
+    ),
+  );
 
   let tour = $state<EditorTutorial>();
   const tutorial = buildEditorTutorial({
@@ -173,8 +198,14 @@
       variant="secondary"
       onclick={() => tour?.start()}>Tutorial</Button
     >
-    <span data-tour="save">
+    <span
+      data-tour="save"
+      title={ctx.hasErrors
+        ? `${ctx.errorCount} errors: fix before saving`
+        : undefined}
+    >
       <Button
+        disabled={ctx.hasErrors}
         onclick={() => onSave(modelView.toBuilder())}
         popovertarget={popovertarget}
         popovertargetaction="hide">Save</Button
@@ -191,6 +222,7 @@
     >
       <Icon>{tab.icon}</Icon>
       {tab.name}
+      <TabBadge counts={countBySeverity(ctx.diagnostics.findings, tab.kinds)} />
     </ButtonTab>
   {/each}
 </ul>

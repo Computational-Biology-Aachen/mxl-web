@@ -149,6 +149,18 @@ describe("analyzeModel", () => {
   });
 });
 
+describe("duplicate names", () => {
+  it("flags two items sharing an effective name", () => {
+    const parts = model({
+      variables: [{ ...v("x"), displayName: "ATP" }],
+      parameters: [{ ...p("ATP") }],
+      assignments: [a("y", new Add([new Name("x"), new Name("ATP")]))],
+      readouts: [a("out", new Name("y"))],
+    });
+    expect(codes(parts)).toEqual(["duplicate-name:ATP"]);
+  });
+});
+
 describe("nextFreeId", () => {
   it("skips ids taken anywhere in the model", () => {
     const parts = model({

@@ -12,7 +12,10 @@
     defaultValue,
     SteadyStateModelBuilder,
   } from "@computational-biology-aachen/mxlweb-core";
+  import { EditorContext, provideEditorContext } from "./editorContext.svelte";
   import EditorTutorial from "./EditorTutorial.svelte";
+  import { countBySeverity, type ItemKind } from "./modelDiagnostics";
+  import TabBadge from "./TabBadge.svelte";
   import {
     SteadyStateModelView,
     type NNBlockView,
@@ -73,15 +76,27 @@
   let tabs = [
     {
       name: "Parameters",
+      kinds: ["parameter"] as ItemKind[],
       icon: "tune",
     },
     {
       name: "Assignments",
+      kinds: ["assignment"] as ItemKind[],
       icon: "expand",
     },
   ];
 
   let cur = $state(tabs[0]);
+
+  const ctx = provideEditorContext(
+    new EditorContext(
+      () => ({ variables, parameters, assignments }),
+      (ref) => {
+        const tab = tabs.find((t) => t.kinds.includes(ref.kind));
+        if (tab) cur = tab;
+      },
+    ),
+  );
 
   let tour = $state<EditorTutorial>();
   const tutorial = buildEditorTutorial({
@@ -114,8 +129,14 @@
       variant="secondary"
       onclick={() => tour?.start()}>Tutorial</Button
     >
-    <span data-tour="save">
+    <span
+      data-tour="save"
+      title={ctx.hasErrors
+        ? `${ctx.errorCount} errors: fix before saving`
+        : undefined}
+    >
       <Button
+        disabled={ctx.hasErrors}
         onclick={() => onSave(modelView.toBuilder())}
         popovertarget={popovertarget}
         popovertargetaction="hide">Save</Button
@@ -132,6 +153,7 @@
     >
       <Icon>{tab.icon}</Icon>
       {tab.name}
+      <TabBadge counts={countBySeverity(ctx.diagnostics.findings, tab.kinds)} />
     </ButtonTab>
   {/each}
 </ul>

@@ -18,6 +18,7 @@ export type Severity = "error" | "warning";
 export type FindingCode =
   | "empty-id"
   | "duplicate-id"
+  | "duplicate-name"
   | "undefined-symbol"
   | "cycle"
   | "unknown-stoichiometry-target"
@@ -113,14 +114,15 @@ export function analyzeModel(parts: ModelParts): Diagnostics {
 
   // Symbol namespace: everything an expression may name.
   const kindById = new Map<string, ItemKind>();
-  const groups: Array<[ItemKind, Array<{ id: string }>]> = [
-    ["variable", parts.variables],
-    ["parameter", parts.parameters],
-    ["assignment", parts.assignments],
-    ["reaction", reactions],
-    ["readout", readouts],
-    ["nnBlock", nnBlocks],
-  ];
+  const groups: Array<[ItemKind, Array<{ id: string; displayName?: string }>]> =
+    [
+      ["variable", parts.variables],
+      ["parameter", parts.parameters],
+      ["assignment", parts.assignments],
+      ["reaction", reactions],
+      ["readout", readouts],
+      ["nnBlock", nnBlocks],
+    ];
 
   const seen = new Map<string, ItemRef>();
   for (const [kind, items] of groups) {
@@ -146,6 +148,27 @@ export function analyzeModel(parts: ModelParts): Diagnostics {
       } else {
         seen.set(id, ref);
         kindById.set(id, kind);
+      }
+    }
+  }
+
+  // Display names end up as identifiers in the Python/SBML exports, so two
+  // items sharing one is as ambiguous as sharing an id.
+  const seenNames = new Map<string, ItemRef>();
+  for (const [kind, items] of groups) {
+    for (const { id, displayName } of items) {
+      if (seen.get(id)?.kind !== kind || id.trim() === "") continue;
+      const name = displayName || id;
+      const first = seenNames.get(name);
+      if (first && first.id !== id) {
+        findings.push({
+          severity: "error",
+          ref: { kind, id },
+          code: "duplicate-name",
+          message: `Name "${name}" is already used by a ${first.kind}.`,
+        });
+      } else {
+        seenNames.set(name, { kind, id });
       }
     }
   }
