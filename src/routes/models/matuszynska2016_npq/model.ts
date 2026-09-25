@@ -197,7 +197,7 @@ export function initModel(): KineticModelBuilder {
       fn: new Add([new Name("PQ_tot"), new Minus([new Name("pq_red")])]),
       texName: "pq\\_ox",
     })
-    .addAssignment("adp", {
+    .addReadout("adp", {
       fn: new Add([new Name("AP_tot"), new Minus([new Name("atp")])]),
       texName: "adp",
     })
@@ -248,7 +248,7 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "Q",
     })
-    .addAssignment("Fluo", {
+    .addReadout("Fluo", {
       fn: new Add([
         new Divide([
           new Mul([new Name("B0"), new Name("k_F")]),
@@ -265,7 +265,7 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "Fluo",
     })
-    .addAssignment("B0", {
+    .addReadout("B0", {
       fn: new Divide([
         new Mul([
           new Name("K_QAPQ"),
@@ -550,7 +550,7 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "ps2states",
     })
-    .addAssignment("B2", {
+    .addReadout("B2", {
       fn: new Divide([
         new Mul([
           new Name("PSII_tot"),
@@ -728,7 +728,7 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "ps2states",
     })
-    .addAssignment("B3", {
+    .addReadout("B3", {
       fn: new Divide([
         new Mul([
           new Name("PPFD"),

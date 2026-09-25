@@ -178,7 +178,7 @@ export function initModel(): KineticModelBuilder {
       value: 0.12,
       texName: "y15",
     })
-    .addAssignment("eprime", {
+    .addReadout("eprime", {
       fn: new Add([
         new Name("y12"),
         new Name("y14"),
@@ -189,7 +189,7 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "eprime",
     })
-    .addAssignment("F", {
+    .addReadout("F", {
       fn: new Add([
         new Name("y15"),
         new Divide([

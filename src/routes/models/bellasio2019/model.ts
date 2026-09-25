@@ -576,7 +576,7 @@ export function initModel(): KineticModelBuilder {
       fn: new Mul([new Name("PPFD"), new Name("s")]),
       texName: "I2\\_0",
     })
-    .addAssignment("I1_0", {
+    .addReadout("I1_0", {
       fn: new Divide([
         new Mul([new Name("I2_0"), new Name("PhiPSII_LL")]),
         new Name("PhiPSI_LL"),
@@ -590,7 +590,7 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "chi",
     })
-    .addAssignment("I1", {
+    .addReadout("I1", {
       fn: new Mul([new Name("I1_0"), new Add([new Num(1.0), new Name("chi")])]),
       texName: "I1",
     })
@@ -776,7 +776,7 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "gs\\_steady",
     })
-    .addAssignment("A", {
+    .addReadout("A", {
       fn: new Add([
         new Name("v_RuBisCO_c"),
         new Minus([new Name("RLight")]),

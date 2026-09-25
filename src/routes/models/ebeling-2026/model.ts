@@ -1168,7 +1168,7 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "GSH",
     })
-    .addAssignment("keq_atp_synthase", {
+    .addReadout("keq_atp_synthase", {
       fn: new Mul([
         new Name("Pi_mol"),
         new Exp(
@@ -1346,53 +1346,53 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "P700+FA",
     })
-    .addAssignment("rel_P700_plus_FA", {
+    .addReadout("rel_P700_plus_FA", {
       fn: new Divide([new Name("P700_plus_FA"), new Name("PSI_total")]),
       texName: "rel\\_P700+FA",
     })
-    .addAssignment("rel_P700FA", {
+    .addReadout("rel_P700FA", {
       fn: new Divide([new Name("P700FA"), new Name("PSI_total")]),
       texName: "rel\\_P700FA",
     })
-    .addAssignment("rel_P700FA_minus", {
+    .addReadout("rel_P700FA_minus", {
       fn: new Divide([new Name("P700FA_minus"), new Name("PSI_total")]),
       texName: "rel\\_P700FA-",
     })
-    .addAssignment("rel_P700_plus_FA_minus", {
+    .addReadout("rel_P700_plus_FA_minus", {
       fn: new Divide([new Name("P700_plus_FA_minus"), new Name("PSI_total")]),
       texName: "rel\\_P700+FA-",
     })
-    .addAssignment("rel_P700", {
+    .addReadout("rel_P700", {
       fn: new Divide([
         new Add([new Name("P700_plus_FA"), new Name("P700_plus_FA_minus")]),
         new Name("PSI_total"),
       ]),
       texName: "rel\\_P700",
     })
-    .addAssignment("rel_P700_plus", {
+    .addReadout("rel_P700_plus", {
       fn: new Divide([
         new Add([new Name("P700_plus_FA"), new Name("P700_plus_FA_minus")]),
         new Name("PSI_total"),
       ]),
       texName: "rel\\_P700+",
     })
-    .addAssignment("rel_B0", {
+    .addReadout("rel_B0", {
       fn: new Divide([new Name("B0"), new Name("PSII_total")]),
       texName: "rel\\_B0",
     })
-    .addAssignment("rel_B1", {
+    .addReadout("rel_B1", {
       fn: new Divide([new Name("B1"), new Name("PSII_total")]),
       texName: "rel\\_B1",
     })
-    .addAssignment("rel_B2", {
+    .addReadout("rel_B2", {
       fn: new Divide([new Name("B2"), new Name("PSII_total")]),
       texName: "rel\\_B2",
     })
-    .addAssignment("rel_B3", {
+    .addReadout("rel_B3", {
       fn: new Divide([new Name("B3"), new Name("PSII_total")]),
       texName: "rel\\_B3",
     })
-    .addAssignment("Fluo", {
+    .addReadout("Fluo", {
       fn: new Add([
         new Divide([
           new Mul([
@@ -1525,14 +1525,14 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "ATP\\_pmf\\_activity",
     })
-    .addAssignment("deltapH", {
+    .addReadout("deltapH", {
       fn: new Mul([
         new Name("dG_pH"),
         new Add([new Name("pH"), new Minus([new Name("pH_lumen")])]),
       ]),
       texName: "deltapH",
     })
-    .addAssignment("deltapH_in_volts", {
+    .addReadout("deltapH_in_volts", {
       fn: new Divide([
         new Mul([
           new Num(2.302585092994046),
@@ -1544,7 +1544,7 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "deltapH\\_in\\_volts",
     })
-    .addAssignment("pmf", {
+    .addReadout("pmf", {
       fn: new Add([
         new Name("deltapH"),
         new Mul([new Name("F"), new Name("delta_psi")]),
@@ -1595,7 +1595,7 @@ export function initModel(): KineticModelBuilder {
       fn: new Pow(new Name("Cl_total"), new Num(2.0)),
       texName: "total\\_Cl\\_2",
     })
-    .addAssignment("total_K_2", {
+    .addReadout("total_K_2", {
       fn: new Pow(new Name("K_total"), new Num(2.0)),
       texName: "total\\_K\\_2",
     })
@@ -1661,7 +1661,7 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "Cl\\_driving\\_force",
     })
-    .addAssignment("Keq_NDH1", {
+    .addReadout("Keq_NDH1", {
       fn: new Exp(
         new Divide([
           new Add([
@@ -3029,23 +3029,23 @@ export function initModel(): KineticModelBuilder {
       stoichiometry: [{ name: "Cl_stroma", value: new Num(-1.0) }],
       texName: "ClCe\\_bi",
     })
-    .addAssignment("PQ_ox_div_tot", {
+    .addReadout("PQ_ox_div_tot", {
       fn: new Divide([new Name("Plastoquinone_reduced"), new Name("PQ_tot")]),
       texName: "PQ\\_ox/tot",
     })
-    .addAssignment("Fd_ox_div_tot", {
+    .addReadout("Fd_ox_div_tot", {
       fn: new Divide([new Name("Ferredoxine_reduced"), new Name("Fd_star")]),
       texName: "Fd\\_ox/tot",
     })
-    .addAssignment("PC_ox_div_tot", {
+    .addReadout("PC_ox_div_tot", {
       fn: new Divide([new Name("Plastocyanine_reduced"), new Name("PC_tot")]),
       texName: "PC\\_ox/tot",
     })
-    .addAssignment("NADPH_div_tot", {
+    .addReadout("NADPH_div_tot", {
       fn: new Divide([new Name("NADPH"), new Name("NADP_star")]),
       texName: "NADPH/tot",
     })
-    .addAssignment("ATP_div_tot", {
+    .addReadout("ATP_div_tot", {
       fn: new Divide([new Name("ATP"), new Name("A_star_P")]),
       texName: "ATP/tot",
     });
