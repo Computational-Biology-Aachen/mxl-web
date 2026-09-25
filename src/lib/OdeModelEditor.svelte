@@ -202,9 +202,7 @@
     >
     <span
       data-tour="save"
-      title={ctx.hasErrors
-        ? `${ctx.errorCount} errors: fix before saving`
-        : undefined}
+      title={ctx.saveBlockedReason}
     >
       <Button
         disabled={ctx.hasErrors}
@@ -240,6 +238,7 @@
       assignments={assignments}
       reactions={reactions}
       nnBlocks={nnBlocks}
+      readouts={readouts}
     />
   {:else if cur.name === "Parameters"}
     <TableParameters

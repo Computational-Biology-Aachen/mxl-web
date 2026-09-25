@@ -133,9 +133,7 @@
     >
     <span
       data-tour="save"
-      title={ctx.hasErrors
-        ? `${ctx.errorCount} errors: fix before saving`
-        : undefined}
+      title={ctx.saveBlockedReason}
     >
       <Button
         disabled={ctx.hasErrors}

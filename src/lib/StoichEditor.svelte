@@ -35,8 +35,9 @@
     parameters: ParView;
     assignments: AssView;
     reactions: RxnView;
-    onSave: (fn: Stoichiometry) => void;
-    popovertarget: string;
+    /** Popover mode only; omit both for inline use, where edits apply live. */
+    onSave?: (fn: Stoichiometry) => void;
+    popovertarget?: string;
   } = $props();
 
   let argNames = $derived.by(() => {
@@ -67,18 +68,20 @@
   }
 </script>
 
-<Row
-  stack
-  justify="between"
-  gap="0.5rem"
->
-  <h2>Stoichiometry Editor</h2>
-  <Button
-    popovertarget={popovertarget}
-    popovertargetaction="hide"
-    onclick={() => onSave(stoichiometry)}>Save</Button
+{#if popovertarget && onSave}
+  <Row
+    stack
+    justify="between"
+    gap="0.5rem"
   >
-</Row>
+    <h2>Stoichiometry Editor</h2>
+    <Button
+      popovertarget={popovertarget}
+      popovertargetaction="hide"
+      onclick={() => onSave(stoichiometry)}>Save</Button
+    >
+  </Row>
+{/if}
 
 <div class="card">
   <table>

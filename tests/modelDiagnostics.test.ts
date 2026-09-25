@@ -149,6 +149,24 @@ describe("analyzeModel", () => {
   });
 });
 
+describe("readouts", () => {
+  it("lets readouts read readouts but nothing else read them", () => {
+    const parts = model({
+      parameters: [p("k")],
+      assignments: [a("y", new Name("out1"))],
+      readouts: [a("out1", new Name("k")), a("out2", new Name("out1"))],
+    });
+    expect(codes(parts)).toEqual(["readout-reference:y", "unused:y"]);
+  });
+
+  it("flags readout cycles", () => {
+    const parts = model({
+      readouts: [a("r1", new Name("r2")), a("r2", new Name("r1"))],
+    });
+    expect(codes(parts)).toEqual(["cycle:r1", "cycle:r2"]);
+  });
+});
+
 describe("duplicate names", () => {
   it("flags two items sharing an effective name", () => {
     const parts = model({

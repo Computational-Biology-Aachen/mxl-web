@@ -20,6 +20,8 @@ export class EditorContext {
   diagnostics: Diagnostics;
   hasErrors: boolean;
   errorCount: number;
+  /** Tooltip for the disabled Save button; `undefined` when saving is allowed. */
+  saveBlockedReason: string | undefined;
 
   constructor(
     getParts: () => ModelParts,
@@ -32,6 +34,11 @@ export class EditorContext {
     );
     this.errorCount = $derived(
       this.diagnostics.findings.filter((f) => f.severity === "error").length,
+    );
+    this.saveBlockedReason = $derived(
+      this.errorCount === 0
+        ? undefined
+        : `${this.errorCount} ${this.errorCount === 1 ? "error" : "errors"}: fix before saving`,
     );
   }
 

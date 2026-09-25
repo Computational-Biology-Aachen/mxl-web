@@ -21,6 +21,7 @@ export type FindingCode =
   | "duplicate-name"
   | "undefined-symbol"
   | "cycle"
+  | "readout-reference"
   | "unknown-stoichiometry-target"
   | "unknown-nn-reference"
   | "unused";
@@ -206,6 +207,14 @@ export function analyzeModel(parts: ModelParts): Diagnostics {
           message: `"${sym}" is not defined.`,
         });
       }
+      if (kindById.get(sym) === "readout" && owner.kind !== "readout") {
+        findings.push({
+          severity: "error",
+          ref: owner,
+          code: "readout-reference",
+          message: `"${sym}" is a readout; only other readouts may read it.`,
+        });
+      }
       if (sym === owner.id && derivedKinds.has(owner.kind)) {
         findings.push({
           severity: "error",
@@ -283,6 +292,17 @@ export function analyzeModel(parts: ModelParts): Diagnostics {
         ref,
         code: "cycle",
         message: `"${a.id}" depends on itself through a circular definition.`,
+      });
+    }
+  }
+  for (const r of readouts) {
+    const ref: ItemRef = { kind: "readout", id: r.id };
+    if (reaches(ref)) {
+      findings.push({
+        severity: "error",
+        ref,
+        code: "cycle",
+        message: `"${r.id}" depends on itself through a circular definition.`,
       });
     }
   }
