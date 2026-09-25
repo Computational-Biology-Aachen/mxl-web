@@ -55,6 +55,9 @@
     flex: 1 1 50%;
     min-width: 0;
   }
+  .tex {
+    overflow: hidden;
+  }
   input {
     border: var(--border-transparent);
     border-radius: var(--radius-lg);

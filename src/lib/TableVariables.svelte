@@ -1,15 +1,11 @@
 <script lang="ts">
   import {
-    ButtonIcon as IconButton,
-    Math,
-    Popover,
-  } from "@computational-biology-aachen/design";
-  import {
     defaultTexName,
     defaultValue,
   } from "@computational-biology-aachen/mxlweb-core";
   import { Base } from "@computational-biology-aachen/mxlweb-core/mathml";
   import DataTable from "./DataTable.svelte";
+  import ExprCell from "./ExprCell.svelte";
   import EqEditor from "./EqEditor.svelte";
   import { nextFreeId } from "./modelDiagnostics";
   import NameCell from "./NameCell.svelte";
@@ -40,11 +36,6 @@
     nnBlocks: NNBlockView;
     readouts?: AssView;
   } = $props();
-
-  function onSaveInitialAssignment(idx: number, fn: Base) {
-    variables[idx] = { ...variables[idx], value: fn };
-    variables = variables.slice();
-  }
 
   let texNames = $derived(
     idToTex(variables, parameters, assignments, reactions),
@@ -100,17 +91,7 @@
       />
     {:else}
       {#if vari.value instanceof Base}
-        <div class="row">
-          <Math
-            tex={vari.value.toTex(texNames)}
-            display={true}
-            fontSize="0.75rem"
-          />
-          <IconButton
-            icon="edit"
-            popovertarget="var-ia-editor-{idx}"
-          />
-        </div>
+        <ExprCell tex={vari.value.toTex(texNames)} />
       {:else}
         <NumberCell
           id="var-{idx}"
@@ -128,6 +109,23 @@
   {/snippet}
 
   {#snippet expansion(vari: Variable, idx: number)}
+    {#if vari.value instanceof Base}
+      <h4>Initial value</h4>
+      <EqEditor
+        bind:root={
+          () => variables[idx].value as Base,
+          (fn) => {
+            variables[idx].value = fn;
+            variables = variables.slice();
+          }
+        }
+        variables={variables}
+        parameters={parameters}
+        assignments={assignments}
+        reactions={reactions}
+        nnBlocks={nnBlocks}
+      />
+    {/if}
     <SliderFields
       slider={vari.slider}
       onChange={(slider) => {
@@ -138,32 +136,8 @@
   {/snippet}
 </DataTable>
 
-{#each variables as vari, idx (vari.id)}
-  {#if vari.value instanceof Base}
-    <Popover
-      size="md"
-      popovertarget={`var-ia-editor-${idx}`}
-    >
-      <EqEditor
-        root={vari.value}
-        variables={variables}
-        parameters={parameters}
-        assignments={assignments}
-        reactions={reactions}
-        nnBlocks={nnBlocks}
-        onSave={(fn) => onSaveInitialAssignment(idx, fn)}
-        popovertarget={`var-ia-editor-${idx}`}
-      />
-    </Popover>
-  {/if}
-{/each}
-
 <style>
-  .row {
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 0.5rem;
+  h4 {
+    margin: 0;
   }
 </style>
