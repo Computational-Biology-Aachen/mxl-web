@@ -1,42 +1,30 @@
 <script lang="ts">
   import {
-    Button,
-    ButtonIcon as IconButton,
-    Popover,
-  } from "@computational-biology-aachen/design";
-  import {
     defaultTexName,
     defaultValue,
   } from "@computational-biology-aachen/mxlweb-core";
-  import { MediaQuery, SvelteSet } from "svelte/reactivity";
+  import DataTable from "./DataTable.svelte";
+  import { nextFreeId } from "./modelDiagnostics";
   import {
     type AssView,
     type NNBlockView,
     type Parameter,
     type ParView,
     type RxnView,
-    type Variable,
     type VarView,
   } from "./modelView";
-  import SliderEditor from "./SliderEditor.svelte";
-  import TableSearch from "./TableSearch.svelte";
-  import TexNameInput from "./TexNameInput.svelte";
-  import { fuzzyMatch } from "./utils";
-
-  const md = new MediaQuery("max-width: 768px");
+  import NameCell from "./NameCell.svelte";
+  import NumberCell from "./NumberCell.svelte";
+  import SliderFields from "./SliderFields.svelte";
 
   // All six model views are received for a uniform table API (see
   // OdeModelEditor), but this table only reads/edits `parameters`.
   let {
-    // eslint-disable-next-line no-useless-assignment
     variables = $bindable(),
     parameters = $bindable(),
-    // eslint-disable-next-line no-useless-assignment
     assignments = $bindable(),
-    // eslint-disable-next-line no-useless-assignment
     reactions = $bindable(),
     nnBlocks = $bindable(),
-    // eslint-disable-next-line no-useless-assignment
     readouts = $bindable(),
   }: {
     variables: VarView;
@@ -47,10 +35,10 @@
     readouts?: AssView;
   } = $props();
 
-  function onSaveSlider(idx: number, update: Variable | Parameter) {
-    parameters[idx] = update as Parameter;
-    parameters = parameters.slice();
-  }
+  const columns = [
+    { key: "name", label: "Name", width: "50%" },
+    { key: "value", label: "Value", align: "right" as const, width: "12rem" },
+  ];
 
   // An NN block's own `scale` must never surface as an individual row here
   // (ADR 0005 §2.1.3) — weights/biases don't need this exclusion at all
@@ -60,292 +48,69 @@
   // round-trips it through toBuilder() on Save, which needs every entry's
   // live value, fitted or not), so the exclusion happens only in what this
   // table renders/edits.
-  let ownedParamIds = $derived.by(() => {
-    const owned = new SvelteSet<string>();
-    for (const par of parameters) {
-      if (nnBlocks.some((b) => par.id === `${b.id}_scale`)) {
-        owned.add(par.id);
-      }
-    }
-    return owned;
-  });
+  let ownedIds = $derived(new Set(nnBlocks.map((b) => `${b.id}_scale`)));
 
-  let query = $state("");
-  let filtered = $derived(
-    parameters
-      .map((par, idx) => ({ par, idx }))
-      .filter(({ par }) => !ownedParamIds.has(par.id))
-      .filter(({ par }) =>
-        fuzzyMatch(defaultValue(par.displayName, par.id), query),
-      ),
-  );
+  function add(): string {
+    const id = nextFreeId("p", {
+      variables,
+      parameters,
+      assignments,
+      reactions,
+      readouts,
+      nnBlocks,
+    });
+    parameters = [...parameters, { id, value: 1.0, texName: id }];
+    return id;
+  }
 </script>
 
-{#snippet nameInput(idx: number)}
-  <input
-    type="text"
-    aria-label="Name"
-    bind:value={
-      () => defaultValue(parameters[idx].displayName, parameters[idx].id),
-      (value) => {
-        parameters[idx].displayName = value;
-        parameters[idx].texName = defaultTexName(value);
+<DataTable
+  kind="parameter"
+  rows={parameters}
+  idOf={(p) => p.id}
+  labelOf={(p) => defaultValue(p.displayName, p.id)}
+  hidden={(p) => ownedIds.has(p.id)}
+  columns={columns}
+  onAdd={add}
+  onRemove={(p) => (parameters = parameters.filter((i) => i.id !== p.id))}
+>
+  {#snippet cell(key: string, par: Parameter, idx: number)}
+    {#if key === "name"}
+      <NameCell
+        name={defaultValue(par.displayName, par.id)}
+        texName={par.texName}
+        onName={(value) => {
+          parameters[idx].displayName = value;
+          parameters[idx].texName = defaultTexName(value);
+          parameters = parameters.slice();
+        }}
+        onTex={(value) => {
+          parameters[idx].texName = value;
+          parameters = parameters.slice();
+        }}
+      />
+    {:else}
+      <NumberCell
+        id="par-{idx}"
+        label="Value"
+        bind:value={
+          () => parameters[idx].value,
+          (value) => {
+            parameters[idx].value = value;
+            parameters = parameters.slice();
+          }
+        }
+      />
+    {/if}
+  {/snippet}
+
+  {#snippet expansion(par: Parameter, idx: number)}
+    <SliderFields
+      slider={par.slider}
+      onChange={(slider) => {
+        parameters[idx].slider = slider;
         parameters = parameters.slice();
-      }
-    }
-  />
-{/snippet}
-
-{#snippet texNameInput(idx: number)}
-  <TexNameInput
-    bind:value={
-      () => parameters[idx].texName,
-      (value) => {
-        parameters[idx].texName = value;
-        parameters = parameters.slice();
-      }
-    }
-  />
-{/snippet}
-
-{#snippet valueInput(idx: number)}
-  <input
-    type="number"
-    aria-label="Initial value"
-    bind:value={
-      () => parameters[idx].value, (value) => (parameters[idx].value = value)
-    }
-  />
-{/snippet}
-
-{#snippet actions(idx: number, par: Parameter)}
-  <IconButton
-    icon="edit"
-    popovertarget="var-editor-{idx}"
-  />
-  <IconButton
-    icon="close"
-    onclick={() => {
-      parameters = parameters.filter((i) => {
-        return i.id !== par.id;
-      });
-    }}
-  />
-{/snippet}
-
-<div class="padding">
-  <TableSearch bind:value={query} />
-</div>
-
-{#if md.current}
-  <!-- Card layout for mobile -->
-  <div class="card-container">
-    {#each filtered as { par, idx } (par.id)}
-      <div class="card">
-        <div class="card-row">
-          <span class="card-label">Name</span>
-          <div class="card-input">
-            {@render nameInput(idx)}
-          </div>
-        </div>
-        <div class="card-row">
-          <span class="card-label">Tex name</span>
-          <div class="card-input">
-            {@render texNameInput(idx)}
-          </div>
-        </div>
-        <div class="card-row">
-          <span class="card-label">Initial value</span>
-          <div class="card-input">
-            {@render valueInput(idx)}
-          </div>
-        </div>
-        <div class="card-row card-actions">
-          {@render actions(idx, par)}
-        </div>
-      </div>
-    {/each}
-  </div>
-{:else}
-  <!-- Table layout for desktop -->
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Tex name</th>
-        <th>Initial value</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {#each filtered as { par, idx } (par.id)}
-        <tr>
-          <td>
-            {@render nameInput(idx)}
-          </td>
-          <td>
-            {@render texNameInput(idx)}
-          </td>
-          <td>
-            {@render valueInput(idx)}
-          </td>
-          <td class="actions">
-            {@render actions(idx, par)}
-          </td>
-        </tr>
-      {/each}
-    </tbody>
-  </table>
-{/if}
-{#if query !== "" && filtered.length === 0}
-  <p class="empty">No items match “{query}”.</p>
-{/if}
-<div class="padding">
-  <Button
-    onclick={() => {
-      parameters = [
-        ...parameters,
-        {
-          id: `p${parameters.length}`,
-          value: 1.0,
-          texName: `p_${parameters.length}`,
-        },
-      ];
-    }}>add new item</Button
-  >
-</div>
-
-{#each parameters as par, idx (par.id)}
-  <Popover
-    size="sm"
-    popovertarget={`var-editor-${idx}`}
-  >
-    <SliderEditor
-      target={par}
-      onSave={(root) => onSaveSlider(idx, root)}
-      popovertarget={`var-editor-${idx}`}
+      }}
     />
-  </Popover>
-{/each}
-
-<style>
-  /* General */
-  .padding {
-    padding: 1rem;
-  }
-
-  .empty {
-    padding: 0 1rem;
-    color: var(--color-text-muted);
-  }
-
-  /* Input styles shared between table and cards */
-  input {
-    border: var(--border-transparent);
-    border-radius: var(--radius-lg);
-    background-color: transparent;
-    padding: 0.35rem 0.5rem;
-    width: 100%;
-    font-size: 0.875rem;
-  }
-
-  input:hover {
-    border: var(--border-primary);
-  }
-
-  /* Card layout */
-  .card-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 1rem;
-  }
-
-  .card {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    box-shadow: var(--shadow-sm);
-    border: var(--border);
-    border-radius: 0.5rem;
-    background-color: var(--color-surface);
-    padding: 1rem;
-  }
-
-  .card-row {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .card-label {
-    color: #6b7280;
-    font-weight: var(--weight-bold);
-    font-size: 0.75rem;
-    line-height: 1rem;
-    text-transform: uppercase;
-  }
-
-  .card-input {
-    width: 100%;
-  }
-
-  .card-actions {
-    display: flex;
-    flex-direction: row;
-    gap: 0.5rem;
-    border-top: 1px solid #e5e7eb;
-    padding-top: 0.5rem;
-  }
-
-  /* Table layout */
-  table {
-    border-collapse: collapse;
-    width: 100%;
-    overflow-x: auto;
-    text-align: left;
-    text-indent: 0;
-  }
-
-  thead th:first-of-type {
-    border-top-left-radius: 0.5rem;
-  }
-  thead th:last-of-type {
-    border-top-right-radius: 0.5rem;
-  }
-  tbody tr:last-of-type td:first-of-type {
-    border-bottom-left-radius: 0.5rem;
-  }
-  tbody tr:last-of-type td:last-of-type {
-    border-bottom-right-radius: 0.5rem;
-  }
-  th:last-child,
-  td:last-child {
-    width: 3rem;
-    text-align: center;
-  }
-  th {
-    background-color: #e5e7eb;
-    padding: 1rem 1.5rem;
-    font-weight: var(--weight-bold);
-    font-size: 0.75rem;
-    line-height: 1rem;
-    text-transform: uppercase;
-  }
-  td {
-    padding: 1rem 1.5rem;
-  }
-  tr {
-    background-color: var(--color-surface);
-  }
-  tr:hover {
-    transition-duration: 150ms;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    background-color: lch(from var(--color-surface) calc(l - 5) c h);
-  }
-  td.actions {
-    display: flex;
-    gap: 0 10px;
-    width: 7rem;
-  }
-</style>
+  {/snippet}
+</DataTable>
