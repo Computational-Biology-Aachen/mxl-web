@@ -13,7 +13,10 @@
 
   - `kind` — which {@link ItemKind} the rows are.
   - `rows`, `idOf`, `labelOf` — the items, their id, and the text searched.
-  - `columns` — `{ key, label, align? }`
+  - `hidden?` — rows to leave out of the table without removing them from
+    `rows`, so `index` still points into the source array.
+  - `columns` — `{ key, label, align?, width? }`; the table layout is fixed, so
+    give each column a `width` (or leave one to share the remainder)
   - `cell` — snippet `(key, row, index)` rendering one cell, where `index` is the row's position in the *unfiltered*
     `rows`, for writing back into the source array.
   - `expansion?` — snippet `(row, index)` for table-specific detail; the
@@ -42,6 +45,7 @@
     key: string;
     label: string;
     align?: "left" | "right";
+    width?: string;
   };
 
   let {
@@ -49,6 +53,7 @@
     rows,
     idOf,
     labelOf,
+    hidden,
     columns,
     cell,
     expansion,
@@ -59,6 +64,7 @@
     rows: T[];
     idOf: (row: T) => string;
     labelOf: (row: T) => string;
+    hidden?: (row: T) => boolean;
     columns: Column[];
     cell: Snippet<[string, T, number]>;
     expansion?: Snippet<[T, number]>;
@@ -82,6 +88,7 @@
       .map((row, index) => ({ row, index, id: idOf(row) }))
       .filter(
         ({ row, id }) =>
+          !hidden?.(row) &&
           fuzzyMatch(labelOf(row), query) &&
           (!problemsOnly || findingsFor(kindFindings, kind, id).length > 0),
       ),
@@ -263,7 +270,10 @@
       <thead>
         <tr>
           {#each columns as col (col.key)}
-            <th class={col.align}>{col.label}</th>
+            <th
+              class={col.align}
+              style:width={col.width}>{col.label}</th
+            >
           {/each}
           <th class="controls-col"><span class="sr-only">Actions</span></th>
         </tr>
@@ -340,6 +350,7 @@
   table {
     border-collapse: collapse;
     width: 100%;
+    table-layout: fixed;
     text-align: left;
   }
   th {
@@ -370,7 +381,7 @@
     text-align: right;
   }
   .controls-col {
-    width: 1%;
+    width: 6.5rem;
     white-space: nowrap;
   }
   tr.extra td {
@@ -420,8 +431,10 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    contain: inline-size;
     background-color: lch(from var(--color-surface) calc(l - 2) c h);
     padding: 0.75rem 1rem 1rem;
+    overflow-x: auto;
   }
   .findings {
     margin: 0;

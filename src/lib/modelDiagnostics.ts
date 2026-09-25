@@ -320,7 +320,8 @@ export function analyzeModel(parts: ModelParts): Diagnostics {
         severity: "warning",
         ref,
         code: "unused",
-        message: "Not used by anything.",
+        message:
+          "Not used by anything. If it is only an output, make it a readout: readouts are not computed during integration.",
       });
     }
   }

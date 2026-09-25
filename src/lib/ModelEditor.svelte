@@ -205,6 +205,8 @@
     },
     getAssignments: () => assignments,
     setAssignments: (next) => (assignments = next as typeof assignments),
+    expandAssignment: (id) =>
+      (ctx.expanded = id ? { kind: "assignment", id } : null),
   });
 </script>
 

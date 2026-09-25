@@ -12,6 +12,7 @@
   import DataTable from "./DataTable.svelte";
   import EqEditor from "./EqEditor.svelte";
   import { nextFreeId } from "./modelDiagnostics";
+  import NameCell from "./NameCell.svelte";
   import NumberCell from "./NumberCell.svelte";
   import {
     idToTex,
@@ -22,7 +23,7 @@
     type Variable,
     type VarView,
   } from "./modelView";
-  import TexNameInput from "./TexNameInput.svelte";
+  import SliderFields from "./SliderFields.svelte";
 
   let {
     variables = $bindable(),
@@ -50,8 +51,13 @@
   );
 
   const columns = [
-    { key: "name", label: "Name" },
-    { key: "value", label: "Initial value", align: "right" as const },
+    { key: "name", label: "Name", width: "50%" },
+    {
+      key: "value",
+      label: "Initial value",
+      align: "right" as const,
+      width: "12rem",
+    },
   ];
 
   function add(): string {
@@ -79,31 +85,19 @@
 >
   {#snippet cell(key: string, vari: Variable, idx: number)}
     {#if key === "name"}
-      <div class="name-cell">
-        <input
-          type="text"
-          aria-label="Name"
-          bind:value={
-            () => defaultValue(variables[idx].displayName, variables[idx].id),
-            (value) => {
-              variables[idx].displayName = value;
-              variables[idx].texName = defaultTexName(value);
-              variables = variables.slice();
-            }
-          }
-        />
-        <div class="tex">
-          <TexNameInput
-            bind:value={
-              () => variables[idx].texName,
-              (value) => {
-                variables[idx].texName = value;
-                variables = variables.slice();
-              }
-            }
-          />
-        </div>
-      </div>
+      <NameCell
+        name={defaultValue(vari.displayName, vari.id)}
+        texName={vari.texName}
+        onName={(value) => {
+          variables[idx].displayName = value;
+          variables[idx].texName = defaultTexName(value);
+          variables = variables.slice();
+        }}
+        onTex={(value) => {
+          variables[idx].texName = value;
+          variables = variables.slice();
+        }}
+      />
     {:else}
       {#if vari.value instanceof Base}
         <div class="row">
@@ -134,42 +128,13 @@
   {/snippet}
 
   {#snippet expansion(vari: Variable, idx: number)}
-    <div class="slider">
-      <label>
-        <input
-          type="checkbox"
-          bind:checked={
-            () => variables[idx].slider !== undefined,
-            (on) => {
-              variables[idx].slider = on
-                ? { min: "0.0", max: "1.0", step: "0.1" }
-                : undefined;
-              variables = variables.slice();
-            }
-          }
-        />
-        Display slider
-      </label>
-      {#if vari.slider}
-        {#each ["min", "max", "step"] as const as field (field)}
-          <label>
-            {field}
-            <input
-              type="text"
-              inputmode="decimal"
-              class="slider-field"
-              bind:value={
-                () => variables[idx].slider![field],
-                (value) => {
-                  variables[idx].slider![field] = value;
-                  variables = variables.slice();
-                }
-              }
-            />
-          </label>
-        {/each}
-      {/if}
-    </div>
+    <SliderFields
+      slider={vari.slider}
+      onChange={(slider) => {
+        variables[idx].slider = slider;
+        variables = variables.slice();
+      }}
+    />
   {/snippet}
 </DataTable>
 
@@ -194,52 +159,11 @@
 {/each}
 
 <style>
-  .name-cell {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  .name-cell input,
-  .tex {
-    flex: 1 1 50%;
-    min-width: 0;
-  }
   .row {
     display: flex;
     flex-direction: row;
     justify-content: flex-end;
     align-items: center;
     gap: 0.5rem;
-  }
-  input {
-    border: var(--border-transparent);
-    border-radius: var(--radius-lg);
-    background-color: transparent;
-    padding: 0.35rem 0.5rem;
-    width: 100%;
-    font-size: 0.875rem;
-  }
-  input:hover {
-    border: var(--border-primary);
-  }
-  .slider label {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.875rem;
-  }
-  .slider input[type="checkbox"] {
-    width: auto;
-  }
-  .slider-field {
-    border: var(--border-primary);
-    width: 5rem;
-    text-align: right;
-  }
-  .slider {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem 1.5rem;
   }
 </style>
