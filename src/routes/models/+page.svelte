@@ -1,105 +1,81 @@
 <script lang="ts">
+  import { replaceState } from "$app/navigation";
   import { base } from "$app/paths";
-  import schemeEbeling from "$lib/assets/ebeling2026-scheme.png";
-  import schemeFvcb from "$lib/assets/fvcb.png";
-  import mibinet from "$lib/assets/logos/mibinet.png";
-  import schemeLotkaVolt from "$lib/assets/lotka-volterra-scheme.png";
-  import scheme2016npq from "$lib/assets/matuszynska2016npq.png";
-  import scheme2016phd from "$lib/assets/matuszynska2016phd.png";
-  import schemeEnterobactin from "$lib/assets/mibinet-duo.png";
-  import schemePopDyn from "$lib/assets/population-dynamics.png";
-  import schemeSaadat from "$lib/assets/saadat2021.png";
-  import schemeSir from "$lib/assets/sir.png";
-  import schemeKea3 from "$lib/assets/tomato_KEA3.png";
-  import schemeTripartitePh from "$lib/assets/tripartite-ph.png";
-  import schemeTripartite from "$lib/assets/tripartite.png";
-  import schemeYokota from "$lib/assets/yokota.png";
   import CardModel from "$lib/CardModel.svelte";
-  import { fuzzyMatch } from "$lib/utils";
+  import FilterDropdown from "$lib/FilterDropdown.svelte";
   import {
-    GridGallery,
-    H2,
-    Icon,
-    Row,
-    SectionMain,
-  } from "@computational-biology-aachen/design";
+    defaultFilters,
+    filterModels,
+    isFiltered,
+    parseFilters,
+    serializeFilters,
+    sortLabels,
+    type SortKey,
+  } from "$lib/modelFilters";
+  import {
+    models,
+    systemLabels,
+    typeLabels,
+    type ModelType,
+    type System,
+  } from "$lib/models";
+  import { H2, Icon, SectionMain } from "@computational-biology-aachen/design";
+  import { onMount } from "svelte";
 
-  type Model = {
-    name: string;
-    slug: string;
-    image?: string;
-    consortium?: string;
-  };
+  const systemOptions = (Object.keys(systemLabels) as System[])
+    .filter((s) => models.some((m) => m.systems.includes(s)))
+    .map((s) => ({ value: s, label: systemLabels[s] }));
+  const typeOptions = (Object.keys(typeLabels) as ModelType[])
+    .filter((t) => models.some((m) => m.type === t))
+    .map((t) => ({ value: t, label: typeLabels[t] }));
+  const sortOptions = (Object.keys(sortLabels) as SortKey[]).map((k) => ({
+    value: k,
+    label: sortLabels[k],
+  }));
 
-  const odeModels: Model[] = [
-    { name: "Lotka Volterra", slug: "lotka-volterra", image: schemeLotkaVolt },
-    {
-      name: "Population dynamics",
-      slug: "population-dynamics",
-      image: schemePopDyn,
-    },
-    {
-      name: "Tripartite dynamics",
-      slug: "tripartite",
-      image: schemeTripartite,
-      consortium: mibinet,
-    },
-    {
-      name: "Tripartite dynamics (pH & resource)",
-      slug: "tripartite-ph",
-      image: schemeTripartitePh,
-      consortium: mibinet,
-    },
-    {
-      name: "Enterobactin",
-      slug: "dynamic-entrobactin",
-      image: schemeEnterobactin,
-      consortium: mibinet,
-    },
-    { name: "Yokota 1985", slug: "yokota1985", image: schemeYokota },
-    { name: "Poolman 2000", slug: "poolman2000", image: scheme2016phd },
-    {
-      name: "Matuszyńska 2016 (NPQ)",
-      slug: "matuszynska2016_npq",
-      image: scheme2016npq,
-    },
-    {
-      name: "Matuszyńska 2016 (PHD)",
-      slug: "matuszynska2016_phd",
-      image: scheme2016phd,
-    },
-    { name: "Matuszyńska 2019", slug: "matuszynska2019" },
-    { name: "Saadat 2021", slug: "saadat2021", image: schemeSaadat },
-    { name: "Ebeling 2026", slug: "ebeling-2026", image: schemeEbeling },
-    { name: "Tomato KEA3", slug: "kea3-tomato", image: schemeKea3 },
-    { name: "SIR", slug: "sir", image: schemeSir },
-    { name: "Bellasio 2019", slug: "bellasio2019" },
-    { name: "Davis 2017", slug: "davis2017" },
-    { name: "Hahn 1987", slug: "hahn1987" },
-    { name: "Lazar 1997", slug: "lazar1997" },
-    { name: "Li 2021", slug: "li2021" },
-    { name: "Zhu 2009", slug: "zhu2009" },
-    { name: "Fuente 2024", slug: "fuente2024" },
-  ];
+  let query = $state(defaultFilters.query);
+  let systems: string[] = $state(defaultFilters.systems);
+  let type: string = $state(defaultFilters.type);
+  let sort: string = $state(defaultFilters.sort);
 
-  const steadyStateModels: Model[] = [
-    { name: "Bernacchi 2023", slug: "bernacchi2023", image: schemeFvcb },
-    { name: "FvCB 1980", slug: "fvcb", image: schemeFvcb },
-    { name: "Johnson 2021", slug: "johnson2021", image: schemeFvcb },
-  ];
+  // Query params are unavailable while prerendering, so the URL state is
+  // applied after mount, and only then written back.
+  let restored = $state(false);
 
-  let query = $state("");
+  onMount(() => {
+    const filters = parseFilters(new URLSearchParams(location.search));
+    query = filters.query;
+    systems = filters.systems;
+    type = filters.type;
+    sort = filters.sort;
+    restored = true;
+  });
 
-  const filteredOde = $derived(
-    odeModels
-      .filter((m) => fuzzyMatch(m.name, query))
-      .toSorted((a, b) => a.name.localeCompare(b.name)),
-  );
-  const filteredSteadyState = $derived(
-    steadyStateModels
-      .filter((m) => fuzzyMatch(m.name, query))
-      .toSorted((a, b) => a.name.localeCompare(b.name)),
-  );
+  const filters = $derived({
+    query,
+    systems: systems as System[],
+    type: type as ModelType | "",
+    sort: sort as SortKey,
+  });
+
+  $effect(() => {
+    if (!restored) return;
+    const search = serializeFilters(filters).toString();
+    const next =
+      location.pathname + (search ? `?${search}` : "") + location.hash;
+    if (next !== location.pathname + location.search + location.hash) {
+      replaceState(next, {});
+    }
+  });
+
+  const shown = $derived(filterModels(models, filters));
+  const active = $derived(isFiltered(filters));
+
+  function clearFilters() {
+    query = defaultFilters.query;
+    systems = defaultFilters.systems;
+    type = defaultFilters.type;
+  }
 </script>
 
 <svelte:head>
@@ -107,77 +83,186 @@
 </svelte:head>
 
 <SectionMain align="start">
-  <Row
-    justify="between"
-    stack
-  >
-    <div class="heading">
-      <Icon color="primary">bolt</Icon>
-      <H2>Select a pre-defined model</H2>
-    </div>
-    <input
-      type="search"
-      class="filter"
-      placeholder="Filter models…"
-      bind:value={query}
+  <div class="heading">
+    <H2>Explore models</H2>
+    <p class="subtitle">
+      Browse and filter pre-defined models, then simulate them in your browser.
+    </p>
+  </div>
+
+  <div class="controls">
+    <label class="search">
+      <span class="search-icon"><Icon>search</Icon></span>
+      <input
+        type="search"
+        placeholder="Search models, e.g. photosynthesis, E. coli, iron metabolism…"
+        bind:value={query}
+      />
+    </label>
+    <FilterDropdown
+      label="Biological system"
+      allLabel="All systems"
+      options={systemOptions}
+      multiple
+      bind:values={systems}
     />
-  </Row>
+    <FilterDropdown
+      label="Model type"
+      allLabel="All types"
+      options={typeOptions}
+      bind:value={type}
+    />
+    <FilterDropdown
+      label="Sort by"
+      options={sortOptions}
+      bind:value={sort}
+    />
+  </div>
 
-  {#if filteredOde.length > 0}
-    <GridGallery title="ODE models">
-      {#each filteredOde as model (model.slug)}
+  <div class="status">
+    <span>
+      {active ? `${shown.length} of ${models.length}` : models.length} models
+    </span>
+    {#if active}
+      <button
+        type="button"
+        class="clear"
+        onclick={clearFilters}
+      >
+        Clear filters
+      </button>
+    {/if}
+  </div>
+
+  {#if shown.length > 0}
+    <div class="grid">
+      {#each shown as model (model.slug)}
         <CardModel
-          name={model.name}
+          model={model}
           href="{base}/models/{model.slug}"
-          image={model.image}
-          consortium={model.consortium}
         />
       {/each}
-    </GridGallery>
-  {/if}
-
-  {#if filteredSteadyState.length > 0}
-    <GridGallery title="Steady-state models">
-      {#each filteredSteadyState as model (model.slug)}
-        <CardModel
-          name={model.name}
-          href="{base}/models/{model.slug}"
-          image={model.image}
-          consortium={model.consortium}
-        />
-      {/each}
-    </GridGallery>
-  {/if}
-
-  {#if filteredOde.length === 0 && filteredSteadyState.length === 0}
-    <p class="empty">No models match “{query}”.</p>
+    </div>
+  {:else}
+    <div class="empty">
+      <p>No models match your filters.</p>
+      <button
+        type="button"
+        class="clear"
+        onclick={clearFilters}
+      >
+        Clear filters
+      </button>
+    </div>
   {/if}
 </SectionMain>
 
 <style>
   .heading {
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    /* container-type: inline-size; */
+    flex-direction: column;
+    gap: var(--space-1);
     width: 100%;
   }
 
-  .filter {
-    border: 1px solid var(--color-border);
+  .subtitle {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    width: 100%;
+  }
+
+  .controls :global(.dropdown) {
+    flex: 1 1 10rem;
+  }
+
+  .search {
+    display: flex;
+    flex: 1 1 100%;
+    align-items: center;
+    gap: var(--space-2);
+    border: var(--border);
     border-radius: var(--radius-md);
     background: var(--color-surface);
-    padding: var(--space-2) var(--space-3);
-    width: 100%;
+    padding: 0 var(--space-3);
+
+    @media (min-width: 900px) {
+      flex: 1 1 20rem;
+    }
+  }
+
+  .search-icon {
+    display: flex;
+    color: var(--color-text-muted);
+  }
+
+  .search:focus-within {
+    border-color: var(--color-primary);
+  }
+
+  .search input {
+    flex: 1;
+    border: none;
+    background: none;
+    padding: var(--space-3) 0;
+    min-width: 0;
     color: inherit;
     font: inherit;
+  }
 
-    @media (min-width: 768px) {
-      max-width: 320px;
+  .search input:focus {
+    outline: none;
+  }
+
+  .status {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  .clear {
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 0;
+    color: var(--color-primary);
+    font: inherit;
+    text-decoration: underline;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--gap);
+    width: 100%;
+
+    @media (min-width: 500px) {
+      grid-template-columns: 1fr 1fr;
+    }
+    @media (min-width: 800px) {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+    @media (min-width: 1100px) {
+      grid-template-columns: 1fr 1fr 1fr 1fr;
     }
   }
 
   .empty {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
     color: var(--color-text-muted);
+  }
+
+  .empty p {
+    margin: 0;
   }
 </style>

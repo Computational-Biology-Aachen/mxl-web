@@ -386,7 +386,7 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "K\\_stroma",
     })
-    .addAssignment("RT", {
+    .addReadout("RT", {
       fn: new Mul([new Name("R"), new Name("T")]),
       texName: "RT",
     })
@@ -445,7 +445,7 @@ export function initModel(): KineticModelBuilder {
       fn: new Add([new Name("pH_lumen"), new Minus([new Name("pH_stroma")])]),
       texName: "delta\\_pH",
     })
-    .addAssignment("delta_pH_V", {
+    .addReadout("delta_pH_V", {
       fn: new Minus([
         new Divide([
           new Mul([
@@ -647,30 +647,30 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "B3",
     })
-    .addAssignment("rel_B0", {
+    .addReadout("rel_B0", {
       fn: new Divide([new Name("B0"), new Name("PSIItot")]),
       texName: "rel\\_B0",
     })
-    .addAssignment("rel_B1", {
+    .addReadout("rel_B1", {
       fn: new Divide([new Name("B1"), new Name("PSIItot")]),
       texName: "rel\\_B1",
     })
-    .addAssignment("rel_B2", {
+    .addReadout("rel_B2", {
       fn: new Divide([new Name("B2"), new Name("PSIItot")]),
       texName: "rel\\_B2",
     })
-    .addAssignment("rel_B3", {
+    .addReadout("rel_B3", {
       fn: new Divide([new Name("B3"), new Name("PSIItot")]),
       texName: "rel\\_B3",
     })
-    .addAssignment("qL", {
+    .addReadout("qL", {
       fn: new Divide([
         new Add([new Name("B1"), new Name("B2")]),
         new Name("PSIItot"),
       ]),
       texName: "qL",
     })
-    .addAssignment("Fluo", {
+    .addReadout("Fluo", {
       fn: new Add([
         new Divide([
           new Mul([new Name("B0"), new Name("kF")]),

@@ -4,6 +4,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   resolve: {
     alias: {
+      $lib: fileURLToPath(new URL("./src/lib", import.meta.url)),
       // SvelteKit's $app/environment only resolves under the full
       // @sveltejs/kit/vite plugin (vite.config.ts's dev/build pipeline,
       // not wired into this standalone vitest config) — see

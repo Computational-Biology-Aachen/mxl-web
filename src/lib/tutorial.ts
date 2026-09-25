@@ -9,7 +9,7 @@ export type TutorialStep = {
   title: string;
   body: string;
   target?: () => HTMLElement | null;
-  // Steps flagged here need the equation-editor popover open; the overlay
+  // Steps flagged here need the equation editor open; the overlay
   // reconciles that state as the user moves in and out of these steps.
   requiresEqEditor?: boolean;
   onEnter?: () => void | Promise<void>;
@@ -24,6 +24,9 @@ export type TutorialContext = {
   selectTab: (name: string) => void;
   getAssignments: () => AssView;
   setAssignments: (assignments: AssView) => void;
+  // Expands one assignment row (whose inline equation editor the steps point
+  // at), or collapses every row when `null`.
+  expandAssignment: (id: string | null) => void;
 };
 
 const query = (selector: string) => (): HTMLElement | null =>
@@ -43,11 +46,8 @@ export function buildEditorTutorial(
   // Remembers whether the demo assignment was injected for this run, so it can
   // be cleaned up again and the user's model is left untouched.
   let demoAdded = false;
-  let eqIdx = 0;
 
-  // Idempotent: safe to call on every equation-editor step. Clicking the tour
-  // card light-dismisses the (auto) equation-editor popover, so each step must
-  // re-open it rather than trust that a previous step left it open.
+  // Idempotent: safe to call on every equation-editor step.
   async function openEqEditor(): Promise<void> {
     ctx.selectTab("Assignments");
     await tick();
@@ -64,18 +64,13 @@ export function buildEditorTutorial(
     }
 
     const assignments = ctx.getAssignments();
-    eqIdx = demoAdded
-      ? assignments.findIndex((assign) => assign.id === DEMO_ID)
-      : 0;
-
-    await tick();
-    const popover = document.getElementById(`eq-editor-${eqIdx}`);
-    if (popover && !popover.matches(":popover-open")) popover.showPopover();
+    const target = demoAdded ? DEMO_ID : assignments[0]?.id;
+    ctx.expandAssignment(target ?? null);
     await tick();
   }
 
   function closeEqEditor(): void {
-    document.getElementById(`eq-editor-${eqIdx}`)?.hidePopover();
+    ctx.expandAssignment(null);
     if (demoAdded) {
       ctx.setAssignments(
         ctx.getAssignments().filter((assign) => assign.id !== DEMO_ID),

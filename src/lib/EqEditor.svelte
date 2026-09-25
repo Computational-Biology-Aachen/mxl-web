@@ -95,8 +95,13 @@
     assignments: AssView;
     reactions: RxnView;
     nnBlocks: NNBlockView;
-    popovertarget: string;
-    onSave: (fn: Base) => void;
+    /**
+     * Popover mode: the id of the [[Popover]] this editor sits in, plus
+     * `onSave` for its Save button. Omit both for inline use, where `root` is
+     * bound and every edit applies immediately.
+     */
+    popovertarget?: string;
+    onSave?: (fn: Base) => void;
     /**
      * Overrides the model-derived symbol picker with a fixed, small set —
      * for an expression scoped to placeholders the schema itself restricts
@@ -753,24 +758,26 @@
 </script>
 
 <section bind:this={sectionEl}>
-  <Row
-    stack
-    justify="between"
-    gap="0.5rem"
-  >
-    <hgroup>
-      <h2>Eq Editor</h2>
-      <p class="comment">
-        Build an expression by selecting a node and replacing it with a MathML
-        element, then adjust symbols to the allowed variable names.
-      </p>
-    </hgroup>
-    <Button
-      onclick={() => onSave(root)}
-      popovertarget={popovertarget}
-      popovertargetaction="hide">Save</Button
+  {#if popovertarget && onSave}
+    <Row
+      stack
+      justify="between"
+      gap="0.5rem"
     >
-  </Row>
+      <hgroup>
+        <h2>Eq Editor</h2>
+        <p class="comment">
+          Build an expression by selecting a node and replacing it with a MathML
+          element, then adjust symbols to the allowed variable names.
+        </p>
+      </hgroup>
+      <Button
+        onclick={() => onSave(root)}
+        popovertarget={popovertarget}
+        popovertargetaction="hide">Save</Button
+      >
+    </Row>
+  {/if}
 
   <div class="edit-row">
     <label for="root">Template</label>

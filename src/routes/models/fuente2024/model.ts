@@ -156,7 +156,7 @@ export function initModel(): KineticModelBuilder {
       value: 144.95412072145785,
       texName: "ATP\\_st",
     })
-    .addAssignment("Q_inactive", {
+    .addReadout("Q_inactive", {
       fn: new Add([new Name("Q_total"), new Minus([new Name("Q_active")])]),
       texName: "Q\\_inactive",
     })
@@ -223,14 +223,14 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "RCII\\_open",
     })
-    .addAssignment("Fluo", {
+    .addReadout("Fluo", {
       fn: new Mul([
         new Name("sigma_PSII"),
         new Add([new Name("Fluo_0"), new Name("RCII_closed")]),
       ]),
       texName: "Fluo",
     })
-    .addAssignment("NPQ", {
+    .addReadout("NPQ", {
       fn: new Divide([
         new Mul([new Name("NPQ_max"), new Name("Q_active")]),
         new Add([
@@ -240,7 +240,7 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "NPQ",
     })
-    .addAssignment("O2", {
+    .addReadout("O2", {
       fn: new Mul([
         new Num(0.25),
         new Name("PSI_total"),
