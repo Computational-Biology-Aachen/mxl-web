@@ -818,7 +818,7 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "vmax\\_dehydroascorbate\\_reductase",
     })
-    .addAssignment("B0", {
+    .addReadout("B0", {
       fn: new Divide([
         new Mul([
           new Name("PSII_total"),
@@ -1289,7 +1289,7 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "ps2states",
     })
-    .addAssignment("B2", {
+    .addReadout("B2", {
       fn: new Divide([
         new Mul([
           new Name("PSII_total"),
@@ -1588,7 +1588,7 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "ps2states",
     })
-    .addAssignment("B3", {
+    .addReadout("B3", {
       fn: new Divide([
         new Mul([
           new Name("PPFD"),
