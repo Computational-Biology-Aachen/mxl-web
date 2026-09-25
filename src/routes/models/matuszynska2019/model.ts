@@ -1751,7 +1751,7 @@ export function initModel(): KineticModelBuilder {
       ],
       texName: "ex\\_g1p",
     })
-    .addAssignment("B0", {
+    .addReadout("B0", {
       fn: new Divide([
         new Mul([
           new Name("PSII_total"),
@@ -2222,7 +2222,7 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "B1",
     })
-    .addAssignment("B2", {
+    .addReadout("B2", {
       fn: new Divide([
         new Mul([
           new Name("PSII_total"),
@@ -2521,7 +2521,7 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "B2",
     })
-    .addAssignment("B3", {
+    .addReadout("B3", {
       fn: new Divide([
         new Mul([
           new Name("PPFD"),
@@ -2769,27 +2769,27 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "B3",
     })
-    .addAssignment("PQ_ox_div_tot", {
+    .addReadout("PQ_ox_div_tot", {
       fn: new Divide([new Name("Plastoquinone_reduced"), new Name("PQ_tot")]),
       texName: "PQ\\_ox/tot",
     })
-    .addAssignment("Fd_ox_div_tot", {
+    .addReadout("Fd_ox_div_tot", {
       fn: new Divide([new Name("Ferredoxine_reduced"), new Name("Fd_star")]),
       texName: "Fd\\_ox/tot",
     })
-    .addAssignment("PC_ox_div_tot", {
+    .addReadout("PC_ox_div_tot", {
       fn: new Divide([new Name("Plastocyanine_reduced"), new Name("PC_tot")]),
       texName: "PC\\_ox/tot",
     })
-    .addAssignment("NADPH_div_tot", {
+    .addReadout("NADPH_div_tot", {
       fn: new Divide([new Name("NADPH"), new Name("NADP_star")]),
       texName: "NADPH/tot",
     })
-    .addAssignment("ATP_div_tot", {
+    .addReadout("ATP_div_tot", {
       fn: new Divide([new Name("ATP"), new Name("A_star_P")]),
       texName: "ATP/tot",
     })
-    .addAssignment("Fluo", {
+    .addReadout("Fluo", {
       fn: new Add([
         new Divide([
           new Mul([

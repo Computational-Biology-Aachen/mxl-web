@@ -308,11 +308,11 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "pmf",
     })
-    .addAssignment("delta_pH", {
+    .addReadout("delta_pH", {
       fn: new Add([new Name("pH_stroma"), new Minus([new Name("pH_lumen")])]),
       texName: "delta\\_pH",
     })
-    .addAssignment("delta_pH_inVolts", {
+    .addReadout("delta_pH_inVolts", {
       fn: new Mul([new Num(0.06), new Name("delta_pH")]),
       texName: "delta\\_pH\\_inVolts",
     })
@@ -323,7 +323,7 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "ATP\\_synthase\\_driving\\_force",
     })
-    .addAssignment("k_b6f", {
+    .addReadout("k_b6f", {
       fn: new Mul([
         new Name("c_b6f"),
         new Add([

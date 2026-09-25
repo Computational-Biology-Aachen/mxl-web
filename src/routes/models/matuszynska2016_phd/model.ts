@@ -381,7 +381,7 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "A1",
     })
-    .addAssignment("B0", {
+    .addReadout("B0", {
       fn: new Divide([
         new Mul([
           new Name("PSII_total"),
@@ -852,7 +852,7 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "ps2states",
     })
-    .addAssignment("B2", {
+    .addReadout("B2", {
       fn: new Divide([
         new Mul([
           new Name("PSII_total"),
@@ -1151,7 +1151,7 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "ps2states",
     })
-    .addAssignment("B3", {
+    .addReadout("B3", {
       fn: new Divide([
         new Mul([
           new Name("PPFD"),
@@ -1669,7 +1669,7 @@ export function initModel(): KineticModelBuilder {
     .addParameter("k_H", { value: 5000000000.0, texName: "k\\_H" })
     .addParameter("k_F", { value: 625000000.0, texName: "k\\_F" })
     .addParameter("k_P", { value: 5000000000.0, texName: "k\\_P" })
-    .addAssignment("Fluo", {
+    .addReadout("Fluo", {
       fn: new Add([
         new Divide([
           new Mul([new Name("B0"), new Name("k_F")]),

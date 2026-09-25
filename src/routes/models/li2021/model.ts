@@ -358,11 +358,11 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "kCBB",
     })
-    .addAssignment("delta_pH", {
+    .addReadout("delta_pH", {
       fn: new Add([new Name("pH_st"), new Minus([new Name("pH_lumen")])]),
       texName: "delta\\_pH",
     })
-    .addAssignment("delta_pH_inVolts", {
+    .addReadout("delta_pH_inVolts", {
       fn: new Mul([new Num(0.06), new Name("delta_pH")]),
       texName: "delta\\_pH\\_inVolts",
     })
