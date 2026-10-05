@@ -8,3 +8,6 @@ bun.lockb
 # Miscellaneous
 /static/
 .venv/
+
+# Agent tooling
+.claude/

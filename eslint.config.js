@@ -11,6 +11,8 @@ const gitignorePath = fileURLToPath(new URL("./.gitignore", import.meta.url));
 
 export default ts.config(
   includeIgnoreFile(gitignorePath),
+  // agent tooling (e.g. vendored skill scripts) is not part of the site
+  { ignores: [".claude/"] },
   js.configs.recommended,
   ...ts.configs.recommended,
   ...svelte.configs.recommended,
