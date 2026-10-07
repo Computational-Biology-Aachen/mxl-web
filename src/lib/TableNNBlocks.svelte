@@ -1,19 +1,14 @@
 <script lang="ts">
   import {
-    Button,
-    ButtonIcon as IconButton,
-    Math,
-    Popover,
-  } from "@computational-biology-aachen/design";
-  import {
     additiveMechanism,
     multiplyMechanism,
     relativeMultiplyMechanism,
     softplusActivation,
   } from "@computational-biology-aachen/mxlweb-core";
-  import type { Base } from "@computational-biology-aachen/mxlweb-core/mathml";
-  import { MediaQuery } from "svelte/reactivity";
+  import DataTable from "./DataTable.svelte";
   import EqEditor from "./EqEditor.svelte";
+  import ExprCell from "./ExprCell.svelte";
+  import { nextFreeId } from "./modelDiagnostics";
   import {
     type AssView,
     type NNBlockView,
@@ -21,8 +16,7 @@
     type RxnView,
     type VarView,
   } from "./modelView";
-  import TableSearch from "./TableSearch.svelte";
-  import { fuzzyMatch } from "./utils";
+  import NumberCell from "./NumberCell.svelte";
 
   // The mechanism EqEditor is scoped to exactly the two placeholders
   // mxl-schemas' `mechanismNode` restricts a `mechanism` expression's `Name`
@@ -50,8 +44,6 @@
     { name: "Multiply: f · NN(x)", code: multiplyMechanism },
   ];
 
-  const md = new MediaQuery("max-width: 768px");
-
   // The five other model views are received for the same uniform table API
   // every other table component gets (see ModelEditor.svelte). `variables`
   // is always a block's fixed input set (it reads every state variable, no
@@ -69,7 +61,6 @@
     assignments = $bindable(),
     reactions = $bindable(),
     nnBlocks = $bindable(),
-    // eslint-disable-next-line no-useless-assignment
     readouts = $bindable(),
   }: {
     variables: VarView;
@@ -145,20 +136,21 @@
     if (next.some((b, i) => b !== nnBlocks[i])) nnBlocks = next;
   });
 
-  let query = $state("");
-  let filtered = $derived(
-    nnBlocks
-      .map((block, idx) => ({ block, idx }))
-      .filter(({ block }) => fuzzyMatch(block.id, query)),
-  );
-
   let nextSeed = 0;
-  function addBlock() {
+  function addBlock(): string {
     nextSeed += 1;
+    const id = nextFreeId("block", {
+      variables,
+      parameters,
+      assignments,
+      reactions,
+      readouts,
+      nnBlocks,
+    });
     nnBlocks = [
       ...nnBlocks,
       {
-        id: `block${nnBlocks.length}`,
+        id,
         inputs: [...allVariableNames],
         // One hidden layer of width 4 (softplus-activated), plus the
         // implicit linear (no activation) output layer (setLayers below
@@ -185,6 +177,7 @@
         mechanism: relativeMultiplyMechanism(),
       },
     ];
+    return id;
   }
 
   // Depth/width is still the only architecture the UI authors (a full
@@ -243,11 +236,6 @@
     }
   }
 
-  function onSaveMechanism(idx: number, mechanism: Base) {
-    nnBlocks[idx].mechanism = mechanism;
-    nnBlocks = nnBlocks.slice();
-  }
-
   // Switching kind just flips the tag; the $effect above resyncs
   // inputs/targets/layer-width to match on the very next run (allVariableNames
   // for "variable", allReactionNames for "reaction") rather than duplicating
@@ -256,195 +244,119 @@
     nnBlocks[idx].targetKind = kind;
     nnBlocks = nnBlocks.slice();
   }
+
+  let columns = $derived([
+    { key: "name", label: "Name", width: "18%" },
+    ...(showTargetKind
+      ? [{ key: "kind", label: "Corrects", width: "12rem" }]
+      : []),
+    { key: "layers", label: "Layers", width: "9rem" },
+    {
+      key: "scale",
+      label: "Output scale",
+      align: "right" as const,
+      width: "9rem",
+    },
+    { key: "trained", label: "Train", width: "5rem" },
+    { key: "mechanism", label: "Mechanism" },
+  ]);
 </script>
 
-{#snippet targetKindField(idx: number)}
-  <select
-    aria-label="Corrects"
-    bind:value={
-      () => nnBlocks[idx].targetKind,
-      (value) => setTargetKind(idx, value as "variable" | "reaction")
-    }
-  >
-    <option value="variable">Equations</option>
-    <option
-      value="reaction"
-      disabled={allReactionNames.length === 0}
-    >
-      Reactions
-    </option>
-  </select>
-{/snippet}
-
-{#snippet depthWidthField(idx: number)}
-  <div class="pair">
-    <input
-      type="number"
-      min="1"
-      step="1"
-      aria-label="Hidden layers"
-      bind:value={
-        () => currentDepth(idx),
-        (value) =>
-          setDepthWidth(
-            idx,
-            globalThis.Math.max(1, globalThis.Math.round(value)),
-            currentWidth(idx),
-          )
-      }
-    />
-    <span>×</span>
-    <input
-      type="number"
-      min="1"
-      step="1"
-      aria-label="Layer width"
-      bind:value={
-        () => currentWidth(idx),
-        (value) =>
-          setDepthWidth(
-            idx,
-            currentDepth(idx),
-            globalThis.Math.max(1, globalThis.Math.round(value)),
-          )
-      }
-    />
-  </div>
-{/snippet}
-
-{#snippet scaleField(idx: number)}
-  <input
-    type="number"
-    step="any"
-    aria-label="Output scale"
-    bind:value={() => currentScale(idx), (value) => setScale(idx, value)}
-  />
-{/snippet}
-
-{#snippet mechanismField(idx: number)}
-  <div class="row">
-    <Math
-      tex={nnBlocks[idx].mechanism.toTex(mechanismTexNames)}
-      display={true}
-      fontSize="0.75rem"
-    />
-    <IconButton
-      icon="edit"
-      popovertarget="mechanism-editor-{idx}"
-    />
-  </div>
-{/snippet}
-
-{#snippet trainedField(idx: number)}
-  <input
-    type="checkbox"
-    bind:checked={
-      () => nnBlocks[idx].trained,
-      (value) => {
-        nnBlocks[idx].trained = value;
-        nnBlocks = nnBlocks.slice();
-      }
-    }
-  />
-{/snippet}
-
-{#snippet actions(_idx: number, id: string)}
-  <IconButton
-    icon="close"
-    onclick={() => {
-      nnBlocks = nnBlocks.filter((b) => b.id !== id);
-    }}
-  />
-{/snippet}
-
-<div class="padding">
-  <TableSearch bind:value={query} />
-</div>
-
-{#if md.current}
-  <!-- Card layout for mobile -->
-  <div class="card-container">
-    {#each filtered as { block, idx } (block.id)}
-      <div class="card">
-        <div class="card-row">
-          <span class="card-label">Name</span>
-          {block.id}
-        </div>
-        {#if showTargetKind}
-          <div class="card-row">
-            <span class="card-label">Corrects</span>
-            <div class="card-input">{@render targetKindField(idx)}</div>
-          </div>
-        {/if}
-        <div class="card-row">
-          <span class="card-label">Architecture</span>
-          <div class="card-input">{@render depthWidthField(idx)}</div>
-        </div>
-        <div class="card-row">
-          <span class="card-label">Output scale</span>
-          <div class="card-input">{@render scaleField(idx)}</div>
-        </div>
-        <div class="card-row">
-          <span class="card-label">Mechanism</span>
-          <div class="card-input">{@render mechanismField(idx)}</div>
-        </div>
-        <div class="card-row">
-          <span class="card-label">Train when fitting</span>
-          {@render trainedField(idx)}
-        </div>
-        <div class="card-row card-actions">
-          {@render actions(idx, block.id)}
-        </div>
+<DataTable
+  kind="nnBlock"
+  rows={nnBlocks}
+  idOf={(b) => b.id}
+  labelOf={(b) => b.id}
+  columns={columns}
+  onAdd={addBlock}
+  onRemove={(b) => (nnBlocks = nnBlocks.filter((i) => i.id !== b.id))}
+>
+  {#snippet cell(key: string, block: NNBlockView[number], idx: number)}
+    {#if key === "name"}
+      <span class="id">{block.id}</span>
+    {:else if key === "kind"}
+      <select
+        aria-label="Corrects"
+        bind:value={
+          () => nnBlocks[idx].targetKind,
+          (value) => setTargetKind(idx, value as "variable" | "reaction")
+        }
+      >
+        <option value="variable">Equations</option>
+        <option
+          value="reaction"
+          disabled={allReactionNames.length === 0}
+        >
+          Reactions
+        </option>
+      </select>
+    {:else if key === "layers"}
+      <div class="pair">
+        <input
+          type="number"
+          min="1"
+          step="1"
+          aria-label="Hidden layers"
+          bind:value={
+            () => currentDepth(idx),
+            (value) =>
+              setDepthWidth(
+                idx,
+                globalThis.Math.max(1, globalThis.Math.round(value)),
+                currentWidth(idx),
+              )
+          }
+        />
+        <span>×</span>
+        <input
+          type="number"
+          min="1"
+          step="1"
+          aria-label="Layer width"
+          bind:value={
+            () => currentWidth(idx),
+            (value) =>
+              setDepthWidth(
+                idx,
+                currentDepth(idx),
+                globalThis.Math.max(1, globalThis.Math.round(value)),
+              )
+          }
+        />
       </div>
-    {/each}
-  </div>
-{:else}
-  <!-- Table layout for desktop -->
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        {#if showTargetKind}
-          <th>Corrects</th>
-        {/if}
-        <th>Layers</th>
-        <th>Output scale</th>
-        <th>Mechanism</th>
-        <th>Train</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {#each filtered as { block, idx } (block.id)}
-        <tr>
-          <td>{block.id}</td>
-          {#if showTargetKind}
-            <td>{@render targetKindField(idx)}</td>
-          {/if}
-          <td>{@render depthWidthField(idx)}</td>
-          <td>{@render scaleField(idx)}</td>
-          <td>{@render mechanismField(idx)}</td>
-          <td>{@render trainedField(idx)}</td>
-          <td class="actions">{@render actions(idx, block.id)}</td>
-        </tr>
-      {/each}
-    </tbody>
-  </table>
-{/if}
-{#if query !== "" && filtered.length === 0}
-  <p class="empty">No items match “{query}”.</p>
-{/if}
-<div class="padding">
-  <Button onclick={addBlock}>add NN block</Button>
-</div>
+    {:else if key === "scale"}
+      <NumberCell
+        id="nn-scale-{idx}"
+        label="Output scale"
+        bind:value={() => currentScale(idx), (value) => setScale(idx, value)}
+      />
+    {:else if key === "trained"}
+      <input
+        type="checkbox"
+        aria-label="Train when fitting"
+        bind:checked={
+          () => nnBlocks[idx].trained,
+          (value) => {
+            nnBlocks[idx].trained = value;
+            nnBlocks = nnBlocks.slice();
+          }
+        }
+      />
+    {:else}
+      <ExprCell tex={block.mechanism.toTex(mechanismTexNames)} />
+    {/if}
+  {/snippet}
 
-{#each nnBlocks as block, idx (block.id)}
-  <Popover
-    size="md"
-    popovertarget={`mechanism-editor-${idx}`}
-  >
+  {#snippet expansion(_block: NNBlockView[number], idx: number)}
+    <h4>Mechanism</h4>
     <EqEditor
-      root={block.mechanism}
+      bind:root={
+        () => nnBlocks[idx].mechanism,
+        (mechanism) => {
+          nnBlocks[idx].mechanism = mechanism;
+          nnBlocks = nnBlocks.slice();
+        }
+      }
       variables={variables}
       parameters={parameters}
       assignments={assignments}
@@ -452,135 +364,36 @@
       nnBlocks={nnBlocks}
       restrictArgNames={mechanismArgNames}
       presetTemplates={mechanismTemplates}
-      onSave={(root) => onSaveMechanism(idx, root)}
-      popovertarget={`mechanism-editor-${idx}`}
     />
-  </Popover>
-{/each}
+  {/snippet}
+</DataTable>
 
 <style>
-  .padding {
-    padding: 1rem;
+  h4 {
+    margin: 0;
   }
-  .empty {
-    padding: 0 1rem;
-    color: var(--color-text-muted);
-  }
-  .row {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 0.5rem;
+  .id {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.875rem;
   }
   .pair {
     display: flex;
     align-items: center;
-    gap: 0.35rem;
+    gap: 0.4rem;
   }
   .pair input {
-    width: 4rem;
+    width: 3.5rem;
   }
-
-  input,
+  input[type="number"],
   select {
     border: var(--border-transparent);
     border-radius: var(--radius-lg);
     background-color: transparent;
     padding: 0.35rem 0.5rem;
-    width: 100%;
     font-size: 0.875rem;
   }
-  input:hover,
+  input[type="number"]:hover,
   select:hover {
     border: var(--border-primary);
-  }
-
-  .card-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 1rem;
-  }
-  .card {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    box-shadow: var(--shadow-sm);
-    border: var(--border);
-    border-radius: 0.5rem;
-    background-color: var(--color-surface);
-    padding: 1rem;
-  }
-  .card-row {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  .card-label {
-    color: #6b7280;
-    font-weight: var(--weight-bold);
-    font-size: 0.75rem;
-    line-height: 1rem;
-    text-transform: uppercase;
-  }
-  .card-input {
-    width: 100%;
-  }
-  .card-actions {
-    display: flex;
-    flex-direction: row;
-    gap: 0.5rem;
-    border-top: 1px solid #e5e7eb;
-    padding-top: 0.5rem;
-  }
-
-  table {
-    border-collapse: collapse;
-    width: 100%;
-    overflow-x: auto;
-    text-align: left;
-    text-indent: 0;
-  }
-  thead th:first-of-type {
-    border-top-left-radius: 0.5rem;
-  }
-  thead th:last-of-type {
-    border-top-right-radius: 0.5rem;
-  }
-  tbody tr:last-of-type td:first-of-type {
-    border-bottom-left-radius: 0.5rem;
-  }
-  tbody tr:last-of-type td:last-of-type {
-    border-bottom-right-radius: 0.5rem;
-  }
-  th:last-child,
-  td:last-child {
-    width: 3rem;
-    text-align: center;
-  }
-  th {
-    background-color: #e5e7eb;
-    padding: 1rem 1.5rem;
-    font-weight: var(--weight-bold);
-    font-size: 0.75rem;
-    line-height: 1rem;
-    text-transform: uppercase;
-  }
-  td {
-    padding: 1rem 1.5rem;
-  }
-  tr {
-    background-color: var(--color-surface);
-  }
-  tr:hover {
-    transition-duration: 150ms;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    background-color: lch(from var(--color-surface) calc(l - 5) c h);
-  }
-  td.actions {
-    display: flex;
-    gap: 0 10px;
-    width: 7rem;
   }
 </style>

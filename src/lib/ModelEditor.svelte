@@ -17,7 +17,10 @@
     defaultValue,
     KineticModelBuilder,
   } from "@computational-biology-aachen/mxlweb-core";
+  import { EditorContext, provideEditorContext } from "./editorContext.svelte";
   import EditorTutorial from "./EditorTutorial.svelte";
+  import { countBySeverity, type ItemKind } from "./modelDiagnostics";
+  import TabBadge from "./TabBadge.svelte";
   import { ModelView } from "./modelView";
   import { buildEditorTutorial } from "./tutorial";
 
@@ -136,37 +139,61 @@
   let tabs = [
     {
       name: "Variables",
+      kinds: ["variable"] as ItemKind[],
       comp: TableVariables,
       icon: "variable_add", //
     },
     {
       name: "Parameters",
+      kinds: ["parameter"] as ItemKind[],
       comp: TableParameters,
       icon: "tune",
     },
     {
       name: "Assignments",
+      kinds: ["assignment"] as ItemKind[],
       comp: TableAssignments,
       icon: "expand",
     },
     {
       name: "Reactions",
+      kinds: ["reaction"] as ItemKind[],
       comp: TableReactions,
       icon: "rebase_edit",
     },
     {
       name: "NN Blocks",
+      kinds: ["nnBlock"] as ItemKind[],
       comp: TableNNBlocks,
       icon: "model_training",
     },
     {
       name: "Readouts",
+      kinds: ["readout"] as ItemKind[],
       comp: TableReadouts,
       icon: "visibility",
     },
   ];
 
   let cur = $state(tabs[0]);
+
+  const ctx = provideEditorContext(
+    new EditorContext(
+      () => ({
+        variables,
+        parameters,
+        assignments,
+        reactions,
+        readouts,
+        nnBlocks,
+        nnWeights,
+      }),
+      (ref) => {
+        const tab = tabs.find((t) => t.kinds.includes(ref.kind));
+        if (tab) cur = tab;
+      },
+    ),
+  );
 
   let tour = $state<EditorTutorial>();
   const tutorial = buildEditorTutorial({
@@ -178,6 +205,8 @@
     },
     getAssignments: () => assignments,
     setAssignments: (next) => (assignments = next as typeof assignments),
+    expandAssignment: (id) =>
+      (ctx.expanded = id ? { kind: "assignment", id } : null),
   });
 </script>
 
@@ -200,8 +229,12 @@
         variant="secondary"
         onclick={() => tour?.start()}>Tutorial</Button
       >
-      <span data-tour="save">
+      <span
+        data-tour="save"
+        title={ctx.saveBlockedReason}
+      >
         <Button
+          disabled={ctx.hasErrors}
           onclick={() => onSave(modelView.toBuilder())}
           popovertarget={popovertarget}
           popovertargetaction="hide">Save</Button
@@ -218,6 +251,9 @@
       >
         <Icon>{tab.icon}</Icon>
         {tab.name}
+        <TabBadge
+          counts={countBySeverity(ctx.diagnostics.findings, tab.kinds)}
+        />
       </ButtonTab>
     {/each}
   </ul>
