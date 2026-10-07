@@ -74,13 +74,6 @@
         <span class="material-symbols-outlined">biotech</span>
       </div>
     {/if}
-    {#if model.consortium}
-      <img
-        src={model.consortium}
-        class="logo"
-        alt="consortium logo"
-      />
-    {/if}
   </div>
   <div class="body">
     <div class="heading">
@@ -90,14 +83,24 @@
       {/if}
     </div>
     <p class="description">{model.description}</p>
-    <div class="chips">
-      <Chip
-        label={typeLabels[model.type]}
-        icon={typeIcons[model.type]}
-      />
-      {#each model.systems as system (system)}
-        <Chip label={systemLabels[system]} />
-      {/each}
+    <div class="footer">
+      <div class="chips">
+        <Chip
+          label={typeLabels[model.type]}
+          icon={typeIcons[model.type]}
+        />
+        {#each model.systems as system (system)}
+          <Chip label={systemLabels[system]} />
+        {/each}
+      </div>
+      {#if model.consortium}
+        <img
+          src={model.consortium.logo}
+          class="logo"
+          alt={model.consortium.name}
+          title={model.consortium.name}
+        />
+      {/if}
     </div>
   </div>
 </a>
@@ -147,14 +150,6 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
-  }
-
-  img.logo {
-    display: block;
-    position: absolute;
-    right: 10px;
-    bottom: 10px;
-    width: 60px;
   }
 
   .fallback {
@@ -213,11 +208,31 @@
     -webkit-box-orient: vertical;
   }
 
-  .chips {
+  .footer {
     display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
+    align-items: flex-end;
+    gap: var(--space-3);
     margin-top: auto;
     padding-top: var(--space-1);
+  }
+
+  .chips {
+    display: flex;
+    flex: 1;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    min-width: 0;
+  }
+
+  img.logo {
+    display: block;
+    flex-shrink: 0;
+    filter: grayscale(0.3);
+    transition: filter var(--transition);
+    width: 66px;
+  }
+
+  .card:hover img.logo {
+    filter: none;
   }
 </style>

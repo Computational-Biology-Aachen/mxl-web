@@ -37,6 +37,13 @@ export const systemLabels: Record<System, string> = {
   microbiology: "Microbiology",
 };
 
+export type Consortium = {
+  name: string;
+  logo: string;
+};
+
+const consortiumMibinet: Consortium = { name: "MibiNet", logo: mibinet };
+
 export type ModelMeta = {
   name: string;
   slug: string;
@@ -47,7 +54,7 @@ export type ModelMeta = {
   authors?: string;
   year?: number;
   image?: string;
-  consortium?: string;
+  consortium?: Consortium;
 };
 
 export const models: ModelMeta[] = [
@@ -81,7 +88,7 @@ export const models: ModelMeta[] = [
     description:
       "Generalized Lotka-Volterra model of a public metabolizer, a cheater and a private metabolizer competing for sucrose.",
     image: schemeTripartite,
-    consortium: mibinet,
+    consortium: consortiumMibinet,
   },
   {
     name: "Tripartite dynamics (pH & resource)",
@@ -92,7 +99,7 @@ export const models: ModelMeta[] = [
     description:
       "Unpublished extension of the tripartite model with Monod kinetics on explicit sucrose and glucose pools and pH-dependent growth.",
     image: schemeTripartitePh,
-    consortium: mibinet,
+    consortium: consortiumMibinet,
   },
   {
     name: "Enterobactin",
@@ -104,7 +111,7 @@ export const models: ModelMeta[] = [
     description:
       "Siderophore-mediated cross-feeding between E. coli and C. glutamicum under iron limitation.",
     image: schemeEnterobactin,
-    consortium: mibinet,
+    consortium: consortiumMibinet,
   },
   {
     name: "Yokota 1985",
