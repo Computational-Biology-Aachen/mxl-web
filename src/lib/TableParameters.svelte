@@ -28,15 +28,15 @@
   // All six model views are received for a uniform table API (see
   // OdeModelEditor), but this table only reads/edits `parameters`.
   let {
-    // eslint-disable-next-line no-useless-assignment
+    // eslint-disable-next-line no-useless-assignment, @typescript-eslint/no-unused-vars
     variables = $bindable(),
     parameters = $bindable(),
-    // eslint-disable-next-line no-useless-assignment
+    // eslint-disable-next-line no-useless-assignment, @typescript-eslint/no-unused-vars
     assignments = $bindable(),
-    // eslint-disable-next-line no-useless-assignment
+    // eslint-disable-next-line no-useless-assignment, @typescript-eslint/no-unused-vars
     reactions = $bindable(),
     nnBlocks = $bindable(),
-    // eslint-disable-next-line no-useless-assignment
+    // eslint-disable-next-line no-useless-assignment, @typescript-eslint/no-unused-vars
     readouts = $bindable(),
   }: {
     variables: VarView;
