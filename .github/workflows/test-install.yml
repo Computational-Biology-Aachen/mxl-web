@@ -12,7 +12,6 @@ permissions:
 jobs:
   lint:
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -31,8 +30,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: lint
-        run: npm run lint
+      - name: lint (non-blocking)
+        continue-on-error: true
+        run: npm run lint || { echo "::warning title=ESLint::lint errors found (non-blocking, see step log)"; exit 1; }
 
       - name: check for byte-identical duplicate images
         run: node scripts/check-duplicate-assets.mjs
