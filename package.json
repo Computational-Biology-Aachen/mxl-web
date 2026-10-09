@@ -60,6 +60,6 @@
   },
   "overrides": {
     "cookie": "^1.1.1",
-    "eslint": ">=10.0.0"
+    "eslint": "$eslint"
   }
 }
