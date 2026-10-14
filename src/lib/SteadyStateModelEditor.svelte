@@ -1,6 +1,6 @@
 <script lang="ts">
-  import TableAssignments from "$lib/TableAssignment.svelte";
-  import TableParameters from "$lib/TableParameters.svelte";
+  import TableAssignments from "#lib/TableAssignment.svelte";
+  import TableParameters from "#lib/TableParameters.svelte";
   import {
     Button,
     ButtonTab,

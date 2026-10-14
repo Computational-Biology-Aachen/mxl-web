@@ -5,7 +5,7 @@
 -->
 
 <script lang="ts">
-  import type { SteadyStateAnalysis } from "$lib";
+  import type { SteadyStateAnalysis } from "#lib";
   import { LineChart } from "@computational-biology-aachen/design";
   import type { ModelBuilderBase } from "@computational-biology-aachen/mxlweb-core";
   import { linspace } from "./utils";

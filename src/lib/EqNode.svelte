@@ -1,5 +1,5 @@
 <script lang="ts">
-  import EquationNode from "$lib/EqNode.svelte";
+  import EquationNode from "#lib/EqNode.svelte";
   import { defaultValue } from "@computational-biology-aachen/mxlweb-core";
   import {
     Abs,

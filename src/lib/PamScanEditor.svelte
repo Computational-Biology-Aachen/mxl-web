@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { allBackends, type Backend, type PamAnalysis } from "$lib";
+  import { allBackends, type Backend, type PamAnalysis } from "#lib";
   import {
     Button,
     Icon,

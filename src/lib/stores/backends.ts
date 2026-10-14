@@ -1,4 +1,4 @@
-import { browser } from "$app/environment";
+import { browser } from "$app/env";
 import type { ModelBuilderBase } from "@computational-biology-aachen/mxlweb-core";
 import { WorkerPool } from "./workerPool";
 

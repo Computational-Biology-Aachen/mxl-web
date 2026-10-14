@@ -1,17 +1,17 @@
-import schemeEbeling from "$lib/assets/ebeling2026-scheme.png";
-import schemeFvcb from "$lib/assets/fvcb.png";
-import mibinet from "$lib/assets/logos/mibinet.png";
-import schemeLotkaVolt from "$lib/assets/lotka-volterra-scheme.png";
-import scheme2016npq from "$lib/assets/matuszynska2016npq.png";
-import scheme2016phd from "$lib/assets/matuszynska2016phd.png";
-import schemeEnterobactin from "$lib/assets/mibinet-duo.png";
-import schemePopDyn from "$lib/assets/population-dynamics.png";
-import schemeSaadat from "$lib/assets/saadat2021.png";
-import schemeSir from "$lib/assets/sir.png";
-import schemeKea3 from "$lib/assets/tomato_KEA3.png";
-import schemeTripartitePh from "$lib/assets/tripartite-ph.png";
-import schemeTripartite from "$lib/assets/tripartite.png";
-import schemeYokota from "$lib/assets/yokota.png";
+import schemeEbeling from "#lib/assets/ebeling2026-scheme.png";
+import schemeFvcb from "#lib/assets/fvcb.png";
+import mibinet from "#lib/assets/logos/mibinet.png";
+import schemeLotkaVolt from "#lib/assets/lotka-volterra-scheme.png";
+import scheme2016npq from "#lib/assets/matuszynska2016npq.png";
+import scheme2016phd from "#lib/assets/matuszynska2016phd.png";
+import schemeEnterobactin from "#lib/assets/mibinet-duo.png";
+import schemePopDyn from "#lib/assets/population-dynamics.png";
+import schemeSaadat from "#lib/assets/saadat2021.png";
+import schemeSir from "#lib/assets/sir.png";
+import schemeKea3 from "#lib/assets/tomato_KEA3.png";
+import schemeTripartitePh from "#lib/assets/tripartite-ph.png";
+import schemeTripartite from "#lib/assets/tripartite.png";
+import schemeYokota from "#lib/assets/yokota.png";
 
 export type ModelType = "ode" | "steady-state";
 

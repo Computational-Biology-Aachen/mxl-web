@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { SteadyStateAnalyses } from "$lib";
-  import SteadyStateDashboard from "$lib/SteadyStateDashboard.svelte";
+  import type { SteadyStateAnalyses } from "#lib";
+  import SteadyStateDashboard from "#lib/SteadyStateDashboard.svelte";
   import {
     SectionMain as Main,
     Text,

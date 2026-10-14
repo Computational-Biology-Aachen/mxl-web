@@ -1,17 +1,17 @@
 <script lang="ts">
-  import { base } from "$app/paths";
-  import schemeEbeling from "$lib/assets/ebeling2026-scheme.png";
-  import ccls from "$lib/assets/logos/ccls.svg";
-  import ceplasImg from "$lib/assets/logos/ceplas.jpg";
-  import cpbl from "$lib/assets/logos/cpbl.svg";
-  import gopmf from "$lib/assets/logos/gopmf.png";
-  import mibinet from "$lib/assets/logos/mibinet.png";
-  import rwth from "$lib/assets/logos/rwth.svg";
-  import schemeLotkaVolt from "$lib/assets/lotka-volterra-scheme.png";
-  import schemeEnterobactin from "$lib/assets/mibinet-duo.png";
-  import hero from "$lib/assets/mxlweb-hero.png";
-  import schemeSir from "$lib/assets/sir.png";
-  import CopyButton from "$lib/CopyButton.svelte";
+  import { resolve } from "$app/paths";
+  import schemeEbeling from "#lib/assets/ebeling2026-scheme.png";
+  import ccls from "#lib/assets/logos/ccls.svg";
+  import ceplasImg from "#lib/assets/logos/ceplas.jpg";
+  import cpbl from "#lib/assets/logos/cpbl.svg";
+  import gopmf from "#lib/assets/logos/gopmf.png";
+  import mibinet from "#lib/assets/logos/mibinet.png";
+  import rwth from "#lib/assets/logos/rwth.svg";
+  import schemeLotkaVolt from "#lib/assets/lotka-volterra-scheme.png";
+  import schemeEnterobactin from "#lib/assets/mibinet-duo.png";
+  import hero from "#lib/assets/mxlweb-hero.png";
+  import schemeSir from "#lib/assets/sir.png";
+  import CopyButton from "#lib/CopyButton.svelte";
   import {
     Button,
     CardFeature,
@@ -94,10 +94,12 @@
         stack
         gap="0.5rem"
       >
-        <Button href="{base}/models/lotka-volterra">Launch live model</Button>
+        <Button href={resolve("models/lotka-volterra")}
+          >Launch live model</Button
+        >
         <Button
           variant="secondary"
-          href="{base}/models">Explore our models</Button
+          href={resolve("models")}>Explore our models</Button
         >
         <Button
           variant="secondary"
@@ -154,25 +156,25 @@
     <CardImageHighlight
       name="Photosynthesis dynamics"
       desc="Light, CO₂ and feedback in a dynamic model."
-      href="{base}/models/ebeling-2026"
+      href={resolve("models/ebeling-2026")}
       image={schemeEbeling}
     />
     <CardImageHighlight
       name="Race for iron"
       desc="What is the effect of a public good on a microbial community?"
-      href="{base}/models/dynamic-entrobactin"
+      href={resolve("models/dynamic-entrobactin")}
       image={schemeEnterobactin}
     />
     <CardImageHighlight
       name="Population dynamics"
       desc="Explore how predators and prey survive in a dynamic environment"
-      href="{base}/models/lotka-volterra"
+      href={resolve("models/lotka-volterra")}
       image={schemeLotkaVolt}
     />
     <CardImageHighlight
       name="Host-Parasite interaction"
       desc="How infection, immune response and outcomes evolve?"
-      href="{base}/models/sir"
+      href={resolve("models/sir")}
       image={schemeSir}
     />
   </div>

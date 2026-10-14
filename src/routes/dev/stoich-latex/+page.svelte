@@ -1,6 +1,6 @@
 <script lang="ts">
   import { stoichToTex } from "@computational-biology-aachen/mxlweb-core";
-  import { type Stoichiometry } from "$lib/modelView";
+  import { type Stoichiometry } from "#lib/modelView.js";
   import { Math } from "@computational-biology-aachen/design";
   import {
     Divide,

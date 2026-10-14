@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { backends, type Analyses } from "$lib";
-  import AnalysesDashboard from "$lib/AnalysesDashboard.svelte";
+  import { backends, type Analyses } from "#lib";
+  import AnalysesDashboard from "#lib/AnalysesDashboard.svelte";
   import {
     SectionMain as Main,
     Text,

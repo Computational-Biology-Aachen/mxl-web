@@ -1,10 +1,10 @@
 <script lang="ts">
   import { beforeNavigate } from "$app/navigation";
-  import { base } from "$app/paths";
+  import { resolve } from "$app/paths";
   import { updated } from "$app/state";
-  import favicon from "$lib/assets/cpbl-favicon.svg";
-  import BuildChooser from "$lib/BuildChooser.svelte";
-  import * as config from "$lib/config";
+  import favicon from "#lib/assets/cpbl-favicon.svg";
+  import BuildChooser from "#lib/BuildChooser.svelte";
+  import * as config from "#lib/config.js";
   import {
     Button,
     CollapseToBurger,
@@ -19,7 +19,9 @@
 
   // A new deploy was detected while this tab was open: force a full reload on
   // the next navigation instead of client-side routing into a stale bundle.
-  beforeNavigate(({ willUnload, to }) => {
+  beforeNavigate(({ willUnload, to, shallow, type }) => {
+    // shallow goto()s (e.g. the models page syncing its filters to the URL) only touch history
+    if (shallow && type === "goto") return;
     if (updated.current && !willUnload && to?.url) {
       location.href = to.url.href;
     }
@@ -85,8 +87,8 @@
     </div>
   {/snippet}
   <CollapseToBurger collapseAt="512px">
-    <NavItem href="{base}/">Home</NavItem>
-    <NavItem href="{base}/models">Models</NavItem>
+    <NavItem href={resolve("/")}>Home</NavItem>
+    <NavItem href={resolve("models")}>Models</NavItem>
 
     <Button
       variant="secondary"

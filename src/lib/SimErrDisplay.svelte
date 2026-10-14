@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { SimulationError } from "$lib/stores/workerStore";
+  import type { SimulationError } from "#lib/stores/workerStore.js";
   import { Accordion2 as Accordion } from "@computational-biology-aachen/design";
 
   let {

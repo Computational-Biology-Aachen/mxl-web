@@ -1,4 +1,4 @@
-// place files you want to import through the `$lib` alias in this folder.
+// place files you want to import through the `#lib` alias in this folder.
 import type { PamGroup } from "./protocol";
 import type { FitDistribution } from "./random";
 import type { Backend } from "./stores/backends";

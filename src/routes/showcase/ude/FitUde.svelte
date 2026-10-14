@@ -16,40 +16,40 @@
 -->
 
 <script lang="ts">
-  import type { FitParameterConfig, FitTargetMapping } from "$lib";
-  import { parseCsvFile, type ParsedCsv } from "$lib/csvParse";
+  import type { FitParameterConfig, FitTargetMapping } from "#lib";
+  import { parseCsvFile, type ParsedCsv } from "#lib/csvParse.js";
   import {
     defaultCurriculum,
     finalStageBudget,
     type CurriculumStage,
-  } from "$lib/fit/curriculum";
-  import CurriculumStagesEditor from "$lib/fit/CurriculumStagesEditor.svelte";
+  } from "#lib/fit/curriculum.js";
+  import CurriculumStagesEditor from "#lib/fit/CurriculumStagesEditor.svelte";
   import {
     runCurriculumFit,
     type CurriculumRunHandle,
-  } from "$lib/fit/curriculumRunner";
+  } from "#lib/fit/curriculumRunner.js";
   import {
     buildFitConfig,
     residualPerPoint,
     type BackendChoice,
     type FitConfig,
-  } from "$lib/fit/fitConfig";
-  import LineChart, { type PhaseRegion } from "$lib/LineChart.svelte";
+  } from "#lib/fit/fitConfig.js";
+  import LineChart, { type PhaseRegion } from "#lib/LineChart.svelte";
   import {
     mulberry32,
     sampleDistribution,
     type FitDistribution,
     type FitDistributionFamily,
-  } from "$lib/random";
-  import SimErrDisplay from "$lib/SimErrDisplay.svelte";
-  import { backends, createWasmPool } from "$lib/stores/backends";
-  import type { WorkerPool } from "$lib/stores/workerPool";
+  } from "#lib/random.js";
+  import SimErrDisplay from "#lib/SimErrDisplay.svelte";
+  import { backends, createWasmPool } from "#lib/stores/backends.js";
+  import type { WorkerPool } from "#lib/stores/workerPool.js";
   import {
     WorkerManager,
     type SimulationError,
     type SimulationResult,
-  } from "$lib/stores/workerStore";
-  import { arrayColumn } from "$lib/utils";
+  } from "#lib/stores/workerStore.js";
+  import { arrayColumn } from "#lib/utils.js";
   import {
     Button,
     InputNumberOptional,

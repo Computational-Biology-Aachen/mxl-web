@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { base } from "$app/paths";
-  import type { SteadyStateAnalysis } from "$lib";
+  import { resolve } from "$app/paths";
+  import type { SteadyStateAnalysis } from "#lib";
   import {
     Accordion2 as Accordion,
     Button,
@@ -146,7 +146,7 @@
       <a
         class="light"
         style="font-size: var(--text-sm);"
-        href={`${base}/models`}>Models</a
+        href={resolve("/models")}>Models</a
       >
       <span
         class="light"

@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { backends, type Analyses } from "$lib";
-  import AnalysesDashboard from "$lib/AnalysesDashboard.svelte";
-  import scheme from "$lib/assets/lotka-volterra-scheme.png";
+  import { backends, type Analyses } from "#lib";
+  import AnalysesDashboard from "#lib/AnalysesDashboard.svelte";
+  import scheme from "#lib/assets/lotka-volterra-scheme.png";
   import { SectionMain as Main } from "@computational-biology-aachen/design";
   import { initModel } from "./model";
 

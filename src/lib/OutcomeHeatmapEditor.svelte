@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { OutcomeHeatmapAnalysis } from "$lib";
+  import type { OutcomeHeatmapAnalysis } from "#lib";
   import {
     Button,
     InputNumber,

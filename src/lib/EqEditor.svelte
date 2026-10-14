@@ -1,5 +1,5 @@
 <script lang="ts">
-  import EqNode from "$lib/EqNode.svelte";
+  import EqNode from "#lib/EqNode.svelte";
   import { Button, Math, Row } from "@computational-biology-aachen/design";
   import {
     defaultValue,

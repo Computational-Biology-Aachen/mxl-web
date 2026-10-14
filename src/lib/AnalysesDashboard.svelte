@@ -1,17 +1,17 @@
 <script lang="ts">
-  import { base } from "$app/paths";
+  import { resolve } from "$app/paths";
   import {
     backends,
     type Analyses,
     type PamAnalysis,
     type ParameterScanAnalysis,
     type SimulationAnalysis,
-  } from "$lib";
-  import Fit from "$lib/Fit.svelte";
-  import OutcomeHeatmap from "$lib/OutcomeHeatmap.svelte";
-  import PamSimulator from "$lib/Pam.svelte";
-  import ParameterScanSimulator from "$lib/ParameterScan.svelte";
-  import Simulator from "$lib/TimeCourse.svelte";
+  } from "#lib";
+  import Fit from "#lib/Fit.svelte";
+  import OutcomeHeatmap from "#lib/OutcomeHeatmap.svelte";
+  import PamSimulator from "#lib/Pam.svelte";
+  import ParameterScanSimulator from "#lib/ParameterScan.svelte";
+  import Simulator from "#lib/TimeCourse.svelte";
   import {
     Accordion2 as Accordion,
     Button,
@@ -341,7 +341,7 @@
       <a
         class="light"
         style="font-size: var(--text-sm);"
-        href={`${base}/models`}>Models</a
+        href={resolve("/models")}>Models</a
       >
       <span
         class="light"

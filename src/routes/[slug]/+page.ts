@@ -1,5 +1,5 @@
-import { base } from "$app/paths";
-import { aliasSlugs } from "$lib/modelAliases";
+import { resolve } from "$app/paths";
+import { aliasSlugs } from "#lib/modelAliases.js";
 import { error, redirect } from "@sveltejs/kit";
 import type { EntryGenerator, PageLoad } from "./$types";
 
@@ -10,5 +10,5 @@ export const entries: EntryGenerator = () =>
 
 export const load: PageLoad = ({ params }) => {
   if (!aliasSlugs.includes(params.slug)) error(404);
-  redirect(308, `${base}/models/${params.slug}`);
+  redirect(308, resolve(`models/${params.slug}`));
 };

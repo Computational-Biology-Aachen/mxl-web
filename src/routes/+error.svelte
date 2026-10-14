@@ -1,22 +1,22 @@
 <script lang="ts">
-  import { base } from "$app/paths";
-  import { page } from "$app/stores";
+  import { resolve } from "$app/paths";
+  import { page } from "$app/state";
   import { Icon } from "@computational-biology-aachen/design";
 </script>
 
 <svelte:head>
-  <title>{$page.status} — mxlweb</title>
+  <title>{page.status} — mxlweb</title>
 </svelte:head>
 
 <hgroup>
-  <h1>{$page.status}</h1>
-  <p>{$page.error?.message ?? "An unexpected error occurred"}</p>
+  <h1>{page.status}</h1>
+  <p>{page.error?.message ?? "An unexpected error occurred"}</p>
 </hgroup>
 
 <div class="card">
   <div class="row">
     <Icon color="primary">home</Icon>
-    <a href="{base}/">Back to home</a>
+    <a href={resolve("/")}>Back to home</a>
   </div>
 </div>
 

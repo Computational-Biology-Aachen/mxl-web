@@ -15,7 +15,7 @@
  *    getter, re-read on every init/progress event instead.
  *
  * FitSession (src/lib/stores/fitStore.ts) is mocked here: it's a thin
- * postMessage wrapper around a real Worker, and `$app/environment`'s
+ * postMessage wrapper around a real Worker, and `$app/env`'s
  * `browser` stub is false under vitest anyway (see vitest.config.ts), so a
  * real FitSession never delivers a message in this environment — these
  * tests drive its onInitResult/onProgress callbacks directly instead.

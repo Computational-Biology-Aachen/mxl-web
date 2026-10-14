@@ -1,5 +1,5 @@
 // Shared protocol types + expansion now live in the core package; re-exported
-// here so existing `$lib/protocol` import sites keep working.
+// here so existing `#lib/protocol.js` import sites keep working.
 export {
   expandProtocol,
   type PamGroup,

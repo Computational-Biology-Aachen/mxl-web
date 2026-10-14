@@ -19,9 +19,10 @@
     "@eslint/compat": ">=2.1.1",
     "@eslint/js": ">=10.0.0",
     "@playwright/test": "^1.63.0",
-    "@sveltejs/adapter-auto": ">=7.0.1",
+    "@sveltejs/adapter-auto": ">=8.0.0",
     "@sveltejs/enhanced-img": "^1.0.0",
-    "@sveltejs/kit": ">=2.70.3",
+    "@sveltejs/kit": "^3.0.1",
+    "@sveltejs/load-config": ">=0.2.2",
     "@sveltejs/vite-plugin-svelte": ">=7.3.1",
     "@types/node": "^26.6.4",
     "@types/papaparse": "^5.5.2",
@@ -35,7 +36,7 @@
     "prettier-plugin-css-order": ">=2.2.0",
     "prettier-plugin-svelte": ">=4.1.1",
     "svelte": ">=5.57.1",
-    "svelte-check": ">=4.7.4",
+    "svelte-check": ">=4.7.5",
     "typescript": ">=6.0.3",
     "typescript-eslint": ">=8.71.1",
     "vite": ">=8.3.3",
@@ -47,7 +48,7 @@
     "@computational-biology-aachen/mxlweb-core": "github:Computational-Biology-Aachen/mxlweb-core",
     "@fortawesome/free-brands-svg-icons": ">=7.3.0",
     "@fortawesome/free-solid-svg-icons": ">=7.3.0",
-    "@sveltejs/adapter-static": ">=3.0.10",
+    "@sveltejs/adapter-static": ">=4.0.0",
     "chart.js": ">=4.5.0",
     "katex": "^0.19.0",
     "papaparse": "^5.7.0",
@@ -61,5 +62,9 @@
   "overrides": {
     "cookie": "^1.1.1",
     "eslint": "$eslint"
+  },
+  "imports": {
+    "#lib": "./src/lib/index.js",
+    "#lib/*": "./src/lib/*"
   }
 }

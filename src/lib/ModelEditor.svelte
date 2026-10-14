@@ -1,10 +1,10 @@
 <script lang="ts">
-  import TableAssignments from "$lib/TableAssignment.svelte";
-  import TableNNBlocks from "$lib/TableNNBlocks.svelte";
-  import TableParameters from "$lib/TableParameters.svelte";
-  import TableReactions from "$lib/TableReactions.svelte";
-  import TableReadouts from "$lib/TableReadout.svelte";
-  import TableVariables from "$lib/TableVariables.svelte";
+  import TableAssignments from "#lib/TableAssignment.svelte";
+  import TableNNBlocks from "#lib/TableNNBlocks.svelte";
+  import TableParameters from "#lib/TableParameters.svelte";
+  import TableReactions from "#lib/TableReactions.svelte";
+  import TableReadouts from "#lib/TableReadout.svelte";
+  import TableVariables from "#lib/TableVariables.svelte";
   import {
     Button,
     ButtonTab,

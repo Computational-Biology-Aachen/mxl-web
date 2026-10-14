@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { SteadyStateAnalysis } from "$lib";
+  import type { SteadyStateAnalysis } from "#lib";
   import {
     Button,
     InputChoice,

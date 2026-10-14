@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { replaceState } from "$app/navigation";
-  import { base } from "$app/paths";
-  import CardModel from "$lib/CardModel.svelte";
-  import FilterDropdown from "$lib/FilterDropdown.svelte";
+  import { goto } from "$app/navigation";
+  import { resolve } from "$app/paths";
+  import CardModel from "#lib/CardModel.svelte";
+  import FilterDropdown from "#lib/FilterDropdown.svelte";
   import {
     defaultFilters,
     filterModels,
@@ -11,16 +11,19 @@
     serializeFilters,
     sortLabels,
     type SortKey,
-  } from "$lib/modelFilters";
+  } from "#lib/modelFilters.js";
   import {
     models,
     systemLabels,
     typeLabels,
     type ModelType,
     type System,
-  } from "$lib/models";
+  } from "#lib/models.js";
   import { H2, Icon, SectionMain } from "@computational-biology-aachen/design";
   import { onMount } from "svelte";
+
+  // model routes are static directories, so a runtime slug isn't in the route types
+  const resolvePath = resolve as (path: string) => string;
 
   const systemOptions = (Object.keys(systemLabels) as System[])
     .filter((s) => models.some((m) => m.systems.includes(s)))
@@ -64,7 +67,7 @@
     const next =
       location.pathname + (search ? `?${search}` : "") + location.hash;
     if (next !== location.pathname + location.search + location.hash) {
-      replaceState(next, {});
+      goto(next, { state: {}, shallow: true, replaceState: true });
     }
   });
 
@@ -139,7 +142,7 @@
       {#each shown as model (model.slug)}
         <CardModel
           model={model}
-          href="{base}/models/{model.slug}"
+          href={resolvePath(`models/${model.slug}`)}
         />
       {/each}
     </div>

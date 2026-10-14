@@ -1,12 +1,12 @@
 <script lang="ts">
-  import EqEditor from "$lib/EqEditor.svelte";
+  import EqEditor from "#lib/EqEditor.svelte";
   import type {
     AssView,
     NNBlockView,
     ParView,
     RxnView,
     VarView,
-  } from "$lib/modelView";
+  } from "#lib/modelView.js";
   import {
     Add,
     Divide,

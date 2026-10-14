@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { base } from "$app/paths";
-  import { backends, type Analyses } from "$lib";
-  import AnalysesDashboard from "$lib/AnalysesDashboard.svelte";
+  import { resolve } from "$app/paths";
+  import { backends, type Analyses } from "#lib";
+  import AnalysesDashboard from "#lib/AnalysesDashboard.svelte";
   import { SectionMain as Main } from "@computational-biology-aachen/design";
   import FitNde from "./FitNde.svelte";
   import { initModel } from "./model";
@@ -62,15 +62,16 @@
     <p>
       A neural differential equation (NDE) here replaces each reaction's rate
       law with a neural network, rather than correcting a differential equation
-      directly (that's what the <a href="{base}/showcase/ude">UDE showcase</a>'s
-      block does). This page keeps the same three reactions and predation
+      directly (that's what the <a href={resolve("showcase/ude")}
+        >UDE showcase</a
+      >'s block does). This page keeps the same three reactions and predation
       stoichiometry (β, δ) as the UDE showcase's mechanistic
-      <a href="{base}/models/lotka-volterra">Lotka-Volterra model</a>, but every
-      reaction's rate law is fixed at 0 — the "NN Blocks" tab under "Edit model"
-      shows a block set to correct reactions rather than equations, one network
-      output per reaction, so the network alone has to discover how fast each
-      reaction runs rather than refine a residual on top of a known rate. It
-      composes additively (rate = 0 + scale·NN = scale·NN), since with no
+      <a href={resolve("models/lotka-volterra")}>Lotka-Volterra model</a>, but
+      every reaction's rate law is fixed at 0 — the "NN Blocks" tab under "Edit
+      model" shows a block set to correct reactions rather than equations, one
+      network output per reaction, so the network alone has to discover how fast
+      each reaction runs rather than refine a residual on top of a known rate.
+      It composes additively (rate = 0 + scale·NN = scale·NN), since with no
       mechanistic rate left, relative-multiply's f·(1 + scale·NN) would collapse
       to 0 regardless of what the network learns.
     </p>

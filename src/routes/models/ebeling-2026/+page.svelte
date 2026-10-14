@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { backends, type Analyses } from "$lib";
-  import AnalysesDashboard from "$lib/AnalysesDashboard.svelte";
-  import scheme from "$lib/assets/ebeling2026-scheme.png?enhanced";
-  import type { PamGroup } from "$lib/protocol";
+  import { backends, type Analyses } from "#lib";
+  import AnalysesDashboard from "#lib/AnalysesDashboard.svelte";
+  import scheme from "#lib/assets/ebeling2026-scheme.png?enhanced";
+  import type { PamGroup } from "#lib/protocol.js";
   import { SectionMain } from "@computational-biology-aachen/design";
   import { initModel } from "./model";
 

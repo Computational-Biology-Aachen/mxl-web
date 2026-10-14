@@ -1,12 +1,12 @@
 <script lang="ts">
-  import ModelEditor from "$lib/ModelEditor.svelte";
+  import ModelEditor from "#lib/ModelEditor.svelte";
   import {
     ModelView,
     type AssView,
     type ParView,
     type RxnView,
     type VarView,
-  } from "$lib/modelView";
+  } from "#lib/modelView.js";
   import {
     Divide,
     Mul,

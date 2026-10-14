@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { base } from "$app/paths";
+  import { resolve } from "$app/paths";
   import { Icon } from "@computational-biology-aachen/design";
 </script>
 
@@ -20,11 +20,11 @@
 <div class="card">
   <p>Quick access to important components</p>
   <ul>
-    <li><a href="{base}/dev/analyses">analyses</a></li>
-    <li><a href="{base}/dev/eq-editor">Eq editor</a></li>
-    <li><a href="{base}/dev/model-edit">Model edit</a></li>
-    <li><a href="{base}/dev/stoich-editor">Stoich editor</a></li>
-    <li><a href="{base}/dev/stoich-latex">Stoich latex</a></li>
+    <li><a href={resolve("dev/analyses")}>analyses</a></li>
+    <li><a href={resolve("dev/eq-editor")}>Eq editor</a></li>
+    <li><a href={resolve("dev/model-edit")}>Model edit</a></li>
+    <li><a href={resolve("dev/stoich-editor")}>Stoich editor</a></li>
+    <li><a href={resolve("dev/stoich-latex")}>Stoich latex</a></li>
   </ul>
 </div>
 

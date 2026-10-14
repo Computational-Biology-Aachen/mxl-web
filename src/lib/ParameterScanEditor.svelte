@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { allBackends, type Backend, type ParameterScanAnalysis } from "$lib";
+  import { allBackends, type Backend, type ParameterScanAnalysis } from "#lib";
   import {
     Button,
     InputCheckbox,

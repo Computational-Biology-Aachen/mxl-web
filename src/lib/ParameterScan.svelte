@@ -4,7 +4,7 @@
 -->
 
 <script lang="ts">
-  import type { ParameterScanAnalysis } from "$lib";
+  import type { ParameterScanAnalysis } from "#lib";
   import { LineChart } from "@computational-biology-aachen/design";
   import type { ModelBuilderBase } from "@computational-biology-aachen/mxlweb-core";
   import { onMount } from "svelte";

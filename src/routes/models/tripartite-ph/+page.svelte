@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { backends, type Analyses } from "$lib";
-  import AnalysesDashboard from "$lib/AnalysesDashboard.svelte";
-  import mibinetLogo from "$lib/assets/logos/mibinet.png";
-  import PublicationBadge from "$lib/PublicationBadge.svelte";
+  import { backends, type Analyses } from "#lib";
+  import AnalysesDashboard from "#lib/AnalysesDashboard.svelte";
+  import mibinetLogo from "#lib/assets/logos/mibinet.png";
+  import PublicationBadge from "#lib/PublicationBadge.svelte";
   import { SectionMain as Main } from "@computational-biology-aachen/design";
   import Row from "@computational-biology-aachen/design/Row.svelte";
   import { initModel } from "./model";

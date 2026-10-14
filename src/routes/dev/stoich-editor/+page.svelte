@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { AssView, ParView, RxnView, VarView } from "$lib/modelView";
-  import StoichEditor from "$lib/StoichEditor.svelte";
+  import type { AssView, ParView, RxnView, VarView } from "#lib/modelView.js";
+  import StoichEditor from "#lib/StoichEditor.svelte";
   import { Num } from "@computational-biology-aachen/mxlweb-core/mathml";
 
   const variables: VarView = [

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { base } from "$app/paths";
+  import { resolve } from "$app/paths";
   import { Popover } from "@computational-biology-aachen/design";
   import {
     default as H3,
@@ -20,7 +20,7 @@
   <H4>ODE models</H4>
   <div class="card-row">
     <a
-      href="{base}/models/new/ode"
+      href={resolve("models/new/ode")}
       class="model-card"
       onclick={() => el?.hidePopover()}
     >
@@ -88,7 +88,7 @@
     </a>
 
     <a
-      href="{base}/models/new/kinetic"
+      href={resolve("models/new/kinetic")}
       class="model-card"
       onclick={() => el?.hidePopover()}
     >
@@ -175,7 +175,7 @@
   <H4>Steady-state models</H4>
   <div class="card-row">
     <a
-      href="{base}/models/new/steady-state"
+      href={resolve("models/new/steady-state")}
       class="model-card"
       onclick={() => el?.hidePopover()}
     >

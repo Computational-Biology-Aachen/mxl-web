@@ -1,5 +1,5 @@
-import { browser } from "$app/environment";
-import { base } from "$app/paths";
+import { browser } from "$app/env";
+import { resolve } from "$app/paths";
 
 export interface SimulationRequest {
   // Required; don't change!
@@ -59,10 +59,10 @@ export class WorkerManager {
     this.worker = new Worker(this.workerUrl, {
       type: "module",
     });
-    // Send initialization message with base path
+    // Send initialization message with base path (the worker appends "/wasm/..." itself)
     this.worker.postMessage({
       type: "__INIT__",
-      basePath: base,
+      basePath: resolve("/").replace(/\/$/, ""),
     });
 
     this.worker.onmessage = (e: MessageEvent) => {

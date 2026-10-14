@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { base } from "$app/paths";
-  import { backends, type Analyses } from "$lib";
-  import AnalysesDashboard from "$lib/AnalysesDashboard.svelte";
-  import scheme from "$lib/assets/lotka-volterra-scheme.png";
+  import { resolve } from "$app/paths";
+  import { backends, type Analyses } from "#lib";
+  import AnalysesDashboard from "#lib/AnalysesDashboard.svelte";
+  import scheme from "#lib/assets/lotka-volterra-scheme.png";
   import { SectionMain as Main } from "@computational-biology-aachen/design";
   import FitUde from "./FitUde.svelte";
   import { initModel } from "./model";
@@ -64,7 +64,7 @@
       A universal differential equation (UDE) augments an otherwise mechanistic
       model with a small neural-network correction term, trained alongside — or
       instead of — the model's own kinetic parameters. This page takes the
-      ordinary <a href="{base}/models/lotka-volterra"
+      ordinary <a href={resolve("models/lotka-volterra")}
         >Lotka-Volterra predator-prey model</a
       > and attaches the default correction block (one hidden layer, softplus activation,
       relative-multiply mechanism — see the "NN Blocks" tab under "Edit model") to

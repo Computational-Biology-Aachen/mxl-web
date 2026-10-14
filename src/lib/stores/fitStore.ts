@@ -1,5 +1,5 @@
-import { browser } from "$app/environment";
-import { base } from "$app/paths";
+import { browser } from "$app/env";
+import { resolve } from "$app/paths";
 import type {
   FitChunkRequest,
   FitFreeRequest,
@@ -37,7 +37,11 @@ export class FitSession {
   constructor() {
     if (!browser) return;
     this.worker = new Worker(fitWorkerUrl, { type: "module" });
-    this.worker.postMessage({ type: "__INIT__", basePath: base });
+    // the worker appends "/wasm/..." itself, so hand it the base path without the trailing slash
+    this.worker.postMessage({
+      type: "__INIT__",
+      basePath: resolve("/").replace(/\/$/, ""),
+    });
     this.worker.onmessage = (e: MessageEvent) => {
       const data = e.data as (FitInitResult | FitProgress) & { type: string };
       switch (data.type) {
@@ -48,8 +52,9 @@ export class FitSession {
           this.progressHandlers.forEach((h) => h(data as FitProgress));
           break;
         default:
-          break; // e.g. FIT_FREE_RESULT — nothing needs to react to it
+          break;
       }
+      // e.g. FIT_FREE_RESULT — nothing needs to react to it
     };
   }
 

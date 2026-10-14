@@ -1,7 +1,7 @@
 <script lang="ts">
   import { KineticModelBuilder } from "@computational-biology-aachen/mxlweb-core";
-  import AnalysisEditor from "$lib/TimeCourseEditor.svelte";
-  import { backends } from "$lib/stores/backends";
+  import AnalysisEditor from "#lib/TimeCourseEditor.svelte";
+  import { backends } from "#lib/stores/backends.js";
 
   const model = new KineticModelBuilder();
 

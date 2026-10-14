@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { backends, type Analyses } from "$lib";
-  import AnalysesDashboard from "$lib/AnalysesDashboard.svelte";
-  import mibinetLogo from "$lib/assets/logos/mibinet.png";
-  import scheme from "$lib/assets/mibinet-duo.png";
+  import { backends, type Analyses } from "#lib";
+  import AnalysesDashboard from "#lib/AnalysesDashboard.svelte";
+  import mibinetLogo from "#lib/assets/logos/mibinet.png";
+  import scheme from "#lib/assets/mibinet-duo.png";
   import { SectionMain as Main } from "@computational-biology-aachen/design";
 
-  import PublicationBadge from "$lib/PublicationBadge.svelte";
+  import PublicationBadge from "#lib/PublicationBadge.svelte";
   import Row from "@computational-biology-aachen/design/Row.svelte";
   import { initModel } from "./model";
 
