@@ -97,7 +97,6 @@ export type OutcomeHeatmapAnalysis = {
   tEnd: number;
 };
 
-
 export type {
   FitParameterConfig,
   FitTargetMapping,

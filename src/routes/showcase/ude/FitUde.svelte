@@ -17,7 +17,10 @@
 
 <script lang="ts">
   import type { FitParameterConfig, FitTargetMapping } from "#lib";
-  import { parseCsvFile, type ParsedCsv } from "@computational-biology-aachen/mxlweb-core/fit";
+  import {
+    parseCsvFile,
+    type ParsedCsv,
+  } from "@computational-biology-aachen/mxlweb-core/fit";
   import {
     defaultCurriculum,
     finalStageBudget,

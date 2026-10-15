@@ -27,7 +27,10 @@
     buildNNBlock,
     type ModelBuilderBase,
   } from "@computational-biology-aachen/mxlweb-core";
-  import { parseCsvFile, type ParsedCsv } from "@computational-biology-aachen/mxlweb-core/fit";
+  import {
+    parseCsvFile,
+    type ParsedCsv,
+  } from "@computational-biology-aachen/mxlweb-core/fit";
   import {
     defaultCurriculum,
     finalStageBudget,
