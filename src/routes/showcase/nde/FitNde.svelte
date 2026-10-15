@@ -27,23 +27,23 @@
     buildNNBlock,
     type ModelBuilderBase,
   } from "@computational-biology-aachen/mxlweb-core";
-  import { parseCsvFile, type ParsedCsv } from "#lib/csvParse.js";
+  import { parseCsvFile, type ParsedCsv } from "@computational-biology-aachen/mxlweb-core/fit";
   import {
     defaultCurriculum,
     finalStageBudget,
     type CurriculumStage,
-  } from "#lib/fit/curriculum.js";
+  } from "@computational-biology-aachen/mxlweb-core/fit";
   import {
     runCurriculumFit,
     type CurriculumRunHandle,
-  } from "#lib/fit/curriculumRunner.js";
-  import CurriculumStagesEditor from "#lib/fit/CurriculumStagesEditor.svelte";
+  } from "@computational-biology-aachen/mxlweb-core/fit";
+  import { CurriculumStagesEditor } from "@computational-biology-aachen/mxlweb-core/fit";
   import {
     buildFitConfig,
     residualPerPoint,
     type BackendChoice,
     type FitConfig,
-  } from "#lib/fit/fitConfig.js";
+  } from "@computational-biology-aachen/mxlweb-core/fit";
   import type { FitParameterConfig, FitTargetMapping } from "#lib";
   import LineChart, { type PhaseRegion } from "#lib/LineChart.svelte";
   import {
@@ -51,15 +51,15 @@
     sampleDistribution,
     type FitDistribution,
     type FitDistributionFamily,
-  } from "#lib/random.js";
-  import SimErrDisplay from "#lib/SimErrDisplay.svelte";
+  } from "@computational-biology-aachen/mxlweb-core/fit";
+  import { SimErrDisplay } from "@computational-biology-aachen/mxlweb-core/fit";
   import { backends, createWasmPool } from "#lib/stores/backends.js";
-  import type { WorkerPool } from "#lib/stores/workerPool.js";
+  import type { WorkerPool } from "@computational-biology-aachen/mxlweb-core/workers";
   import {
     WorkerManager,
     type SimulationError,
     type SimulationResult,
-  } from "#lib/stores/workerStore.js";
+  } from "@computational-biology-aachen/mxlweb-core/workers";
   import { arrayColumn } from "#lib/utils.js";
 
   let {

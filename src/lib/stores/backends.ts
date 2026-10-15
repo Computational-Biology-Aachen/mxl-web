@@ -1,10 +1,18 @@
 import { browser } from "$app/env";
-import type { ModelBuilderBase } from "@computational-biology-aachen/mxlweb-core";
-import { WorkerPool } from "./workerPool";
+import { resolve } from "$app/paths";
+import {
+  setWorkerBasePath,
+  WorkerPool,
+  type SimulationBackend,
+} from "@computational-biology-aachen/mxlweb-core/workers";
 
 import jsWorkerUrlString from "@computational-biology-aachen/mxlweb-core/backends/js/jsWorker.ts?worker&url";
 import pyWorkerUrlString from "@computational-biology-aachen/mxlweb-core/backends/py/pyWorker.ts?worker&url";
 import wasmWorkerUrlString from "@computational-biology-aachen/mxlweb-core/backends/wasm/wasmWorker.ts?worker&url";
+
+// Must run before the first worker is created: every worker is handed this
+// base path on __INIT__ to locate its Emscripten runtime under /wasm/.
+setWorkerBasePath(resolve("/"));
 
 const jsWorkerUrl = browser
   ? new URL(jsWorkerUrlString, import.meta.url)
@@ -42,28 +50,7 @@ export function createWasmPool(size: number): WorkerPool {
   return new WorkerPool(wasmWorkerUrl, size);
 }
 
-type BuildOpts = {
-  userParameters?: string[];
-  derivedSelection?: string[];
-};
-
-type BackendRequest = {
-  rhsFn?: string;
-  rhsWat?: string;
-  allDerivedFn: string;
-  selectDerivedFn: string;
-  pars: number[];
-  parNames?: string[];
-  method: string;
-};
-
-export interface Backend {
-  id: string;
-  label: string;
-  method: string;
-  getPool(): WorkerPool;
-  buildRequest(model: ModelBuilderBase, opts: BuildOpts): BackendRequest;
-}
+export type Backend = SimulationBackend;
 
 function makePyBackend(method: string, label: string): Backend {
   return {

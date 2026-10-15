@@ -18,13 +18,13 @@
     normalizeToMax,
   } from "@computational-biology-aachen/mxlweb-core/pam";
   import { expandProtocol, type PamGroup } from "./protocol";
-  import SimErrDisplay from "./SimErrDisplay.svelte";
+  import { SimErrDisplay } from "@computational-biology-aachen/mxlweb-core/fit";
   import type { Backend } from "./stores/backends";
   import {
     WorkerManager,
     type SimulationError,
     type SimulationResult,
-  } from "./stores/workerStore";
+  } from "@computational-biology-aachen/mxlweb-core/workers";
   import { arrayColumn } from "./utils";
 
   let {

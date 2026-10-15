@@ -25,9 +25,9 @@
 <script lang="ts">
   import { backends, type OutcomeHeatmapAnalysis } from "#lib";
   import { createWasmPool } from "#lib/stores/backends.js";
-  import type { WorkerPool } from "#lib/stores/workerPool.js";
-  import type { SimulationResult } from "#lib/stores/workerStore.js";
-  import { WorkerManager } from "#lib/stores/workerStore.js";
+  import type { WorkerPool } from "@computational-biology-aachen/mxlweb-core/workers";
+  import type { SimulationResult } from "@computational-biology-aachen/mxlweb-core/workers";
+  import { WorkerManager } from "@computational-biology-aachen/mxlweb-core/workers";
   import { linspace } from "#lib/utils.js";
   import type { ModelBuilderBase } from "@computational-biology-aachen/mxlweb-core";
   import { onDestroy, onMount } from "svelte";

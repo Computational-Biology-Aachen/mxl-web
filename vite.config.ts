@@ -104,7 +104,13 @@ function serveAndCopyCoreStatic(): Plugin {
 }
 
 export default defineConfig({
-  resolve: { alias: workspaceAlias },
+  resolve: {
+    alias: workspaceAlias,
+    // mxlweb-core's ./fit subpath imports these as peer dependencies; with
+    // workspaceAlias pointing it at ../../pkg-js/mxlweb-core/src they would
+    // otherwise resolve from that checkout's node_modules (or not at all).
+    dedupe: ["chart.js", "papaparse"],
+  },
   plugins: [
     enhancedImages(),
     sveltekit({

@@ -2,12 +2,13 @@
   import { resolve } from "$app/paths";
   import {
     backends,
+    createWasmPool,
     type Analyses,
     type PamAnalysis,
     type ParameterScanAnalysis,
     type SimulationAnalysis,
   } from "#lib";
-  import Fit from "#lib/Fit.svelte";
+  import { Fit } from "@computational-biology-aachen/mxlweb-core/fit";
   import OutcomeHeatmap from "#lib/OutcomeHeatmap.svelte";
   import PamSimulator from "#lib/Pam.svelte";
   import ParameterScanSimulator from "#lib/ParameterScan.svelte";
@@ -59,7 +60,7 @@
     children?: Snippet;
     equationsOpen?: boolean;
     /** Swaps out the "Fit" popover's component — defaults to the ordinary
-     * upload-your-own-data `Fit.svelte`. Lets a page like the UDE showcase
+     * upload-your-own-data `Fit` (mxlweb-core/fit). Lets a page like the UDE showcase
      * inject a variant pre-seeded with fixed data without every other
      * model page's Fit popover carrying that variant's extra state. */
     fitComponent?: typeof Fit;
@@ -632,6 +633,8 @@
 >
   <FitComponent
     model={model}
+    backend={backends.wasmRadau5}
+    createPool={createWasmPool}
     popovertarget="fit-editor"
     onApply={runAllSimulations}
   />

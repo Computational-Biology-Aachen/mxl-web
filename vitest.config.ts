@@ -17,6 +17,14 @@ export default defineConfig({
     },
   },
   test: {
+    server: {
+      deps: {
+        // mxlweb-core's ./workers subpath imports its fit worker via Vite's
+        // `?worker&url` — only Vite can load that, so run the package through
+        // Vite's transform pipeline instead of externalizing it to plain Node.
+        inline: [/@computational-biology-aachen\/mxlweb-core/],
+      },
+    },
     coverage: {
       provider: "v8", // or 'istanbul'
     },
