@@ -66,6 +66,19 @@
     fitComponent?: typeof Fit;
   } = $props();
 
+  // The model's own PAM analyses double as ready-made fit protocols, so a
+  // measured trace of the same experiment can be fit without re-entering
+  // its light protocol.
+  let pamProtocolPresets = $derived(
+    analyses
+      .filter((a) => a.type === "pam")
+      .map((a) => ({
+        label: `${a.title} (this model)`,
+        groups: a.pamProtocol,
+        ppfdKey: a.ppfdKey,
+      })),
+  );
+
   let model = $derived(initModel());
 
   let simulatorRefs = $state<Record<number, Simulator | undefined>>({});
@@ -637,6 +650,7 @@
     createPool={createWasmPool}
     popovertarget="fit-editor"
     onApply={runAllSimulations}
+    protocolPresets={pamProtocolPresets}
   />
 </Popover>
 
