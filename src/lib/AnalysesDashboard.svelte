@@ -8,7 +8,10 @@
     type ParameterScanAnalysis,
     type SimulationAnalysis,
   } from "#lib";
-  import { Fit } from "@computational-biology-aachen/mxlweb-core/fit";
+  import {
+    Fit,
+    type FitPreset,
+  } from "@computational-biology-aachen/mxlweb-core/fit";
   import OutcomeHeatmap from "#lib/OutcomeHeatmap.svelte";
   import PamSimulator from "#lib/Pam.svelte";
   import ParameterScanSimulator from "#lib/ParameterScan.svelte";
@@ -53,6 +56,7 @@
     analyses = $bindable(),
     equationsOpen = true,
     fitComponent: FitComponent = Fit,
+    fitPreset,
   }: {
     name: string;
     initModel: () => KineticModelBuilder | OdeModelBuilder;
@@ -64,6 +68,9 @@
      * inject a variant pre-seeded with fixed data without every other
      * model page's Fit popover carrying that variant's extra state. */
     fitComponent?: typeof Fit;
+    /** Data the "Fit" popover starts with already loaded — see the
+     * `showcase/ode-*` pages. */
+    fitPreset?: FitPreset;
   } = $props();
 
   // The model's own PAM analyses double as ready-made fit protocols, so a
@@ -651,6 +658,7 @@
     popovertarget="fit-editor"
     onApply={runAllSimulations}
     protocolPresets={pamProtocolPresets}
+    preset={fitPreset}
   />
 </Popover>
 
