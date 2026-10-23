@@ -38,7 +38,7 @@
     "svelte": ">=5.57.2",
     "svelte-check": ">=4.7.5",
     "typescript": ">=6.0.3",
-    "typescript-eslint": ">=8.71.2",
+    "typescript-eslint": ">=8.72.0",
     "vite": ">=8.3.4",
     "vite-plugin-static-copy": "^4.1.1",
     "vite-plugin-wasm": ">=3.3.0"
