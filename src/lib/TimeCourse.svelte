@@ -127,8 +127,10 @@
       ...model.sortDependencies(),
       ...model.sortReadoutDependencies(),
     ];
+    // Same order as the request's derivedSelection — the worker returns
+    // derived columns in selection order, not dependency order.
     const activeDerived = selectedKeys
-      ? allDerived.filter((k) => selectedKeys.includes(k))
+      ? selectedKeys.filter((k) => allDerived.includes(k))
       : allDerived;
 
     const displayNames = model.getDisplayNames();
