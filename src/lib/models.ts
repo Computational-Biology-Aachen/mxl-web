@@ -280,6 +280,16 @@ export const models: ModelMeta[] = [
       "Photosynthetic electron transport model with PSII, PSI and non-photochemical quenching.",
   },
   {
+    name: "Pfennig 2024",
+    slug: "pfennig2024",
+    type: "ode",
+    systems: ["photosynthesis"],
+    authors: "Pfennig et al.",
+    year: 2024,
+    description:
+      "Wavelength-resolved model of photosynthesis and respiration in the cyanobacterium Synechocystis sp. PCC 6803.",
+  },
+  {
     name: "Bernacchi 2023",
     slug: "bernacchi2023",
     type: "steady-state",
