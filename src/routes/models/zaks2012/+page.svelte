@@ -34,7 +34,7 @@
       type: "simulation" as const,
       id: 0,
       idx: 0,
-      title: "Simulation",
+      title: "Time course",
       col: 1,
       span: 3,
       tEnd: 100,
@@ -42,9 +42,10 @@
       xMax: undefined,
       yMin: undefined,
       yMax: undefined,
-      timeoutInSeconds: 20,
+      timeoutInSeconds: 30,
       backend: backends.wasmRadau5,
-      showDerived: false,
+      showDerived: true,
+      selectedKeys: ["pH_lumen", "fluorescenceyield", "Zeaxanthin", "P700r"],
       nTimePoints: 500,
       lineDisplay: "last",
     },
@@ -53,17 +54,17 @@
       id: 1,
       idx: 1,
       title: "PAM Fluorescence",
-      span: 3,
       col: 4,
+      span: 3,
       yMax: undefined,
       timeoutInSeconds: 60,
       backend: backends.wasmRadau5,
-      ppfdKey: "PPFD",
-      fluoKey: "Fluo",
+      ppfdKey: "LightIntensity",
+      fluoKey: "fluorescenceyield",
       pamProtocol: defaultPamProtocol,
       showDerived: true,
-      selectedKeys: ["Fluo"],
-      normalizedKeys: ["Fluo"],
+      selectedKeys: ["fluorescenceyield"],
+      normalizedKeys: ["fluorescenceyield"],
       nTimePoints: 100,
       lineDisplay: "last",
     },
@@ -71,30 +72,19 @@
 </script>
 
 <svelte:head>
-  <title>Matuszyńska 2016 NPQ - mxlweb</title>
+  <title>Zaks 2012 - mxlweb</title>
 </svelte:head>
 
-<Main pad="tight">
+<Main
+  pad="tight"
+  width="full"
+>
   <AnalysesDashboard
-    name="Matuszyńska 2016"
+    name="Zaks 2012"
     initModel={initModel}
     bind:analyses={analyses}
     equationsOpen={false}
   >
-    <h1>Matuszyńska 2016 NPQ model</h1>
-    <p>
-      The Matuszyńska 2016 NPQ model is an ODE model of photoprotection in plant
-      photosystem II. It tracks the PSII open and closed states, the
-      plastoquinone (PQ/PQH₂) redox pool, lumenal proton buffering, ATP
-      synthesis, PsbS protonation and xanthophyll de-epoxidation (zeaxanthin
-      formation) — the molecular machinery underlying non-photochemical
-      quenching.
-    </p>
-    <p>
-      The model can be run under PAM fluorescence protocols, reproducing the
-      Fm/Fm′ quenching observed experimentally and linking the fast
-      photoprotective response to the redox state of the electron transport
-      chain.
-    </p>
+    <h1>Zaks 2012 model</h1>
   </AnalysesDashboard>
 </Main>

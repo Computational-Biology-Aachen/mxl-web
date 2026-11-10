@@ -31,24 +31,24 @@
       xMax: undefined,
       yMin: undefined,
       yMax: 60,
-      selectedKeys: ["an", "wc", "wj", "wp"],
+      selectedKeys: ["an", "rubisco", "rubp", "tpu"],
       lineDisplay: "current",
     },
   ]);
 </script>
 
 <svelte:head>
-  <title>FvCB - mxlweb</title>
+  <title>Bernacchi 2013 - mxlweb</title>
 </svelte:head>
 
 <Main pad="tight">
   <SteadyStateDashboard
-    name="FvCB"
+    name="Bernacchi 2013"
     initModel={initModel}
     bind:analyses={analyses}
     equationsOpen={false}
   >
-    <h1>FvCB</h1>
+    <h1>Bernacchi 2013</h1>
     <Text>
       The FvCB model (Farquhar, von Caemmerer & Berry, 1980) is a widely used
       framework for C3 photosynthesis. It describes net carbon assimilation

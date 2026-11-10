@@ -4,7 +4,7 @@
   import AnalysesDashboard from "#lib/AnalysesDashboard.svelte";
   import type { PamGroup } from "#lib/protocol.js";
   import { SectionMain as Main } from "@computational-biology-aachen/design";
-  import { initModel } from "../../models/matuszynska2016_npq/model";
+  import { initModel } from "../../models/matuszynska2016/model";
   import { data } from "./data";
 
   // Low, high, then low actinic light, each with a saturating pulse every
@@ -67,7 +67,7 @@
       fluorescence measurement switches the actinic light between intensities
       and fires a saturating pulse every few seconds; a fit has to replay that
       same protocol, segment by segment, to compare the model against the trace.
-      This page uses the <a href={resolve("/models/matuszynska2016_npq")}
+      This page uses the <a href={resolve("/models/matuszynska2016")}
         >Matuszyńska 2016 NPQ model</a
       > and a fluorescence trace measured under low, high, then low light.
     </p>

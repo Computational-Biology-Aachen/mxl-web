@@ -40,7 +40,7 @@ Zero-install, in-browser ODE solving — no server, no local Python/R install. T
 
 ## Evidence on Hand
 
-- ~25 published models under `src/routes/models/*` (e.g. `fvcb`, `matuszynska2016_npq`, `matuszynska2019`, `bernacchi2023`, `bellasio2019`, `poolman2000`, `lotka-volterra`, `sir`), each a working reference implementation generated from the meta-repo's `mxl-bricks`/`mxl-models` via `codegen_mxlweb.ipynb`.
+- ~25 published models under `src/routes/models/*` (e.g. `fvcb1980`, `matuszynska2016`, `matuszynska2019`, `bernacchi2013`, `bellasio2019`, `poolman2000`, `lotka-volterra`, `sir`), each a working reference implementation generated from the meta-repo's `mxl-bricks`/`mxl-models` via `codegen_mxlweb.ipynb`.
 - `showcase/nde` and `showcase/ude` as working references for neural/universal-DE surrogate fitting.
 - No user research, analytics, or testimonials exist — internal-family academic tool, not a marketing/customer product.
 

@@ -12,45 +12,57 @@ import {
 } from "@computational-biology-aachen/mxlweb-core/mathml";
 
 export function initModel(): SteadyStateModelBuilder {
-  // (1 + 3·α) — the triose-phosphate term, with α = 0.
-  const alphaTerm = new Add([
-    new Num(1),
-    new Mul([new Num(3), new Name("alpha")]),
-  ]);
-
   return new SteadyStateModelBuilder()
     .addParameter("Ci", {
       value: 500,
       displayName: "Ci",
+      unit: "ubar",
       texName: "C_i",
     })
-    .addParameter("vcmax", { value: 80, texName: "V_{cmax}" })
-    .addParameter("kc", { value: 259, texName: "K_c" })
-    .addParameter("ko", { value: 179, texName: "K_o" })
-    .addParameter("ccp", { value: 38.6, texName: "\\Gamma^*" })
-    .addParameter("rl", { value: 1, texName: "R_d" })
-    .addParameter("alpha", { value: 0, texName: "\\alpha" })
+    .addParameter("vcmax", {
+      value: 80,
+      unit: "umol m^-2 s^-1",
+      texName: "V_{cmax}",
+    })
+    .addParameter("kc", { value: 259, unit: "ubar", texName: "K_c" })
+    .addParameter("ko", { value: 179, unit: "mbar", texName: "K_o" })
+    .addParameter("ccp", {
+      value: 38.6,
+      unit: "ubar",
+      texName: "\\Gamma^*",
+    })
+    .addParameter("rl", {
+      value: 1,
+      unit: "umol m^-2 s^-1",
+      texName: "R_d",
+    })
+    .addParameter("alpha", {
+      value: 0,
+      unit: "dimensionless",
+      texName: "\\alpha",
+    })
     .addParameter("o", {
       value: 210,
       displayName: "O₂",
+      unit: "mbar",
       texName: "O",
       slider: { min: "100", max: "500", step: "1" },
     })
     .addParameter("j", {
       value: 124,
       displayName: "J",
+      unit: "umol m^-2 s^-1",
       texName: "J",
       slider: { min: "50", max: "300", step: "1" },
     })
     .addParameter("tp", {
       value: 15,
       displayName: "Tp",
+      unit: "umol m^-2 s^-1",
       texName: "T_p",
       slider: { min: "5", max: "50", step: "1" },
     })
     .addAssignment("wc", {
-      displayName: "Wc",
-      texName: "W_c",
       fn: new Divide([
         new Mul([new Name("Ci"), new Name("vcmax")]),
         new Add([
@@ -61,10 +73,11 @@ export function initModel(): SteadyStateModelBuilder {
           ]),
         ]),
       ]),
+      displayName: "Wc",
+      unit: "umol m^-2 s^-1",
+      texName: "W_c",
     })
     .addAssignment("wj", {
-      displayName: "Wj",
-      texName: "W_j",
       fn: new Divide([
         new Mul([new Name("Ci"), new Name("j")]),
         new Add([
@@ -72,28 +85,42 @@ export function initModel(): SteadyStateModelBuilder {
           new Mul([new Num(8), new Name("ccp")]),
         ]),
       ]),
+      displayName: "Wj",
+      unit: "umol m^-2 s^-1",
+      texName: "W_j",
     })
     .addAssignment("wp", {
-      displayName: "Wp",
-      texName: "W_p",
       fn: new Piecewise([
-        // Below the compensation point the TPU rate is unbounded; cap it.
         new Num(100),
-        new LessEqual([new Name("Ci"), new Mul([new Name("ccp"), alphaTerm])]),
+        new LessEqual([
+          new Name("Ci"),
+          new Mul([
+            new Name("ccp"),
+            new Add([new Num(1), new Mul([new Num(3), new Name("alpha")])]),
+          ]),
+        ]),
         new Divide([
           new Mul([new Num(3), new Name("Ci"), new Name("tp")]),
-          new Minus([new Name("Ci"), new Mul([new Name("ccp"), alphaTerm])]),
+          new Minus([
+            new Name("Ci"),
+            new Mul([
+              new Name("ccp"),
+              new Add([new Num(1), new Mul([new Num(3), new Name("alpha")])]),
+            ]),
+          ]),
         ]),
       ]),
+      displayName: "Wp",
+      unit: "umol m^-2 s^-1",
+      texName: "W_p",
     })
     .addAssignment("vc", {
-      displayName: "Vc",
-      texName: "V_c",
       fn: new Min([new Name("wc"), new Name("wj"), new Name("wp")]),
+      displayName: "Vc",
+      unit: "umol m^-2 s^-1",
+      texName: "V_c",
     })
     .addAssignment("an", {
-      displayName: "An",
-      texName: "A_n",
       fn: new Minus([
         new Mul([
           new Name("vc"),
@@ -104,5 +131,8 @@ export function initModel(): SteadyStateModelBuilder {
         ]),
         new Name("rl"),
       ]),
+      displayName: "An",
+      unit: "umol m^-2 s^-1",
+      texName: "A_n",
     });
 }

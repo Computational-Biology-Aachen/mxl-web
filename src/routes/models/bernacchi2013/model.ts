@@ -14,36 +14,86 @@ import {
 
 export function initModel(): SteadyStateModelBuilder {
   return new SteadyStateModelBuilder()
+    .addCustomUnit("mol_e", {
+      symbol: "mol e⁻",
+      tex: "\\mathrm{mol\\,e^{-}}",
+      description: "mole of electrons",
+    })
     .addParameter("Ci", {
       value: 275,
       displayName: "Ci",
+      unit: "umol mol^-1",
       texName: "C_i",
       slider: { min: "0", max: "1500", step: "5" },
     })
     .addParameter("PPFD", {
       value: 1500,
       displayName: "PPFD",
+      unit: "umol m^-2 s^-1",
       texName: "\\mathrm{PPFD}",
       slider: { min: "0", max: "2500", step: "10" },
     })
-    .addParameter("Vcmax", { value: 100, texName: "V_{cmax}" })
-    .addParameter("Jmax", { value: 200, texName: "J_{max}" })
-    .addParameter("TPU", { value: 12, texName: "T_{PU}" })
-    .addParameter("Rd", { value: 1.5, texName: "R_d" })
-    .addParameter("Gamma_star", { value: 42.75, texName: "\\Gamma^*" })
-    .addParameter("Kc", { value: 404.9, texName: "K_c" })
-    .addParameter("Ko", { value: 278.4, texName: "K_o" })
-    .addParameter("O", { value: 210, displayName: "O", texName: "O" })
-    .addParameter("alpha", { value: 0.24, texName: "\\alpha" })
-    .addParameter("theta", { value: 0.7, texName: "\\theta" })
+    .addParameter("Vcmax", {
+      value: 100,
+      unit: "umol m^-2 s^-1",
+      texName: "V_{cmax}",
+    })
+    .addParameter("Jmax", {
+      value: 200,
+      unit: "umol m^-2 s^-1",
+      texName: "J_{max}",
+    })
+    .addParameter("TPU", {
+      value: 12,
+      unit: "umol m^-2 s^-1",
+      texName: "T_{PU}",
+    })
+    .addParameter("Rd", {
+      value: 1.5,
+      unit: "umol m^-2 s^-1",
+      texName: "R_d",
+    })
+    .addParameter("Gamma_star", {
+      value: 42.75,
+      unit: "umol mol^-1",
+      texName: "\\Gamma^*",
+    })
+    .addParameter("Kc", {
+      value: 404.9,
+      unit: "umol mol^-1",
+      texName: "K_c",
+    })
+    .addParameter("Ko", {
+      value: 278.4,
+      unit: "mmol mol^-1",
+      texName: "K_o",
+    })
+    .addParameter("O", {
+      value: 210,
+      displayName: "O",
+      unit: "mmol mol^-1",
+      texName: "O",
+    })
+    .addParameter("alpha", {
+      value: 0.24,
+      unit: "mol_e E^-1",
+      texName: "\\alpha",
+    })
+    .addParameter("theta", {
+      value: 0.7,
+      unit: "dimensionless",
+      texName: "\\theta",
+    })
     .addAssignment("absorbed", {
       fn: new Mul([new Name("alpha"), new Name("PPFD")]),
       displayName: "absorbed",
+      unit: "umol m^-2 s^-1",
       texName: "\\text{abs}",
     })
     .addAssignment("Ci_safe", {
       fn: new Max([new Name("Ci"), new Num(1)]),
       displayName: "Ci_safe",
+      unit: "umol mol^-1",
       texName: "C_{i, safe}",
     })
     .addAssignment("J", {
@@ -72,6 +122,7 @@ export function initModel(): SteadyStateModelBuilder {
         new Mul([new Num(2), new Name("theta")]),
       ]),
       displayName: "J",
+      unit: "umol m^-2 s^-1",
       texName: "J",
     })
     .addAssignment("Wc", {
@@ -86,6 +137,7 @@ export function initModel(): SteadyStateModelBuilder {
         ]),
       ]),
       displayName: "Wc",
+      unit: "umol m^-2 s^-1",
       texName: "W_c",
     })
     .addAssignment("rubisco", {
@@ -100,6 +152,7 @@ export function initModel(): SteadyStateModelBuilder {
         new Name("Rd"),
       ]),
       displayName: "Ac",
+      unit: "umol m^-2 s^-1",
       texName: "A_c",
     })
     .addAssignment("rubp", {
@@ -117,16 +170,19 @@ export function initModel(): SteadyStateModelBuilder {
         new Name("Rd"),
       ]),
       displayName: "Aj",
+      unit: "umol m^-2 s^-1",
       texName: "A_j",
     })
     .addAssignment("tpu", {
       fn: new Minus([new Mul([new Num(3), new Name("TPU")]), new Name("Rd")]),
       displayName: "Ap",
+      unit: "umol m^-2 s^-1",
       texName: "A_p",
     })
     .addAssignment("an", {
       fn: new Min([new Name("rubisco"), new Name("rubp"), new Name("tpu")]),
       displayName: "An",
+      unit: "umol m^-2 s^-1",
       texName: "A_n",
     });
 }

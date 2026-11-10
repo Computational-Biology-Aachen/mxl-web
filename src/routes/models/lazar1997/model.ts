@@ -1,4 +1,7 @@
-import { KineticModelBuilder } from "@computational-biology-aachen/mxlweb-core";
+import {
+  KineticModelBuilder,
+  Unit,
+} from "@computational-biology-aachen/mxlweb-core";
 import {
   Add,
   Divide,
@@ -8,177 +11,232 @@ import {
   Num,
 } from "@computational-biology-aachen/mxlweb-core/mathml";
 
+/**
+ * Lazar 1997 Fluorescence induction model.
+ *
+ * |             |                                                                                             |
+ * | ----------- | ------------------------------------------------------------------------------------------- |
+ * | doi         | 10.1006/pest.1997.2277                                                                      |
+ * | main author | Dušan Lazár                                                                                 |
+ * | paper title | Mathematical modeling of changes in chlorophyll fluorescence induction caused by herbicides |
+ * | published   | 1997                                                                                        |
+ * | journal     | Pesticide Biochemistry and Physiology                                                       |
+ * | organism    | plants (chlorophyll fluorescence)                                                           |
+ * | Ported by   | ElouenCorvest ( @ElouenCorvest )                                                            |
+ */
 export function initModel(): KineticModelBuilder {
   return new KineticModelBuilder()
     .addParameter("k1", {
       value: 1666.0,
       texName: "k1",
+      unit: Unit.fromJson({ factors: [{ kind: "second", exponent: -1 }] }),
     })
     .addParameter("k2", {
       value: 1250.0,
       texName: "k2",
+      unit: Unit.fromJson({ factors: [{ kind: "second", exponent: -1 }] }),
     })
     .addParameter("k3", {
       value: 500.0,
       texName: "k3",
+      unit: Unit.fromJson({ factors: [{ kind: "second", exponent: -1 }] }),
     })
     .addParameter("k4", {
       value: 20000.0,
       texName: "k4",
+      unit: Unit.fromJson({ factors: [{ kind: "second", exponent: -1 }] }),
     })
     .addParameter("k5", {
       value: 1666.0,
       texName: "k5",
+      unit: Unit.fromJson({ factors: [{ kind: "second", exponent: -1 }] }),
     })
     .addParameter("k6", {
       value: 3500.0,
       texName: "k6",
+      unit: Unit.fromJson({ factors: [{ kind: "second", exponent: -1 }] }),
     })
     .addParameter("k7", {
       value: 175.0,
       texName: "k7",
+      unit: Unit.fromJson({ factors: [{ kind: "second", exponent: -1 }] }),
     })
     .addParameter("k8", {
       value: 1750.0,
       texName: "k8",
+      unit: Unit.fromJson({ factors: [{ kind: "second", exponent: -1 }] }),
     })
     .addParameter("k9", {
       value: 35.0,
       texName: "k9",
+      unit: Unit.fromJson({ factors: [{ kind: "second", exponent: -1 }] }),
     })
     .addParameter("k10", {
       value: 5000.0,
       texName: "k10",
+      unit: Unit.fromJson({ factors: [{ kind: "second", exponent: -1 }] }),
     })
     .addParameter("k11", {
       value: 5000.0,
       texName: "k11",
+      unit: Unit.fromJson({ factors: [{ kind: "second", exponent: -1 }] }),
     })
     .addParameter("k12", {
       value: 150.0,
       texName: "k12",
+      unit: Unit.fromJson({ factors: [{ kind: "second", exponent: -1 }] }),
     })
     .addParameter("k13", {
       value: 100.0,
       texName: "k13",
+      unit: Unit.fromJson({ factors: [{ kind: "second", exponent: -1 }] }),
     })
     .addParameter("k14", {
       value: 150.0,
       texName: "k14",
+      unit: Unit.fromJson({ factors: [{ kind: "second", exponent: -1 }] }),
     })
     .addParameter("k15", {
       value: 100.0,
       texName: "k15",
+      unit: Unit.fromJson({ factors: [{ kind: "second", exponent: -1 }] }),
     })
     .addParameter("k16", {
       value: 150.0,
       texName: "k16",
+      unit: Unit.fromJson({ factors: [{ kind: "second", exponent: -1 }] }),
     })
     .addParameter("k17", {
       value: 100.0,
       texName: "k17",
+      unit: Unit.fromJson({ factors: [{ kind: "second", exponent: -1 }] }),
     })
     .addParameter("k18", {
       value: 150.0,
       texName: "k18",
+      unit: Unit.fromJson({ factors: [{ kind: "second", exponent: -1 }] }),
     })
     .addParameter("k19", {
       value: 100.0,
       texName: "k19",
+      unit: Unit.fromJson({ factors: [{ kind: "second", exponent: -1 }] }),
     })
     .addParameter("k20", {
       value: 150.0,
       texName: "k20",
+      unit: Unit.fromJson({ factors: [{ kind: "second", exponent: -1 }] }),
     })
     .addParameter("k21", {
       value: 100.0,
       texName: "k21",
+      unit: Unit.fromJson({ factors: [{ kind: "second", exponent: -1 }] }),
     })
     .addParameter("k22", {
       value: 150.0,
       texName: "k22",
+      unit: Unit.fromJson({ factors: [{ kind: "second", exponent: -1 }] }),
     })
     .addParameter("k23", {
       value: 100.0,
       texName: "k23",
+      unit: Unit.fromJson({ factors: [{ kind: "second", exponent: -1 }] }),
     })
     .addParameter("k24", {
       value: 1.0,
       texName: "k24",
+      unit: Unit.fromJson({ factors: [{ kind: "second", exponent: -1 }] }),
     })
     .addParameter("k25", {
       value: 1.0,
       texName: "k25",
+      unit: Unit.fromJson({ factors: [{ kind: "second", exponent: -1 }] }),
     })
     .addParameter("k6n", {
       value: 3500.0,
       texName: "k6n",
+      unit: Unit.fromJson({ factors: [{ kind: "second", exponent: -1 }] }),
     })
     .addParameter("p", {
       value: 0.55,
       texName: "p",
+      unit: Unit.fromJson({ factors: [] }),
     })
     .addVariable("y1", {
       value: 0.66,
       texName: "y1",
+      unit: Unit.fromJson({ factors: [] }),
     })
     .addVariable("y2", {
       value: 0.0,
       texName: "y2",
+      unit: Unit.fromJson({ factors: [] }),
     })
     .addVariable("y3", {
       value: 0.0,
       texName: "y3",
+      unit: Unit.fromJson({ factors: [] }),
     })
     .addVariable("y4", {
       value: 0.0,
       texName: "y4",
+      unit: Unit.fromJson({ factors: [] }),
     })
     .addVariable("y5", {
       value: 0.0,
       texName: "y5",
+      unit: Unit.fromJson({ factors: [] }),
     })
     .addVariable("y6", {
       value: 0.0,
       texName: "y6",
+      unit: Unit.fromJson({ factors: [] }),
     })
     .addVariable("y7", {
       value: 0.0,
       texName: "y7",
+      unit: Unit.fromJson({ factors: [] }),
     })
     .addVariable("y8", {
       value: 0.0,
       texName: "y8",
+      unit: Unit.fromJson({ factors: [] }),
     })
     .addVariable("y9", {
       value: 7.0,
       texName: "y9",
+      unit: Unit.fromJson({ factors: [] }),
     })
     .addVariable("y10", {
       value: 0.0,
       texName: "y10",
+      unit: Unit.fromJson({ factors: [] }),
     })
     .addVariable("y11", {
       value: 0.0,
       texName: "y11",
+      unit: Unit.fromJson({ factors: [] }),
     })
     .addVariable("y12", {
       value: 0.0,
       texName: "y12",
+      unit: Unit.fromJson({ factors: [] }),
     })
     .addVariable("y13", {
       value: 0.22,
       texName: "y13",
+      unit: Unit.fromJson({ factors: [] }),
     })
     .addVariable("y14", {
       value: 0.0,
       texName: "y14",
+      unit: Unit.fromJson({ factors: [] }),
     })
     .addVariable("y15", {
       value: 0.12,
       texName: "y15",
+      unit: Unit.fromJson({ factors: [] }),
     })
-    .addReadout("eprime", {
+    .addAssignment("eprime", {
       fn: new Add([
         new Name("y12"),
         new Name("y14"),
@@ -189,7 +247,7 @@ export function initModel(): KineticModelBuilder {
       ]),
       texName: "eprime",
     })
-    .addReadout("F", {
+    .addAssignment("F", {
       fn: new Add([
         new Name("y15"),
         new Divide([
@@ -203,6 +261,7 @@ export function initModel(): KineticModelBuilder {
           ]),
         ]),
       ]),
+      displayName: "Fluo",
       texName: "F",
     })
     .addReaction("v1", {

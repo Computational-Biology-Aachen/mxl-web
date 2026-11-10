@@ -27,7 +27,12 @@ describe("filterModels", () => {
 
   it("filters by type", () => {
     const slugs = run({ type: "steady-state" });
-    expect(slugs.toSorted()).toEqual(["bernacchi2023", "fvcb", "johnson2021"]);
+    expect(slugs.toSorted()).toEqual([
+      "bernacchi2013",
+      "fvcb1980",
+      "gu2023",
+      "johnson2021",
+    ]);
   });
 
   it("combines systems with OR", () => {

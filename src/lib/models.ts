@@ -136,8 +136,8 @@ export const models: ModelMeta[] = [
     image: scheme2016phd,
   },
   {
-    name: "Matuszyńska 2016 (NPQ)",
-    slug: "matuszynska2016_npq",
+    name: "Matuszyńska 2016",
+    slug: "matuszynska2016",
     type: "ode",
     systems: ["photosynthesis"],
     authors: "Matuszyńska et al.",
@@ -290,19 +290,19 @@ export const models: ModelMeta[] = [
       "Wavelength-resolved model of photosynthesis and respiration in the cyanobacterium Synechocystis sp. PCC 6803.",
   },
   {
-    name: "Bernacchi 2023",
-    slug: "bernacchi2023",
+    name: "Bernacchi 2013",
+    slug: "bernacchi2013",
     type: "steady-state",
     systems: ["photosynthesis"],
     authors: "Bernacchi et al.",
-    year: 2023,
+    year: 2013,
     description:
       "FvCB model of C3 photosynthesis: net assimilation as the minimum of Rubisco-, electron-transport- and TPU-limited rates.",
     image: schemeFvcb,
   },
   {
     name: "FvCB 1980",
-    slug: "fvcb",
+    slug: "fvcb1980",
     type: "steady-state",
     systems: ["photosynthesis"],
     authors: "Farquhar et al.",
@@ -321,5 +321,75 @@ export const models: ModelMeta[] = [
     description:
       "FvCB model of C3 photosynthesis: net assimilation as the minimum of Rubisco-, electron-transport- and TPU-limited rates.",
     image: schemeFvcb,
+  },
+  {
+    name: "Ebenhöh 2014",
+    slug: "ebenhoeh2014",
+    type: "ode",
+    systems: ["photosynthesis"],
+    authors: "Ebenhöh et al.",
+    year: 2014,
+    description:
+      "Seven-ODE model of the photosynthetic electron transport chain for short-term light acclimation, including state transitions.",
+  },
+  {
+    name: "Gu 2023",
+    slug: "gu2023",
+    type: "steady-state",
+    systems: ["photosynthesis"],
+    authors: "Gu et al.",
+    year: 2023,
+    description:
+      "Steady-state redox relationships between linear electron transport, open PSII centres and the plastoquinone pool.",
+  },
+  {
+    name: "Lam 2026",
+    slug: "lam2026",
+    type: "ode",
+    systems: ["photosynthesis"],
+    authors: "Lam et al.",
+    year: 2026,
+    description:
+      "Fluorescence-lifetime-based model dissecting the contributions to non-photochemical quenching under fluctuating light.",
+  },
+  {
+    name: "Morales 2018",
+    slug: "morales2018",
+    type: "ode",
+    systems: ["photosynthesis"],
+    authors: "Morales et al.",
+    year: 2018,
+    description:
+      "Dynamic extension of the FvCB model to identify limitations on leaf CO₂ assimilation under fluctuating irradiance.",
+  },
+  {
+    name: "Salvatori 2022",
+    slug: "salvatori2022",
+    type: "ode",
+    systems: ["photosynthesis"],
+    authors: "Salvatori et al.",
+    year: 2022,
+    description:
+      "Coarse-grained system-dynamics model of leaf photosynthesis under fluctuating light with six state variables.",
+  },
+  {
+    name: "Zaks 2012",
+    slug: "zaks2012",
+    type: "ode",
+    systems: ["photosynthesis"],
+    authors: "Zaks et al.",
+    year: 2012,
+    description:
+      "Kinetic model of the pH-dependent, rapidly reversible component of non-photochemical quenching (qE) in PSII.",
+  },
+  {
+    name: "Zhu 2005",
+    slug: "zhu2005",
+    type: "ode",
+    systems: ["photosynthesis"],
+    authors: "Zhu et al.",
+    year: 2005,
+    description:
+      "Mechanistic PSII model predicting the polyphasic O-J-I-P chlorophyll fluorescence induction.",
   },
 ];
