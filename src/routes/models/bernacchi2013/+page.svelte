@@ -1,10 +1,12 @@
 <!--
-  FvCB model — Farquhar, von Caemmerer & Berry (1980) C3 photosynthesis.
+  Bernacchi 2013 — FvCB model of C3 photosynthesis as reviewed in
+  Bernacchi et al. (2013), Plant Cell Environ., doi:10.1111/pce.12118.
 
-  Net CO₂ assimilation (An) = min(Wc, Wj, Wp) · (1 − Γ*/Ci) − Rd, where:
-    Wc — RuBisCO-limited rate (Vcmax, Kc, Ko, Γ*)
-    Wj — electron-transport-limited rate (J, Γ*)
-    Wp — triose-phosphate-utilisation-limited rate (Tp)
+  Net CO₂ assimilation An = min(Ac, Aj, Ap), each net of day respiration Rd:
+    Ac — Rubisco-limited rate (Vcmax, Kc, Ko, Γ*)
+    Aj — RuBP-regeneration-limited rate (J from a non-rectangular hyperbola
+         of absorbed PPFD and Jmax)
+    Ap — triose-phosphate-utilisation-limited rate (TPU)
   A pure algebraic steady-state model swept over Ci — no ODE worker needed.
 -->
 <script lang="ts">
@@ -50,12 +52,18 @@
   >
     <h1>Bernacchi 2013</h1>
     <Text>
-      The FvCB model (Farquhar, von Caemmerer & Berry, 1980) is a widely used
-      framework for C3 photosynthesis. It describes net carbon assimilation
-      <em>An</em> as the minimum of three potential rates — the RuBisCO-limited
-      rate <em>Wc</em>, the electron-transport-limited rate <em>Wj</em>, and the
-      triose-phosphate-utilisation-limited rate <em>Wp</em> — evaluated across a
-      range of intercellular CO₂ (<em>Ci</em>).
+      Bernacchi et al. (2013) review the Farquhar, von Caemmerer & Berry (FvCB)
+      model of C3 photosynthesis and show how the same steady-state framework
+      scales from the chloroplast to canopies and ecosystems. Net CO₂
+      assimilation <em>An</em> is the minimum of three limiting rates, each net
+      of day respiration <em>Rd</em>: the Rubisco-limited rate <em>Ac</em>, the
+      RuBP-regeneration-limited rate <em>Aj</em> and the
+      triose-phosphate-utilisation-limited rate <em>Ap</em>.
+    </Text>
+    <Text>
+      The electron transport rate <em>J</em> is computed from absorbed light
+      (PPFD) and <em>Jmax</em> with a non-rectangular hyperbola, so the curves
+      respond to both intercellular CO₂ (<em>Ci</em>) and light.
     </Text>
   </SteadyStateDashboard>
 </Main>
