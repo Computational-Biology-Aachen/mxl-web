@@ -1942,20 +1942,13 @@
       </p>
     {/if}
     {#if nfev > 0}
-      <div
-        class="progress-bar-track"
+      <progress
+        class="progress-bar"
+        max="1"
+        value={fitComplete ? 1 : progressFraction}
         title="{nfev} / {stageBudget} evaluations"
-        role="progressbar"
-        aria-label="Fit progress (function evaluations)"
-        aria-valuemin={0}
-        aria-valuemax={stageBudget}
-        aria-valuenow={fitComplete ? stageBudget : Math.min(nfev, stageBudget)}
-      >
-        <div
-          class="progress-bar-fill"
-          style="transform: scaleX({fitComplete ? 1 : progressFraction})"
-        ></div>
-      </div>
+        aria-label="Fit progress"
+      ></progress>
     {/if}
     {#if errorMsg}
       <p class="error">{errorMsg}</p>
@@ -2010,17 +2003,13 @@
       {/if}
     </div>
     {#if members.length > 0}
-      <div
-        class="progress-bar-track"
+      <progress
+        class="progress-bar"
+        max="1"
+        value={ensembleAllDone ? 1 : ensembleProgressFraction}
         title="{ensembleNfev} / {maxFunctionEvaluations} evaluations"
-      >
-        <div
-          class="progress-bar-fill"
-          style="transform: scaleX({ensembleAllDone
-            ? 1
-            : ensembleProgressFraction})"
-        ></div>
-      </div>
+        aria-label="Ensemble fit progress"
+      ></progress>
     {/if}
     {#if members.some((m) => m.errored)}
       <p class="target-missed">
@@ -2148,22 +2137,28 @@
     width: 100%;
     min-width: 0;
   }
-  .progress-bar-track {
+  /* Native <progress>, fully custom-styled (progress guide). */
+  .progress-bar {
+    appearance: none;
+    border: 0 solid;
     border-radius: var(--radius-full, 999px);
-    background: #e5e7eb;
+    background: var(--slate-50);
     width: 100%;
     height: 0.5rem;
-    overflow: hidden;
+    overflow: clip;
   }
-  .progress-bar-fill {
-    transform-origin: left;
+  .progress-bar::-webkit-progress-bar {
+    background: transparent;
+  }
+  .progress-bar::-webkit-progress-value {
     background: var(--color-primary);
-    width: 100%;
-    height: 100%;
 
     @media (prefers-reduced-motion: no-preference) {
-      transition: transform 200ms ease;
+      transition: inline-size 200ms ease;
     }
+  }
+  .progress-bar::-moz-progress-bar {
+    background: var(--color-primary);
   }
   .error {
     margin: 0;
