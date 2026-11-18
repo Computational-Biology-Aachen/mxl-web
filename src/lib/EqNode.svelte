@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { tick } from "svelte";
   import EquationNode from "#lib/EqNode.svelte";
   import { defaultValue } from "@computational-biology-aachen/mxlweb-core";
   import {
@@ -73,6 +74,7 @@
     onDragStart,
     onDrop,
     onDragEnd,
+    isRoot = false,
   }: {
     node: Base;
     displayName?: string;
@@ -83,6 +85,7 @@
     onDragStart: (node: Base) => void;
     onDrop: (targetId: number) => void;
     onDragEnd: () => void;
+    isRoot?: boolean;
   } = $props();
 
   const selectSelf = () => onSelect(node);
@@ -195,6 +198,47 @@
     }
     return "Press Control+X to cut, or Enter to select";
   }
+
+  let isLeaf = $derived(
+    node instanceof Name ||
+      node instanceof Num ||
+      getNodeClassName(node) === "",
+  );
+
+  // ARIA tree keyboard model over the rendered tree: ↑/↓ move through the
+  // nodes in reading order, → enters the first child, ← goes to the parent,
+  // Home/End jump to the ends. Selection follows focus, like clicking.
+  function moveFocus(e: KeyboardEvent): boolean {
+    const self = e.currentTarget as HTMLElement;
+    const tree = self.closest('[role="tree"]');
+    if (!tree) return false;
+    const items = [...tree.querySelectorAll<HTMLElement>('[role="treeitem"]')];
+    const i = items.indexOf(self);
+    let target: HTMLElement | null | undefined;
+    if (e.key === "ArrowDown") target = items[i + 1];
+    else if (e.key === "ArrowUp") target = items[i - 1];
+    else if (e.key === "Home") target = items[0];
+    else if (e.key === "End") target = items.at(-1);
+    else if (e.key === "ArrowRight")
+      target = self.querySelector<HTMLElement>('[role="treeitem"]');
+    else if (e.key === "ArrowLeft")
+      target = self.parentElement?.closest<HTMLElement>('[role="treeitem"]');
+    else return false;
+    e.preventDefault();
+    e.stopPropagation();
+    if (target) {
+      // Selecting can re-render nodes; refocus by position once it settles.
+      const index = items.indexOf(target);
+      target.click();
+      target.focus();
+      void tick().then(() => {
+        if (document.activeElement && tree.contains(document.activeElement))
+          return;
+        tree.querySelectorAll<HTMLElement>('[role="treeitem"]')[index]?.focus();
+      });
+    }
+    return true;
+  }
 </script>
 
 <div
@@ -203,15 +247,17 @@
   data-dragging={draggedId === node.id}
   data-drop-target={dragOverSelf && isValidDropTarget}
   draggable="true"
-  role="button"
-  tabindex={0}
-  aria-pressed={selectedId === node.id}
+  role="treeitem"
+  tabindex={selectedId === node.id || (isRoot && selectedId === -1) ? 0 : -1}
+  aria-selected={selectedId === node.id}
+  aria-expanded={isLeaf ? undefined : true}
   aria-label={`${getNodeAriaLabel(node)}. ${getNodeStatusHint(node)}`}
   onclick={(e) => {
     e.stopPropagation();
     selectSelf();
   }}
   onkeydown={(e) => {
+    if (moveFocus(e)) return;
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       e.stopPropagation();
@@ -266,7 +312,10 @@
   }}
 >
   {#if node instanceof Divide}
-    <div class="divide">
+    <div
+      class="divide"
+      role="group"
+    >
       <div class="child">
         <EquationNode
           node={(node as Divide).children[0]}
@@ -280,17 +329,12 @@
           onDragEnd={onDragEnd}
         />
       </div>
-      <button
+      <span
         class="op"
-        tabindex="-1"
-        aria-label="Select divide"
-        onclick={(e) => {
-          e.stopPropagation();
-          selectSelf();
-        }}
+        aria-hidden="true"
       >
         /
-      </button>
+      </span>
       <div class="child">
         <EquationNode
           node={(node as Divide).children[1]}
@@ -306,7 +350,10 @@
       </div>
     </div>
   {:else if node instanceof Mul}
-    <div class="mul">
+    <div
+      class="mul"
+      role="group"
+    >
       <div class="child">
         <EquationNode
           node={(node as Mul).children[0]}
@@ -320,17 +367,12 @@
           onDragEnd={onDragEnd}
         />
       </div>
-      <button
+      <span
         class="op"
-        tabindex="-1"
-        aria-label="Select mul"
-        onclick={(e) => {
-          e.stopPropagation();
-          selectSelf();
-        }}
+        aria-hidden="true"
       >
         x
-      </button>
+      </span>
       <div class="child">
         <EquationNode
           node={(node as Mul).children[1]}
@@ -346,7 +388,10 @@
       </div>
     </div>
   {:else if node instanceof Add}
-    <div class="mul">
+    <div
+      class="mul"
+      role="group"
+    >
       <div class="child">
         <EquationNode
           node={(node as Add).children[0]}
@@ -360,17 +405,12 @@
           onDragEnd={onDragEnd}
         />
       </div>
-      <button
+      <span
         class="op"
-        tabindex="-1"
-        aria-label="Select add"
-        onclick={(e) => {
-          e.stopPropagation();
-          selectSelf();
-        }}
+        aria-hidden="true"
       >
         +
-      </button>
+      </span>
       <div class="child">
         <EquationNode
           node={(node as Add).children[1]}
@@ -387,18 +427,16 @@
     </div>
   {:else if node instanceof Minus}
     {#if (node as Minus).children.length === 1}
-      <div class="mul">
-        <button
+      <div
+        class="mul"
+        role="group"
+      >
+        <span
           class="op"
-          tabindex="-1"
-          aria-label="Select minus"
-          onclick={(e) => {
-            e.stopPropagation();
-            selectSelf();
-          }}
+          aria-hidden="true"
         >
           -
-        </button>
+        </span>
         <div class="child">
           <EquationNode
             node={(node as Minus).children[0]}
@@ -414,7 +452,10 @@
         </div>
       </div>
     {:else}
-      <div class="mul">
+      <div
+        class="mul"
+        role="group"
+      >
         <div class="child">
           <EquationNode
             node={(node as Minus).children[0]}
@@ -428,17 +469,12 @@
             onDragEnd={onDragEnd}
           />
         </div>
-        <button
+        <span
           class="op"
-          tabindex="-1"
-          aria-label="Select minus"
-          onclick={(e) => {
-            e.stopPropagation();
-            selectSelf();
-          }}
+          aria-hidden="true"
         >
           -
-        </button>
+        </span>
         <div class="child">
           <EquationNode
             node={(node as Minus).children[1]}
@@ -455,7 +491,10 @@
       </div>
     {/if}
   {:else if node instanceof Pow}
-    <div class="mul">
+    <div
+      class="mul"
+      role="group"
+    >
       <div class="child">
         <EquationNode
           node={(node as Pow).left}
@@ -469,17 +508,12 @@
           onDragEnd={onDragEnd}
         />
       </div>
-      <button
+      <span
         class="op"
-        tabindex="-1"
-        aria-label="Select pow"
-        onclick={(e) => {
-          e.stopPropagation();
-          selectSelf();
-        }}
+        aria-hidden="true"
       >
         ^
-      </button>
+      </span>
       <div class="child">
         <EquationNode
           node={(node as Pow).right}
@@ -495,7 +529,10 @@
       </div>
     </div>
   {:else if node instanceof Implies}
-    <div class="mul">
+    <div
+      class="mul"
+      role="group"
+    >
       <div class="child">
         <EquationNode
           node={(node as Implies).left}
@@ -509,17 +546,12 @@
           onDragEnd={onDragEnd}
         />
       </div>
-      <button
+      <span
         class="op"
-        tabindex="-1"
-        aria-label="Select implies"
-        onclick={(e) => {
-          e.stopPropagation();
-          selectSelf();
-        }}
+        aria-hidden="true"
       >
         ⇒
-      </button>
+      </span>
       <div class="child">
         <EquationNode
           node={(node as Implies).right}
@@ -537,20 +569,18 @@
   {:else if getNaryInfixOp(node) !== null}
     {@const op = getNaryInfixOp(node)!}
     {@const nary = node as Nary}
-    <div class="mul">
+    <div
+      class="mul"
+      role="group"
+    >
       {#each nary.children as child, i (i)}
         {#if i > 0}
-          <button
+          <span
             class="op"
-            tabindex="-1"
-            aria-label="Select operator"
-            onclick={(e) => {
-              e.stopPropagation();
-              selectSelf();
-            }}
+            aria-hidden="true"
           >
             {op}
-          </button>
+          </span>
         {/if}
         <div class="child">
           <EquationNode
@@ -568,18 +598,16 @@
       {/each}
     </div>
   {:else if node instanceof Not}
-    <div class="mul">
-      <button
+    <div
+      class="mul"
+      role="group"
+    >
+      <span
         class="op"
-        tabindex="-1"
-        aria-label="Select not"
-        onclick={(e) => {
-          e.stopPropagation();
-          selectSelf();
-        }}
+        aria-hidden="true"
       >
         ¬
-      </button>
+      </span>
       {#each (node as Not).children as child, i (i)}
         <div class="child">
           <EquationNode
@@ -598,18 +626,16 @@
     </div>
   {:else if node instanceof Max || node instanceof Min}
     {@const label = node instanceof Max ? "max" : "min"}
-    <div class="fn-call">
-      <button
+    <div
+      class="fn-call"
+      role="group"
+    >
+      <span
         class="op fn-label"
-        tabindex="-1"
-        aria-label="Select {label}"
-        onclick={(e) => {
-          e.stopPropagation();
-          selectSelf();
-        }}
+        aria-hidden="true"
       >
         {label}
-      </button>
+      </span>
       <span class="paren">(</span>
       {#each (node as Nary).children as child, i (i)}
         {#if i > 0}<span class="comma">,</span>{/if}
@@ -631,18 +657,16 @@
     </div>
   {:else if node instanceof Piecewise}
     {@const pw = node as Piecewise}
-    <div class="piecewise">
-      <button
+    <div
+      class="piecewise"
+      role="group"
+    >
+      <span
         class="op fn-label"
-        tabindex="-1"
-        aria-label="Select piecewise"
-        onclick={(e) => {
-          e.stopPropagation();
-          selectSelf();
-        }}
+        aria-hidden="true"
       >
         cases
-      </button>
+      </span>
       <div class="pieces">
         {#each pw.children as child, i (i)}
           {#if i % 2 === 0}
@@ -684,18 +708,16 @@
       </div>
     </div>
   {:else if node instanceof Log}
-    <div class="fn-call">
-      <button
+    <div
+      class="fn-call"
+      role="group"
+    >
+      <span
         class="op fn-label"
-        tabindex="-1"
-        aria-label="Select log"
-        onclick={(e) => {
-          e.stopPropagation();
-          selectSelf();
-        }}
+        aria-hidden="true"
       >
         log
-      </button>
+      </span>
       <div class="sub-node">
         <EquationNode
           node={(node as Log).base}
@@ -726,18 +748,16 @@
       <span class="paren">)</span>
     </div>
   {:else if node instanceof Sqrt}
-    <div class="fn-call">
-      <button
+    <div
+      class="fn-call"
+      role="group"
+    >
+      <span
         class="op fn-label"
-        tabindex="-1"
-        aria-label="Select sqrt"
-        onclick={(e) => {
-          e.stopPropagation();
-          selectSelf();
-        }}
+        aria-hidden="true"
       >
         √
-      </button>
+      </span>
       <div class="sub-node">
         <EquationNode
           node={(node as Sqrt).base}
@@ -770,19 +790,17 @@
   {:else if node instanceof Unary}
     {@const label = getUnaryLabel(node)}
     {@const isPostfix = node instanceof Factorial}
-    <div class="fn-call">
+    <div
+      class="fn-call"
+      role="group"
+    >
       {#if !isPostfix}
-        <button
+        <span
           class="op fn-label"
-          tabindex="-1"
-          aria-label="Select {label}"
-          onclick={(e) => {
-            e.stopPropagation();
-            selectSelf();
-          }}
+          aria-hidden="true"
         >
           {label}
-        </button>
+        </span>
         <span class="paren">(</span>
       {/if}
       <div class="child">
@@ -799,17 +817,12 @@
         />
       </div>
       {#if isPostfix}
-        <button
+        <span
           class="op fn-label"
-          tabindex="-1"
-          aria-label="Select factorial"
-          onclick={(e) => {
-            e.stopPropagation();
-            selectSelf();
-          }}
+          aria-hidden="true"
         >
           !
-        </button>
+        </span>
       {:else}
         <span class="paren">)</span>
       {/if}

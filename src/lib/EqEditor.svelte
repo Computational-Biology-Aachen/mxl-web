@@ -821,44 +821,49 @@
     <div class="window">
       <div class="window-header">Equation builder</div>
       <div class="window-body">
+        <!-- Clicking the empty canvas is a pointer shortcut for the
+             "Wrap whole expression" button below. -->
         <!-- svelte-ignore a11y_click_events_have_key_events -->
-        <!-- svelte-ignore a11y_no_static_element_interactions -->
         <div
           class="builder-canvas"
           data-tour="eq-canvas"
           data-wrap-active={wrapRoot}
+          role="tree"
+          tabindex="-1"
+          aria-label="Expression tree"
           onclick={() => (wrapRoot = true)}
         >
-          {#if currentNode instanceof Name}
-            <EqNode
-              node={root}
-              displayName={displayNames.get(currentNode.name)}
-              selectedId={wrapRoot ? -1 : currentNode.id}
-              onSelect={selectNode}
-              draggedId={draggedNode?.id ?? null}
-              invalidDropIds={invalidDropIds}
-              onDragStart={handleDragStart}
-              onDrop={handleDrop}
-              onDragEnd={handleDragEnd}
-            />
-          {:else}
-            <EqNode
-              node={root}
-              selectedId={wrapRoot ? -1 : currentNode.id}
-              onSelect={selectNode}
-              draggedId={draggedNode?.id ?? null}
-              invalidDropIds={invalidDropIds}
-              onDragStart={handleDragStart}
-              onDrop={handleDrop}
-              onDragEnd={handleDragEnd}
-            />
-          {/if}
+          <!-- One instance: an {#if} on the node type re-mounted the whole
+               tree (and dropped keyboard focus) whenever a name was selected. -->
+          <EqNode
+            isRoot
+            node={root}
+            displayName={currentNode instanceof Name
+              ? displayNames.get(currentNode.name)
+              : undefined}
+            selectedId={wrapRoot ? -1 : currentNode.id}
+            onSelect={selectNode}
+            draggedId={draggedNode?.id ?? null}
+            invalidDropIds={invalidDropIds}
+            onDragStart={handleDragStart}
+            onDrop={handleDrop}
+            onDragEnd={handleDragEnd}
+          />
         </div>
+        <button
+          type="button"
+          class="wrap-button"
+          aria-pressed={wrapRoot}
+          onclick={() => (wrapRoot = !wrapRoot)}
+        >
+          Wrap whole expression
+        </button>
         <p class="hint-line">
-          Tip: click any element to select it, then choose a MathML element
-          above or adjust its value. Click the surrounding canvas to wrap the
-          whole expression in a new element. Drag any element onto another to
-          move it there; Ctrl+Z / Ctrl+Shift+Z undo and redo.
+          Tip: click any element (or use the arrow keys) to select it, then
+          choose a MathML element above or adjust its value. "Wrap whole
+          expression" (or clicking the empty canvas) puts the next element
+          around everything. Drag any element onto another to move it there;
+          Ctrl+Z / Ctrl+Shift+Z undo and redo.
         </p>
 
         <!-- Edit rows -->
@@ -1105,5 +1110,23 @@
     padding: 0.35rem 0.5rem;
     width: 100%;
     font-size: 0.95rem;
+  }
+
+  .wrap-button {
+    align-self: flex-start;
+    cursor: pointer;
+    margin-top: var(--space-2);
+    border: var(--border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    padding: var(--space-1) var(--space-3);
+    color: var(--color-text);
+    font: inherit;
+    font-size: var(--text-sm);
+  }
+
+  .wrap-button[aria-pressed="true"] {
+    border-color: var(--color-accent);
+    color: var(--color-primary);
   }
 </style>
