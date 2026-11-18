@@ -1,10 +1,14 @@
 <!--
   @component
 
-  Guided, step-by-step overlay for the model editors. Renders as a manual
-  `[popover]` so it sits in the top layer above the editor popover — and, after
-  re-raising itself, above the nested equation-editor popover it drives the user
-  into. Spotlights one element per step with a dimming cutout and a tooltip card.
+  Guided, step-by-step overlay for the model editors. A `<dialog popover="manual">`
+  so it sits in the top layer above the (modal) editor and — after re-raising
+  itself — above the nested equation-editor popover it drives the user into. A
+  modal dialog can't be used: showModal() closes every open auto popover,
+  including that equation editor. Focus moves into the card and returns to the
+  trigger on exit; ←/→/Esc are handled on the dialog itself. The spotlight and
+  card are tethered to the step's target with CSS anchor positioning, falling
+  back to measured coordinates where that is unsupported.
 
   Start it imperatively:
 
@@ -27,14 +31,27 @@
     closeEqEditor: () => void;
   } = $props();
 
-  let el = $state<HTMLDivElement>();
+  const uid = $props.id();
+  const ANCHOR = "--tour-target";
+  const supportsAnchor =
+    typeof CSS !== "undefined" && CSS.supports("top", "anchor(top)");
+
+  let el = $state<HTMLDialogElement>();
+  let nextButton = $state<HTMLButtonElement>();
   let open = $state(false);
   let index = $state(0);
   let rect = $state<DOMRect | null>(null);
+  let hasTarget = $state(false);
   // Whether the equation-editor popover is currently open on our behalf.
   let eqOpen = false;
+  let anchored: HTMLElement | null = null;
+  let returnFocus: HTMLElement | null = null;
 
   export async function start(): Promise<void> {
+    returnFocus =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
     open = true;
     index = 0;
     eqOpen = false;
@@ -52,16 +69,27 @@
     el.showPopover();
   }
 
-  async function measure(): Promise<void> {
+  function setAnchor(target: HTMLElement | null): void {
+    anchored?.style.removeProperty("anchor-name");
+    anchored = target;
+    target?.style.setProperty("anchor-name", ANCHOR);
+  }
+
+  // Bring the step's target into view (only when the step changes, so the
+  // user can still scroll away) and tether the spotlight to it.
+  async function focusTarget(): Promise<void> {
     await tick();
     const target = steps[index]?.target?.() ?? null;
-    if (target) {
-      target.scrollIntoView({ block: "center", inline: "center" });
-      await tick();
-      rect = target.getBoundingClientRect();
-    } else {
-      rect = null;
-    }
+    hasTarget = target !== null;
+    setAnchor(target);
+    target?.scrollIntoView({ block: "center", inline: "center" });
+    measure();
+  }
+
+  // Fallback positioning only: anchor positioning follows the target itself.
+  function measure(): void {
+    if (supportsAnchor) return;
+    rect = anchored?.getBoundingClientRect() ?? null;
   }
 
   async function goto(next: number): Promise<void> {
@@ -82,7 +110,8 @@
     index = next;
     await step.onEnter?.();
     raise();
-    await measure();
+    await focusTarget();
+    nextButton?.focus();
   }
 
   function nextStep(): void {
@@ -103,37 +132,40 @@
       eqOpen = false;
     }
     if (el?.matches(":popover-open")) el.hidePopover();
+    setAnchor(null);
     open = false;
     rect = null;
+    hasTarget = false;
+    returnFocus?.focus();
+    returnFocus = null;
+  }
+
+  // Keys only while focus is in the tour, so typing in an editor field never
+  // advances it. preventDefault on Esc also keeps the modal editor underneath
+  // from treating it as its own close request.
+  function onKeydown(event: KeyboardEvent): void {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      finish();
+    } else if (event.key === "ArrowRight") {
+      nextStep();
+    } else if (event.key === "ArrowLeft") {
+      prevStep();
+    }
   }
 
   $effect(() => {
-    if (!open) return;
-    function onKeydown(event: KeyboardEvent): void {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        finish();
-      } else if (event.key === "ArrowRight") {
-        nextStep();
-      } else if (event.key === "ArrowLeft") {
-        prevStep();
-      }
-    }
-    function onReflow(): void {
-      measure();
-    }
-    window.addEventListener("keydown", onKeydown);
-    window.addEventListener("resize", onReflow);
-    window.addEventListener("scroll", onReflow, true);
+    if (!open || supportsAnchor) return;
+    window.addEventListener("resize", measure);
+    window.addEventListener("scroll", measure, true);
     return () => {
-      window.removeEventListener("keydown", onKeydown);
-      window.removeEventListener("resize", onReflow);
-      window.removeEventListener("scroll", onReflow, true);
+      window.removeEventListener("resize", measure);
+      window.removeEventListener("scroll", measure, true);
     };
   });
 
   let cardStyle = $derived.by(() => {
-    if (typeof window === "undefined") return "";
+    if (supportsAnchor || typeof window === "undefined") return "";
     const width = Math.min(360, window.innerWidth - 32);
     if (!rect) {
       return `width:${width}px; top:50%; left:50%; transform:translate(-50%,-50%);`;
@@ -152,7 +184,7 @@
   });
 
   let spotlightStyle = $derived(
-    rect
+    !supportsAnchor && rect
       ? `top:${rect.top - 6}px; left:${rect.left - 6}px; width:${rect.width + 12}px; height:${rect.height + 12}px;`
       : "",
   );
@@ -160,15 +192,18 @@
 
 {#if open}
   {@const step = steps[index]}
-  <!-- svelte-ignore a11y_click_events_have_key_events -->
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div
+  <!-- Clicking the dimmed backdrop (not the card) quits the tour. -->
+  <dialog
     popover="manual"
     bind:this={el}
     class="tour"
-    onclick={finish}
+    aria-labelledby="{uid}-title"
+    onclick={(event) => {
+      if (event.target === event.currentTarget) finish();
+    }}
+    onkeydown={onKeydown}
   >
-    {#if rect}
+    {#if hasTarget}
       <div
         class="spotlight"
         style={spotlightStyle}
@@ -177,51 +212,55 @@
       <div class="dim"></div>
     {/if}
 
-    <!-- svelte-ignore a11y_click_events_have_key_events -->
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
       class="card"
+      class:anchored={hasTarget}
       style={cardStyle}
-      onclick={(event) => event.stopPropagation()}
     >
       <div class="card-head">
         <span class="count">{index + 1} / {steps.length}</span>
         <button
+          type="button"
           class="quit"
           aria-label="Quit tutorial"
           onclick={finish}>✕</button
         >
       </div>
-      <h3>{step.title}</h3>
+      <h3 id="{uid}-title">{step.title}</h3>
       <p>{step.body}</p>
       <div class="card-actions">
         <button
+          type="button"
           class="ghost"
           disabled={index === 0}
           onclick={prevStep}>Back</button
         >
         <button
+          type="button"
           class="primary"
+          bind:this={nextButton}
           onclick={nextStep}
           >{index === steps.length - 1 ? "Done" : "Next"}</button
         >
       </div>
     </div>
-  </div>
+  </dialog>
 {/if}
 
 <style>
   .tour {
+    position: fixed;
     margin: 0;
     inset: 0;
     border: none;
     background: transparent;
     padding: 0;
-    width: 100vw;
-    max-width: 100vw;
-    height: 100vh;
-    max-height: 100vh;
+    width: auto;
+    max-width: none;
+    height: auto;
+    max-height: none;
     overflow: visible;
+    color: inherit;
   }
 
   .dim {
@@ -247,6 +286,45 @@
   @media (prefers-reduced-motion: reduce) {
     .spotlight {
       transition: none;
+    }
+  }
+
+  @position-try --tour-card-over {
+    position-area: center;
+    margin: 0;
+  }
+
+  /* Tethered to the step target (anchor-name set from script); the inline
+     coordinates above are only used where this is unsupported. */
+  @supports (top: anchor(top)) {
+    .spotlight {
+      position-anchor: --tour-target;
+      top: calc(anchor(top) - 6px);
+      left: calc(anchor(left) - 6px);
+      width: calc(anchor-size(width) + 12px);
+      height: calc(anchor-size(height) + 12px);
+    }
+
+    .card {
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: min(360px, 100dvw - 32px);
+    }
+
+    .card.anchored {
+      position-anchor: --tour-target;
+      position-area: block-end span-inline-end;
+      /* Last resort for targets taller than the viewport (whole tables):
+         sit on top of the target, which scrollIntoView centred. */
+      position-try-fallbacks:
+        flip-block,
+        flip-inline,
+        flip-block flip-inline,
+        --tour-card-over;
+      transform: none;
+      margin: 16px;
+      inset: auto;
     }
   }
 
