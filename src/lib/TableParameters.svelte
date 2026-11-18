@@ -338,9 +338,11 @@
   tr {
     background-color: var(--color-surface);
   }
+  tr {
+    transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
   tr:hover {
-    transition-duration: 150ms;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     background-color: lch(from var(--color-surface) calc(l - 5) c h);
   }
   td.actions {

@@ -81,6 +81,8 @@
       <img
         src={scheme}
         alt="Diagram of the Lotka-Volterra predator-prey system used as the mechanistic reference for this UDE fitting demo"
+        loading="lazy"
+        decoding="async"
       />
     </div>
   </AnalysesDashboard>

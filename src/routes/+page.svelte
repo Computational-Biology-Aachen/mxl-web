@@ -111,6 +111,9 @@
       src={hero}
       alt="Screenshot of the Ebeling 2026 photosynthesis model in mxl-web, showing its thylakoid transport diagram and live parameter sliders"
       class="top-img"
+      width="1077"
+      height="767"
+      fetchpriority="high"
     />
   </div>
 

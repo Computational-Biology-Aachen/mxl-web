@@ -117,6 +117,8 @@
     presetTemplates?: { name: string; code: () => Base }[];
   } = $props();
 
+  const uid = $props.id();
+
   // NN block weights must never be a pickable symbol here (ADR 0005 §2.1.3)
   // — a hand-written equation referencing one would silently break whenever
   // the block is resized/refitted, since a block is authored as one opaque
@@ -773,9 +775,9 @@
   </Row>
 
   <div class="edit-row">
-    <label for="root">Template</label>
+    <label for="{uid}-template">Template</label>
     <select
-      id="root"
+      id="{uid}-template"
       value="---"
       onchange={handleTemplateChoice}
     >

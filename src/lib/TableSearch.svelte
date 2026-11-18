@@ -2,9 +2,11 @@
   let {
     value = $bindable(),
     placeholder = "Filter…",
+    label = "Filter rows",
   }: {
     value: string;
     placeholder?: string;
+    label?: string;
   } = $props();
 </script>
 
@@ -12,6 +14,7 @@
   type="search"
   class="search"
   placeholder={placeholder}
+  aria-label={label}
   bind:value={value}
 />
 

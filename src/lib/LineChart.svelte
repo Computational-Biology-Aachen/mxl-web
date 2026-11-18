@@ -95,19 +95,15 @@
 
   // svelte-ignore state_referenced_locally
   let showLoadingSpinner = $state(loading);
-  let loadingTimeout: ReturnType<typeof setTimeout> | null = null;
-
+  // Show the spinner only if loading lasts longer than `loadingDelay`; the
+  // cleanup cancels a pending timer when loading ends or the chart unmounts.
   $effect(() => {
-    if (loading) {
-      loadingTimeout = setTimeout(() => {
-        showLoadingSpinner = true;
-      }, loadingDelay);
-    } else {
-      if (loadingTimeout !== null) {
-        clearTimeout(loadingTimeout);
-      }
+    if (!loading) {
       showLoadingSpinner = false;
+      return;
     }
+    const timer = setTimeout(() => (showLoadingSpinner = true), loadingDelay);
+    return () => clearTimeout(timer);
   });
 
   let chartInstance = $state<Chart | null>(null);

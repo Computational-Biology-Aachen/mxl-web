@@ -123,7 +123,7 @@
   </div>
 
   <div class="status">
-    <span>
+    <span role="status">
       {active ? `${shown.length} of ${models.length}` : models.length} models
     </span>
     {#if active}
@@ -218,8 +218,14 @@
     font: inherit;
   }
 
+  /* The ring sits on the whole search box rather than the bare input. */
   .search input:focus {
     outline: none;
+  }
+
+  .search:has(input:focus-visible) {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 
   .status {

@@ -19,6 +19,8 @@
     <img
       src={logo}
       alt="SFB MibiNet logo"
+      loading="lazy"
+      decoding="async"
     />
   </a>
   {#if href}
@@ -57,7 +59,7 @@
 
   a,
   span {
-    transition: var(--transition);
+    transition: color var(--transition);
     color: var(--color-text);
     font-size: var(--text-callout);
     font-family: var(--font-sans);
@@ -72,11 +74,14 @@
   }
 
   img {
+    transition: transform var(--transition);
     width: auto;
     height: 100%;
     max-height: 4rem;
   }
   img:hover {
-    transform: translateY(-3px);
+    @media (prefers-reduced-motion: no-preference) {
+      transform: translateY(-3px);
+    }
   }
 </style>

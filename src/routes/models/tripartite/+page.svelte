@@ -108,6 +108,8 @@
       <img
         src={scheme}
         alt="Schematic of the tripartite community: the public metabolizer secretes extracellular enzymes that hydrolyse sucrose into glucose, a shared resource taken up by the cheater; the private metabolizer imports and digests sucrose intracellularly using its own enzymes"
+        loading="lazy"
+        decoding="async"
       />
     </div>
   </AnalysesDashboard>

@@ -1,28 +1,31 @@
 <!-- CopyButton.svelte -->
-<script>
+<script lang="ts">
   import { Button, Icon } from "@computational-biology-aachen/design";
 
-  // Accept the explicit text as a prop
-  let { text = "" } = $props();
+  let { text = "" }: { text?: string } = $props();
 
-  // Track the copied state for visual feedback
   let copied = $state(false);
+  let status = $state("");
+  let timer: ReturnType<typeof setTimeout> | undefined;
 
   async function handleCopy() {
     if (!text) return;
-
+    clearTimeout(timer);
     try {
       await navigator.clipboard.writeText(text);
       copied = true;
-
-      // Reset the button text after 2 seconds
-      setTimeout(() => {
-        copied = false;
-      }, 2000);
+      status = "Copied to clipboard";
     } catch (error) {
       console.error("Failed to copy text: ", error);
+      status = "Copying failed";
     }
+    timer = setTimeout(() => {
+      copied = false;
+      status = "";
+    }, 2000);
   }
+
+  $effect(() => () => clearTimeout(timer));
 </script>
 
 <Button
@@ -32,3 +35,18 @@
   <Icon color="inherit">content_copy</Icon>
   {copied ? "Copied!" : "Copy"}
 </Button>
+<span
+  class="visually-hidden"
+  role="status">{status}</span
+>
+
+<style>
+  .visually-hidden {
+    position: absolute;
+    clip-path: inset(50%);
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+</style>

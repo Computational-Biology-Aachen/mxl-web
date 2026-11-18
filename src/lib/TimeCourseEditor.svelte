@@ -26,6 +26,9 @@
     popovertarget: string;
   } = $props();
 
+  // Every editor is mounted at once (inside Popovers), so ids must be unique.
+  const uid = $props.id();
+
   let tEnd = $derived(parent.tEnd);
   let xMin: number = $derived(parent.xMin || 0);
   let xMax: number = $derived(parent.xMax || 10);
@@ -209,15 +212,16 @@
   </div>
   {#each filteredKeys as key (key)}
     <div class="key-row">
-      <label for="sel-{key}">{keyLabel(key)}</label>
+      <label for="{uid}-sel-{key}">{keyLabel(key)}</label>
       <input
-        id="sel-{key}"
+        id="{uid}-sel-{key}"
         type="checkbox"
         checked={isSelected(key)}
         onchange={(e) => toggle(key, e.currentTarget.checked)}
       />
       <input
-        id="norm-{key}"
+        id="{uid}-norm-{key}"
+        aria-label="Normalize {keyLabel(key)}"
         type="checkbox"
         checked={isNormalized(key)}
         onchange={(e) => toggleNormalized(key, e.currentTarget.checked)}

@@ -1,10 +1,8 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
   import { Popover } from "@computational-biology-aachen/design";
-  import {
-    default as H3,
-    default as H4,
-  } from "@computational-biology-aachen/design/H3.svelte";
+  import H3 from "@computational-biology-aachen/design/H3.svelte";
+  import H4 from "@computational-biology-aachen/design/H4.svelte";
 
   let { popover = false }: { popover?: boolean } = $props();
 

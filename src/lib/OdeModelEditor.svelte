@@ -249,7 +249,11 @@
 </div>
 
 <div class="card padding">
-  <pre>{latex}</pre>
+  <!-- Focusable so keyboard users can scroll long lines. -->
+  <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+  <pre
+    tabindex="0"
+    aria-label="Generated LaTeX code">{latex}</pre>
 </div>
 
 <EditorTutorial
@@ -296,7 +300,7 @@
   }
   pre {
     width: 100%;
-    overflow-x: scroll;
+    overflow-x: auto;
     font-size: 0.825rem;
   }
 </style>

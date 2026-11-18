@@ -1530,7 +1530,10 @@
           <tr>
             <td>Fit backend</td>
             <td>
-              <select bind:value={backendChoice}>
+              <select
+                bind:value={backendChoice}
+                aria-label="Fit backend"
+              >
                 <option value="lm">Levenberg-Marquardt</option>
                 <option value="lm-jacobian"
                   >Levenberg-Marquardt (analytic Jacobian)</option
@@ -1612,6 +1615,7 @@
               <td>
                 <input
                   type="checkbox"
+                  aria-label="Filter residual outliers"
                   checked={filterOutliers}
                   onchange={(e) =>
                     (filterOutliers = (e.target as HTMLInputElement).checked)}
@@ -1659,6 +1663,7 @@
                     <span class="time-badge">time axis</span>
                   {:else}
                     <select
+                      aria-label="Model quantity for column {header}"
                       value={mapping?.key ?? ""}
                       onchange={(e) => {
                         const value = (e.target as HTMLSelectElement).value;
@@ -1725,6 +1730,7 @@
           <td>
             <input
               type="checkbox"
+              aria-label="Fit {model.getDisplayNames().get(row.id) ?? row.id}"
               checked={row.fit}
               onchange={(e) =>
                 updateParamRow(row.id, {
@@ -1735,6 +1741,8 @@
           <td>
             <input
               type="checkbox"
+              aria-label="Fit {model.getDisplayNames().get(row.id) ??
+                row.id} in log space"
               checked={row.logSpace}
               disabled={!row.fit}
               onchange={(e) =>
@@ -1771,6 +1779,9 @@
             <td>
               <div class="dist-editor">
                 <select
+                  aria-label="Prior distribution of {model
+                    .getDisplayNames()
+                    .get(row.id) ?? row.id}"
                   value={distribution.family}
                   disabled={!row.fit}
                   onchange={(e) =>
@@ -1941,6 +1952,11 @@
       <div
         class="progress-bar-track"
         title="{nfev} / {stageBudget} evaluations"
+        role="progressbar"
+        aria-label="Fit progress (function evaluations)"
+        aria-valuemin={0}
+        aria-valuemax={stageBudget}
+        aria-valuenow={fitComplete ? stageBudget : Math.min(nfev, stageBudget)}
       >
         <div
           class="progress-bar-fill"
@@ -2148,10 +2164,13 @@
   }
   .progress-bar-fill {
     transform-origin: left;
-    transition: transform 200ms ease;
     background: var(--color-primary);
     width: 100%;
     height: 100%;
+
+    @media (prefers-reduced-motion: no-preference) {
+      transition: transform 200ms ease;
+    }
   }
   .error {
     margin: 0;

@@ -68,6 +68,8 @@
         src={model.image}
         class="scheme"
         alt="{model.name} scheme"
+        loading="lazy"
+        decoding="async"
       />
     {:else}
       <div class="fallback">
@@ -99,6 +101,8 @@
           class="logo"
           alt={model.consortium.name}
           title={model.consortium.name}
+          loading="lazy"
+          decoding="async"
         />
       {/if}
     </div>
@@ -123,7 +127,9 @@
   }
 
   .card:hover {
-    transform: translateY(-3px);
+    @media (prefers-reduced-motion: no-preference) {
+      transform: translateY(-3px);
+    }
     box-shadow:
       2px 5px 12px 0 rgba(0, 0, 0, 0.15),
       var(--shadow-primary);
