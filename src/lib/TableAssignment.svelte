@@ -10,7 +10,6 @@
     defaultValue,
   } from "@computational-biology-aachen/mxlweb-core";
   import { Base, Num } from "@computational-biology-aachen/mxlweb-core/mathml";
-  import { MediaQuery } from "svelte/reactivity";
   import EqEditor from "./EqEditor.svelte";
   import {
     idToTex,
@@ -23,8 +22,6 @@
   import TableSearch from "./TableSearch.svelte";
   import TexNameInput from "./TexNameInput.svelte";
   import { fuzzyMatch } from "./utils";
-
-  const md = new MediaQuery("max-width: 768px");
 
   let {
     variables = $bindable(),
@@ -122,37 +119,7 @@
   <TableSearch bind:value={query} />
 </div>
 
-{#if md.current}
-  <!-- Card layout for mobile -->
-  <div class="card-container">
-    {#each filtered as { ass, idx } (ass.id)}
-      <div class="card">
-        <div class="card-row">
-          <span class="card-label">Name</span>
-          <div class="card-input">
-            {@render nameInput(idx)}
-          </div>
-        </div>
-        <div class="card-row">
-          <span class="card-label">Tex name</span>
-          <div class="card-input">
-            {@render texNameInput(idx)}
-          </div>
-        </div>
-        <div class="card-row">
-          <span class="card-label">Function</span>
-          <div class="card-value">
-            {@render functionDisplay(idx)}
-          </div>
-        </div>
-        <div class="card-row card-actions">
-          {@render actions(idx, ass)}
-        </div>
-      </div>
-    {/each}
-  </div>
-{:else}
-  <!-- Table layout for desktop -->
+<div class="rtable">
   <table>
     <thead>
       <tr>
@@ -165,23 +132,23 @@
     <tbody>
       {#each filtered as { ass, idx } (ass.id)}
         <tr>
-          <td>
+          <td data-label="Name">
             {@render nameInput(idx)}
           </td>
-          <td>
+          <td data-label="Tex name">
             {@render texNameInput(idx)}
           </td>
-          <td>
+          <td data-label="Function">
             {@render functionDisplay(idx)}
           </td>
-          <td>
+          <td data-label="Actions">
             {@render actions(idx, ass)}
           </td>
         </tr>
       {/each}
     </tbody>
   </table>
-{/if}
+</div>
 {#if query !== "" && filtered.length === 0}
   <p class="empty">No items match “{query}”.</p>
 {/if}
@@ -265,52 +232,6 @@
     border: var(--border-primary);
   }
 
-  /* Card layout */
-  .card-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 1rem;
-  }
-
-  .card {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    box-shadow: var(--shadow-sm);
-    border: var(--border);
-    border-radius: 0.5rem;
-    background-color: var(--color-surface);
-    padding: 1rem;
-  }
-
-  .card-row {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .card-label {
-    color: #6b7280;
-    font-weight: var(--weight-bold);
-    font-size: 0.75rem;
-    line-height: 1rem;
-    text-transform: uppercase;
-  }
-
-  .card-input,
-  .card-value {
-    width: 100%;
-  }
-
-  .card-actions {
-    display: flex;
-    flex-direction: row;
-    gap: 0.5rem;
-    border-top: 1px solid #e5e7eb;
-    padding-top: 0.5rem;
-  }
-
   /* Table layout */
   table {
     border-collapse: collapse;
@@ -385,5 +306,72 @@
 
   tr:hover {
     background-color: lch(from var(--color-surface) calc(l - 5) c h);
+  }
+
+  /* One DOM for every width: below 48rem of *editor* width (phones, or a
+     narrow popover — a viewport query was the wrong measure here) each row
+     becomes a card and cells are labelled from data-label. */
+  .rtable {
+    container-type: inline-size;
+  }
+
+  @container (width < 48rem) {
+    table,
+    tbody,
+    tr,
+    td {
+      display: block;
+    }
+
+    thead {
+      display: none;
+    }
+
+    tbody {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding: 1rem;
+    }
+
+    tr {
+      box-shadow: var(--shadow-sm);
+      border: var(--border);
+      border-radius: 0.5rem;
+      padding: 0.5rem 1rem;
+    }
+
+    td:nth-child(n) {
+      border-radius: 0;
+      padding: 0.5rem 0;
+      width: auto;
+      min-width: 0;
+      text-align: left;
+    }
+
+    td::before {
+      display: block;
+      margin-bottom: 0.25rem;
+      content: attr(data-label);
+      color: var(--color-text-muted);
+      font-weight: var(--weight-bold);
+      font-size: 0.75rem;
+      line-height: 1rem;
+      text-transform: uppercase;
+    }
+
+    td:last-child {
+      display: flex;
+      gap: 0.5rem;
+      border-top: var(--border);
+    }
+
+    td:last-child::before {
+      content: none;
+    }
+
+    td:last-child :global(button) {
+      margin: 0;
+    }
   }
 </style>

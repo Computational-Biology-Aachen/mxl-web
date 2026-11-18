@@ -12,7 +12,6 @@
     softplusActivation,
   } from "@computational-biology-aachen/mxlweb-core";
   import type { Base } from "@computational-biology-aachen/mxlweb-core/mathml";
-  import { MediaQuery } from "svelte/reactivity";
   import EqEditor from "./EqEditor.svelte";
   import {
     type AssView,
@@ -49,8 +48,6 @@
     },
     { name: "Multiply: f · NN(x)", code: multiplyMechanism },
   ];
-
-  const md = new MediaQuery("max-width: 768px");
 
   // The five other model views are received for the same uniform table API
   // every other table component gets (see ModelEditor.svelte). `variables`
@@ -363,45 +360,7 @@
   <TableSearch bind:value={query} />
 </div>
 
-{#if md.current}
-  <!-- Card layout for mobile -->
-  <div class="card-container">
-    {#each filtered as { block, idx } (block.id)}
-      <div class="card">
-        <div class="card-row">
-          <span class="card-label">Name</span>
-          {block.id}
-        </div>
-        {#if showTargetKind}
-          <div class="card-row">
-            <span class="card-label">Corrects</span>
-            <div class="card-input">{@render targetKindField(idx)}</div>
-          </div>
-        {/if}
-        <div class="card-row">
-          <span class="card-label">Architecture</span>
-          <div class="card-input">{@render depthWidthField(idx)}</div>
-        </div>
-        <div class="card-row">
-          <span class="card-label">Output scale</span>
-          <div class="card-input">{@render scaleField(idx)}</div>
-        </div>
-        <div class="card-row">
-          <span class="card-label">Mechanism</span>
-          <div class="card-input">{@render mechanismField(idx)}</div>
-        </div>
-        <div class="card-row">
-          <span class="card-label">Train when fitting</span>
-          {@render trainedField(idx)}
-        </div>
-        <div class="card-row card-actions">
-          {@render actions(idx, block.id)}
-        </div>
-      </div>
-    {/each}
-  </div>
-{:else}
-  <!-- Table layout for desktop -->
+<div class="rtable">
   <table>
     <thead>
       <tr>
@@ -419,20 +378,23 @@
     <tbody>
       {#each filtered as { block, idx } (block.id)}
         <tr>
-          <td>{block.id}</td>
+          <td data-label="Name">{block.id}</td>
           {#if showTargetKind}
-            <td>{@render targetKindField(idx)}</td>
+            <td data-label="Corrects">{@render targetKindField(idx)}</td>
           {/if}
-          <td>{@render depthWidthField(idx)}</td>
-          <td>{@render scaleField(idx)}</td>
-          <td>{@render mechanismField(idx)}</td>
-          <td>{@render trainedField(idx)}</td>
-          <td class="actions">{@render actions(idx, block.id)}</td>
+          <td data-label="Layers">{@render depthWidthField(idx)}</td>
+          <td data-label="Output scale">{@render scaleField(idx)}</td>
+          <td data-label="Mechanism">{@render mechanismField(idx)}</td>
+          <td data-label="Train">{@render trainedField(idx)}</td>
+          <td
+            class="actions"
+            data-label="Actions">{@render actions(idx, block.id)}</td
+          >
         </tr>
       {/each}
     </tbody>
   </table>
-{/if}
+</div>
 {#if query !== "" && filtered.length === 0}
   <p class="empty">No items match “{query}”.</p>
 {/if}
@@ -499,45 +461,6 @@
     border: var(--border-primary);
   }
 
-  .card-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 1rem;
-  }
-  .card {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    box-shadow: var(--shadow-sm);
-    border: var(--border);
-    border-radius: 0.5rem;
-    background-color: var(--color-surface);
-    padding: 1rem;
-  }
-  .card-row {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  .card-label {
-    color: #6b7280;
-    font-weight: var(--weight-bold);
-    font-size: 0.75rem;
-    line-height: 1rem;
-    text-transform: uppercase;
-  }
-  .card-input {
-    width: 100%;
-  }
-  .card-actions {
-    display: flex;
-    flex-direction: row;
-    gap: 0.5rem;
-    border-top: 1px solid #e5e7eb;
-    padding-top: 0.5rem;
-  }
-
   table {
     border-collapse: collapse;
     width: 100%;
@@ -587,5 +510,72 @@
     display: flex;
     gap: 0 10px;
     width: 7rem;
+  }
+
+  /* One DOM for every width: below 48rem of *editor* width (phones, or a
+     narrow popover — a viewport query was the wrong measure here) each row
+     becomes a card and cells are labelled from data-label. */
+  .rtable {
+    container-type: inline-size;
+  }
+
+  @container (width < 48rem) {
+    table,
+    tbody,
+    tr,
+    td {
+      display: block;
+    }
+
+    thead {
+      display: none;
+    }
+
+    tbody {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding: 1rem;
+    }
+
+    tr {
+      box-shadow: var(--shadow-sm);
+      border: var(--border);
+      border-radius: 0.5rem;
+      padding: 0.5rem 1rem;
+    }
+
+    td:nth-child(n) {
+      border-radius: 0;
+      padding: 0.5rem 0;
+      width: auto;
+      min-width: 0;
+      text-align: left;
+    }
+
+    td::before {
+      display: block;
+      margin-bottom: 0.25rem;
+      content: attr(data-label);
+      color: var(--color-text-muted);
+      font-weight: var(--weight-bold);
+      font-size: 0.75rem;
+      line-height: 1rem;
+      text-transform: uppercase;
+    }
+
+    td:last-child {
+      display: flex;
+      gap: 0.5rem;
+      border-top: var(--border);
+    }
+
+    td:last-child::before {
+      content: none;
+    }
+
+    td:last-child :global(button) {
+      margin: 0;
+    }
   }
 </style>
