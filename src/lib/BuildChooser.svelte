@@ -245,6 +245,7 @@
   <Popover
     size="sm"
     popovertarget="build-chooser"
+    label="Choose how to build a model"
     bind:el={el}
   >
     <div class="build-chooser">

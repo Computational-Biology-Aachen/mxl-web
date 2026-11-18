@@ -68,17 +68,22 @@
       : `${picked[0].label} +${picked.length - 1}`;
   });
 
+  // Anchor positioning tethers the panel to the trigger (and keeps it there
+  // on scroll); without it, place the panel once on open.
   function place(e: ToggleEvent) {
     if (e.newState !== "open" || !trigger || !panel) return;
+    if (CSS.supports("position-area", "block-end")) return;
     const r = trigger.getBoundingClientRect();
     panel.style.top = `${r.bottom + 4}px`;
     panel.style.left = `${r.left}px`;
     panel.style.minWidth = `${r.width}px`;
   }
 
-  function pick(v: string) {
+  // Arrow keys move through the radios (each firing change) without closing
+  // the panel; a pointer click picks and closes. Esc closes natively.
+  function pick(v: string, e: MouseEvent) {
     value = v;
-    panel?.hidePopover();
+    if (e.detail > 0) panel?.hidePopover();
   }
 
   function toggle(v: string, checked: boolean) {
@@ -86,7 +91,10 @@
   }
 </script>
 
-<div class="dropdown">
+<div
+  class="dropdown"
+  style:--fd-anchor="--fd-{id}"
+>
   <button
     bind:this={trigger}
     type="button"
@@ -105,6 +113,8 @@
     id={id}
     popover="auto"
     class="panel"
+    role={multiple ? "group" : "radiogroup"}
+    aria-label={label}
     ontoggle={place}
   >
     {#each choices as option (option.value)}
@@ -118,17 +128,20 @@
           {option.label}
         </label>
       {:else}
-        <button
-          type="button"
+        <label
           class="option"
           class:selected={option.value === value}
-          onclick={() => pick(option.value)}
         >
-          <span class="material-symbols-outlined check">
-            {option.value === value ? "check" : ""}
-          </span>
+          <input
+            type="radio"
+            name="{id}-choice"
+            value={option.value}
+            checked={option.value === value}
+            onchange={() => (value = option.value)}
+            onclick={(e) => pick(option.value, e)}
+          />
           {option.label}
-        </button>
+        </label>
       {/if}
     {/each}
   </div>
@@ -137,6 +150,7 @@
 <style>
   .trigger {
     display: flex;
+    anchor-name: var(--fd-anchor);
     justify-content: space-between;
     align-items: center;
     gap: var(--space-3);
@@ -183,6 +197,16 @@
     padding: var(--space-1);
   }
 
+  @supports (position-area: block-end) {
+    .panel {
+      position-anchor: var(--fd-anchor);
+      position-area: block-end span-inline-end;
+      position-try-fallbacks: flip-block, flip-inline;
+      margin-top: 4px;
+      min-width: anchor-size(width);
+    }
+  }
+
   .option {
     display: flex;
     align-items: center;
@@ -209,12 +233,8 @@
     font-weight: var(--weight-medium);
   }
 
-  .check {
-    width: 1.25rem;
-    font-size: 1.125rem;
-  }
-
-  input[type="checkbox"] {
+  input[type="checkbox"],
+  input[type="radio"] {
     accent-color: var(--color-primary);
   }
 </style>

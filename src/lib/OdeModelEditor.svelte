@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { closeContainer } from "#lib/closeContainer.js";
   import TableAssignments from "#lib/TableAssignment.svelte";
   import TableDifferentials from "#lib/TableDifferentials.svelte";
   import TableNNBlocks from "#lib/TableNNBlocks.svelte";
@@ -173,11 +174,16 @@
       variant="secondary"
       onclick={() => tour?.start()}>Tutorial</Button
     >
+    <Button
+      variant="secondary"
+      onclick={() => closeContainer(popovertarget)}>Close</Button
+    >
     <span data-tour="save">
       <Button
-        onclick={() => onSave(modelView.toBuilder())}
-        popovertarget={popovertarget}
-        popovertargetaction="hide">Save</Button
+        onclick={() => {
+          onSave(modelView.toBuilder());
+          closeContainer(popovertarget);
+        }}>Save</Button
       >
     </span>
   </div>

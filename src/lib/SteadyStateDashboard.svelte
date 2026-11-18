@@ -69,6 +69,9 @@
       .toArray();
   });
 
+  // The model editor is modal: an outside click must not discard edits.
+  let modelEditorEl = $state<HTMLDialogElement | null | undefined>(null);
+
   let analysisEditorEls = $state<
     Record<number, HTMLDialogElement | null | undefined>
   >({});
@@ -165,7 +168,7 @@
         <ButtonMenuItem onclick={savePython}>Python</ButtonMenuItem>
       </ButtonMenu>
       <Button onclick={() => (model = initModel())}>Reset</Button>
-      <Button popovertarget="model-editor">Edit model</Button>
+      <Button onclick={() => modelEditorEl?.showModal()}>Edit model</Button>
     </Pair>
   </Row>
   {#if children}
@@ -244,8 +247,11 @@
 </Div>
 
 <Popover
+  modal
   size="lg"
   popovertarget="model-editor"
+  label="Model editor"
+  bind:el={modelEditorEl}
 >
   <SteadyStateModelEditor
     parent={model}
@@ -260,6 +266,7 @@
   <Popover
     size="sm"
     popovertarget={`analysis-editor-${analysis.id}`}
+    label="Analysis settings"
     bind:el={analysisEditorEls[analysis.id]}
   >
     <SteadyStateSweepEditor

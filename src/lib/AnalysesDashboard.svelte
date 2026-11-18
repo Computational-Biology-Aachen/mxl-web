@@ -170,6 +170,9 @@
   let exportError = $state<string | null>(null);
   let pendingBox = $state<Box | null>(null);
   let pickerEl = $state<HTMLDialogElement | null | undefined>(null);
+  // Model and Fit editors are modal: an outside click must not discard edits.
+  let modelEditorEl = $state<HTMLDialogElement | null | undefined>(null);
+  let fitEditorEl = $state<HTMLDialogElement | null | undefined>(null);
   let analysisEditorEls = $state<
     Record<number, HTMLDialogElement | null | undefined>
   >({});
@@ -390,14 +393,14 @@
         <ButtonMenuItem onclick={saveMxlweb}>mxlweb</ButtonMenuItem>
         <ButtonMenuItem onclick={savePython}>Python</ButtonMenuItem>
       </ButtonMenu>
-      <Button popovertarget="fit-editor">Fit</Button>
+      <Button onclick={() => fitEditorEl?.showModal()}>Fit</Button>
       <Button
         onclick={() => {
           model = initModel();
           runAllSimulations();
         }}>Reset</Button
       >
-      <Button popovertarget="model-editor">Edit model</Button>
+      <Button onclick={() => modelEditorEl?.showModal()}>Edit model</Button>
     </Pair>
   </Row>
   <input
@@ -576,6 +579,7 @@
 <Popover
   size="xs"
   popovertarget="add-analysis-picker"
+  label="Add analysis"
   bind:el={pickerEl}
 >
   <p class="picker-title">Add analysis</p>
@@ -626,8 +630,11 @@
   </button>
 </Popover>
 <Popover
+  modal
   size="lg"
   popovertarget="model-editor"
+  label="Model editor"
+  bind:el={modelEditorEl}
 >
   {#if model instanceof OdeModelBuilder}
     <OdeModelEditor
@@ -651,8 +658,11 @@
 </Popover>
 
 <Popover
+  modal
   size="lg"
   popovertarget="fit-editor"
+  label="Fit to data"
+  bind:el={fitEditorEl}
 >
   <FitComponent
     model={model}
@@ -669,6 +679,7 @@
   <Popover
     size="sm"
     popovertarget={`analysis-editor-${analysis.id}`}
+    label="Analysis settings"
     bind:el={analysisEditorEls[analysis.id]}
   >
     {#if analysis.type === "simulation"}

@@ -108,6 +108,7 @@
       <IconButton
         icon="edit"
         popovertarget="var-ia-editor-{idx}"
+        label="Edit initial assignment of {variables[idx].id}"
       />
     </div>
   {:else}
@@ -129,9 +130,11 @@
   <IconButton
     icon="edit"
     popovertarget="var-editor-{idx}"
+    label="Edit variable {variables[idx].id}"
   />
   <IconButton
     icon="close"
+    label="Remove {vari.id}"
     onclick={() => {
       variables = variables.filter((i) => {
         return i.id !== vari.id;
@@ -226,6 +229,7 @@
   <Popover
     size="sm"
     popovertarget={`var-editor-${idx}`}
+    label="Variable {vari.id}"
   >
     <SliderEditor
       target={vari}
@@ -240,6 +244,7 @@
     <Popover
       size="md"
       popovertarget={`var-ia-editor-${idx}`}
+      label="Initial assignment of {vari.id}"
     >
       <EqEditor
         root={vari.value}

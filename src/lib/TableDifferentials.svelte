@@ -111,6 +111,7 @@
       <IconButton
         icon="edit"
         popovertarget="diff-ia-editor-{idx}"
+        label="Edit initial assignment of {variables[idx].id}"
       />
     </div>
   {:else}
@@ -138,6 +139,7 @@
     <IconButton
       icon="edit"
       popovertarget="diff-editor-{idx}"
+      label="Edit differential equation of {variables[idx].id}"
     />
   </div>
 {/snippet}
@@ -146,9 +148,11 @@
   <IconButton
     icon="edit"
     popovertarget="diff-slider-{idx}"
+    label="Edit value of {variables[idx].id}"
   />
   <IconButton
     icon="close"
+    label="Remove {vari.id}"
     onclick={() => {
       variables = variables.filter((i) => {
         return i.id !== vari.id;
@@ -254,6 +258,7 @@
   <Popover
     size="sm"
     popovertarget={`diff-slider-${idx}`}
+    label="Value of {vari.id}"
   >
     <SliderEditor
       target={vari}
@@ -267,6 +272,7 @@
   <Popover
     size="md"
     popovertarget={`diff-editor-${idx}`}
+    label="Differential equation of {vari.id}"
   >
     <EqEditor
       root={vari.differential}
@@ -286,6 +292,7 @@
     <Popover
       size="md"
       popovertarget={`diff-ia-editor-${idx}`}
+      label="Initial assignment of {vari.id}"
     >
       <EqEditor
         root={vari.value}

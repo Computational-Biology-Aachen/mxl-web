@@ -107,6 +107,7 @@
     <IconButton
       icon="edit"
       popovertarget="readout-eq-editor-{idx}"
+      label="Edit equation of {readouts[idx].id}"
     />
   </div>
 {/snippet}
@@ -114,6 +115,7 @@
 {#snippet actions(_idx: number, ro: AssView[number])}
   <IconButton
     icon="close"
+    label="Remove {ro.id}"
     onclick={() => {
       readouts = readouts.filter((i) => {
         return i.id !== ro.id;
@@ -208,6 +210,7 @@
   <Popover
     size="md"
     popovertarget={`readout-eq-editor-${idx}`}
+    label="Equation of {ro.id}"
   >
     <EqEditor
       root={ro.fn}

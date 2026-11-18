@@ -331,6 +331,7 @@
     <IconButton
       icon="edit"
       popovertarget="mechanism-editor-{idx}"
+      label="Edit mechanism of {nnBlocks[idx].id}"
     />
   </div>
 {/snippet}
@@ -351,6 +352,7 @@
 {#snippet actions(_idx: number, id: string)}
   <IconButton
     icon="close"
+    label="Remove {id}"
     onclick={() => {
       nnBlocks = nnBlocks.filter((b) => b.id !== id);
     }}
@@ -442,6 +444,7 @@
   <Popover
     size="md"
     popovertarget={`mechanism-editor-${idx}`}
+    label="Mechanism of {block.id}"
   >
     <EqEditor
       root={block.mechanism}

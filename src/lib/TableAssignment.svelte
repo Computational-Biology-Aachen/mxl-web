@@ -101,6 +101,7 @@
     <IconButton
       icon="edit"
       popovertarget="eq-editor-{idx}"
+      label="Edit equation of {assignments[idx].id}"
     />
   </div>
 {/snippet}
@@ -108,6 +109,7 @@
 {#snippet actions(_idx: number, ass: AssView[number])}
   <IconButton
     icon="close"
+    label="Remove {ass.id}"
     onclick={() => {
       assignments = assignments.filter((i) => {
         return i.id !== ass.id;
@@ -202,6 +204,7 @@
   <Popover
     size="md"
     popovertarget={`eq-editor-${idx}`}
+    label="Equation of {ass.id}"
   >
     <EqEditor
       root={ass.fn}

@@ -117,6 +117,7 @@
     <IconButton
       icon="edit"
       popovertarget="eq-editor-{idx}"
+      label="Edit rate equation of {reactions[idx].id}"
     />
   </div>
 {/snippet}
@@ -133,6 +134,7 @@
     <IconButton
       icon="edit"
       popovertarget="stoich-editor-{idx}"
+      label="Edit stoichiometry of {reactions[idx].id}"
     />
   </div>
 {/snippet}
@@ -140,6 +142,7 @@
 {#snippet actions(_idx: number, rxn: RxnView[number])}
   <IconButton
     icon="close"
+    label="Remove {rxn.id}"
     onclick={() => {
       reactions = reactions.filter((i) => {
         return i.id !== rxn.id;
@@ -246,6 +249,7 @@
   <Popover
     size="md"
     popovertarget={`eq-editor-${idx}`}
+    label="Rate equation of {rxn.id}"
   >
     <EqEditor
       root={rxn.fn}
@@ -262,6 +266,7 @@
   <Popover
     size="md"
     popovertarget={`stoich-editor-${idx}`}
+    label="Stoichiometry of {rxn.id}"
   >
     <StoichEditor
       stoichiometry={rxn.stoichiometry}

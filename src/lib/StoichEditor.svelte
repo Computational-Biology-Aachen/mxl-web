@@ -138,6 +138,7 @@
           <td>
             <IconButton
               icon="close"
+              label="Remove species {idx + 1}"
               onclick={() => {
                 stoichiometry = stoichiometry.filter((i) => {
                   return i.name !== name;

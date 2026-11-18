@@ -122,9 +122,11 @@
   <IconButton
     icon="edit"
     popovertarget="var-editor-{idx}"
+    label="Edit parameter {parameters[idx].id}"
   />
   <IconButton
     icon="close"
+    label="Remove {par.id}"
     onclick={() => {
       parameters = parameters.filter((i) => {
         return i.id !== par.id;
@@ -219,6 +221,7 @@
   <Popover
     size="sm"
     popovertarget={`var-editor-${idx}`}
+    label="Parameter {par.id}"
   >
     <SliderEditor
       target={par}
