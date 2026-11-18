@@ -8,10 +8,10 @@
   import TableVariables from "#lib/TableVariables.svelte";
   import {
     Button,
-    ButtonTab,
     Div,
     Icon,
     Row,
+    Tabs,
   } from "@computational-biology-aachen/design";
   import {
     defaultTexName,
@@ -167,7 +167,8 @@
     },
   ];
 
-  let cur = $state(tabs[0]);
+  let activeTab = $state(tabs[0].name);
+  let cur = $derived(tabs.find((t) => t.name === activeTab) ?? tabs[0]);
 
   let tour = $state<EditorTutorial>();
   const tutorial = buildEditorTutorial({
@@ -175,7 +176,7 @@
     hasReactions: true,
     selectTab: (name) => {
       const tab = tabs.find((t) => t.name === name);
-      if (tab) cur = tab;
+      if (tab) activeTab = tab.name;
     },
     getAssignments: () => assignments,
     setAssignments: (next) => (assignments = next as typeof assignments),
@@ -216,31 +217,28 @@
     </div>
   </Row>
 
-  <ul data-tour="tabs">
-    {#each tabs as tab (tab.name)}
-      <ButtonTab
-        selected={cur.name === tab.name}
-        onclick={() => (cur = tab)}
-      >
-        <Icon>{tab.icon}</Icon>
-        {tab.name}
-      </ButtonTab>
-    {/each}
-  </ul>
-
-  <div
-    class="card"
-    data-tour="table"
+  <Tabs
+    tabs={tabs.map((t) => ({ key: t.name, label: t.name, icon: t.icon }))}
+    label="Model components"
+    bind:activeKey={activeTab}
+    data-tour="tabs"
   >
-    <cur.comp
-      bind:variables={variables}
-      bind:parameters={parameters}
-      bind:assignments={assignments}
-      bind:reactions={reactions}
-      bind:nnBlocks={nnBlocks}
-      bind:readouts={readouts}
-    />
-  </div>
+    {#snippet children(_key: string)}
+      <div
+        class="card"
+        data-tour="table"
+      >
+        <cur.comp
+          bind:variables={variables}
+          bind:parameters={parameters}
+          bind:assignments={assignments}
+          bind:reactions={reactions}
+          bind:nnBlocks={nnBlocks}
+          bind:readouts={readouts}
+        />
+      </div>
+    {/snippet}
+  </Tabs>
 
   <div class="heading">
     <Icon>preview</Icon>
@@ -285,20 +283,6 @@
     padding: 1rem;
   }
 
-  /* Tabs */
-  ul {
-    display: flex;
-    flex-direction: column;
-    gap: var(--gap);
-    width: 100%;
-    list-style: none;
-
-    @media (min-width: 768px) {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
-      padding: 0;
-    }
-  }
   pre {
     width: 100%;
     overflow-x: auto;
