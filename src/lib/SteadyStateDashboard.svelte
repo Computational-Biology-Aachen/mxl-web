@@ -2,7 +2,7 @@
   import { resolve } from "$app/paths";
   import type { SteadyStateAnalysis } from "#lib";
   import {
-    Accordion2 as Accordion,
+    Accordion,
     Button,
     ButtonMenu,
     ButtonMenuItem,
@@ -70,7 +70,7 @@
   });
 
   let analysisEditorEls = $state<
-    Record<number, HTMLDivElement | null | undefined>
+    Record<number, HTMLDialogElement | null | undefined>
   >({});
 
   function downloadText(content: string, filename: string, type: string) {
@@ -172,7 +172,10 @@
     {@render children()}
   {/if}
 
-  <Accordion bind:open={equationsOpen}>
+  <Accordion
+    variant="plain"
+    bind:open={equationsOpen}
+  >
     {#snippet header()}
       <Icon>function</Icon>
       <h3>Model Equations</h3>

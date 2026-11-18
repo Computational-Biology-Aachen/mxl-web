@@ -17,7 +17,7 @@
   import ParameterScanSimulator from "#lib/ParameterScan.svelte";
   import Simulator from "#lib/TimeCourse.svelte";
   import {
-    Accordion2 as Accordion,
+    Accordion,
     Button,
     ButtonMenu,
     ButtonMenuItem,
@@ -169,9 +169,9 @@
   // uncaught exception the export button's onclick would otherwise produce.
   let exportError = $state<string | null>(null);
   let pendingBox = $state<Box | null>(null);
-  let pickerEl = $state<HTMLDivElement | null | undefined>(null);
+  let pickerEl = $state<HTMLDialogElement | null | undefined>(null);
   let analysisEditorEls = $state<
-    Record<number, HTMLDivElement | null | undefined>
+    Record<number, HTMLDialogElement | null | undefined>
   >({});
 
   function downloadText(content: string, filename: string, type: string) {
@@ -417,7 +417,10 @@
     {@render children()}
   {/if}
 
-  <Accordion bind:open={equationsOpen}>
+  <Accordion
+    variant="plain"
+    bind:open={equationsOpen}
+  >
     {#snippet header()}
       <Icon>function</Icon>
       <h3>Model Equations</h3>

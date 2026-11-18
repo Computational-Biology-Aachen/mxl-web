@@ -8,7 +8,7 @@
 
   let { popover = false }: { popover?: boolean } = $props();
 
-  let el: HTMLDivElement | null | undefined = $state();
+  let el: HTMLDialogElement | null | undefined = $state();
 </script>
 
 {#snippet cards()}
