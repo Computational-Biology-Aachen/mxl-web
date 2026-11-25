@@ -5,8 +5,7 @@ import { enhancedImages } from "@sveltejs/enhanced-img";
 import adapter from "@sveltejs/adapter-static";
 import { sveltekit } from "@sveltejs/kit/vite";
 import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
-import { escapeSvelte, mdsvex, type MdsvexOptions } from "mdsvex";
-import { createHighlighter } from "shiki";
+import { mdsvex } from "mdsvex";
 import { defineConfig, type Plugin } from "vite";
 import wasm from "vite-plugin-wasm";
 
@@ -42,26 +41,6 @@ const workspaceAlias: Record<string, string> = {
   ...(existsSync(coreSrc)
     ? { "@computational-biology-aachen/mxlweb-core": coreSrc }
     : {}),
-};
-
-const mdsvexOptions: MdsvexOptions = {
-  extensions: [".md"],
-  highlight: {
-    highlighter: async (code, lang = "text") => {
-      const highlighter = await createHighlighter({
-        themes: ["poimandres"],
-        langs: ["javascript", "typescript"],
-      });
-      await highlighter.loadLanguage("javascript", "typescript");
-      const html = escapeSvelte(
-        highlighter.codeToHtml(code, {
-          lang: lang ?? "text",
-          theme: "poimandres",
-        }),
-      );
-      return `{@html \`${html}\` }`;
-    },
-  },
 };
 
 const MIME: Record<string, string> = {
@@ -113,9 +92,10 @@ export default defineConfig({
   },
   plugins: [
     enhancedImages(),
+    mdsvex({ extensions: [".md"] }),
     sveltekit({
       extensions: [".svelte", ".md"],
-      preprocess: [vitePreprocess(), mdsvex(mdsvexOptions)],
+      preprocess: [vitePreprocess()],
       adapter: adapter({
         pages: "build",
         assets: "build",
